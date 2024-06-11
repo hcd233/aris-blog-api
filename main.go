@@ -2,9 +2,10 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
-	"time"
 
+	"github.com/hcd233/Aris-AI-go/internal/config"
 	"github.com/hcd233/Aris-AI-go/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -14,13 +15,14 @@ func main() {
 	r := gin.Default()
 
 	router.StartupRouter(r)
+	config.InitEnvironment()
 
 	s := &http.Server{
-		Addr:           ":8080",
+		Addr:           fmt.Sprintf(":%s", config.Port),
 		Handler:        r,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
-		MaxHeaderBytes: 1 << 20,
+		ReadTimeout:    config.ReadTimeout,
+		WriteTimeout:   config.WriteTimeout,
+		MaxHeaderBytes: config.MaxHeaderBytes,
 	}
 	s.ListenAndServe()
 }
