@@ -2,7 +2,7 @@
 package router
 
 import (
-	"Aris-AI-go/internal/protocol"
+	"github.com/hcd233/Aris-AI-go/internal/protocol"
 
 	"github.com/gin-gonic/gin"
 )
