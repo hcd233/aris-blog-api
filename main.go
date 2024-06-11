@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/hcd233/Aris-AI-go/internal/config"
+	"github.com/hcd233/Aris-AI-go/internal/logger"
 	"github.com/hcd233/Aris-AI-go/internal/router"
 
 	"github.com/gin-gonic/gin"
@@ -13,9 +14,12 @@ import (
 
 func main() {
 	r := gin.Default()
+	
+	config.InitEnvironment()
+
+	logger.InitLogger()
 
 	router.StartupRouter(r)
-	config.InitEnvironment()
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%s", config.Port),
