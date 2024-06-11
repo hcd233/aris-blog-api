@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"time"
 
-	"Aris-AI-go/internal/router"
+	"github.com/hcd233/Aris-AI-go/internal/router"
 
 	"github.com/gin-gonic/gin"
 )
