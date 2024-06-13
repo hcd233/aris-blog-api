@@ -2,10 +2,17 @@ package router
 
 import "github.com/gin-gonic/gin"
 
-// StartupRouter is the router startup function.
-func StartupRouter(r *gin.Engine) {
-	group := r.Group("/")
+// Router is the main router.
+var Router = gin.Default()
+
+// InitRouter initializes the router.
+func InitRouter() {
+	initRootRouter()
+}
+
+func initRootRouter() {
+	rootGroup := Router.Group("/")
 	{
-		group.GET("/", GetRootMessage)
+		rootGroup.GET("/", rootHandler)
 	}
 }

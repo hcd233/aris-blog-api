@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// GetRootMessage is the root message handler.
-func GetRootMessage(c *gin.Context) {
+// RootHandler is the root message handler.
+func rootHandler(c *gin.Context) {
 	c.JSON(200, protocol.Response{
 		Message: "Welcome to Aris AI Go!",
 		Status:  protocol.SUCCESS,
