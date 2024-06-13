@@ -11,11 +11,8 @@ import (
 )
 
 func main() {
-	config.InitEnvironment()
-
 	logger.InitLogger()
-
-	router.InitRouter()
+	router.InitRouter(router.Router)
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%s", config.Port),

@@ -2,13 +2,12 @@
 package router
 
 import (
-	"github.com/hcd233/Aris-AI-go/internal/protocol"
-
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-AI-go/internal/protocol"
 )
 
 // RootHandler is the root message handler.
-func rootHandler(c *gin.Context) {
+func handleRoot(c *gin.Context) {
 	c.JSON(200, protocol.Response{
 		Message: "Welcome to Aris AI Go!",
 		Status:  protocol.SUCCESS,
