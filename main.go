@@ -8,22 +8,18 @@ import (
 	"github.com/hcd233/Aris-AI-go/internal/config"
 	"github.com/hcd233/Aris-AI-go/internal/logger"
 	"github.com/hcd233/Aris-AI-go/internal/router"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
-	
 	config.InitEnvironment()
 
 	logger.InitLogger()
 
-	router.StartupRouter(r)
+	router.InitRouter()
 
 	s := &http.Server{
 		Addr:           fmt.Sprintf(":%s", config.Port),
-		Handler:        r,
+		Handler:        router.Router,
 		ReadTimeout:    config.ReadTimeout,
 		WriteTimeout:   config.WriteTimeout,
 		MaxHeaderBytes: config.MaxHeaderBytes,
