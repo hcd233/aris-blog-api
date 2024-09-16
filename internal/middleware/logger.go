@@ -1,12 +1,24 @@
 package middleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-AI-go/internal/logger"
 	"go.uber.org/zap"
 )
+
+func formatDuration(d time.Duration) string {
+	if d.Seconds() >= 1 {
+		return fmt.Sprintf("%.2f s", d.Seconds())
+	} else if d.Milliseconds() >= 1 {
+		return fmt.Sprintf("%d ms", d.Milliseconds())
+	} else if d.Microseconds() >= 1 {
+		return fmt.Sprintf("%d µs", d.Microseconds())
+	}
+	return fmt.Sprintf("%d ns", d.Nanoseconds())
+}
 
 // LoggerMiddleware 日志中间件
 //
@@ -31,7 +43,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 				zap.String("path", path),
 				zap.String("query", query),
 				zap.String("ip", c.ClientIP()),
-				zap.Duration("latency", latency),
+				zap.String("latency", formatDuration(latency)),
 			)
 		}
 	}
