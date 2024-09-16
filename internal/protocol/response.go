@@ -1,17 +1,13 @@
-// Package protocol provides the protocol implementation.
+// Package protocol 响应体协议
 // File: response.go
 package protocol
 
-const (
-	SUCCESS = "success" // SUCCESS is the success status.
-	FAILED  = "failed"  // FAILED is the failed status.
-	ERROR   = "error"   // ERROR is the error status.
-)
-
-// Response is the response structure.
+// Response 响应体
+//
+//	@author centonhuang
+//	@update 2024-09-16 03:41:34
 type Response struct {
 	Message string                 `json:"message"`
-	Status  string                 `json:"status"`
-	Code    int32                  `json:"code"`
+	Code    ResponseCode           `json:"code"`
 	Data    map[string]interface{} `json:"data"`
 }

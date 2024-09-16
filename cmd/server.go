@@ -26,7 +26,12 @@ var startServerCmd = &cobra.Command{
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		r := gin.New()
-		r.Use(middleware.LoggerMiddleware(), gin.Recovery())
+		r.Use(
+			middleware.CORSMiddleware(),
+			middleware.LoggerMiddleware(),
+			middleware.TranslateMiddleware(),
+			gin.Recovery(),
+		)
 		router.InitRouter(r)
 
 		s := &http.Server{
