@@ -2,7 +2,9 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-AI-go/internal/middleware"
 	"github.com/hcd233/Aris-AI-go/internal/router/v1/oauth2"
+	"github.com/hcd233/Aris-AI-go/internal/router/v1/user"
 )
 
 // InitRouter initializes the router.
@@ -21,6 +23,11 @@ func InitRouter(r *gin.Engine) {
 				githubRouter.GET("/login", oauth2.GithubLoginHandler)
 				githubRouter.GET("/callback", oauth2.GithubCallbackHandler)
 			}
+		}
+
+		userRouter := v1Router.Group("/user", middleware.JwtMiddleware())
+		{
+			userRouter.GET("/:userName", user.GetInfoHandler)
 		}
 	}
 }
