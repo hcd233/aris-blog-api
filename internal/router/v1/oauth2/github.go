@@ -17,7 +17,10 @@ import (
 	"golang.org/x/oauth2/github"
 )
 
-const githubUserURL = "https://api.github.com/user"
+const (
+	githubUserURL      = "https://api.github.com/user"
+	githubUserEmailURL = "https://api.github.com/user/emails"
+)
 
 var githubOauthConfig = &oauth2.Config{
 	ClientID:     config.Oauth2GithubClientID,
@@ -72,20 +75,22 @@ func GithubCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	platform := model.PlatformGithub
-	bindID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
-	user := lo.Must1(model.QueryUserByPlatformAndID(platform, bindID))
+	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
+	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
+	user := model.QueryUserByEmail(email)
 
 	if user != nil {
 		// 如果已有用户，刷新信息
 		lo.Must0(user.UpdateUserInfo())
 	} else {
 		// 新用户，保存信息
-		userName, avatar := data["login"].(string), data["avatar_url"].(string)
 		permission := model.PermissionGeneral
-		user = lo.Must(model.AddUserByBasicInfo(userName, avatar, permission, platform, bindID))
+		user = lo.Must(model.CreateUserByBasicInfo(userName, email, avatar, permission))
 	}
 
+	if user.GithubBindID == "" {
+		user.BindGithubID(githubID)
+	}
 	tokenString := lo.Must(auth.EncodeToken(user.ID))
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
@@ -98,6 +103,8 @@ func GithubCallbackHandler(c *gin.Context) {
 
 func getGithubUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
 	client := githubOauthConfig.Client(context.Background(), token)
+
+	// 获取用户基本信息
 	resp, err := client.Get(githubUserURL)
 	if err != nil {
 		return nil, err
@@ -107,6 +114,26 @@ func getGithubUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
 	var data map[string]interface{}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return nil, err
+	}
+
+	// 获取用户邮箱信息
+	emailResp, err := client.Get(githubUserEmailURL)
+	if err != nil {
+		return nil, err
+	}
+	defer emailResp.Body.Close()
+
+	var emails []map[string]interface{}
+	if err := json.NewDecoder(emailResp.Body).Decode(&emails); err != nil {
+		return nil, err
+	}
+
+	// 选择主邮箱
+	for _, email := range emails {
+		if email["primary"].(bool) {
+			data["email"] = email["email"]
+			break
+		}
 	}
 
 	return data, nil
