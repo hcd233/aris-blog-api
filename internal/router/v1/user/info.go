@@ -46,6 +46,7 @@ func GetInfoHandler(c *gin.Context) {
 		Data: map[string]interface{}{
 			"id":         user.ID,
 			"name":       user.Name,
+			"email":      user.Email,
 			"created_at": user.CreatedAt,
 			"last_login": user.LastLogin.Time,
 		},
