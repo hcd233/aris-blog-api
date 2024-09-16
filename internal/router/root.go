@@ -6,11 +6,15 @@ import (
 	"github.com/hcd233/Aris-AI-go/internal/protocol"
 )
 
-// RootHandler is the root message handler.
-func handleRoot(c *gin.Context) {
+// RootHandler 根路由
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-09-16 02:07:30
+func RootHandler(c *gin.Context) {
 	c.JSON(200, protocol.Response{
-		Message: "Welcome to Aris AI Go!",
+		Message: "Welcome to Aris Blog API!",
 		Status:  protocol.SUCCESS,
-		Data:    nil,
+		Data:    map[string]interface{}{},
 	})
 }

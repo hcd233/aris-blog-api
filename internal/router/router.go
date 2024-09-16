@@ -5,25 +5,22 @@ import (
 	"github.com/hcd233/Aris-AI-go/internal/router/v1/oauth2"
 )
 
-// Router is the main router.
-var Router = gin.Default()
-
 // InitRouter initializes the router.
 func InitRouter(r *gin.Engine) {
-	initRootRouter(r)
-	initV1Router(r)
-}
-
-func initRootRouter(r *gin.Engine) {
 	rootGroup := r.Group("/")
 	{
-		rootGroup.GET("/", handleRoot)
+		rootGroup.GET("/", RootHandler)
 	}
-}
 
-func initV1Router(r *gin.Engine) {
 	v1Router := r.Group("/v1")
 	{
-		oauth2.InitOauth2Router(v1Router)
+		oauth2Group := v1Router.Group("/oauth2")
+		{
+			githubRouter := oauth2Group.Group("/github")
+			{
+				githubRouter.GET("/login", oauth2.GithubLoginHandler)
+				githubRouter.GET("/callback", oauth2.GithubCallbackHandler)
+			}
+		}
 	}
 }

@@ -24,8 +24,12 @@ var githubOauthConfig = &oauth2.Config{
 	Scopes:       []string{"user:email", "repo", "read:org"},
 }
 
-// HandleGithubLogin handles the Github login.
-func handleGithubLogin(c *gin.Context) {
+// GithubLoginHandler Github登录
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-09-16 01:56:09
+func GithubLoginHandler(c *gin.Context) {
 	url := githubOauthConfig.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
 	c.JSON(200, protocol.Response{
 		Data:   map[string]interface{}{"url": url},
@@ -33,8 +37,12 @@ func handleGithubLogin(c *gin.Context) {
 	})
 }
 
-// HandleGithubCallback handles the Github callback.
-func handleGithubCallback(c *gin.Context) {
+// GithubCallbackHandler Github登录回调
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-09-16 01:56:03
+func GithubCallbackHandler(c *gin.Context) {
 	state := c.Query("state")
 	if state != config.Oauth2StateString {
 		c.JSON(400, protocol.Response{

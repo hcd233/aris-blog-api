@@ -12,5 +12,6 @@ const (
 type Response struct {
 	Message string                 `json:"message"`
 	Status  string                 `json:"status"`
+	Code    int32                  `json:"code"`
 	Data    map[string]interface{} `json:"data"`
 }

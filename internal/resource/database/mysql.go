@@ -14,18 +14,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// DB undefined
+// DB undefined mysql数据库连接
 //
-//	@update 2024-06-22 09:07:38
-var (
-	DB     *gorm.DB
-)
+//	@update 2024-09-16 01:24:51
+var DB *gorm.DB
 
-// InitDatabase function
-//
-//	@author centonhuang
-//	@update 2024-06-22 09:23:59
-func InitDatabase() {
+func init() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
 
 	DB = lo.Must(gorm.Open(mysql.New(mysql.Config{
@@ -36,7 +30,6 @@ func InitDatabase() {
 			DryRun:         false, // 只生成SQL不运行
 			TranslateError: true,
 		}))
-
 
 	db := lo.Must(DB.DB())
 
