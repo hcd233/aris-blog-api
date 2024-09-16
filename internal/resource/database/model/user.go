@@ -52,16 +52,17 @@ func (u *User) Create() error {
 	return result.Error
 }
 
-// SetLastLoginTime 设置最后登录时间
+// UpdateUserInfo 更新用户
 //
 //	@receiver u *User
 //	@return error
 //	@author centonhuang
 //	@update 2024-06-22 10:24:05
-func (u *User) SetLastLoginTime() error {
-	result := database.DB.Model(u).Update("last_login", sql.NullTime{
-		Time:  time.Now(),
-		Valid: true,
+func (u *User) UpdateUserInfo() error {
+	result := database.DB.Model(u).Updates(map[string]interface{}{
+		"username":   u.Username,
+		"avatar":     u.Avatar,
+		"last_login": time.Now(),
 	})
 	return result.Error
 }

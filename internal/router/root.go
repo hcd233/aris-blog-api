@@ -13,8 +13,8 @@ import (
 //	@update 2024-09-16 02:07:30
 func RootHandler(c *gin.Context) {
 	c.JSON(200, protocol.Response{
+		Code:    protocol.CodeOk,
 		Message: "Welcome to Aris Blog API!",
-		Status:  protocol.SUCCESS,
 		Data:    map[string]interface{}{},
 	})
 }
