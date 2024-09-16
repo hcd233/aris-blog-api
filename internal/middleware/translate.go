@@ -31,6 +31,11 @@ func TranslateMiddleware() gin.HandlerFunc {
 		c.Next()
 
 		response := protocol.Response{}
+		if w.body.String() == "" {
+			c.JSON(c.Writer.Status(), protocol.Response{
+				Code: protocol.CodeRouterError,
+			})
+		}
 		lo.Must0(json.Unmarshal(w.body.Bytes(), &response))
 
 		code := response.Code

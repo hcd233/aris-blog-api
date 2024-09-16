@@ -32,7 +32,7 @@ const (
 //	@update 2024-06-22 09:36:22
 type User struct {
 	gorm.Model
-	Username   string       `json:"username" gorm:"column:username;not null"`
+	Name       string       `json:"name" gorm:"column:name;unique;not null"`
 	Platform   string       `json:"platform" gorm:"column:platform;not null"`
 	Avatar     string       `json:"avatar" gorm:"column:avatar;not null"`
 	Permission string       `json:"permission" gorm:"column:permission;not null"`
@@ -60,7 +60,7 @@ func (u *User) Create() error {
 //	@update 2024-06-22 10:24:05
 func (u *User) UpdateUserInfo() error {
 	result := database.DB.Model(u).Updates(map[string]interface{}{
-		"username":   u.Username,
+		"username":   u.Name,
 		"avatar":     u.Avatar,
 		"last_login": time.Now(),
 	})
@@ -75,7 +75,20 @@ func (u *User) UpdateUserInfo() error {
 //	@author centonhuang
 //	@update 2024-06-22 10:12:46
 func QueryUserByID(userID uint) (user *User, err error) {
-	result := database.DB.First(&user, userID)
+	result := database.DB.Where("id = ?", userID).Where("delete_at = ?", nil).First(&user)
+	err = result.Error
+	return
+}
+
+// QueryUserByName 根据用户名查询用户
+//
+//	@param userName string
+//	@return user *User
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-16 06:05:07
+func QueryUserByName(userName string) (user *User, err error) {
+	result := database.DB.Where(&User{Name: userName}).First(&user)
 	err = result.Error
 	return
 }
@@ -119,8 +132,7 @@ func QueryUserByPlatformAndID(platform string, platformID string) (user *User, e
 //	@update 2024-06-22 10:18:46
 func AddUserByBasicInfo(username string, avatar string, permission string, platform string, bindID string) (user *User, err error) {
 	user = &User{
-		Username:   username,
-		Platform:   platform,
+		Name:       username,
 		Avatar:     avatar,
 		Permission: permission,
 		LastLogin: sql.NullTime{

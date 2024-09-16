@@ -60,7 +60,7 @@ func DecodeToken(tokenString string) (userID uint, err error) {
 
 	claims, ok := token.Claims.(*Claims)
 
-	if !ok || token.Valid {
+	if !ok || !token.Valid {
 		err = errors.New("token is invalid")
 		return
 	}

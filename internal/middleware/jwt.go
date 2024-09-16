@@ -4,67 +4,46 @@
 package middleware
 
 import (
-	"errors"
-	"time"
+	"net/http"
+	"strings"
 
-	"github.com/golang-jwt/jwt/v5"
-	"github.com/hcd233/Aris-AI-go/internal/config"
+	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-AI-go/internal/auth"
+	"github.com/hcd233/Aris-AI-go/internal/protocol"
 )
 
-// Claims 鉴权结构体
+// JwtMiddleware JWT 中间件
 //
+//	@return gin.HandlerFunc
 //	@author centonhuang
-//	@update 2024-06-22 11:07:06
-type Claims struct {
-	jwt.RegisteredClaims
-
-	UserID uint `json:"user_id"`
-}
-
-// EncodeToken 生成JWT token
-//
-//	@param userID uint
-//	@return token string
-//	@return err error
-//	@author centonhuang
-//	@update 2024-06-22 11:12:49
-func EncodeToken(userID uint) (token string, err error) {
-	claims := Claims{
-		UserID: userID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(config.JwtTokenExpired) * time.Hour)),
-		},
-	}
-
-	token, err = jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(config.JwtTokenSecret))
-	return
-}
-
-// DecodeToken 解析JWT token
-//
-//	@param tokenString string
-//	@return userID uint
-//	@return err error
-//	@author centonhuang
-//	@update 2024-06-22 11:25:00
-func DecodeToken(tokenString string) (userID uint, err error) {
-	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
-		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, errors.New("unexpected signing method")
+//	@update 2024-09-16 05:35:57
+func JwtMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		tokenString := c.GetHeader("Authorization")
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, protocol.Response{
+				Code: protocol.CodeUnauthorized,
+			})
+			return
 		}
-		return []byte(config.JwtTokenSecret), nil
-	})
-	if err != nil {
-		return
+		if isBearer := strings.HasPrefix(tokenString, "Bearer "); !isBearer {
+			c.JSON(http.StatusBadRequest, protocol.Response{
+				Code: protocol.CodeTokenVerifyError,
+			})
+			c.Abort()
+			return
+		}
+
+		userID, err := auth.DecodeToken(tokenString[7:])
+		if err != nil {
+			c.JSON(http.StatusBadRequest, protocol.Response{
+				Code: protocol.CodeTokenVerifyError,
+			})
+			c.Abort()
+			return
+		}
+
+		c.Set("userID", userID)
+		c.Next()
 	}
-
-	claims, ok := token.Claims.(*Claims)
-
-	if !ok || token.Valid {
-		err = errors.New("token is invalid")
-		return
-	}
-
-	userID = claims.UserID
-	return
 }
