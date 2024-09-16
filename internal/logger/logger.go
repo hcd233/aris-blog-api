@@ -11,10 +11,12 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 )
 
-var Logger *zap.Logger // Logger is the global logger.
+// Logger undefined 全局日志
+//
+//	@update 2024-09-16 12:47:59
+var Logger *zap.Logger
 
-// InitLogger initializes the logger.
-func InitLogger() {
+func init() {
 	var (
 		cfg             zap.Config
 		zapLevelMapping = map[string]zap.AtomicLevel{

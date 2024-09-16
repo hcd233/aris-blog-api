@@ -9,9 +9,6 @@ import (
 )
 
 var (
-	// Port string is the port key.
-	//	@update 2024-06-22 08:59:43
-	Port string
 
 	// ReadTimeout time is the read timeout key.
 	//	@update 2024-06-22 08:59:40
@@ -73,8 +70,8 @@ var (
 	//	@update 2024-06-22 11:09:19
 	JwtTokenExpired int
 
-	// JwtTokenSecret string 
-	//	@update 2024-06-22 11:15:55 
+	// JwtTokenSecret string
+	//	@update 2024-06-22 11:15:55
 	JwtTokenSecret string
 )
 
@@ -95,7 +92,6 @@ func initEnvironment() {
 
 	config.AutomaticEnv()
 
-	Port = config.GetString("port")
 	ReadTimeout = time.Duration(config.GetInt("read.timeout")) * time.Second
 	WriteTimeout = time.Duration(config.GetInt("write.timeout")) * time.Second
 	MaxHeaderBytes = config.GetInt("max.header.bytes")
