@@ -43,6 +43,14 @@ const (
 	// CodeRouterError ResponseCode 路由错误
 	//	@update 2024-09-16 06:37:45
 	CodeRouterError ResponseCode = 1008
+
+	// CodeQueryUserError ResponseCode 查询用户错误
+	//	@update 2024-09-17 08:41:08
+	CodeQueryUserError ResponseCode = 1009
+
+	// CodeInvalidQueryError ResponseCode 非法查询参数错误
+	//	@update 2024-09-17 08:47:30
+	CodeInvalidQueryError ResponseCode = 1010
 )
 
 // CodeMessageMapping 响应码消息映射
@@ -57,4 +65,6 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeUserNotFoundError: "用户未找到",
 	CodeParamError:        "参数错误",
 	CodeRouterError:       "路由错误",
+	CodeQueryUserError:    "查询用户错误",
+	CodeInvalidQueryError: "非法查询参数错误",
 }

@@ -27,6 +27,7 @@ func InitRouter(r *gin.Engine) {
 
 		userRouter := v1Router.Group("/user", middleware.JwtMiddleware())
 		{
+			userRouter.GET("/", user.QueryUserHandler)
 			userRouter.GET("/:userName", user.GetInfoHandler)
 		}
 	}

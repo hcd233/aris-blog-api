@@ -10,67 +10,79 @@ import (
 
 var (
 
-	// ReadTimeout time is the read timeout key.
+	// ReadTimeout time Gin读取超时时间
 	//	@update 2024-06-22 08:59:40
 	ReadTimeout time.Duration
 
-	// WriteTimeout time is the write timeout key.
+	// WriteTimeout time Gin写入超时时间
 	//	@update 2024-06-22 08:59:37
 	WriteTimeout time.Duration
 
-	// MaxHeaderBytes int is the max header bytes key.
+	// MaxHeaderBytes int Gin最大头部字节数
 	//	@update 2024-06-22 08:59:34
 	MaxHeaderBytes int
 
-	// LogLevel string is the log level key.
+	// LogLevel string 日志级别
 	//	@update 2024-06-22 08:59:29
 	LogLevel string
 
-	// LogDirPath string is the log directory key.
+	// LogDirPath string 日志目录路径
 	//	@update 2024-06-22 08:59:26
 	LogDirPath string
 
-	// Oauth2GithubClientID string is the Github client ID key.
+	// Oauth2GithubClientID string Github OAuth2 Client ID
 	//	@update 2024-06-22 08:59:22
 	Oauth2GithubClientID string
 
-	// Oauth2GithubClientSecret string
+	// Oauth2GithubClientSecret string Github OAuth2 Client Secret
 	//	@update 2024-06-22 08:59:17
 	Oauth2GithubClientSecret string
 
-	// Oauth2StateString string is the OAuth2 state string key.
+	// Oauth2StateString string Github OAuth2 State String
 	//	@update 2024-06-22 08:59:11
 	Oauth2StateString string
 
-	// Oauth2GithubRedirectURL string
+	// Oauth2GithubRedirectURL string Github OAuth2 Redirect URL
 	//	@update 2024-06-22 08:59:07
 	Oauth2GithubRedirectURL string
 
-	// MysqlUser string
+	// MysqlUser string Mysql用户名
 	//	@update 2024-06-22 09:00:30
 	MysqlUser string
 
-	// MysqlPassword string
+	// MysqlPassword string Mysql密码
 	//	@update 2024-06-22 09:00:45
 	MysqlPassword string
 
-	// MysqlHost string
+	// MysqlHost string Mysql主机
 	//	@update 2024-06-22 09:01:02
 	MysqlHost string
 
-	// MysqlPort string
+	// MysqlPort string Mysql端口
 	//	@update 2024-06-22 09:01:18
 	MysqlPort string
 
-	// MysqlDatabase string
+	// MysqlDatabase string Mysql数据库
 	//	@update 2024-06-22 09:01:34
 	MysqlDatabase string
 
-	// JwtTokenExpired int
+	// MeilisearchHost string Meilisearch主机
+	//	@update 2024-09-18 12:09:25
+	MeilisearchHost string
+
+	// MeilisearchPort string Meilisearch端口
+	//	@update 2024-09-18 12:13:17
+	MeilisearchPort string
+
+	// MeilisearchMasterKey string Meilisearch API Key
+	//	@update 2024-09-18 12:13:29
+	MeilisearchMasterKey string
+
+	// JwtTokenExpired int Jwt Token过期时间
 	//	@update 2024-06-22 11:09:19
 	JwtTokenExpired int
 
-	// JwtTokenSecret string
+	// JwtTokenSecret string Jwt Token密钥
 	//	@update 2024-06-22 11:15:55
 	JwtTokenSecret string
 )
@@ -83,18 +95,20 @@ func initEnvironment() {
 	config := viper.New()
 	config.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	config.SetDefault("port", "8080")
 	config.SetDefault("read.timeout", 10)
 	config.SetDefault("write.timeout", 10)
 	config.SetDefault("max.header.bytes", 1<<20)
+
 	config.SetDefault("log.level", "info")
 	config.SetDefault("log.dir", "./logs")
+	config.SetDefault("index.dir", "./indexes")
 
 	config.AutomaticEnv()
 
 	ReadTimeout = time.Duration(config.GetInt("read.timeout")) * time.Second
 	WriteTimeout = time.Duration(config.GetInt("write.timeout")) * time.Second
 	MaxHeaderBytes = config.GetInt("max.header.bytes")
+
 	LogLevel = config.GetString("log.level")
 	LogDirPath = config.GetString("log.dir")
 
@@ -108,6 +122,10 @@ func initEnvironment() {
 	MysqlHost = config.GetString("mysql.host")
 	MysqlPort = config.GetString("mysql.port")
 	MysqlDatabase = config.GetString("mysql.database")
+
+	MeilisearchHost = config.GetString("meilisearch.host")
+	MeilisearchPort = config.GetString("meilisearch.port")
+	MeilisearchMasterKey = config.GetString("meilisearch.master.key")
 
 	JwtTokenExpired = config.GetInt("jwt.token.expired")
 	JwtTokenSecret = config.GetString("jwt.token.secret")

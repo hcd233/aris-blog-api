@@ -43,12 +43,6 @@ func GetInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"id":         user.ID,
-			"name":       user.Name,
-			"email":      user.Email,
-			"created_at": user.CreatedAt,
-			"last_login": user.LastLogin.Time,
-		},
+		Data: model.GetUserDetailedInfo(user),
 	})
 }
