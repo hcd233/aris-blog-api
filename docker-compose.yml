@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  meilisearch:
+    image: getmeili/meilisearch:latest
+    container_name: meilisearch
+    restart: always
+    ports:
+      - 7700:7700
+    env_file:
+      - meilisearch.env
+    volumes:
+      - meilisearch-data:/data.ms
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7700"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mysql:
+    image: mysql:latest
+    container_name: mysql
+    privileged: true
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD" ]
+      interval: 5s
+      retries: 10
+    env_file:
+      - ../../envs/local/mysql.env
+
+volumes:
+  mysql-data:
+    name: mysql-data
+    external: true
+  meilisearch-data:
+    name: meilisearch-data
+    external: true
