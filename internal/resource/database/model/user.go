@@ -64,6 +64,20 @@ func (u *User) UpdateUserInfo() error {
 	return result.Error
 }
 
+// QueryUsers 查询用户
+//
+//	@param offset int
+//	@param limit int
+//	@return users []*User
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-17 08:18:54
+func QueryUsers(offset int, limit int) (users []*User, err error) {
+	result := database.DB.Offset(offset).Limit(limit).Find(&users)
+	err = result.Error
+	return
+}
+
 // QueryUserByID 根据用户ID查询用户
 //
 //	@param userID uint
@@ -140,4 +154,34 @@ func CreateUserByBasicInfo(username string, email string, avatar string, permiss
 func (u *User) BindGithubID(githubID string) error {
 	result := database.DB.Model(u).Update("github_bind_id", githubID)
 	return result.Error
+}
+
+// GetUserDetailedInfo 获取用户详细信息
+//
+//	@param user *User
+//	@return map
+//	@author centonhuang
+//	@update 2024-09-18 01:12:24
+func GetUserDetailedInfo(user *User) map[string]interface{} {
+	return map[string]interface{}{
+		"id":         user.ID,
+		"name":       user.Name,
+		"email":      user.Email,
+		"created_at": user.CreatedAt,
+		"last_login": user.LastLogin.Time,
+	}
+}
+
+// GetUserBasicInfo 获取用户基本信息
+//
+//	@param user *User
+//	@return map
+//	@author centonhuang
+//	@update 2024-09-18 01:29:20
+func GetUserBasicInfo(user *User) map[string]interface{} {
+	return map[string]interface{}{
+		"id":     user.ID,
+		"name":   user.Name,
+		"avatar": user.Avatar,
+	}
 }
