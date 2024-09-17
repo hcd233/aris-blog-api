@@ -18,6 +18,24 @@
             "program": "${workspaceFolder}/main.go",
             "envFile": "${workspaceFolder}/api.env",
             "args": ["database", "migrate"],
+        },
+        {
+            "name": "Aris-Blog-Create-Index",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "envFile": "${workspaceFolder}/api.env",
+            "args": ["search", "create", "--uid", "users"],
+        },
+        {
+            "name": "Aris-Blog-Delete-Index",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "envFile": "${workspaceFolder}/api.env",
+            "args": ["search", "delete"],
         }
     ]
 }
