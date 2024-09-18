@@ -6,12 +6,14 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-AI-go/internal/auth"
 	"github.com/hcd233/Aris-AI-go/internal/config"
 	"github.com/hcd233/Aris-AI-go/internal/protocol"
 	"github.com/hcd233/Aris-AI-go/internal/resource/database/model"
+	"github.com/hcd233/Aris-AI-go/internal/resource/search"
 	"github.com/samber/lo"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -50,16 +52,23 @@ func GithubLoginHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-16 01:56:03
 func GithubCallbackHandler(c *gin.Context) {
-	state := c.Query("state")
-	if state != config.Oauth2StateString {
+	params := protocol.GithubCallbackParams{}
+	if err := c.BindQuery(&params); err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeURIError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if params.State != config.Oauth2StateString {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code: protocol.CodeStateError,
 		})
 		return
 	}
 
-	code := c.Query("code")
-	token, err := githubOauthConfig.Exchange(c, code)
+	token, err := githubOauthConfig.Exchange(c, params.Code)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code: protocol.CodeTokenError,
@@ -70,28 +79,42 @@ func GithubCallbackHandler(c *gin.Context) {
 	data, err := getGithubUserInfo(token)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code: protocol.CodeGetUserError,
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
 		})
 		return
 	}
 
 	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
-	user := model.QueryUserByEmail(email)
+	user, err := model.QueryUserByEmail(email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeQueryUserError,
+			Message: err.Error(),
+		})
+		return
+	}
 
 	if user != nil {
 		// 如果已有用户，刷新信息
-		lo.Must0(user.UpdateUserInfo())
+		// atomic
+		user = lo.Must1(model.UpdateUserInfoByID(user.ID, map[string]interface{}{
+			"last_login": time.Now(),
+		}))
+		lo.Must0(search.UpdateUserIndex(user.GetUserBasicInfo()))
 	} else {
 		// 新用户，保存信息
 		permission := model.PermissionGeneral
+		// atomic
 		user = lo.Must(model.CreateUserByBasicInfo(userName, email, avatar, permission))
+		lo.Must0(search.AddUserIndex(user.GetUserBasicInfo()))
 	}
 
 	if user.GithubBindID == "" {
 		user.BindGithubID(githubID)
 	}
-	tokenString := lo.Must(auth.EncodeToken(user.ID))
+	tokenString := lo.Must(auth.EncodeToken(user.ID, user.Name))
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Login success",
