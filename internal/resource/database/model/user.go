@@ -46,22 +46,69 @@ type User struct {
 //	@return error
 //	@author centonhuang
 //	@update 2024-06-22 10:10:07
-func (u *User) Create() error {
-	result := database.DB.Create(u)
-	return result.Error
+func (u *User) Create() (err error) {
+	err = database.DB.Create(u).Error
+	return
 }
 
-// UpdateUserInfo 更新用户
+// BindGithubID 绑定Github ID
 //
 //	@receiver u *User
+//	@param githubID string
 //	@return error
 //	@author centonhuang
-//	@update 2024-06-22 10:24:05
-func (u *User) UpdateUserInfo() error {
-	result := database.DB.Model(u).Updates(map[string]interface{}{
-		"last_login": time.Now(),
-	})
-	return result.Error
+//	@update 2024-09-16 11:28:18
+func (u *User) BindGithubID(githubID string) (err error) {
+	err = database.DB.Model(u).Update("github_bind_id", githubID).Error
+	return
+}
+
+// GetUserDetailedInfo 获取用户详细信息
+//
+//	@receiver u *User
+//	@return map
+//	@author centonhuang
+//	@update 2024-09-18 03:50:04
+func (u *User) GetUserDetailedInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":         u.ID,
+		"name":       u.Name,
+		"email":      u.Email,
+		"created_at": u.CreatedAt,
+		"last_login": u.LastLogin.Time,
+	}
+}
+
+// GetUserBasicInfo 获取用户基本信息
+//
+//	@receiver u *User
+//	@return map
+//	@author centonhuang
+//	@update 2024-09-18 03:47:14
+func (u *User) GetUserBasicInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":     u.ID,
+		"name":   u.Name,
+		"avatar": u.Avatar,
+	}
+}
+
+// UpdateUserInfoByID 使用ID更新用户信息
+//
+//	@param id uint
+//	@param info map[string]interface{}
+//	@return user *User
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-18 04:22:03
+func UpdateUserInfoByID(id uint, info map[string]interface{}) (user *User, err error) {
+	info["updated_at"] = time.Now()
+	err = database.DB.Model(&User{}).Where("id = ?", id).Updates(info).Error
+	if err != nil {
+		return nil, err
+	}
+	err = database.DB.Where("id = ?", id).First(&user).Error
+	return
 }
 
 // QueryUsers 查询用户
@@ -73,8 +120,7 @@ func (u *User) UpdateUserInfo() error {
 //	@author centonhuang
 //	@update 2024-09-17 08:18:54
 func QueryUsers(offset int, limit int) (users []*User, err error) {
-	result := database.DB.Offset(offset).Limit(limit).Find(&users)
-	err = result.Error
+	err = database.DB.Offset(offset).Limit(limit).Find(&users).Error
 	return
 }
 
@@ -86,8 +132,7 @@ func QueryUsers(offset int, limit int) (users []*User, err error) {
 //	@author centonhuang
 //	@update 2024-06-22 10:12:46
 func QueryUserByID(userID uint) (user *User, err error) {
-	result := database.DB.Where("id = ?", userID).Where("delete_at = ?", nil).First(&user)
-	err = result.Error
+	err = database.DB.Where("id = ?", userID).Where("delete_at = ?", nil).First(&user).Error
 	return
 }
 
@@ -99,8 +144,7 @@ func QueryUserByID(userID uint) (user *User, err error) {
 //	@author centonhuang
 //	@update 2024-09-16 06:05:07
 func QueryUserByName(userName string) (user *User, err error) {
-	result := database.DB.Where(&User{Name: userName}).First(&user)
-	err = result.Error
+	err = database.DB.Where(&User{Name: userName}).First(&user).Error
 	return
 }
 
@@ -111,11 +155,8 @@ func QueryUserByName(userName string) (user *User, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-16 11:21:25
-func QueryUserByEmail(email string) (user *User) {
-	result := database.DB.Where(User{Email: email}).First(&user)
-	if result.Error != nil {
-		return nil
-	}
+func QueryUserByEmail(email string) (user *User, err error) {
+	err = database.DB.Where(User{Email: email}).First(&user).Error
 	return
 }
 
@@ -142,46 +183,4 @@ func CreateUserByBasicInfo(username string, email string, avatar string, permiss
 	}
 	err = user.Create()
 	return
-}
-
-// BindGithubID 绑定Github ID
-//
-//	@receiver u *User
-//	@param githubID string
-//	@return error
-//	@author centonhuang
-//	@update 2024-09-16 11:28:18
-func (u *User) BindGithubID(githubID string) error {
-	result := database.DB.Model(u).Update("github_bind_id", githubID)
-	return result.Error
-}
-
-// GetUserDetailedInfo 获取用户详细信息
-//
-//	@param user *User
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-18 01:12:24
-func GetUserDetailedInfo(user *User) map[string]interface{} {
-	return map[string]interface{}{
-		"id":         user.ID,
-		"name":       user.Name,
-		"email":      user.Email,
-		"created_at": user.CreatedAt,
-		"last_login": user.LastLogin.Time,
-	}
-}
-
-// GetUserBasicInfo 获取用户基本信息
-//
-//	@param user *User
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-18 01:29:20
-func GetUserBasicInfo(user *User) map[string]interface{} {
-	return map[string]interface{}{
-		"id":     user.ID,
-		"name":   user.Name,
-		"avatar": user.Avatar,
-	}
 }
