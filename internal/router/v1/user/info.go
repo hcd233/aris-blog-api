@@ -4,12 +4,15 @@
 package user
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/samber/lo"
 
 	"github.com/hcd233/Aris-AI-go/internal/protocol"
 	"github.com/hcd233/Aris-AI-go/internal/resource/database/model"
+	"github.com/hcd233/Aris-AI-go/internal/resource/search"
 )
 
 // GetInfoHandler 用户信息
@@ -18,31 +21,75 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func GetInfoHandler(c *gin.Context) {
-	userName, ok := c.Params.Get("userName")
-	if !ok {
+	var uri protocol.UserURI
+	if err := c.ShouldBindUri(&uri); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code: protocol.CodeParamError,
+			Code:    protocol.CodeURIError,
+			Message: err.Error(),
 		})
-		return
 	}
 
-	user, err := model.QueryUserByName(userName)
+	user, err := model.QueryUserByName(uri.UserName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code: protocol.CodeGetUserError,
+			Code:    protocol.CodeQueryUserError,
+			Message: err.Error(),
 		})
 		return
 	}
 
 	if user == nil {
 		c.JSON(http.StatusNotFound, protocol.Response{
-			Code: protocol.CodeUserNotFoundError,
+			Code:    protocol.CodeUserNotFoundError,
+			Message: fmt.Sprintf("User `%s` not found", uri.UserName),
 		})
 		return
 	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: model.GetUserDetailedInfo(user),
+		Data: user.GetUserDetailedInfo(),
+	})
+}
+
+// UpdateInfoHandler 更新用户信息
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-09-18 01:54:05
+func UpdateInfoHandler(c *gin.Context) {
+	var uri protocol.UserURI
+	var body protocol.UpdateUserBody
+
+	if err := c.ShouldBindUri(&uri); err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeURIError,
+			Message: err.Error(),
+		})
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeParamError,
+			Message: err.Error(),
+		})
+	}
+
+	userID, userName := c.GetUint("userID"), c.GetString("userName")
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to update other user's info",
+		})
+	}
+
+	user := lo.Must1(model.UpdateUserInfoByID(userID, map[string]interface{}{
+		"name": body.UserName,
+	}))
+	search.UpdateUserIndex(user.GetUserBasicInfo())
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code:    protocol.CodeOk,
+		Message: "Update user info successfully",
 	})
 }

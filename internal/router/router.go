@@ -29,6 +29,7 @@ func InitRouter(r *gin.Engine) {
 		{
 			userRouter.GET("/", user.QueryUserHandler)
 			userRouter.GET("/:userName", user.GetInfoHandler)
+			userRouter.POST("/:userName", user.UpdateInfoHandler)
 		}
 	}
 }

@@ -23,6 +23,39 @@ func QueryUserIndex(query string, limit int64, offset int64) ([]interface{}, err
 		return nil, err
 	}
 
-	logger.Logger.Info("[Query User Index] success to query user index", zap.String("Query", query), zap.Int64("Limit", limit), zap.Int64("Offset", offset))
 	return response.Hits, nil
+}
+
+// AddUserIndex 添加用户索引
+//
+//	@param user map[string]interface{}
+//	@return error
+//	@author centonhuang
+//	@update 2024-09-18 01:37:36
+func AddUserIndex(user map[string]interface{}) error {
+	info, err := ServiceManager.Index(userIndex).AddDocuments([]map[string]interface{}{user})
+	if err != nil {
+		logger.Logger.Error("[Add User Index] failed to add user index", zap.Error(err))
+		return err
+	}
+
+	logger.Logger.Info("[Add User Index] success to add user index", zap.Any("User", user), zap.String("Status", string(info.Status)))
+	return nil
+}
+
+// UpdateUserIndex 更新用户索引
+//
+//	@param user map[string]interface{}
+//	@return error
+//	@author centonhuang
+//	@update 2024-09-18 01:41:04
+func UpdateUserIndex(user map[string]interface{}) error {
+	info, err := ServiceManager.Index(userIndex).UpdateDocuments([]map[string]interface{}{user})
+	if err != nil {
+		logger.Logger.Error("[Update User Index] failed to update user index", zap.Error(err))
+		return err
+	}
+
+	logger.Logger.Info("[Update User Index] success to update user index", zap.Any("User", user), zap.String("Status", string(info.Status)))
+	return nil
 }
