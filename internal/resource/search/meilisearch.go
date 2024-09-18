@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	userIndex = "user"
+	primaryKey = "id"
+	userIndex  = "user"
 )
 
 // ServiceManager meilisearch 服务管理
@@ -67,7 +68,8 @@ func DeleteIndex() (err error) {
 
 func createUserIndex() (err error) {
 	info, err := ServiceManager.CreateIndex(&meilisearch.IndexConfig{
-		Uid: userIndex,
+		Uid:        userIndex,
+		PrimaryKey: primaryKey,
 	})
 	if err != nil {
 		logger.Logger.Error("[Create Index] failed to create index", zap.Error(err))
@@ -88,7 +90,7 @@ func updateUserIndex() (err error) {
 	info, err := ServiceManager.Index(userIndex).AddDocuments(lo.Map(
 		users,
 		func(user *model.User, _ int) map[string]interface{} {
-			return model.GetUserBasicInfo(user)
+			return user.GetUserBasicInfo()
 		},
 	))
 	if err != nil {
