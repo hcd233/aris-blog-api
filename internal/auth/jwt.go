@@ -18,7 +18,8 @@ import (
 type Claims struct {
 	jwt.RegisteredClaims
 
-	UserID uint `json:"user_id"`
+	UserID   uint   `json:"user_id"`
+	UserName string `json:"user_name"`
 }
 
 // EncodeToken 生成JWT token
@@ -28,9 +29,10 @@ type Claims struct {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-06-22 11:12:49
-func EncodeToken(userID uint) (token string, err error) {
+func EncodeToken(userID uint, userName string) (token string, err error) {
 	claims := Claims{
-		UserID: userID,
+		UserID:   userID,
+		UserName: userName,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(config.JwtTokenExpired) * time.Hour)),
 		},
@@ -47,7 +49,7 @@ func EncodeToken(userID uint) (token string, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-06-22 11:25:00
-func DecodeToken(tokenString string) (userID uint, err error) {
+func DecodeToken(tokenString string) (userID uint, userName string, err error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -65,6 +67,6 @@ func DecodeToken(tokenString string) (userID uint, err error) {
 		return
 	}
 
-	userID = claims.UserID
+	userID, userName = claims.UserID, claims.UserName
 	return
 }
