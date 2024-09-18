@@ -1,3 +1,6 @@
+// Package protocol API协议
+//
+//	@update 2024-09-18 02:33:08
 package protocol
 
 // ResponseCode 响应码
@@ -20,11 +23,11 @@ const (
 	//	@update 2024-09-16 03:49:16
 	CodeTokenVerifyError ResponseCode = 1002
 
-	// CodeStateError ResponseCode 状态错误
+	// CodeStateError ResponseCode 登录状态错误
 	//	@update 2024-09-16 03:49:36
 	CodeStateError ResponseCode = 1003
 
-	// CodeTokenError ResponseCode 令牌错误
+	// CodeTokenError ResponseCode 登录令牌错误
 	//	@update 2024-09-16 03:49:57
 	CodeTokenError ResponseCode = 1004
 
@@ -36,9 +39,9 @@ const (
 	//	@update 2024-09-16 06:12:45
 	CodeUserNotFoundError ResponseCode = 1006
 
-	// CodeParamError ResponseCode 参数错误
+	// CodeURIError ResponseCode 路径参数错误
 	//	@update 2024-09-16 06:37:45
-	CodeParamError ResponseCode = 1007
+	CodeURIError ResponseCode = 1007
 
 	// CodeRouterError ResponseCode 路由错误
 	//	@update 2024-09-16 06:37:45
@@ -48,23 +51,33 @@ const (
 	//	@update 2024-09-17 08:41:08
 	CodeQueryUserError ResponseCode = 1009
 
-	// CodeInvalidQueryError ResponseCode 非法查询参数错误
+	// CodeParamError ResponseCode 查询参数错误
 	//	@update 2024-09-17 08:47:30
-	CodeInvalidQueryError ResponseCode = 1010
+	CodeParamError ResponseCode = 1010
+
+	// CodeBodyError ResponseCode 请求体错误
+	//	@update 2024-09-18 03:19:10
+	CodeBodyError ResponseCode = 1011
+
+	// CodeNotPermissionError ResponseCode 无操作资源权限
+	//	@update 2024-09-18 04:02:51
+	CodeNotPermissionError ResponseCode = 1012
 )
 
 // CodeMessageMapping 响应码消息映射
 //
 //	@update 2024-09-16 04:12:17
 var CodeMessageMapping = map[ResponseCode]string{
-	CodeUnauthorized:      "访问鉴权接口未提供鉴权信息",
-	CodeTokenVerifyError:  "鉴权信息校验失败",
-	CodeStateError:        "登录状态错误",
-	CodeTokenError:        "登录令牌错误",
-	CodeGetUserError:      "获取用户信息错误",
-	CodeUserNotFoundError: "用户未找到",
-	CodeParamError:        "参数错误",
-	CodeRouterError:       "路由错误",
-	CodeQueryUserError:    "查询用户错误",
-	CodeInvalidQueryError: "非法查询参数错误",
+	CodeUnauthorized:       "访问鉴权接口未提供鉴权信息",
+	CodeTokenVerifyError:   "鉴权信息校验失败",
+	CodeStateError:         "登录状态错误",
+	CodeTokenError:         "登录令牌错误",
+	CodeGetUserError:       "获取用户信息错误",
+	CodeUserNotFoundError:  "用户未找到",
+	CodeURIError:           "路径参数错误",
+	CodeRouterError:        "路由错误",
+	CodeQueryUserError:     "查询用户错误",
+	CodeParamError:         "查询参数错误",
+	CodeBodyError:          "请求体错误",
+	CodeNotPermissionError: "无操作资源权限",
 }
