@@ -41,7 +41,11 @@ func TranslateMiddleware() gin.HandlerFunc {
 		code := response.Code
 		if code != 0 {
 			if message, ok := protocol.CodeMessageMapping[code]; ok {
-				response.Message = message
+				appendMessage := response.Message
+				if appendMessage != "" {
+					appendMessage = ": " + appendMessage
+				}
+				response.Message = message + appendMessage
 			} else {
 				response.Message = "未知错误"
 			}
