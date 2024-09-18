@@ -1,8 +1,6 @@
-// Package protocol 响应体协议
-// File: response.go
 package protocol
 
-// Response 响应体
+// Response 标准响应体
 //
 //	@author centonhuang
 //	@update 2024-09-16 03:41:34
