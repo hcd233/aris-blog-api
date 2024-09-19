@@ -101,7 +101,6 @@ func initEnvironment() {
 
 	config.SetDefault("log.level", "info")
 	config.SetDefault("log.dir", "./logs")
-	config.SetDefault("index.dir", "./indexes")
 
 	config.AutomaticEnv()
 
