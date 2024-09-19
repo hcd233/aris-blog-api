@@ -5,9 +5,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-AI-go/internal/config"
-	"github.com/hcd233/Aris-AI-go/internal/middleware"
-	"github.com/hcd233/Aris-AI-go/internal/router"
+	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/Aris-blog/internal/middleware"
+	"github.com/hcd233/Aris-blog/internal/router"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )

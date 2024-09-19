@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	"github.com/hcd233/Aris-AI-go/internal/config"
+	"github.com/hcd233/Aris-blog/internal/config"
 )
 
 // Claims 鉴权结构体

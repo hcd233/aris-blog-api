@@ -2,7 +2,7 @@
 package main
 
 import (
-	"github.com/hcd233/Aris-AI-go/cmd"
+	"github.com/hcd233/Aris-blog/cmd"
 )
 
 func main() {

@@ -7,7 +7,7 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/hcd233/Aris-AI-go/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
 

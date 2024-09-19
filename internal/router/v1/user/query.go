@@ -4,8 +4,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-AI-go/internal/protocol"
-	"github.com/hcd233/Aris-AI-go/internal/resource/search"
+	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/search"
 )
 
 // QueryUserHandler 查询用户

@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/hcd233/Aris-AI-go/internal/resource/database"
-	"github.com/hcd233/Aris-AI-go/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )
