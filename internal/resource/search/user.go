@@ -1,7 +1,7 @@
 package search
 
 import (
-	"github.com/hcd233/Aris-AI-go/internal/logger"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/meilisearch/meilisearch-go"
 	"go.uber.org/zap"
 )

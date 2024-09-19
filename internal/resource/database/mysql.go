@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hcd233/Aris-AI-go/internal/config"
+	"github.com/hcd233/Aris-blog/internal/config"
 
 	"github.com/samber/lo"
 	"gorm.io/driver/mysql"

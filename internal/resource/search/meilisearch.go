@@ -6,9 +6,9 @@ package search
 import (
 	"fmt"
 
-	"github.com/hcd233/Aris-AI-go/internal/config"
-	"github.com/hcd233/Aris-AI-go/internal/logger"
-	"github.com/hcd233/Aris-AI-go/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/samber/lo"
 	"go.uber.org/zap"

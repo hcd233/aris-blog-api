@@ -8,8 +8,8 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-AI-go/internal/auth"
-	"github.com/hcd233/Aris-AI-go/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/auth"
+	"github.com/hcd233/Aris-blog/internal/protocol"
 )
 
 // JwtMiddleware JWT 中间件

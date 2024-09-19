@@ -2,9 +2,9 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-AI-go/internal/middleware"
-	"github.com/hcd233/Aris-AI-go/internal/router/v1/oauth2"
-	"github.com/hcd233/Aris-AI-go/internal/router/v1/user"
+	"github.com/hcd233/Aris-blog/internal/middleware"
+	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
+	"github.com/hcd233/Aris-blog/internal/router/v1/user"
 )
 
 // InitRouter initializes the router.

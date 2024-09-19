@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	"github.com/hcd233/Aris-AI-go/internal/resource/search"
+	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
 )

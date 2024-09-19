@@ -10,9 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
 
-	"github.com/hcd233/Aris-AI-go/internal/protocol"
-	"github.com/hcd233/Aris-AI-go/internal/resource/database/model"
-	"github.com/hcd233/Aris-AI-go/internal/resource/search"
+	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/search"
 )
 
 // GetInfoHandler 用户信息

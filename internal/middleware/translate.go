@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-AI-go/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/samber/lo"
 )
 
