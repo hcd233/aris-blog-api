@@ -34,7 +34,7 @@ func TranslateMiddleware() gin.HandlerFunc {
 		response := protocol.Response{}
 		if w.body.String() == "" {
 			c.JSON(c.Writer.Status(), protocol.Response{
-				Code: protocol.CodeRouterError,
+				Code: protocol.CodeUnknownError,
 			})
 		}
 		err := json.Unmarshal(w.body.Bytes(), &response)
@@ -47,17 +47,12 @@ func TranslateMiddleware() gin.HandlerFunc {
 		}
 
 		code := response.Code
-		if code != 0 {
-			if message, ok := protocol.CodeMessageMapping[code]; ok {
-				appendMessage := response.Message
-				if appendMessage != "" {
-					appendMessage = ": " + appendMessage
-				}
-				response.Message = message + appendMessage
-			} else {
-				response.Message = "未知错误"
-			}
+		message := protocol.CodeMessageMapping[code]
+		appendMessage := response.Message
+		if appendMessage != "" {
+			appendMessage = ": " + appendMessage
 		}
+		response.Message = message + appendMessage
 
 		translatedResponse := lo.Must1(json.Marshal(response))
 		w.ResponseWriter.Write(translatedResponse)

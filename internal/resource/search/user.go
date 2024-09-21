@@ -13,10 +13,10 @@ import (
 //	@return error
 //	@author centonhuang
 //	@update 2024-09-18 12:52:51
-func QueryUserIndex(query string, limit int64, offset int64) ([]interface{}, error) {
+func QueryUserIndex(query string, limit int, offset int) ([]interface{}, error) {
 	response, err := ServiceManager.Index(userIndex).Search(query, &meilisearch.SearchRequest{
-		Limit:  limit,
-		Offset: offset,
+		Limit:  int64(limit),
+		Offset: int64(offset),
 	})
 	if err != nil {
 		logger.Logger.Error("[Query User Index] failed to query user index", zap.Error(err))

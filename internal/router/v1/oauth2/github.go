@@ -102,13 +102,13 @@ func GithubCallbackHandler(c *gin.Context) {
 		user = lo.Must1(model.UpdateUserInfoByID(user.ID, map[string]interface{}{
 			"last_login": time.Now(),
 		}))
-		lo.Must0(search.UpdateUserIndex(user.GetUserBasicInfo()))
+		lo.Must0(search.UpdateUserIndex(user.GetBasicInfo()))
 	} else {
 		// 新用户，保存信息
 		permission := model.PermissionGeneral
 		// atomic
 		user = lo.Must(model.CreateUserByBasicInfo(userName, email, avatar, permission))
-		lo.Must0(search.AddUserIndex(user.GetUserBasicInfo()))
+		lo.Must0(search.AddUserIndex(user.GetBasicInfo()))
 	}
 
 	if user.GithubBindID == "" {

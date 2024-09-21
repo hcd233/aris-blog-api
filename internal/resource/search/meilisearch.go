@@ -90,7 +90,7 @@ func updateUserIndex() (err error) {
 	info, err := ServiceManager.Index(userIndex).AddDocuments(lo.Map(
 		users,
 		func(user *model.User, _ int) map[string]interface{} {
-			return user.GetUserBasicInfo()
+			return user.GetBasicInfo()
 		},
 	))
 	if err != nil {
