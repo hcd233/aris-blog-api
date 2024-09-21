@@ -45,7 +45,7 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		user, err := model.QueryUserFieldsByID(userID, []string{"name", "permission"})
+		user, err := model.QueryUserFieldsByID(userID, []string{"name", "permission"}, false)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeUserNotFoundError,

@@ -59,13 +59,9 @@ const (
 	//	@update 2024-09-18 04:02:51
 	CodeNotPermissionError ResponseCode = 1012
 
-	// CodeQueryArticleError ResponseCode 查询文章错误
+	// CodeGetArticleError ResponseCode 获取文章错误
 	//	@update 2024-09-21 09:11:39
-	CodeQueryArticleError ResponseCode = 1013
-
-	// CodeArticleNotFoundError ResponseCode 文章未找到
-	//	@update 2024-09-21 09:24:05
-	CodeArticleNotFoundError ResponseCode = 1014
+	CodeGetArticleError ResponseCode = 1013
 
 	// CodeCreateArticleError ResponseCode 创建文章错误
 	//	@update 2024-09-21 10:23:54
@@ -80,20 +76,19 @@ const (
 //
 //	@update 2024-09-16 04:12:17
 var CodeMessageMapping = map[ResponseCode]string{
-	CodeOk:                   "请求成功",
-	CodeUnauthorized:         "访问鉴权接口未提供鉴权信息",
-	CodeTokenVerifyError:     "鉴权信息校验失败",
-	CodeStateError:           "登录状态错误",
-	CodeTokenError:           "登录令牌错误",
-	CodeGetUserError:         "获取用户信息错误",
-	CodeUserNotFoundError:    "用户未找到",
-	CodeURIError:             "路径参数错误",
-	CodeQueryUserError:       "查询用户错误",
-	CodeParamError:           "查询参数错误",
-	CodeBodyError:            "请求体错误",
-	CodeNotPermissionError:   "无操作资源权限",
-	CodeQueryArticleError:    "查询文章错误",
-	CodeArticleNotFoundError: "文章未找到",
-	CodeCreateArticleError:   "创建文章错误",
-	CodeUnknownError:         "未知错误",
+	CodeOk:                 "请求成功",
+	CodeUnauthorized:       "访问鉴权接口未提供鉴权信息",
+	CodeTokenVerifyError:   "鉴权信息校验失败",
+	CodeStateError:         "登录状态错误",
+	CodeTokenError:         "登录令牌错误",
+	CodeGetUserError:       "获取用户信息错误",
+	CodeUserNotFoundError:  "用户未找到",
+	CodeURIError:           "路径参数错误",
+	CodeQueryUserError:     "查询用户错误",
+	CodeParamError:         "查询参数错误",
+	CodeBodyError:          "请求体错误",
+	CodeNotPermissionError: "无操作资源权限",
+	CodeGetArticleError:    "获取文章错误",
+	CodeCreateArticleError: "创建文章错误",
+	CodeUnknownError:       "未知错误",
 }

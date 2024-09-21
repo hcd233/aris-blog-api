@@ -29,7 +29,7 @@ func ListArticleHandler(c *gin.Context) {
 	articles, err := model.QueryArticlesByUserName(user.ID, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code:    protocol.CodeQueryArticleError,
+			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
 		return

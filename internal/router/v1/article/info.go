@@ -4,7 +4,6 @@
 package article
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -20,7 +19,6 @@ import (
 func GetInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
-
 	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{
 		"id", "slug", "title", "status", "category",
 		"created_at", "updated_at", "published_at",
@@ -28,16 +26,8 @@ func GetInfoHandler(c *gin.Context) {
 	})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code:    protocol.CodeQueryArticleError,
- 			Message: err.Error(),
-		})
-		return
-	}
-
-	if article == nil {
-		c.JSON(http.StatusNotFound, protocol.Response{
-			Code:    protocol.CodeUserNotFoundError,
-			Message: fmt.Sprintf("User `%s` not found", uri.UserName),
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
 		})
 		return
 	}

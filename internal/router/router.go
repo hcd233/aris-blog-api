@@ -36,18 +36,18 @@ func InitRouter(r *gin.Engine) {
 
 			userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 			{
-				userNameRouter.GET("/", user.GetInfoHandler)
-				userNameRouter.POST("/", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), user.UpdateInfoHandler)
+				userNameRouter.GET("", user.GetInfoHandler)
+				userNameRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), user.UpdateInfoHandler)
 
 				articleRouter := userNameRouter.Group("/article")
 				{
-					articleRouter.GET("/", middleware.ValidateParamMiddleware(&protocol.PageParams{}), article.ListArticleHandler)
-					articleRouter.POST("/", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
+					articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.PageParams{}), article.ListArticleHandler)
+					articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
 				}
 
 				articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
 				{
-					articleSlugRouter.GET("/", article.GetInfoHandler)
+					articleSlugRouter.GET("", article.GetInfoHandler)
 				}
 			}
 

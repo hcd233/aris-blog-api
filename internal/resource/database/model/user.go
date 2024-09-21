@@ -5,6 +5,7 @@ package model
 
 import (
 	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/hcd233/Aris-blog/internal/resource/database"
@@ -169,8 +170,11 @@ func QueryUserByName(userName string, fields []string) (user *User, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-16 11:21:25
-func QueryUserByEmail(email string, fields []string) (user *User, err error) {
+func QueryUserByEmail(email string, fields []string, allowEmpty bool) (user *User, err error) {
 	err = database.DB.Select(fields).Where(User{Email: email}).First(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
+		user, err = nil, nil
+	}
 	return
 }
 
@@ -182,8 +186,11 @@ func QueryUserByEmail(email string, fields []string) (user *User, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-21 03:08:02
-func QueryUserFieldsByID(userID uint, fields []string) (user *User, err error) {
+func QueryUserFieldsByID(userID uint, fields []string, allowEmpty bool) (user *User, err error) {
 	err = database.DB.Select(fields).Where(User{ID: userID}).First(&user).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
+		user, err = nil, nil
+	}
 	return
 }
 
