@@ -30,7 +30,24 @@ services:
       interval: 5s
       retries: 10
     env_file:
-      - ../../envs/local/mysql.env
+      - mysql.env
+
+  aris-blog-api:
+    image: aris-blog-api:latest
+    container_name: aris-blog-api
+    restart: always
+    ports:
+      - 8080:8080
+    env_file:
+      - api.env
+    depends_on:
+      - mysql
+      - meilisearch
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
 volumes:
   mysql-data:
