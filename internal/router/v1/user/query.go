@@ -14,15 +14,7 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func QueryUserHandler(c *gin.Context) {
-	var params protocol.QueryUserParams
-
-	if err := c.ShouldBindQuery(&params); err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeParamError,
-			Message: err.Error(),
-		})
-		return
-	}
+	params := c.MustGet("param").(*protocol.QueryParams)
 
 	query, limit, offset := params.Query, params.Limit, params.Offset
 	users, err := search.QueryUserIndex(query, limit, offset)
