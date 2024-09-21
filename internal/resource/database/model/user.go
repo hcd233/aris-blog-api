@@ -85,6 +85,7 @@ func (u *User) GetUserDetailedInfo() map[string]interface{} {
 		"id":         u.ID,
 		"name":       u.Name,
 		"email":      u.Email,
+		"avatar":     u.Avatar,
 		"created_at": u.CreatedAt,
 		"last_login": u.LastLogin.Time,
 	}
@@ -112,13 +113,13 @@ func (u *User) GetUserBasicInfo() map[string]interface{} {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-18 04:22:03
-func UpdateUserInfoByID(id uint, info map[string]interface{}) (user *User, err error) {
+func UpdateUserInfoByID(userID uint, info map[string]interface{}) (user *User, err error) {
 	info["updated_at"] = time.Now()
-	err = database.DB.Model(&User{}).Where("id = ?", id).Updates(info).Error
+	err = database.DB.Model(&User{}).Where(User{ID: userID}).Updates(info).Error
 	if err != nil {
 		return nil, err
 	}
-	err = database.DB.Where("id = ?", id).First(&user).Error
+	err = database.DB.Where(User{ID: userID}).First(&user).Error
 	return
 }
 
@@ -142,8 +143,8 @@ func QueryUsers(offset int, limit int) (users []*User, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-06-22 10:12:46
-func QueryUserByID(userID uint) (user *User, err error) {
-	err = database.DB.Where(User{ID: userID}).First(&user).Error
+func QueryUserByID(userID uint, fields []string) (user *User, err error) {
+	err = database.DB.Select(fields).Where(User{ID: userID}).First(&user).Error
 	return
 }
 
@@ -154,8 +155,8 @@ func QueryUserByID(userID uint) (user *User, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-16 06:05:07
-func QueryUserByName(userName string) (user *User, err error) {
-	err = database.DB.Where(&User{Name: userName}).First(&user).Error
+func QueryUserByName(userName string, fields []string) (user *User, err error) {
+	err = database.DB.Select(fields).Where(&User{Name: userName}).First(&user).Error
 	return
 }
 
@@ -166,8 +167,8 @@ func QueryUserByName(userName string) (user *User, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-16 11:21:25
-func QueryUserByEmail(email string) (user *User, err error) {
-	err = database.DB.Where(User{Email: email}).First(&user).Error
+func QueryUserByEmail(email string, fields []string) (user *User, err error) {
+	err = database.DB.Select(fields).Where(User{Email: email}).First(&user).Error
 	return
 }
 
