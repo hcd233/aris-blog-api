@@ -81,6 +81,7 @@ func UpdateInfoHandler(c *gin.Context) {
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to update other user's info",
 		})
+		return
 	}
 
 	user := lo.Must1(model.UpdateUserInfoByID(userID, map[string]interface{}{
