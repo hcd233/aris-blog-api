@@ -67,6 +67,14 @@ const (
 	//	@update 2024-09-21 10:23:54
 	CodeCreateArticleError ResponseCode = 1015
 
+	// CodeUpdateArticleError ResponseCode 更新文章错误
+	//	@update 2024-09-22 04:09:25
+	CodeUpdateArticleError ResponseCode = 1016
+
+	// CodeDeleteArticleError ResponseCode 删除文章错误
+	//	@update 2024-09-22 04:09:25
+	CodeDeleteArticleError ResponseCode = 1017
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -90,5 +98,7 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeNotPermissionError: "无操作资源权限",
 	CodeGetArticleError:    "获取文章错误",
 	CodeCreateArticleError: "创建文章错误",
+	CodeUpdateArticleError: "更新文章错误",
+	CodeDeleteArticleError: "删除文章错误",
 	CodeUnknownError:       "未知错误",
 }

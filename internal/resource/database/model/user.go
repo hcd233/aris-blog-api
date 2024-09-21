@@ -65,6 +65,17 @@ func (u *User) Create() (err error) {
 	return
 }
 
+// Delete 删除用户
+//
+//	@receiver u *User
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-22 04:58:37
+func (u *User) Delete() (err error) {
+	err = database.DB.Delete(u).Error
+	return
+}
+
 // BindGithubID 绑定Github ID
 //
 //	@receiver u *User
