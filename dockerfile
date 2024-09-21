@@ -13,7 +13,7 @@ RUN go mod tidy
 
 COPY . .
 
-RUN go build -mod=vendor -o /go/bin/app
+RUN go build -mod=vendor -o /go/bin/aris-blog-api
 
 FROM alpine:latest
 
@@ -21,10 +21,11 @@ RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 
 WORKDIR /app
 
-COPY --from=builder /go/bin/app /app/app
+COPY --from=builder /go/bin/aris-blog-api /app/aris-blog-api
 
 EXPOSE 8080
 
-CMD ["/app/app", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["/app/aris-blog-api", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
 
 # docker buildx build --platform linux/amd64 -t aris-blog-api:latest .
+# docker run -d -p 8080:8080 --env-file api.env --name aris-blog-api -t aris-blog-api:latest
