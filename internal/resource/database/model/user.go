@@ -11,18 +11,28 @@ import (
 	"gorm.io/gorm"
 )
 
+type (
+	// Permission string 权限
+	//	@update 2024-09-21 01:34:29
+	Permission string
+
+	// Platform string 平台
+	//	@update 2024-09-21 01:34:12
+	Platform string
+)
+
 const (
 
 	// PlatformGithub github user
 	//	@update 2024-06-22 10:05:13
-	PlatformGithub = "github"
+	PlatformGithub Platform = "github"
 
 	// PermissionGeneral general permission
 	//	@update 2024-06-22 10:05:15
-	PermissionGeneral = "general"
+	PermissionGeneral Permission = "general"
 	// PermissionAdmin admin permission
 	//	@update 2024-06-22 10:05:17
-	PermissionAdmin = "admin"
+	PermissionAdmin Permission = "admin"
 )
 
 // User Model Schema
@@ -34,7 +44,7 @@ type User struct {
 	Name       string       `json:"name" gorm:"column:name;unique;not null"`
 	Email      string       `json:"email" gorm:"column:email;unique;not null"`
 	Avatar     string       `json:"avatar" gorm:"column:avatar;not null"`
-	Permission string       `json:"permission" gorm:"column:permission;not null"`
+	Permission Permission   `json:"permission" gorm:"column:permission;not null"`
 	LastLogin  sql.NullTime `json:"last_login" gorm:"column:last_login;not null"`
 
 	GithubBindID string `gorm:"unique" json:"-"`
@@ -170,7 +180,7 @@ func QueryUserByEmail(email string) (user *User, err error) {
 // @return err error
 // @author centonhuang
 // @update 2024-09-16 11:26:37
-func CreateUserByBasicInfo(username string, email string, avatar string, permission string) (user *User, err error) {
+func CreateUserByBasicInfo(username string, email string, avatar string, permission Permission) (user *User, err error) {
 	user = &User{
 		Name:       username,
 		Email:      email,

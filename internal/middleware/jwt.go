@@ -34,10 +34,11 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userID, userName, err := auth.DecodeToken(tokenString[7:])
+		userID, userName, permission, err := auth.DecodeToken(tokenString[7:])
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code: protocol.CodeTokenVerifyError,
+				Message: err.Error(),
 			})
 			c.Abort()
 			return
@@ -45,6 +46,7 @@ func JwtMiddleware() gin.HandlerFunc {
 
 		c.Set("userID", userID)
 		c.Set("userName", userName)
+		c.Set("permission", permission)
 		c.Next()
 	}
 }

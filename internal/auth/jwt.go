@@ -9,6 +9,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 )
 
 // Claims 鉴权结构体
@@ -18,21 +19,25 @@ import (
 type Claims struct {
 	jwt.RegisteredClaims
 
-	UserID   uint   `json:"user_id"`
-	UserName string `json:"user_name"`
+	UserID     uint             `json:"user_id"`
+	UserName   string           `json:"user_name"`
+	Permission model.Permission `json:"permission"`
 }
 
 // EncodeToken 生成JWT token
 //
 //	@param userID uint
+//	@param userName string
+//	@param permission string
 //	@return token string
 //	@return err error
 //	@author centonhuang
-//	@update 2024-06-22 11:12:49
-func EncodeToken(userID uint, userName string) (token string, err error) {
+//	@update 2024-09-21 01:30:16
+func EncodeToken(userID uint, userName string, permission model.Permission) (token string, err error) {
 	claims := Claims{
-		UserID:   userID,
-		UserName: userName,
+		UserID:     userID,
+		UserName:   userName,
+		Permission: permission,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Duration(config.JwtTokenExpired) * time.Hour)),
 		},
@@ -49,7 +54,7 @@ func EncodeToken(userID uint, userName string) (token string, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-06-22 11:25:00
-func DecodeToken(tokenString string) (userID uint, userName string, err error) {
+func DecodeToken(tokenString string) (userID uint, userName string, permission model.Permission, err error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -67,6 +72,6 @@ func DecodeToken(tokenString string) (userID uint, userName string, err error) {
 		return
 	}
 
-	userID, userName = claims.UserID, claims.UserName
+	userID, userName, permission = claims.UserID, claims.UserName, claims.Permission
 	return
 }
