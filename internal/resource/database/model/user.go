@@ -35,7 +35,7 @@ const (
 	PermissionAdmin Permission = "admin"
 )
 
-// User Model Schema
+// User 用户数据库模型
 //
 //	@author centonhuang
 //	@update 2024-06-22 09:36:22
@@ -49,6 +49,8 @@ type User struct {
 	LastLogin  sql.NullTime `json:"last_login" gorm:"column:last_login;not null"`
 
 	GithubBindID string `gorm:"unique" json:"-"`
+
+	Articles []Article `json:"articles" gorm:"foreignKey:UserID"`
 }
 
 // Create 创建用户
@@ -74,13 +76,27 @@ func (u *User) BindGithubID(githubID string) (err error) {
 	return
 }
 
-// GetUserDetailedInfo 获取用户详细信息
+// GetBasicInfo 获取用户基本信息
+//
+//	@receiver u *User
+//	@return map
+//	@author centonhuang
+//	@update 2024-09-18 03:47:14
+func (u *User) GetBasicInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":     u.ID,
+		"name":   u.Name,
+		"avatar": u.Avatar,
+	}
+}
+
+// GetDetailedInfo 获取用户详细信息
 //
 //	@receiver u *User
 //	@return map
 //	@author centonhuang
 //	@update 2024-09-18 03:50:04
-func (u *User) GetUserDetailedInfo() map[string]interface{} {
+func (u *User) GetDetailedInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":         u.ID,
 		"name":       u.Name,
@@ -88,20 +104,6 @@ func (u *User) GetUserDetailedInfo() map[string]interface{} {
 		"avatar":     u.Avatar,
 		"created_at": u.CreatedAt,
 		"last_login": u.LastLogin.Time,
-	}
-}
-
-// GetUserBasicInfo 获取用户基本信息
-//
-//	@receiver u *User
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-18 03:47:14
-func (u *User) GetUserBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":     u.ID,
-		"name":   u.Name,
-		"avatar": u.Avatar,
 	}
 }
 
