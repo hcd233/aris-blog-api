@@ -37,7 +37,7 @@ func InitRouter(r *gin.Engine) {
 			userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 			{
 				userNameRouter.GET("", user.GetInfoHandler)
-				userNameRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), user.UpdateInfoHandler)
+				userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), user.UpdateInfoHandler)
 
 				articleRouter := userNameRouter.Group("/article")
 				{
@@ -48,6 +48,8 @@ func InitRouter(r *gin.Engine) {
 				articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
 				{
 					articleSlugRouter.GET("", article.GetInfoHandler)
+					articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
+					articleSlugRouter.DELETE("", article.DeleteArticleHandler)
 				}
 			}
 

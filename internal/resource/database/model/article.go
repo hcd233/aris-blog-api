@@ -56,6 +56,17 @@ func (a *Article) Create() (err error) {
 	return
 }
 
+// Delete 删除文章
+//
+//	@receiver a *Article
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-22 04:58:17
+func (a *Article) Delete() (err error) {
+	err = database.DB.Delete(a).Error
+	return
+}
+
 // GetBasicInfo 获取文章基本信息
 //
 //	@receiver a *Article
@@ -123,6 +134,25 @@ func QueryArticleBySlugAndUserName(articleSlug string, userName string, fields [
 //	@author centonhuang
 //	@update 2024-09-21 09:07:55
 func QueryArticlesByUserName(userID uint, limit int, offset int) (articles []Article, err error) {
-	err = database.DB.Preload("Tags").Preload("Comments").Preload("Versions").Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(&articles).Error
+	err = database.DB.Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(&articles).Error
 	return
+}
+
+// UpdateArticleInfoByID 使用ID更新文章信息
+//
+//	@param userID uint
+//	@param info map[string]interface{}
+//	@return user *User
+//	@return err error
+func UpdateArticleInfoByID(articleID uint, info map[string]interface{}) (article *Article, err error) {
+	info["updated_at"] = time.Now()
+	err = database.DB.Model(&Article{}).Where(Article{ID: articleID}).Updates(info).Error
+	if err != nil {
+		return nil, err
+	}
+	err = database.DB.First(&article, articleID).Error
+	if err != nil {
+		return nil, err
+	}
+	return article, nil
 }
