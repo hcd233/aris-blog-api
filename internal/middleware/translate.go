@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/samber/lo"
 )
@@ -36,7 +37,14 @@ func TranslateMiddleware() gin.HandlerFunc {
 				Code: protocol.CodeRouterError,
 			})
 		}
-		lo.Must0(json.Unmarshal(w.body.Bytes(), &response))
+		err := json.Unmarshal(w.body.Bytes(), &response)
+		if err != nil {
+			logger.Logger.Error(w.body.String())
+			response = protocol.Response{
+				Code:    protocol.CodeUnknownError,
+				Message: err.Error(),
+			}
+		}
 
 		code := response.Code
 		if code != 0 {

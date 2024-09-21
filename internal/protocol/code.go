@@ -62,6 +62,10 @@ const (
 	// CodeNotPermissionError ResponseCode 无操作资源权限
 	//	@update 2024-09-18 04:02:51
 	CodeNotPermissionError ResponseCode = 1012
+
+	// CodeUnknownError ResponseCode 未知错误
+	//	@update 2024-09-21 08:22:14
+	CodeUnknownError ResponseCode = 10000
 )
 
 // CodeMessageMapping 响应码消息映射
@@ -80,4 +84,5 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeParamError:         "查询参数错误",
 	CodeBodyError:          "请求体错误",
 	CodeNotPermissionError: "无操作资源权限",
+	CodeUnknownError:       "未知错误",
 }
