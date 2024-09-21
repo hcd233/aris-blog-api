@@ -114,7 +114,7 @@ func GithubCallbackHandler(c *gin.Context) {
 	if user.GithubBindID == "" {
 		user.BindGithubID(githubID)
 	}
-	tokenString := lo.Must(auth.EncodeToken(user.ID, user.Name, user.Permission))
+	tokenString := lo.Must(auth.EncodeToken(user.ID))
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Login success",

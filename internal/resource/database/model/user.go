@@ -41,6 +41,7 @@ const (
 //	@update 2024-06-22 09:36:22
 type User struct {
 	gorm.Model
+	ID         uint         `json:"id" gorm:"column:id;primary_key;auto_increment"`
 	Name       string       `json:"name" gorm:"column:name;unique;not null"`
 	Email      string       `json:"email" gorm:"column:email;unique;not null"`
 	Avatar     string       `json:"avatar" gorm:"column:avatar;not null"`
@@ -142,7 +143,7 @@ func QueryUsers(offset int, limit int) (users []*User, err error) {
 //	@author centonhuang
 //	@update 2024-06-22 10:12:46
 func QueryUserByID(userID uint) (user *User, err error) {
-	err = database.DB.Where("id = ?", userID).Where("delete_at = ?", nil).First(&user).Error
+	err = database.DB.Where(User{ID: userID}).First(&user).Error
 	return
 }
 
@@ -167,6 +168,19 @@ func QueryUserByName(userName string) (user *User, err error) {
 //	@update 2024-09-16 11:21:25
 func QueryUserByEmail(email string) (user *User, err error) {
 	err = database.DB.Where(User{Email: email}).First(&user).Error
+	return
+}
+
+// QueryUserFieldsByID 查询用户指定字段
+//
+//	@param userID int
+//	@param fields []string
+//	@return user *User
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-21 03:08:02
+func QueryUserFieldsByID(userID uint, fields []string) (user *User, err error) {
+	err = database.DB.Select(fields).Where(User{ID: userID}).First(&user).Error
 	return
 }
 
