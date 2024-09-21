@@ -5,8 +5,8 @@ services:
     image: getmeili/meilisearch:latest
     container_name: meilisearch
     restart: always
-    ports:
-      - 7700:7700
+    # ports:
+    #   - 7700:7700
     env_file:
       - meilisearch.env
     volumes:
@@ -21,8 +21,8 @@ services:
     image: mysql:latest
     container_name: mysql
     privileged: true
-    ports:
-      - 3306:3306
+    # ports:
+    #   - 3306:3306
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
@@ -31,6 +31,17 @@ services:
       retries: 10
     env_file:
       - mysql.env
+
+  aris-db-migrate:
+    image: aris-blog-api:latest
+    container_name: aris-db-migrate
+    restart: "no"
+    env_file:
+      - api.env
+    depends_on:
+      mysql:
+        condition: service_healthy
+    command: ["/app/aris-blog-api", "database", "migrate"]
 
   aris-blog-api:
     image: aris-blog-api:latest
@@ -41,13 +52,19 @@ services:
     env_file:
       - api.env
     depends_on:
-      - mysql
-      - meilisearch
+      mysql:
+        condition: service_healthy
+      meilisearch:
+        condition: service_healthy
+      aris-db-migrate:
+        condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      test: ["CMD", "curl", "-f", "http://aris-blog-api:8080"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+    command: ["/app/aris-blog-api", "server", "start", "--host", "0.0.0.0", "--port", "8080"]
 
 volumes:
   mysql-data:
@@ -56,3 +73,7 @@ volumes:
   meilisearch-data:
     name: meilisearch-data
     external: true
+
+# docker volume create mysql-data 
+# docker volume create meilisearch-data
+# docker compose up -d
