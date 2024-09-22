@@ -91,6 +91,10 @@ const (
 	//	@update 2024-09-22 03:39:19
 	CodeDeleteTagError ResponseCode = 1021
 
+	// CodeQueryTagError ResponseCode 查询标签错误
+	//	@update 2024-09-22 05:19:14
+	CodeQueryTagError ResponseCode = 1022
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -125,6 +129,7 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeCreateTagError: "创建标签错误",
 	CodeUpdateTagError: "更新标签错误",
 	CodeDeleteTagError: "删除标签错误",
+	CodeQueryTagError:  "查询标签错误",
 
 	CodeUnknownError: "未知错误",
 }

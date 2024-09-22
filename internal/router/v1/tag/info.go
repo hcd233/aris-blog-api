@@ -6,13 +6,10 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/search"
 )
 
 // GetTagInfoHandler 获取标签信息
-//
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-09-22 03:30:00
 func GetTagInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
@@ -27,15 +24,11 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: tag.GetDetailedInfo(),
+		Data: tag.GetDetailedInfoWithUser(),
 	})
 }
 
 // UpdateTagHandler 更新标签
-//
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-09-22 03:35:00
 func UpdateTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
@@ -67,6 +60,16 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
+	// 同步到搜索引擎
+	err = search.UpdateTagInIndex(tag.GetDetailedInfo())
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeUpdateTagError,
+			Message: err.Error(),
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: tag.GetDetailedInfo(),
@@ -74,10 +77,6 @@ func UpdateTagHandler(c *gin.Context) {
 }
 
 // DeleteTagHandler 删除标签
-//
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-09-22 04:03:39
 func DeleteTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
@@ -98,6 +97,7 @@ func DeleteTagHandler(c *gin.Context) {
 		})
 		return
 	}
+	search.DeleteTagFromIndex(tag.ID)
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
