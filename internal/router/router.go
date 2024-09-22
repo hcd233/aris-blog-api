@@ -6,6 +6,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/router/v1/article"
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
+	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
 )
 
@@ -27,6 +28,19 @@ func InitRouter(r *gin.Engine) {
 			}
 		}
 
+		tagRouter := v1Router.Group("/tag", middleware.JwtMiddleware())
+		{
+			tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), tag.ListTagHandler)
+			tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
+
+			tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
+			{
+				tagSlugRouter.GET("", tag.GetTagInfoHandler)
+				tagSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}), tag.UpdateTagHandler)
+				tagSlugRouter.DELETE("", tag.DeleteTagHandler)
+			}
+		}
+
 		userRouter := v1Router.Group("/user", middleware.JwtMiddleware())
 		{
 			userRouter.GET("/",
@@ -36,18 +50,18 @@ func InitRouter(r *gin.Engine) {
 
 			userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 			{
-				userNameRouter.GET("", user.GetInfoHandler)
+				userNameRouter.GET("", user.GetUserInfoHandler)
 				userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), user.UpdateInfoHandler)
 
 				articleRouter := userNameRouter.Group("/article")
 				{
-					articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.PageParams{}), article.ListArticleHandler)
+					articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), article.ListArticleHandler)
 					articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
 				}
 
 				articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
 				{
-					articleSlugRouter.GET("", article.GetInfoHandler)
+					articleSlugRouter.GET("", article.GetArticleInfoHandler)
 					articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
 					articleSlugRouter.DELETE("", article.DeleteArticleHandler)
 				}

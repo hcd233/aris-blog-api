@@ -1,6 +1,8 @@
 package model
 
 import (
+	"time"
+
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
@@ -38,7 +40,6 @@ func (t *Tag) Delete() (err error) {
 func (t *Tag) GetBasicInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":   t.ID,
-		"name": t.Name,
 		"slug": t.Slug,
 	}
 }
@@ -55,6 +56,7 @@ func (t *Tag) GetDetailedInfo() map[string]interface{} {
 		"name":        t.Name,
 		"slug":        t.Slug,
 		"description": t.Description,
+		"creator":     t.User.Name,
 	}
 }
 
@@ -69,5 +71,36 @@ func (t *Tag) GetDetailedInfo() map[string]interface{} {
 //	@update 2024-09-22 03:15:30
 func QueryTags(limit int, offset int, fields []string) (tags []Tag, err error) {
 	err = database.DB.Select(fields).Limit(limit).Offset(offset).Find(&tags).Error
+	return
+}
+
+// QueryTagBySlug 查询标签
+//
+//	@param tagSlug string
+//	@param fields []string
+//	@return tag Tag
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-22 04:45:22
+func QueryTagBySlug(tagSlug string, fields []string) (tag Tag, err error) {
+	err = database.DB.Preload("User").Select(fields).Where(Tag{Slug: tagSlug}).First(&tag).Error
+	return
+}
+
+// UpdateTagBySlug 更新标签
+//
+//	@param tagSlug string
+//	@param info map[string]interface{}
+//	@return tag Tag
+//	@return err error
+//	@author centonhuang
+//	@update 2024-09-22 04:10:07
+func UpdateTagBySlug(tagSlug string, info map[string]interface{}) (tag Tag, err error) {
+	info["updated_at"] = time.Now()
+	err = database.DB.Model(&Tag{}).Where(Tag{Slug: tagSlug}).Updates(info).Error
+	if err != nil {
+		return
+	}
+	err = database.DB.Preload("User").Where(Tag{Slug: tagSlug}).First(&tag).Error
 	return
 }

@@ -75,6 +75,22 @@ const (
 	//	@update 2024-09-22 04:09:25
 	CodeDeleteArticleError ResponseCode = 1017
 
+	// CodeGetTagError ResponseCode 获取标签错误
+	//	@update 2024-09-22 03:39:36
+	CodeGetTagError ResponseCode = 1018
+
+	// CodeCreateTagError ResponseCode 创建标签错误
+	//	@update 2024-09-22 03:39:19
+	CodeCreateTagError ResponseCode = 1019
+
+	// CodeUpdateTagError ResponseCode 更新标签错误
+	//	@update 2024-09-22 03:39:19
+	CodeUpdateTagError ResponseCode = 1020
+
+	// CodeDeleteTagError ResponseCode 删除标签错误
+	//	@update 2024-09-22 03:39:19
+	CodeDeleteTagError ResponseCode = 1021
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -84,21 +100,31 @@ const (
 //
 //	@update 2024-09-16 04:12:17
 var CodeMessageMapping = map[ResponseCode]string{
-	CodeOk:                 "请求成功",
-	CodeUnauthorized:       "访问鉴权接口未提供鉴权信息",
-	CodeTokenVerifyError:   "鉴权信息校验失败",
-	CodeStateError:         "登录状态错误",
-	CodeTokenError:         "登录令牌错误",
-	CodeGetUserError:       "获取用户信息错误",
-	CodeUserNotFoundError:  "用户未找到",
-	CodeURIError:           "路径参数错误",
-	CodeQueryUserError:     "查询用户错误",
-	CodeParamError:         "查询参数错误",
-	CodeBodyError:          "请求体错误",
+	CodeOk:               "请求成功",
+	CodeUnauthorized:     "访问鉴权接口未提供鉴权信息",
+	CodeTokenVerifyError: "鉴权信息校验失败",
+	CodeStateError:       "登录状态错误",
+	CodeTokenError:       "登录令牌错误",
+
 	CodeNotPermissionError: "无操作资源权限",
+
+	CodeParamError: "查询参数错误",
+	CodeBodyError:  "请求体错误",
+	CodeURIError:   "路径参数错误",
+
+	CodeGetUserError:      "获取用户信息错误",
+	CodeUserNotFoundError: "用户未找到",
+	CodeQueryUserError:    "查询用户错误",
+
 	CodeGetArticleError:    "获取文章错误",
 	CodeCreateArticleError: "创建文章错误",
 	CodeUpdateArticleError: "更新文章错误",
 	CodeDeleteArticleError: "删除文章错误",
-	CodeUnknownError:       "未知错误",
+
+	CodeGetTagError:    "获取标签错误",
+	CodeCreateTagError: "创建标签错误",
+	CodeUpdateTagError: "更新标签错误",
+	CodeDeleteTagError: "删除标签错误",
+
+	CodeUnknownError: "未知错误",
 }
