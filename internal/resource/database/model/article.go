@@ -31,17 +31,17 @@ const (
 //	@update 2024-09-21 06:46:05
 type Article struct {
 	gorm.Model
-	ID          uint             `json:"id" gorm:"column:id;primary_key;auto_increment"`
-	Title       string           `json:"title" gorm:"column:title"`
-	Slug        string           `json:"slug" gorm:"column:slug;not null;uniqueIndex:idx_user_slug"`
-	UserID      uint             `json:"user_id" gorm:"column:user_id;not null;uniqueIndex:idx_user_slug"`
-	CategoryID  uint             `json:"category_id" gorm:"column:category_id"`
-	Status      ArticleStatus    `json:"status" gorm:"column:status;not null;default:'draft'"`
-	PublishedAt time.Time        `json:"published_at" gorm:"column:published_at;default:NULL"`
+	ID          uint             `json:"id" gorm:"column:id;primary_key;auto_increment;comment:文章ID"`
+	Title       string           `json:"title" gorm:"column:title;not null;comment:文章标题"`
+	Slug        string           `json:"slug" gorm:"column:slug;not null;uniqueIndex:idx_user_slug;comment:文章slug"`
+	UserID      uint             `json:"user_id" gorm:"column:user_id;not null;uniqueIndex:idx_user_slug;comment:用户ID"`
+	CategoryID  uint             `json:"category_id" gorm:"column:category_id;not null;comment:类别ID"`
+	Status      ArticleStatus    `json:"status" gorm:"column:status;not null;default:'draft';comment:文章状态"`
+	PublishedAt time.Time        `json:"published_at" gorm:"column:published_at;default:NULL;comment:发布时间"`
+	Views       uint             `json:"views" gorm:"column:views;default:0;comment:浏览量"`
+	Likes       uint             `json:"likes" gorm:"column:likes;default:0;comment:点赞量"`
 	Tags        []Tag            `json:"tags" gorm:"many2many:article_tags;"`
 	Comments    []Comment        `json:"comments" gorm:"foreignKey:ArticleID"`
-	Views       uint             `json:"views" gorm:"column:views;default:0"`
-	Likes       uint             `json:"likes" gorm:"column:likes;default:0"`
 	Versions    []ArticleVersion `json:"versions" gorm:"foreignKey:ArticleID"`
 }
 
