@@ -11,12 +11,12 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 )
 
-// GetInfoHandler 文章信息
+// GetArticleInfoHandler 文章信息
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
-func GetInfoHandler(c *gin.Context) {
+func GetArticleInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{

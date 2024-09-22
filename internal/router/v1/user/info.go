@@ -15,12 +15,12 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/search"
 )
 
-// GetInfoHandler 用户信息
+// GetUserInfoHandler 用户信息
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
-func GetInfoHandler(c *gin.Context) {
+func GetUserInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
 	user, err := model.QueryUserByName(uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login"})
