@@ -9,6 +9,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/meilisearch/meilisearch-go"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
@@ -24,11 +25,16 @@ const (
 //	@update 2024-09-18 12:29:08
 var ServiceManager meilisearch.ServiceManager
 
-func init() {
+// InitSearchEngine 初始化搜索引擎
+//
+//	@author centonhuang
+//	@update 2024-09-22 10:05:14
+func InitSearchEngine() {
 	ServiceManager = meilisearch.New(
 		fmt.Sprintf("http://%s:%s", config.MeilisearchHost, config.MeilisearchPort),
 		meilisearch.WithAPIKey(config.MeilisearchMasterKey),
 	)
+	lo.Must1(ServiceManager.Health())
 }
 
 // CreateIndex 创建索引

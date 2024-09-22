@@ -19,7 +19,11 @@ import (
 //	@update 2024-09-16 01:24:51
 var DB *gorm.DB
 
-func init() {
+// InitDatabase 初始化数据库
+//
+//	@author centonhuang
+//	@update 2024-09-22 10:04:36
+func InitDatabase() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
 
 	DB = lo.Must(gorm.Open(mysql.New(mysql.Config{
