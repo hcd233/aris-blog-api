@@ -45,12 +45,26 @@ func (t *Tag) GetBasicInfo() map[string]interface{} {
 }
 
 // GetDetailedInfo 获取详细信息
+//	@receiver t *Tag 
+//	@return map 
+//	@author centonhuang 
+//	@update 2024-09-22 05:39:22 
+func (t *Tag) GetDetailedInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":          t.ID,
+		"name":        t.Name,
+		"slug":        t.Slug,
+		"description": t.Description,
+	}
+}
+
+// GetDetailedInfoWithUser 获取详细信息(包含用户名)
 //
 //	@receiver t *Tag
 //	@return map
 //	@author centonhuang
 //	@update 2024-09-22 03:17:50
-func (t *Tag) GetDetailedInfo() map[string]interface{} {
+func (t *Tag) GetDetailedInfoWithUser() map[string]interface{} {
 	return map[string]interface{}{
 		"id":          t.ID,
 		"name":        t.Name,
