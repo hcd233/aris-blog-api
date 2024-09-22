@@ -35,7 +35,7 @@ type Article struct {
 	Title       string           `json:"title" gorm:"column:title"`
 	Slug        string           `json:"slug" gorm:"column:slug;not null;uniqueIndex:idx_user_slug"`
 	UserID      uint             `json:"user_id" gorm:"column:user_id;not null;uniqueIndex:idx_user_slug"`
-	Category    string           `json:"category" gorm:"column:category;not null"`
+	CategoryID  uint             `json:"category_id" gorm:"column:category_id"`
 	Status      ArticleStatus    `json:"status" gorm:"column:status;not null;default:'draft'"`
 	PublishedAt time.Time        `json:"published_at" gorm:"column:published_at;default:NULL"`
 	Tags        []Tag            `json:"tags" gorm:"many2many:article_tags;"`
@@ -94,7 +94,7 @@ func (a *Article) GetDetailedInfo() map[string]interface{} {
 		"title":        a.Title,
 		"slug":         a.Slug,
 		"user_id":      a.UserID,
-		"category":     a.Category,
+		"category":     a.CategoryID,
 		"status":       a.Status,
 		"published_at": a.PublishedAt,
 		"tags":         a.Tags,
