@@ -8,15 +8,15 @@ import (
 
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/logger"
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/meilisearch/meilisearch-go"
-	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
 const (
-	primaryKey = "id"
-	userIndex  = "user"
+	primaryKey   = "id"
+	userIndex    = "user"
+	tagIndex     = "tag"
+	articleIndex = "article"
 )
 
 // ServiceManager meilisearch 服务管理
@@ -39,7 +39,8 @@ func init() {
 func CreateIndex() (err error) {
 	tasks := []func() error{
 		createUserIndex,
-		updateUserIndex,
+		createTagIndex,
+		createArticleIndex,
 	}
 	for _, task := range tasks {
 		err = task()
@@ -56,6 +57,21 @@ func CreateIndex() (err error) {
 //	@author centonhuang
 //	@update 2024-09-18 01:24:35
 func DeleteIndex() (err error) {
+	tasks := []func() error{
+		deleteUserIndex,
+		deleteTagIndex,
+		deleteArticleIndex,
+	}
+	for _, task := range tasks {
+		err = task()
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func deleteUserIndex() (err error) {
 	info, err := ServiceManager.DeleteIndex(userIndex)
 	if err != nil {
 		logger.Logger.Error("[Delete Index] failed to delete index", zap.Error(err))
@@ -63,6 +79,28 @@ func DeleteIndex() (err error) {
 	}
 
 	logger.Logger.Info("[Delete Index] success to delete index", zap.String("Index", userIndex), zap.String("Status", string(info.Status)))
+	return
+}
+
+func deleteTagIndex() (err error) {
+	info, err := ServiceManager.DeleteIndex(tagIndex)
+	if err != nil {
+		logger.Logger.Error("[Delete Tag Index] failed to delete index", zap.Error(err))
+		return
+	}
+
+	logger.Logger.Info("[Delete Tag Index] success to delete index", zap.String("Index", tagIndex), zap.String("Status", string(info.Status)))
+	return
+}
+
+func deleteArticleIndex() (err error) {
+	info, err := ServiceManager.DeleteIndex(articleIndex)
+	if err != nil {
+		logger.Logger.Error("[Delete Article Index] failed to delete index", zap.Error(err))
+		return
+	}
+
+	logger.Logger.Info("[Delete Article Index] success to delete index", zap.String("Index", articleIndex), zap.String("Status", string(info.Status)))
 	return
 }
 
@@ -80,24 +118,30 @@ func createUserIndex() (err error) {
 	return
 }
 
-func updateUserIndex() (err error) {
-	users, err := model.QueryUsers(-1, -1)
+func createTagIndex() (err error) {
+	info, err := ServiceManager.CreateIndex(&meilisearch.IndexConfig{
+		Uid:        tagIndex,
+		PrimaryKey: primaryKey,
+	})
 	if err != nil {
-		logger.Logger.Error("[Update Index] failed to query users", zap.Error(err))
+		logger.Logger.Error("[Create Tag Index] failed to create index", zap.Error(err))
 		return
 	}
 
-	info, err := ServiceManager.Index(userIndex).AddDocuments(lo.Map(
-		users,
-		func(user *model.User, _ int) map[string]interface{} {
-			return user.GetBasicInfo()
-		},
-	))
+	logger.Logger.Info("[Create Tag Index] success to create index", zap.String("Index", "tag"), zap.String("Status", string(info.Status)))
+	return
+}
+
+func createArticleIndex() (err error) {
+	info, err := ServiceManager.CreateIndex(&meilisearch.IndexConfig{
+		Uid:        articleIndex,
+		PrimaryKey: primaryKey,
+	})
 	if err != nil {
-		logger.Logger.Error("[Update Index] failed to update index", zap.Error(err))
+		logger.Logger.Error("[Create Article Index] failed to create index", zap.Error(err))
 		return
 	}
 
-	logger.Logger.Info("[Update Index] success to update index", zap.String("Index", userIndex), zap.Int("Number", len(users)), zap.String("Status", string(info.Status)))
+	logger.Logger.Info("[Create Article Index] success to create index", zap.String("Index", "article"), zap.String("Status", string(info.Status)))
 	return
 }

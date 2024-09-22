@@ -30,8 +30,9 @@ func InitRouter(r *gin.Engine) {
 
 		tagRouter := v1Router.Group("/tag", middleware.JwtMiddleware())
 		{
-			tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), tag.ListTagHandler)
+			tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParams{}), tag.SearchTagHandler)
 			tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
+			tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), tag.ListTagHandler)
 
 			tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
 			{
@@ -43,10 +44,7 @@ func InitRouter(r *gin.Engine) {
 
 		userRouter := v1Router.Group("/user", middleware.JwtMiddleware())
 		{
-			userRouter.GET("/",
-				middleware.ValidateParamMiddleware(&protocol.QueryParams{}),
-				user.QueryUserHandler,
-			)
+			userRouter.GET("/", middleware.ValidateParamMiddleware(&protocol.QueryParams{}), user.QueryUserHandler)
 
 			userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 			{
