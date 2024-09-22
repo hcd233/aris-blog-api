@@ -133,8 +133,8 @@ func QueryArticleBySlugAndUserName(articleSlug string, userName string, fields [
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-21 09:07:55
-func QueryArticlesByUserName(userID uint, limit int, offset int) (articles []Article, err error) {
-	err = database.DB.Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(&articles).Error
+func QueryArticlesByUserName(userID uint, limit int, offset int, fields []string) (articles []Article, err error) {
+	err = database.DB.Select(fields).Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(&articles).Error
 	return
 }
 
