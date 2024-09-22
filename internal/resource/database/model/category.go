@@ -1,8 +1,6 @@
 package model
 
 import (
-	"time"
-
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
@@ -13,14 +11,12 @@ import (
 //	@update 2024-09-22 10:00:00
 type Category struct {
 	gorm.Model
-	ID        uint       `json:"id" gorm:"column:id;primary_key;auto_increment"`
-	Name      string     `json:"name" gorm:"column:name;not null;unique"`
-	ParentID  *uint      `json:"parent_id" gorm:"column:parent_id"`
-	Parent    *Category  `json:"parent" gorm:"foreignKey:ParentID"`
-	Children  []Category `json:"children" gorm:"foreignKey:ParentID"`
-	CreatedAt time.Time  `json:"created_at" gorm:"column:created_at"`
-	UpdatedAt time.Time  `json:"updated_at" gorm:"column:updated_at"`
-	Articles  []Article  `json:"articles" gorm:"foreignKey:CategoryID"`
+	ID       uint       `json:"id" gorm:"column:id;primary_key;auto_increment;comment:类别ID"`
+	Name     string     `json:"name" gorm:"column:name;not null;unique;comment:类别名称"`
+	ParentID uint      `json:"parent_id" gorm:"column:parent_id;comment:父类别ID"`
+	Parent   *Category  `json:"parent" gorm:"foreignKey:ParentID"`
+	Children []Category `json:"children" gorm:"foreignKey:ParentID"`
+	Articles []Article  `json:"articles" gorm:"foreignKey:CategoryID"`
 }
 
 // Create 创建类别
