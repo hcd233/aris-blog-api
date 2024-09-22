@@ -8,7 +8,7 @@ services:
     # ports:
     #   - 7700:7700
     env_file:
-      - meilisearch.env
+      - ./env/meilisearch.env
     volumes:
       - meilisearch-data:/data.ms
     healthcheck:
@@ -30,27 +30,27 @@ services:
       interval: 5s
       retries: 10
     env_file:
-      - mysql.env
+      - ./env/mysql.env
 
   aris-db-migrate:
-    image: aris-blog-api:latest
+    image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
     container_name: aris-db-migrate
     restart: "no"
     env_file:
-      - api.env
+      - ./env/api.env
     depends_on:
       mysql:
         condition: service_healthy
     command: ["/app/aris-blog-api", "database", "migrate"]
 
   aris-blog-api:
-    image: aris-blog-api:latest
+    image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
     container_name: aris-blog-api
     restart: always
     ports:
       - 8080:8080
     env_file:
-      - api.env
+      - ./env/api.env
     depends_on:
       mysql:
         condition: service_healthy
