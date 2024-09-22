@@ -15,6 +15,5 @@ func RootHandler(c *gin.Context) {
 	c.JSON(200, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Welcome to Aris Blog API!",
-		Data:    map[string]interface{}{},
 	})
 }

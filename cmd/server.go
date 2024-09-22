@@ -7,6 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/middleware"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/hcd233/Aris-blog/internal/router"
 	"github.com/samber/lo"
 	"github.com/spf13/cobra"
@@ -33,6 +35,9 @@ var startServerCmd = &cobra.Command{
 			gin.Recovery(),
 		)
 		router.InitRouter(r)
+
+		database.InitDatabase()
+		search.InitSearchEngine()
 
 		s := &http.Server{
 			Addr:           fmt.Sprintf("%s:%s", host, port),
