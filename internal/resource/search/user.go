@@ -6,14 +6,14 @@ import (
 	"go.uber.org/zap"
 )
 
-// QueryUserIndex 查询用户索引
+// QueryUserFromIndex 查询用户索引
 //
 //	@param query string
 //	@return []map[string]interface{}
 //	@return error
 //	@author centonhuang
 //	@update 2024-09-18 12:52:51
-func QueryUserIndex(query string, limit int, offset int) ([]interface{}, error) {
+func QueryUserFromIndex(query string, limit int, offset int) ([]interface{}, error) {
 	response, err := ServiceManager.Index(userIndex).Search(query, &meilisearch.SearchRequest{
 		Limit:  int64(limit),
 		Offset: int64(offset),
@@ -26,13 +26,13 @@ func QueryUserIndex(query string, limit int, offset int) ([]interface{}, error) 
 	return response.Hits, nil
 }
 
-// AddUserIndex 添加用户索引
+// AddUserIntoIndex 添加用户索引
 //
 //	@param user map[string]interface{}
 //	@return error
 //	@author centonhuang
 //	@update 2024-09-18 01:37:36
-func AddUserIndex(user map[string]interface{}) error {
+func AddUserIntoIndex(user map[string]interface{}) error {
 	info, err := ServiceManager.Index(userIndex).AddDocuments([]map[string]interface{}{user})
 	if err != nil {
 		logger.Logger.Error("[Add User Index] failed to add user index", zap.Error(err))
@@ -43,13 +43,13 @@ func AddUserIndex(user map[string]interface{}) error {
 	return nil
 }
 
-// UpdateUserIndex 更新用户索引
+// UpdateUserInIndex 更新用户索引
 //
 //	@param user map[string]interface{}
 //	@return error
 //	@author centonhuang
 //	@update 2024-09-18 01:41:04
-func UpdateUserIndex(user map[string]interface{}) error {
+func UpdateUserInIndex(user map[string]interface{}) error {
 	info, err := ServiceManager.Index(userIndex).UpdateDocuments([]map[string]interface{}{user})
 	if err != nil {
 		logger.Logger.Error("[Update User Index] failed to update user index", zap.Error(err))

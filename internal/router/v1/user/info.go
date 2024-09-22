@@ -68,7 +68,7 @@ func UpdateInfoHandler(c *gin.Context) {
 	user := lo.Must1(model.UpdateUserInfoByID(userID, map[string]interface{}{
 		"name": body.UserName,
 	}))
-	search.UpdateUserIndex(user.GetBasicInfo())
+	search.UpdateUserInIndex(user.GetBasicInfo())
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,

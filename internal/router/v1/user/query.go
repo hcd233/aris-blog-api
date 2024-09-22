@@ -17,7 +17,7 @@ func QueryUserHandler(c *gin.Context) {
 	params := c.MustGet("param").(*protocol.QueryParams)
 
 	query, limit, offset := params.Query, params.Limit, params.Offset
-	users, err := search.QueryUserIndex(query, limit, offset)
+	users, err := search.QueryUserFromIndex(query, limit, offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
