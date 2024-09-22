@@ -42,16 +42,14 @@ const (
 //	@update 2024-06-22 09:36:22
 type User struct {
 	gorm.Model
-	ID         uint         `json:"id" gorm:"column:id;primary_key;auto_increment"`
-	Name       string       `json:"name" gorm:"column:name;unique;not null"`
-	Email      string       `json:"email" gorm:"column:email;unique;not null"`
-	Avatar     string       `json:"avatar" gorm:"column:avatar;not null"`
-	Permission Permission   `json:"permission" gorm:"column:permission;not null"`
-	LastLogin  sql.NullTime `json:"last_login" gorm:"column:last_login;not null"`
-
-	GithubBindID string `gorm:"unique" json:"-"`
-
-	Articles []Article `json:"articles" gorm:"foreignKey:UserID"`
+	ID           uint         `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
+	Name         string       `json:"name" gorm:"column:name;unique;not null;comment:用户名"`
+	Email        string       `json:"email" gorm:"column:email;unique;not null;comment:邮箱"`
+	Avatar       string       `json:"avatar" gorm:"column:avatar;not null;comment:头像"`
+	Permission   Permission   `json:"permission" gorm:"column:permission;not null;default:'general';comment:权限"`
+	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;not null;comment:最后登录时间"`
+	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
+	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
 }
 
 // Create 创建用户
