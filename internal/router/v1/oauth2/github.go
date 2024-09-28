@@ -1,4 +1,4 @@
-// Package oauth2 login and callback handlers.
+// Package oauth2 Github OAuth2 登录接口
 package oauth2
 
 import (
