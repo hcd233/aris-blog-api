@@ -17,6 +17,7 @@ var createIndexCmd = &cobra.Command{
 	Short: "创建索引",
 	Long:  `创建一个新的索引，用于存储和搜索数据。`,
 	Run: func(cmd *cobra.Command, args []string) {
+		search.InitSearchEngine()
 		lo.Must0(search.CreateIndex())
 	},
 }
@@ -26,6 +27,7 @@ var deleteIndexCmd = &cobra.Command{
 	Short: "删除索引",
 	Long:  `删除一个已有的索引，包括索引中的所有数据。`,
 	Run: func(cmd *cobra.Command, args []string) {
+		search.InitSearchEngine()
 		lo.Must0(search.DeleteIndex())
 	},
 }
