@@ -40,9 +40,9 @@ func initOauth2Router(r *gin.RouterGroup) {
 func initTagRouter(r *gin.RouterGroup) {
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
-		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParams{}), tag.SearchTagHandler)
+		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.SearchTagHandler)
 		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
-		tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), tag.ListTagHandler)
+		tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListTagHandler)
 
 		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
 		{
@@ -56,7 +56,7 @@ func initTagRouter(r *gin.RouterGroup) {
 func initUserRouter(r *gin.RouterGroup) {
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
-		userRouter.GET("/", middleware.ValidateParamMiddleware(&protocol.QueryParams{}), user.QueryUserHandler)
+		userRouter.GET("/", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), user.QueryUserHandler)
 
 		userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 		{
@@ -73,7 +73,7 @@ func initUserRouter(r *gin.RouterGroup) {
 func initArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article")
 	{
-		articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), article.ListArticleHandler)
+		articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticleHandler)
 		articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
 	}
 
@@ -88,14 +88,14 @@ func initArticleRouter(r *gin.RouterGroup) {
 func initCategoryRouter(r *gin.RouterGroup) {
 	categoryRouter := r.Group("/category")
 	{
-		categoryRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParams{}), category.ListRootCategoryHandler)
+		categoryRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListRootCategoryHandler)
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), category.CreateCategoryHandler)
 	}
 
 	categoryIDRouter := categoryRouter.Group("/:categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
 	{
 		categoryIDRouter.GET("", category.GetCategoryInfoHandler)
-		categoryIDRouter.GET("children", middleware.ValidateParamMiddleware(&protocol.PageParams{}), category.ListChildrenCategoriesHandler)
+		categoryIDRouter.GET("children", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenCategoriesHandler)
 	}
 
 	// categoryIDRouter := categoryRouter.Group("/:categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
