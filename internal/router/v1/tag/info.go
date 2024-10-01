@@ -10,6 +10,9 @@ import (
 )
 
 // GetTagInfoHandler 获取标签信息
+//	@param c *gin.Context 
+//	@author centonhuang 
+//	@update 2024-10-01 04:58:01 
 func GetTagInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
