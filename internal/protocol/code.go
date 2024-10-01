@@ -95,6 +95,14 @@ const (
 	//	@update 2024-09-22 05:19:14
 	CodeQueryTagError ResponseCode = 1022
 
+	// CodeCreateCategoryError ResponseCode 创建分类错误
+	//	@update 2024-09-28 07:11:12
+	CodeCreateCategoryError ResponseCode = 1023
+
+	// CodeGetCategoryError ResponseCode 获取分类错误
+	//	@update 2024-10-01 03:57:27
+	CodeGetCategoryError ResponseCode = 1024
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -130,6 +138,9 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeUpdateTagError: "更新标签错误",
 	CodeDeleteTagError: "删除标签错误",
 	CodeQueryTagError:  "查询标签错误",
+
+	CodeCreateCategoryError: "创建分类错误",
+	CodeGetCategoryError:    "获取分类错误",
 
 	CodeUnknownError: "未知错误",
 }
