@@ -5,6 +5,7 @@ package article
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
@@ -48,11 +49,26 @@ func UpdateArticleHandler(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 
 	updateFields := make(map[string]interface{})
+	// TODO split it into handler
+
 	if body.Title != "" {
 		updateFields["title"] = body.Title
 	}
 	if body.Slug != "" {
 		updateFields["slug"] = body.Slug
+	}
+
+	if body.Status != "" {
+		updateFields["status"] = body.Status
+		if body.Status == model.ArticleStatusDraft {
+			updateFields["published_at"] = nil
+		} else if body.Status == model.ArticleStatusPublish {
+			updateFields["published_at"] = time.Now()
+		}
+	}
+
+	if body.CategoryID != 0 {
+		updateFields["category_id"] = body.CategoryID
 	}
 
 	if len(updateFields) == 0 {

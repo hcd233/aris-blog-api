@@ -23,6 +23,13 @@ func CreateCategoryHandler(c *gin.Context) {
 		UserID:   userID,
 	}
 
+	if category.ID == body.ParentID {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code: protocol.CodeCreateCategoryError,
+		})
+		return
+	}
+
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,

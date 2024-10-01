@@ -30,18 +30,31 @@ func CreateArticleHandler(c *gin.Context) {
 		body.Slug = body.Title
 	}
 
-	article := model.Article{
-		UserID: userID,
-		Status: model.ArticleStatusDraft,
-		Title:  body.Title,
-		Slug:   body.Slug,
+	tags, err := model.QueryTagsBySlugs(body.Tags, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeQueryTagError,
+			Message: err.Error(),
+		})
+		return
 	}
 
-	err := article.Create()
+	article := model.Article{
+		UserID:     userID,
+		Status:     model.ArticleStatusDraft,
+		Title:      body.Title,
+		Slug:       body.Slug,
+		Tags:       tags,
+		CategoryID: body.CategoryID,
+		Comments:   []model.Comment{},
+		Versions:   []model.ArticleVersion{},
+	}
+
+	err = article.Create()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeCreateArticleError,
-			Message: err.Error(),
+				Message: err.Error(),
 		})
 		return
 	}

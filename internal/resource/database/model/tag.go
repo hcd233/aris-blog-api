@@ -45,10 +45,11 @@ func (t *Tag) GetBasicInfo() map[string]interface{} {
 }
 
 // GetDetailedInfo 获取详细信息
-//	@receiver t *Tag 
-//	@return map 
-//	@author centonhuang 
-//	@update 2024-09-22 05:39:22 
+//
+//	@receiver t *Tag
+//	@return map
+//	@author centonhuang
+//	@update 2024-09-22 05:39:22
 func (t *Tag) GetDetailedInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":          t.ID,
@@ -98,6 +99,19 @@ func QueryTags(limit int, offset int, fields []string) (tags []Tag, err error) {
 //	@update 2024-09-22 04:45:22
 func QueryTagBySlug(tagSlug string, fields []string) (tag Tag, err error) {
 	err = database.DB.Preload("User").Select(fields).Where(&Tag{Slug: tagSlug}).First(&tag).Error
+	return
+}
+
+// QueryTagsBySlugs 查询多个标签
+//
+//	@param tagSlugs []string
+//	@param fields []string
+//	@return tags []Tag
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-02 01:05:34
+func QueryTagsBySlugs(tagSlugs []string, fields []string) (tags []Tag, err error) {
+	err = database.DB.Preload("User").Select(fields).Where("slug IN ?", tagSlugs).Find(&tags).Error
 	return
 }
 
