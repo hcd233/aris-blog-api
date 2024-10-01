@@ -157,3 +157,18 @@ func UpdateArticleInfoByID(articleID uint, info map[string]interface{}) (article
 	}
 	return article, nil
 }
+
+// QueryChildrenArticlesByCategoryID 查询指定类别的文章
+//
+//	@param categoryID uint
+//	@param fields []string
+//	@param limit int
+//	@param offset int
+//	@return articles []Article
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-02 01:38:46
+func QueryChildrenArticlesByCategoryID(categoryID uint, fields []string, limit, offset int) (articles []Article, err error) {
+	err = database.DB.Select(fields).Where(&Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
+	return
+}

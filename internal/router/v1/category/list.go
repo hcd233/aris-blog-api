@@ -76,3 +76,31 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 		},
 	})
 }
+
+// ListChildrenArticlesHandler 列出子文章
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-02 01:38:12
+func ListChildrenArticlesHandler(c *gin.Context) {
+	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	param := c.MustGet("param").(*protocol.PageParam)
+
+	articles, err := model.QueryChildrenArticlesByCategoryID(uri.CategoryID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"articles": lo.Map(articles, func(article model.Article, index int) map[string]interface{} {
+				return article.GetBasicInfo()
+			}),
+		},
+	})
+}
