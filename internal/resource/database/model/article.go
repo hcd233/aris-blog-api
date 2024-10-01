@@ -124,7 +124,7 @@ func QueryArticleBySlugAndUserName(articleSlug string, userName string, fields [
 	return
 }
 
-// QueryArticlesByUserName 根据用户名查询文章
+// QueryArticlesByUserID 查询指定用户ID的文章
 //
 //	@param userName string
 //	@param limit int
@@ -133,8 +133,8 @@ func QueryArticleBySlugAndUserName(articleSlug string, userName string, fields [
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-21 09:07:55
-func QueryArticlesByUserName(userID uint, limit int, offset int, fields []string) (articles []Article, err error) {
-	err = database.DB.Select(fields).Where("user_id = ?", userID).Limit(limit).Offset(offset).Find(&articles).Error
+func QueryArticlesByUserID(userID uint, limit int, offset int, fields []string) (articles []Article, err error) {
+	err = database.DB.Select(fields).Where(&Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
 	return
 }
 
@@ -146,7 +146,7 @@ func QueryArticlesByUserName(userID uint, limit int, offset int, fields []string
 //	@return err error
 func UpdateArticleInfoByID(articleID uint, info map[string]interface{}) (article *Article, err error) {
 	info["updated_at"] = time.Now()
-	err = database.DB.Model(&Article{}).Where(Article{ID: articleID}).Updates(info).Error
+	err = database.DB.Model(&Article{}).Where(&Article{ID: articleID}).Updates(info).Error
 	if err != nil {
 		return nil, err
 	}

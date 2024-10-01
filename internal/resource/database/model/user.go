@@ -127,11 +127,11 @@ func (u *User) GetDetailedInfo() map[string]interface{} {
 //	@update 2024-09-18 04:22:03
 func UpdateUserInfoByID(userID uint, info map[string]interface{}) (user *User, err error) {
 	info["updated_at"] = time.Now()
-	err = database.DB.Model(&User{}).Where(User{ID: userID}).Updates(info).Error
+	err = database.DB.Model(&User{}).Where(&User{ID: userID}).Updates(info).Error
 	if err != nil {
 		return nil, err
 	}
-	err = database.DB.Where(User{ID: userID}).First(&user).Error
+	err = database.DB.Where(&User{ID: userID}).First(&user).Error
 	return
 }
 
@@ -156,7 +156,7 @@ func QueryUsers(offset int, limit int) (users []*User, err error) {
 //	@author centonhuang
 //	@update 2024-06-22 10:12:46
 func QueryUserByID(userID uint, fields []string) (user *User, err error) {
-	err = database.DB.Select(fields).Where(User{ID: userID}).First(&user).Error
+	err = database.DB.Select(fields).Where(&User{ID: userID}).First(&user).Error
 	return
 }
 
@@ -180,7 +180,7 @@ func QueryUserByName(userName string, fields []string) (user *User, err error) {
 //	@author centonhuang
 //	@update 2024-09-16 11:21:25
 func QueryUserByEmail(email string, fields []string, allowEmpty bool) (user *User, err error) {
-	err = database.DB.Select(fields).Where(User{Email: email}).First(&user).Error
+	err = database.DB.Select(fields).Where(&User{Email: email}).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
 		user, err = nil, nil
 	}
@@ -196,7 +196,7 @@ func QueryUserByEmail(email string, fields []string, allowEmpty bool) (user *Use
 //	@author centonhuang
 //	@update 2024-09-21 03:08:02
 func QueryUserFieldsByID(userID uint, fields []string, allowEmpty bool) (user *User, err error) {
-	err = database.DB.Select(fields).Where(User{ID: userID}).First(&user).Error
+	err = database.DB.Select(fields).Where(&User{ID: userID}).First(&user).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
 		user, err = nil, nil
 	}

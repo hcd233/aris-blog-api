@@ -97,7 +97,7 @@ func QueryTags(limit int, offset int, fields []string) (tags []Tag, err error) {
 //	@author centonhuang
 //	@update 2024-09-22 04:45:22
 func QueryTagBySlug(tagSlug string, fields []string) (tag Tag, err error) {
-	err = database.DB.Preload("User").Select(fields).Where(Tag{Slug: tagSlug}).First(&tag).Error
+	err = database.DB.Preload("User").Select(fields).Where(&Tag{Slug: tagSlug}).First(&tag).Error
 	return
 }
 
@@ -111,10 +111,10 @@ func QueryTagBySlug(tagSlug string, fields []string) (tag Tag, err error) {
 //	@update 2024-09-22 04:10:07
 func UpdateTagBySlug(tagSlug string, info map[string]interface{}) (tag Tag, err error) {
 	info["updated_at"] = time.Now()
-	err = database.DB.Model(&Tag{}).Where(Tag{Slug: tagSlug}).Updates(info).Error
+	err = database.DB.Model(&Tag{}).Where(&Tag{Slug: tagSlug}).Updates(info).Error
 	if err != nil {
 		return
 	}
-	err = database.DB.Preload("User").Where(Tag{Slug: tagSlug}).First(&tag).Error
+	err = database.DB.Preload("User").Where(&Tag{Slug: tagSlug}).First(&tag).Error
 	return
 }
