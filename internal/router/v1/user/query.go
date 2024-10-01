@@ -14,7 +14,7 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func QueryUserHandler(c *gin.Context) {
-	params := c.MustGet("param").(*protocol.QueryParams)
+	params := c.MustGet("param").(*protocol.QueryParam)
 
 	query, limit, offset := params.Query, params.Limit, params.Offset
 	users, err := search.QueryUserFromIndex(query, limit, offset)

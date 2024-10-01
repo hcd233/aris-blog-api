@@ -18,7 +18,7 @@ import (
 //	@author centonhuang
 //	@update 2024-09-22 02:41:01
 func ListTagHandler(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.PageParams)
+	param := c.MustGet("param").(*protocol.PageParam)
 
 	tags, err := model.QueryTags(param.Limit, param.Offset, []string{"id", "slug"})
 	if err != nil {

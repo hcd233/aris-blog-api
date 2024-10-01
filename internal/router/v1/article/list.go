@@ -16,7 +16,7 @@ import (
 //	@update 2024-09-21 08:59:40
 func ListArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
-	param := c.MustGet("param").(*protocol.PageParams)
+	param := c.MustGet("param").(*protocol.PageParam)
 
 	user, err := model.QueryUserByName(uri.UserName, []string{"id"})
 	if err != nil {

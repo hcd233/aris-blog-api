@@ -10,7 +10,7 @@ import (
 
 // SearchTagHandler 搜索标签
 func SearchTagHandler(c *gin.Context) {
-	params := c.MustGet("param").(*protocol.QueryParams)
+	params := c.MustGet("param").(*protocol.QueryParam)
 
 	query, limit, offset := params.Query, params.Limit, params.Offset
 	tags, err := search.QueryTagFromIndex(query, limit, offset)

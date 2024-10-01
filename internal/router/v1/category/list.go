@@ -19,7 +19,7 @@ import (
 //	@update 2024-09-23 11:45:08
 func ListRootCategoryHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
-	param := c.MustGet("param").(*protocol.PageParams)
+	param := c.MustGet("param").(*protocol.PageParam)
 
 	user, err := model.QueryUserByName(uri.UserName, []string{"id"})
 	if err != nil {
@@ -50,12 +50,13 @@ func ListRootCategoryHandler(c *gin.Context) {
 }
 
 // ListChildrenCategoriesHandler 列出子分类
-//	@param c *gin.Context 
-//	@author centonhuang 
-//	@update 2024-10-01 05:09:47 
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-01 05:09:47
 func ListChildrenCategoriesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	param := c.MustGet("param").(*protocol.PageParams)
+	param := c.MustGet("param").(*protocol.PageParam)
 
 	categories, err := model.QueryChildrenCategoriesByUserID(uri.CategoryID, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
 	if err != nil {
@@ -74,5 +75,4 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 			}),
 		},
 	})
-
 }

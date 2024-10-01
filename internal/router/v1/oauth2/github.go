@@ -52,7 +52,7 @@ func GithubLoginHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-16 01:56:03
 func GithubCallbackHandler(c *gin.Context) {
-	params := protocol.GithubCallbackParams{}
+	params := protocol.GithubCallbackParam{}
 	if err := c.BindQuery(&params); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeURIError,
