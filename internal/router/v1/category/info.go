@@ -38,3 +38,62 @@ func GetCategoryInfoHandler(c *gin.Context) {
 		Data: category.GetBasicInfo(),
 	})
 }
+
+// UpdateCategoryInfoHandler 更新分类信息
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-02 03:45:55
+func UpdateCategoryInfoHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
+	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code: protocol.CodeNotPermissionError,
+		})
+		return
+	}
+
+	updateFields := make(map[string]interface{})
+
+	if body.Name != "" {
+		updateFields["name"] = body.Name
+	}
+
+	if body.ParentID != 0 {
+		updateFields["parent_id"] = body.ParentID
+	}
+
+	if len(updateFields) == 0 {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUpdateCategoryError,
+			Message: "No fields to update",
+		})
+		return
+	}
+
+	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	category, err = model.UpdateCategoryInfoByID(category.ID, updateFields)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUpdateCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: category.GetBasicInfo(),
+	})
+}

@@ -60,3 +60,12 @@ type CreateCategoryBody struct {
 	ParentID uint   `json:"parentID" binding:"omitempty"`
 	Name     string `json:"name" binding:"required"`
 }
+
+// UpdateCategoryBody 更新分类请求体
+//
+//	@author centonhuang
+//	@update 2024-10-02 03:46:26
+type UpdateCategoryBody struct {
+	Name     string `json:"name" binding:"omitempty"`
+	ParentID uint   `json:"parentID" binding:"omitempty"`
+}
