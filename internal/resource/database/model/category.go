@@ -85,7 +85,7 @@ func (c *Category) QueryParent() (parent Category, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-01 05:01:44
-func QueryCategoryByID(categoryID uint, fields []string) (category Category, err error) {
+func QueryCategoryByID(categoryID uint, fields []string) (category *Category, err error) {
 	err = database.DB.Select(fields).Where(&Category{ID: categoryID}).First(&category).Error
 	return
 }
@@ -118,4 +118,24 @@ func QueryRootCategoriesByUserID(userID uint, fields []string, limit, offset int
 func QueryChildrenCategoriesByUserID(parentID uint, fields []string, limit, offset int) (categories []Category, err error) {
 	err = database.DB.Select(fields).Where(&Category{ParentID: parentID}).Limit(limit).Offset(offset).Find(&categories).Error
 	return
+}
+
+// UpdateCategoryInfoByID 使用ID更新类别信息
+//
+//	@param categoryID uint
+//	@param info map[string]interface{}
+//	@return category *Category
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-02 03:49:06
+func UpdateCategoryInfoByID(categoryID uint, info map[string]interface{}) (category *Category, err error) {
+	err = database.DB.Model(&Category{}).Where(&Category{ID: categoryID}).Updates(info).Error
+	if err != nil {
+		return nil, err
+	}
+	err = database.DB.First(&category, categoryID).Error
+	if err != nil {
+		return nil, err
+	}
+	return category, nil
 }
