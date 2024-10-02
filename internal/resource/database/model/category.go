@@ -2,6 +2,7 @@ package model
 
 import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
@@ -138,4 +139,68 @@ func UpdateCategoryInfoByID(categoryID uint, info map[string]interface{}) (categ
 		return nil, err
 	}
 	return category, nil
+}
+
+// ReclusiveDeleteCategoryByID 递归删除类别
+//
+//	@param categoryID uint
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-02 04:47:08
+func ReclusiveDeleteCategoryByID(categoryID uint) (err error) {
+	categoryIDs, articleIDs, err := reclusiveFindChildrenIDsByID(categoryID)
+	if err != nil {
+		return
+	}
+
+	tx := database.DB.Begin()
+
+	err = tx.Where("id IN ?", append(categoryIDs, categoryID)).Delete(&Category{}).Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+
+	if len(articleIDs) == 0 {
+		tx.Commit()
+		return
+	}
+	err = tx.Where("id IN ?", articleIDs).Delete(&Article{}).Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+
+	tx.Commit()
+	return
+}
+
+func reclusiveFindChildrenIDsByID(categoryID uint) (categoryIDs []uint, articleIDs []uint, err error) {
+	categories, err := QueryChildrenCategoriesByUserID(categoryID, []string{"id"}, -1, -1)
+	if err != nil {
+		return
+	}
+	articles, err := QueryChildrenArticlesByCategoryID(categoryID, []string{"id"}, -1, -1)
+	if err != nil {
+		return
+	}
+
+	categoryIDs = lo.Map(categories, func(category Category, idx int) uint {
+		return category.ID
+	})
+
+	articleIDs = lo.Map(articles, func(article Article, idx int) uint {
+		return article.ID
+	})
+
+	for _, categoryID := range categoryIDs {
+		childrenCategoryIDs, childrenArticleIDs, err := reclusiveFindChildrenIDsByID(categoryID)
+		if err != nil {
+			return nil, nil, err
+		}
+		categoryIDs = append(categoryIDs, childrenCategoryIDs...)
+		articleIDs = append(articleIDs, childrenArticleIDs...)
+	}
+
+	return
 }

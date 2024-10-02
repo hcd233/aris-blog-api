@@ -97,3 +97,42 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 		Data: category.GetBasicInfo(),
 	})
 }
+
+// DeleteCategoryHandler 删除分类
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-02 04:55:08
+func DeleteCategoryHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
+	uri := c.MustGet("uri").(*protocol.CategoryURI)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code: protocol.CodeNotPermissionError,
+		})
+		return
+	}
+
+	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	err = model.ReclusiveDeleteCategoryByID(category.ID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+	})
+}
