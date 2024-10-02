@@ -44,7 +44,7 @@ func CreateArticleHandler(c *gin.Context) {
 		Status:     model.ArticleStatusDraft,
 		Title:      body.Title,
 		Slug:       body.Slug,
-		Tags:       tags,
+		Tags:       *tags,
 		CategoryID: body.CategoryID,
 		Comments:   []model.Comment{},
 		Versions:   []model.ArticleVersion{},

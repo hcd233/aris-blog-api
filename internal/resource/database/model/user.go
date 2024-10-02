@@ -143,7 +143,7 @@ func UpdateUserInfoByID(userID uint, info map[string]interface{}) (user *User, e
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-17 08:18:54
-func QueryUsers(offset int, limit int) (users []*User, err error) {
+func QueryUsers(offset int, limit int) (users *[]User, err error) {
 	err = database.DB.Offset(offset).Limit(limit).Find(&users).Error
 	return
 }

@@ -42,7 +42,7 @@ func ListRootCategoryHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"categories": lo.Map(categories, func(category model.Category, index int) map[string]interface{} {
+			"categories": lo.Map(*categories, func(category model.Category, index int) map[string]interface{} {
 				return category.GetBasicInfo()
 			}),
 		},
@@ -70,7 +70,7 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"categories": lo.Map(categories, func(category model.Category, index int) map[string]interface{} {
+			"categories": lo.Map(*categories, func(category model.Category, index int) map[string]interface{} {
 				return category.GetBasicInfo()
 			}),
 		},
@@ -98,7 +98,7 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": lo.Map(articles, func(article model.Article, index int) map[string]interface{} {
+			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
 		},
