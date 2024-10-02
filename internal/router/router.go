@@ -95,6 +95,7 @@ func initCategoryRouter(r *gin.RouterGroup) {
 	categoryIDRouter := categoryRouter.Group("/:categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
 	{
 		categoryIDRouter.GET("", category.GetCategoryInfoHandler)
+		categoryIDRouter.DELETE("", category.DeleteCategoryHandler)
 		categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), category.UpdateCategoryInfoHandler)
 		categoryIDRouter.GET("subCategory", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenCategoriesHandler)
 		categoryIDRouter.GET("subArticle", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenArticlesHandler)
