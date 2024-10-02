@@ -134,7 +134,7 @@ func QueryArticleBySlugAndUserName(articleSlug string, userName string, fields [
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-21 09:07:55
-func QueryArticlesByUserID(userID uint, limit int, offset int, fields []string) (articles []Article, err error) {
+func QueryArticlesByUserID(userID uint, limit int, offset int, fields []string) (articles *[]Article, err error) {
 	err = database.DB.Select(fields).Where(&Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
 	return
 }
@@ -164,11 +164,11 @@ func UpdateArticleInfoByID(articleID uint, info map[string]interface{}) (article
 //	@param fields []string
 //	@param limit int
 //	@param offset int
-//	@return articles []Article
+//	@return articles *[]Article
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-02 01:38:46
-func QueryChildrenArticlesByCategoryID(categoryID uint, fields []string, limit, offset int) (articles []Article, err error) {
+//	@update 2024-10-02 05:24:48
+func QueryChildrenArticlesByCategoryID(categoryID uint, fields []string, limit, offset int) (articles *[]Article, err error) {
 	err = database.DB.Select(fields).Where(&Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
 	return
 }

@@ -32,7 +32,7 @@ func ListTagHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": lo.Map(tags, func(article model.Tag, index int) map[string]interface{} {
+			"tags": lo.Map(*tags, func(article model.Tag, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
 		},

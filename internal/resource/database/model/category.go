@@ -61,7 +61,7 @@ func (c *Category) GetBasicInfo() map[string]interface{} {
 //
 //	@receiver c *Category
 //	@return children []Category, err error
-func (c *Category) QueryChildren() (children []Category, err error) {
+func (c *Category) QueryChildren() (children *[]Category, err error) {
 	err = database.DB.Where(&Category{ParentID: c.ID}).Find(&children).Error
 	return
 }
@@ -73,7 +73,7 @@ func (c *Category) QueryChildren() (children []Category, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-28 07:08:23
-func (c *Category) QueryParent() (parent Category, err error) {
+func (c *Category) QueryParent() (parent *Category, err error) {
 	err = database.DB.Where(&Category{ID: c.ParentID}).First(&parent).Error
 	return
 }
@@ -101,7 +101,7 @@ func QueryCategoryByID(categoryID uint, fields []string) (category *Category, er
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-01 03:55:57
-func QueryRootCategoriesByUserID(userID uint, fields []string, limit, offset int) (categories []Category, err error) {
+func QueryRootCategoriesByUserID(userID uint, fields []string, limit, offset int) (categories *[]Category, err error) {
 	err = database.DB.Select(fields).Where(&Category{UserID: userID}).Where("parent_id IS NULL").Limit(limit).Offset(offset).Find(&categories).Error
 	return
 }
@@ -116,7 +116,7 @@ func QueryRootCategoriesByUserID(userID uint, fields []string, limit, offset int
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-01 05:11:22
-func QueryChildrenCategoriesByUserID(parentID uint, fields []string, limit, offset int) (categories []Category, err error) {
+func QueryChildrenCategoriesByUserID(parentID uint, fields []string, limit, offset int) (categories *[]Category, err error) {
 	err = database.DB.Select(fields).Where(&Category{ParentID: parentID}).Limit(limit).Offset(offset).Find(&categories).Error
 	return
 }
@@ -155,7 +155,7 @@ func ReclusiveDeleteCategoryByID(categoryID uint) (err error) {
 
 	tx := database.DB.Begin()
 
-	err = tx.Where("id IN ?", append(categoryIDs, categoryID)).Delete(&Category{}).Error
+	err = tx.Where("id IN ?", append(*categoryIDs, categoryID)).Delete(&Category{}).Error
 	if err != nil {
 		tx.Rollback()
 		return
@@ -175,7 +175,8 @@ func ReclusiveDeleteCategoryByID(categoryID uint) (err error) {
 	return
 }
 
-func reclusiveFindChildrenIDsByID(categoryID uint) (categoryIDs []uint, articleIDs []uint, err error) {
+func reclusiveFindChildrenIDsByID(categoryID uint) (categoryIDs *[]uint, articleIDs []uint, err error) {
+	categoryIDs = &[]uint{}
 	categories, err := QueryChildrenCategoriesByUserID(categoryID, []string{"id"}, -1, -1)
 	if err != nil {
 		return
@@ -185,20 +186,20 @@ func reclusiveFindChildrenIDsByID(categoryID uint) (categoryIDs []uint, articleI
 		return
 	}
 
-	categoryIDs = lo.Map(categories, func(category Category, idx int) uint {
+	*categoryIDs = lo.Map(*categories, func(category Category, idx int) uint {
 		return category.ID
 	})
 
-	articleIDs = lo.Map(articles, func(article Article, idx int) uint {
+	articleIDs = lo.Map(*articles, func(article Article, idx int) uint {
 		return article.ID
 	})
 
-	for _, categoryID := range categoryIDs {
+	for _, categoryID := range *categoryIDs {
 		childrenCategoryIDs, childrenArticleIDs, err := reclusiveFindChildrenIDsByID(categoryID)
 		if err != nil {
 			return nil, nil, err
 		}
-		categoryIDs = append(categoryIDs, childrenCategoryIDs...)
+		*categoryIDs = append(*categoryIDs, *childrenCategoryIDs...)
 		articleIDs = append(articleIDs, childrenArticleIDs...)
 	}
 

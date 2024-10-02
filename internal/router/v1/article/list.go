@@ -38,7 +38,7 @@ func ListArticleHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": lo.Map(articles, func(article model.Article, index int) map[string]interface{} {
+			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
 		},

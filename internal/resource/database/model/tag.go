@@ -84,7 +84,7 @@ func (t *Tag) GetDetailedInfoWithUser() map[string]interface{} {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-22 03:15:30
-func QueryTags(limit int, offset int, fields []string) (tags []Tag, err error) {
+func QueryTags(limit int, offset int, fields []string) (tags *[]Tag, err error) {
 	err = database.DB.Select(fields).Limit(limit).Offset(offset).Find(&tags).Error
 	return
 }
@@ -97,7 +97,7 @@ func QueryTags(limit int, offset int, fields []string) (tags []Tag, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-22 04:45:22
-func QueryTagBySlug(tagSlug string, fields []string) (tag Tag, err error) {
+func QueryTagBySlug(tagSlug string, fields []string) (tag *Tag, err error) {
 	err = database.DB.Preload("User").Select(fields).Where(&Tag{Slug: tagSlug}).First(&tag).Error
 	return
 }
@@ -110,7 +110,7 @@ func QueryTagBySlug(tagSlug string, fields []string) (tag Tag, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-02 01:05:34
-func QueryTagsBySlugs(tagSlugs []string, fields []string) (tags []Tag, err error) {
+func QueryTagsBySlugs(tagSlugs []string, fields []string) (tags *[]Tag, err error) {
 	err = database.DB.Preload("User").Select(fields).Where("slug IN ?", tagSlugs).Find(&tags).Error
 	return
 }
@@ -123,7 +123,7 @@ func QueryTagsBySlugs(tagSlugs []string, fields []string) (tags []Tag, err error
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-22 04:10:07
-func UpdateTagBySlug(tagSlug string, info map[string]interface{}) (tag Tag, err error) {
+func UpdateTagBySlug(tagSlug string, info map[string]interface{}) (tag *Tag, err error) {
 	info["updated_at"] = time.Now()
 	err = database.DB.Model(&Tag{}).Where(&Tag{Slug: tagSlug}).Updates(info).Error
 	if err != nil {
