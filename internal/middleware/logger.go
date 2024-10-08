@@ -2,10 +2,12 @@ package middleware
 
 import (
 	"fmt"
+	"net/url"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
 
@@ -29,7 +31,7 @@ func LoggerMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+		query := lo.Must1(url.QueryUnescape(c.Request.URL.RawQuery))
 		c.Next()
 		latency := time.Since(start)
 		if len(c.Errors) > 0 {
