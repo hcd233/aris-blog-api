@@ -23,7 +23,7 @@ import (
 func GetUserInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
-	user, err := model.QueryUserByName(uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login"})
+	user, err := model.QueryUserByName(uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
