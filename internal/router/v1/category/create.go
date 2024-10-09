@@ -17,24 +17,33 @@ func CreateCategoryHandler(c *gin.Context) {
 	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
-	category := &model.Category{
-		Name:     body.Name,
-		ParentID: body.ParentID,
-		UserID:   userID,
-	}
-
-	if category.ID == body.ParentID {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code: protocol.CodeCreateCategoryError,
-		})
-		return
-	}
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,
 		})
 		return
+	}
+
+	if body.ParentID == 0 {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code: protocol.CodeCreateArticleError,
+		})
+		return
+	}
+
+	_, err := model.QueryCategoryByID(body.ParentID, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusNotFound, protocol.Response{
+			Code: protocol.CodeGetCategoryError,
+		})
+		return
+	}
+
+	category := &model.Category{
+		Name:     body.Name,
+		ParentID: body.ParentID,
+		UserID:   userID,
 	}
 
 	if err := category.Create(); err != nil {
