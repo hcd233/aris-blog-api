@@ -114,6 +114,7 @@ func (u *User) GetDetailedInfo() map[string]interface{} {
 		"avatar":     u.Avatar,
 		"created_at": u.CreatedAt,
 		"last_login": u.LastLogin.Time,
+		"permission": u.Permission,
 	}
 }
 
