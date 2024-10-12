@@ -83,7 +83,7 @@ func UpdateTagHandler(c *gin.Context) {
 func DeleteTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := model.QueryTagBySlug(uri.TagSlug, []string{"id"})
+	tag, err := model.QueryTagBySlug(uri.TagSlug, []string{"id", "name", "slug"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetTagError,
