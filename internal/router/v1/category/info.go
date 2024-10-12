@@ -114,11 +114,19 @@ func DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id"})
+	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if category.ParentID == 0 {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteCategoryError,
+			Message: "Root category can not be deleted",
 		})
 		return
 	}

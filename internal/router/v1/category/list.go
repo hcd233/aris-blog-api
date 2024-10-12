@@ -30,7 +30,16 @@ func ListRootCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	categories, err := model.QueryRootCategoriesByUserID(user.ID, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
+	rootCategory, err := model.QueryRootCategoryByUserID(user.ID, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	categories, err := model.QueryChildrenCategoriesByUserID(rootCategory.ID, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
