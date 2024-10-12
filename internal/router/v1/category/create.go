@@ -25,20 +25,20 @@ func CreateCategoryHandler(c *gin.Context) {
 		return
 	}
 
+	var err error
+	var parentCategory *model.Category
 	if body.ParentID == 0 {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code: protocol.CodeCreateArticleError,
-		})
-		return
+		parentCategory, err = model.QueryRootCategoryByUserID(userID, []string{"id"})
+	} else {
+		parentCategory, err = model.QueryCategoryByID(body.ParentID, []string{"id"})
 	}
-
-	_, err := model.QueryCategoryByID(body.ParentID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusNotFound, protocol.Response{
 			Code: protocol.CodeGetCategoryError,
 		})
 		return
 	}
+	body.ParentID = parentCategory.ID
 
 	category := &model.Category{
 		Name:     body.Name,

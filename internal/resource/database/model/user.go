@@ -50,6 +50,21 @@ type User struct {
 	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;not null;comment:最后登录时间"`
 	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
 	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
+	Category     []Category   `json:"category" gorm:"foreignKey:UserID"`
+	Tag          []Tag        `json:"tag" gorm:"foreignKey:CreateBy"`
+}
+
+// BeforeCreate 创建用户前
+//
+//	@receiver u *User
+//	@param _ *gorm.DB
+//	@return err error
+//	@update 2024-06-22 10:10:07
+func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
+	if !u.LastLogin.Valid {
+		u.LastLogin = sql.NullTime{Time: time.Now(), Valid: true}
+	}
+	return
 }
 
 // Create 创建用户
@@ -201,30 +216,5 @@ func QueryUserFieldsByID(userID uint, fields []string, allowEmpty bool) (user *U
 	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
 		user, err = nil, nil
 	}
-	return
-}
-
-// CreateUserByBasicInfo 根据基本信息添加用户
-//
-// @param username string
-// @param email string
-// @param avatar string
-// @param permission string
-// @return user *User
-// @return err error
-// @author centonhuang
-// @update 2024-09-16 11:26:37
-func CreateUserByBasicInfo(username string, email string, avatar string, permission Permission) (user *User, err error) {
-	user = &User{
-		Name:       username,
-		Email:      email,
-		Avatar:     avatar,
-		Permission: permission,
-		LastLogin: sql.NullTime{
-			Time:  time.Now(),
-			Valid: true,
-		},
-	}
-	err = user.Create()
 	return
 }

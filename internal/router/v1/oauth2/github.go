@@ -107,7 +107,17 @@ func GithubCallbackHandler(c *gin.Context) {
 		// 新用户，保存信息
 		permission := model.PermissionGeneral
 		// atomic
-		user = lo.Must(model.CreateUserByBasicInfo(userName, email, avatar, permission))
+
+		defaultCategory := &model.Category{Name: userName}
+
+		user = &model.User{
+			Name:       userName,
+			Email:      email,
+			Avatar:     avatar,
+			Permission: permission,
+			Category:   []model.Category{*defaultCategory},
+		}
+		lo.Must0(user.Create())
 		lo.Must0(search.AddUserIntoIndex(user.GetBasicInfo()))
 	}
 
