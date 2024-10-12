@@ -1,8 +1,10 @@
 package model
 
 import (
+	"fmt"
+
+	"github.com/google/uuid"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
-	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
@@ -36,9 +38,18 @@ func (c *Category) Create() (err error) {
 //
 //	@receiver c *Category
 //	@return err error
-//	@author centonhuang
 //	@update 2024-09-22 10:10:00
 func (c *Category) Delete() (err error) {
+	// Generate a new UUID
+	newUUID := uuid.New().String()
+
+	// Update the name with the new UUID
+	err = database.DB.Model(c).Update("name", fmt.Sprintf("%s-%s", c.Name, newUUID)).Error
+	if err != nil {
+		return
+	}
+
+	// Delete the category
 	err = database.DB.Delete(c).Error
 	return
 }
@@ -91,18 +102,16 @@ func QueryCategoryByID(categoryID uint, fields []string) (category *Category, er
 	return
 }
 
-// QueryRootCategoriesByUserID 查询指定用户的梗类别
+// QueryRootCategoryByUserID 查询指定用户的梗类别
 //
 //	@param userID uint
 //	@param fields []string
-//	@param limit int
-//	@param offset int
-//	@return categories []Category
+//	@return category *Category
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-01 03:55:57
-func QueryRootCategoriesByUserID(userID uint, fields []string, limit, offset int) (categories *[]Category, err error) {
-	err = database.DB.Select(fields).Where(&Category{UserID: userID}).Where("parent_id IS NULL").Limit(limit).Offset(offset).Find(&categories).Error
+//	@update 2024-10-10 12:43:13
+func QueryRootCategoryByUserID(userID uint, fields []string) (category *Category, err error) {
+	err = database.DB.Select(fields).Where(&Category{UserID: userID}).Where("parent_id IS NULL").First(&category).Error
 	return
 }
 
@@ -118,6 +127,18 @@ func QueryRootCategoriesByUserID(userID uint, fields []string, limit, offset int
 //	@update 2024-10-01 05:11:22
 func QueryChildrenCategoriesByUserID(parentID uint, fields []string, limit, offset int) (categories *[]Category, err error) {
 	err = database.DB.Select(fields).Where(&Category{ParentID: parentID}).Limit(limit).Offset(offset).Find(&categories).Error
+	return
+}
+
+// QueryDeletedCategoryByID 使用ID查询已删除的类别
+//
+//	@param categoryID uint
+//	@return category *Category
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-10 01:00:52
+func QueryDeletedCategoryByID(categoryID uint) (category *Category, err error) {
+	err = database.DB.Unscoped().Where(&Category{ID: categoryID}).First(&category).Error
 	return
 }
 
@@ -148,59 +169,63 @@ func UpdateCategoryInfoByID(categoryID uint, info map[string]interface{}) (categ
 //	@author centonhuang
 //	@update 2024-10-02 04:47:08
 func ReclusiveDeleteCategoryByID(categoryID uint) (err error) {
-	categoryIDs, articleIDs, err := reclusiveFindChildrenIDsByID(categoryID)
+	categories, articles, err := reclusiveFindChildrenIDsByID(categoryID)
 	if err != nil {
 		return
 	}
 
 	tx := database.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			err = fmt.Errorf("panic occurred: %v", r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
 
-	err = tx.Where("id IN ?", append(*categoryIDs, categoryID)).Delete(&Category{}).Error
+	rootCategory, err := QueryCategoryByID(categoryID, []string{"id", "name"})
 	if err != nil {
-		tx.Rollback()
 		return
 	}
 
-	if len(articleIDs) == 0 {
-		tx.Commit()
-		return
-	}
-	err = tx.Where("id IN ?", articleIDs).Delete(&Article{}).Error
-	if err != nil {
-		tx.Rollback()
-		return
+	*categories = append(*categories, *rootCategory)
+	for _, category := range *categories {
+		err = category.Delete()
+		if err != nil {
+			return
+		}
 	}
 
+	for _, article := range *articles {
+		err = article.Delete()
+		if err != nil {
+			return
+		}
+	}
 	tx.Commit()
 	return
 }
 
-func reclusiveFindChildrenIDsByID(categoryID uint) (categoryIDs *[]uint, articleIDs []uint, err error) {
-	categoryIDs = &[]uint{}
-	categories, err := QueryChildrenCategoriesByUserID(categoryID, []string{"id"}, -1, -1)
+func reclusiveFindChildrenIDsByID(categoryID uint) (categories *[]Category, articles *[]Article, err error) {
+	categories, err = QueryChildrenCategoriesByUserID(categoryID, []string{"id", "name"}, -1, -1)
 	if err != nil {
 		return
 	}
-	articles, err := QueryChildrenArticlesByCategoryID(categoryID, []string{"id"}, -1, -1)
+	articles, err = QueryChildrenArticlesByCategoryID(categoryID, []string{"id"}, -1, -1)
 	if err != nil {
 		return
 	}
 
-	*categoryIDs = lo.Map(*categories, func(category Category, idx int) uint {
-		return category.ID
-	})
-
-	articleIDs = lo.Map(*articles, func(article Article, idx int) uint {
-		return article.ID
-	})
-
-	for _, categoryID := range *categoryIDs {
-		childrenCategoryIDs, childrenArticleIDs, err := reclusiveFindChildrenIDsByID(categoryID)
+	for _, category := range *categories {
+		childrenCategories, childrenArticles, err := reclusiveFindChildrenIDsByID(category.ID)
 		if err != nil {
 			return nil, nil, err
 		}
-		*categoryIDs = append(*categoryIDs, *childrenCategoryIDs...)
-		articleIDs = append(articleIDs, childrenArticleIDs...)
+		*categories = append(*categories, *childrenCategories...)
+		*articles = append(*articles, *childrenArticles...)
 	}
 
 	return
