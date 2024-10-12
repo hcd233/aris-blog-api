@@ -1,8 +1,10 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
@@ -27,6 +29,25 @@ func (t *Tag) Create() (err error) {
 
 // Delete 删除标签
 func (t *Tag) Delete() (err error) {
+	UUID := uuid.New().String()
+
+	tx := database.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			err = fmt.Errorf("panic occurred: %v", r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	err = database.DB.Model(t).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", t.Name, UUID), "slug": fmt.Sprintf("%s-%s", t.Slug, UUID)}).Error
+	if err != nil {
+		return
+	}
+
 	err = database.DB.Delete(t).Error
 	return
 }

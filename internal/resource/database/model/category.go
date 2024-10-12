@@ -40,16 +40,25 @@ func (c *Category) Create() (err error) {
 //	@return err error
 //	@update 2024-09-22 10:10:00
 func (c *Category) Delete() (err error) {
-	// Generate a new UUID
-	newUUID := uuid.New().String()
+	UUID := uuid.New().String()
 
-	// Update the name with the new UUID
-	err = database.DB.Model(c).Update("name", fmt.Sprintf("%s-%s", c.Name, newUUID)).Error
+	tx := database.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			err = fmt.Errorf("panic occurred: %v", r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	err = database.DB.Model(c).Update("name", fmt.Sprintf("%s-%s", c.Name, UUID)).Error
 	if err != nil {
 		return
 	}
 
-	// Delete the category
 	err = database.DB.Delete(c).Error
 	return
 }
@@ -205,7 +214,7 @@ func ReclusiveDeleteCategoryByID(categoryID uint) (err error) {
 			return
 		}
 	}
-	tx.Commit()
+
 	return
 }
 
