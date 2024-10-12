@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
@@ -41,25 +42,7 @@ func (c *Category) Create() (err error) {
 //	@update 2024-09-22 10:10:00
 func (c *Category) Delete() (err error) {
 	UUID := uuid.New().String()
-
-	tx := database.DB.Begin()
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			err = fmt.Errorf("panic occurred: %v", r)
-		} else if err != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
-
-	err = database.DB.Model(c).Update("name", fmt.Sprintf("%s-%s", c.Name, UUID)).Error
-	if err != nil {
-		return
-	}
-
-	err = database.DB.Delete(c).Error
+	err = database.DB.Model(c).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", c.Name, UUID), "deleted_at": time.Now()}).Error
 	return
 }
 
