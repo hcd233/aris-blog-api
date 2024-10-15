@@ -32,7 +32,7 @@ func CreateArticleHandler(c *gin.Context) {
 
 	tags, err := model.QueryTagsBySlugs(body.Tags, []string{"id"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
 			Message: err.Error(),
 		})
@@ -52,7 +52,7 @@ func CreateArticleHandler(c *gin.Context) {
 
 	err = article.Create()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateArticleError,
 				Message: err.Error(),
 		})

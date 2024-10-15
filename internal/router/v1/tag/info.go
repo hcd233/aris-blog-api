@@ -18,7 +18,7 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	tag, err := model.QueryTagBySlug(uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
 			Message: err.Error(),
 		})
@@ -56,7 +56,7 @@ func UpdateTagHandler(c *gin.Context) {
 	}
 	tag, err := model.UpdateTagBySlug(uri.TagSlug, updateFields)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
 			Message: err.Error(),
 		})
@@ -66,7 +66,7 @@ func UpdateTagHandler(c *gin.Context) {
 	// 同步到搜索引擎
 	err = search.UpdateTagInIndex(tag.GetDetailedInfo())
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
 			Message: err.Error(),
 		})
@@ -85,7 +85,7 @@ func DeleteTagHandler(c *gin.Context) {
 
 	tag, err := model.QueryTagBySlug(uri.TagSlug, []string{"id", "name", "slug"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
 			Message: err.Error(),
 		})
@@ -94,7 +94,7 @@ func DeleteTagHandler(c *gin.Context) {
 
 	err = tag.Delete()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteTagError,
 			Message: err.Error(),
 		})

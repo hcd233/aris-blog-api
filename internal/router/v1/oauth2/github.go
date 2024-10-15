@@ -89,7 +89,7 @@ func GithubCallbackHandler(c *gin.Context) {
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
 	user, err := model.QueryUserByEmail(email, []string{"id", "name", "avatar"}, true)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
 			Message: err.Error(),
 		})

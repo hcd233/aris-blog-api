@@ -22,7 +22,7 @@ func CreateTagHandler(c *gin.Context) {
 	}
 
 	if err := tag.Create(); err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
 			Message: err.Error(),
 		})
@@ -31,7 +31,7 @@ func CreateTagHandler(c *gin.Context) {
 
 	// 同步到搜索引擎
 	if err := search.AddTagIntoIndex(tag.GetDetailedInfo()); err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
 			Message: err.Error(),
 		})

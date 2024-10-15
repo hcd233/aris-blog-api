@@ -25,7 +25,7 @@ func GetUserInfoHandler(c *gin.Context) {
 
 	user, err := model.QueryUserByName(uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
 			Message: err.Error(),
 		})

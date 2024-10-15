@@ -47,7 +47,7 @@ func CreateCategoryHandler(c *gin.Context) {
 	}
 
 	if err := category.Create(); err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
 			Message: err.Error(),
 		})

@@ -15,7 +15,7 @@ func SearchTagHandler(c *gin.Context) {
 	query, limit, offset := params.Query, params.Limit, params.Offset
 	tags, err := search.QueryTagFromIndex(query, limit, offset)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
 			Message: err.Error(),
 		})
