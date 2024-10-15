@@ -26,7 +26,7 @@ func GetArticleInfoHandler(c *gin.Context) {
 		"likes", "views",
 	})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
@@ -81,7 +81,7 @@ func UpdateArticleHandler(c *gin.Context) {
 
 	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
@@ -90,7 +90,7 @@ func UpdateArticleHandler(c *gin.Context) {
 
 	article, err = model.UpdateArticleInfoByID(article.ID, updateFields)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateArticleError,
 			Message: err.Error(),
 		})
@@ -115,7 +115,7 @@ func DeleteArticleHandler(c *gin.Context) {
 
 	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
@@ -124,7 +124,7 @@ func DeleteArticleHandler(c *gin.Context) {
 
 	err = article.Delete()
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})

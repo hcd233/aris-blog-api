@@ -22,7 +22,7 @@ func ListTagHandler(c *gin.Context) {
 
 	tags, err := model.QueryTags(param.Limit, param.Offset, []string{"id", "slug"})
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
