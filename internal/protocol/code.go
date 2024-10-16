@@ -111,6 +111,10 @@ const (
 	//	@update 2024-10-02 04:25:05
 	CodeDeleteCategoryError ResponseCode = 1026
 
+	// CodeGetArticleVersionError ResponseCode 获取文章版本错误
+	//	@update 2024-10-16 11:54:22
+	CodeGetArticleVersionError ResponseCode = 1027
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -151,6 +155,8 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeGetCategoryError:    "获取分类错误",
 	CodeUpdateCategoryError: "更新分类错误",
 	CodeDeleteCategoryError: "删除分类错误",
+
+	CodeGetArticleVersionError: "获取文章版本错误",
 
 	CodeUnknownError: "未知错误",
 }
