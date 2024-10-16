@@ -21,6 +21,7 @@ func CreateCategoryHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,
+			Message: "You have no permission to create other user's category",
 		})
 		return
 	}

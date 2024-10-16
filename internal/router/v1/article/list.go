@@ -9,12 +9,12 @@ import (
 	"github.com/samber/lo"
 )
 
-// ListArticleHandler 用户文章列表
+// ListArticlesHandler 用户文章列表
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-21 08:59:40
-func ListArticleHandler(c *gin.Context) {
+func ListArticlesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 

@@ -207,7 +207,7 @@ func reclusiveFindChildrenIDsByID(categoryID uint) (categories *[]Category, arti
 	if err != nil {
 		return
 	}
-	articles, err = QueryChildrenArticlesByCategoryID(categoryID, []string{"id"}, -1, -1)
+	articles, err = QueryChildrenArticlesByCategoryID(categoryID, []string{"id", "slug"}, -1, -1)
 	if err != nil {
 		return
 	}

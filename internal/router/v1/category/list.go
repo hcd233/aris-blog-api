@@ -12,12 +12,12 @@ import (
 	"github.com/samber/lo"
 )
 
-// ListRootCategoryHandler 列出根分类
+// ListRootCategoriesHandler 列出根分类
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-23 11:45:08
-func ListRootCategoryHandler(c *gin.Context) {
+func ListRootCategoriesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 

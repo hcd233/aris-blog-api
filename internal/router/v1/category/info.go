@@ -20,6 +20,7 @@ func GetCategoryInfoHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's category",
 		})
 		return
 	}
@@ -52,6 +53,7 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,
+			Message: "You have no permission to update other user's category",
 		})
 		return
 	}
@@ -110,6 +112,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's category",
 		})
 		return
 	}

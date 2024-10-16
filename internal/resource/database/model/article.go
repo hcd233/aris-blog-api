@@ -1,8 +1,10 @@
 package model
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/samber/lo"
 	"gorm.io/gorm"
@@ -65,7 +67,8 @@ func (a *Article) Create() (err error) {
 //	@author centonhuang
 //	@update 2024-09-22 04:58:17
 func (a *Article) Delete() (err error) {
-	err = database.DB.Delete(a).Error
+	UUID := uuid.New().String()
+	err = database.DB.Model(a).Updates(map[string]interface{}{"slug": fmt.Sprintf("%s-%s", a.Slug, UUID), "deleted_at": time.Now()}).Error
 	return
 }
 
