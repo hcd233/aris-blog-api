@@ -109,7 +109,7 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 	articleVersionRouter := r.Group("/version")
 	{
 		articleVersionRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
-		// articleVersionRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}), article.CreateArticleVersionHandler)
+		articleVersionRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}), article_version.CreateArticleVersionHandler)
 		// articleVersionRouter.GET("v:version", middleware.ValidateParamMiddleware(&protocol.QueryArticleVersionParam{}), article.GetArticleVersionHandler)
 	}
 }

@@ -1,8 +1,6 @@
 package model
 
 import (
-	"errors"
-
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
@@ -13,10 +11,11 @@ import (
 //	@update 2024-09-21 06:47:31
 type ArticleVersion struct {
 	gorm.Model
-	ArticleID uint     `json:"article_id" gorm:"column:article_id;uniqueIndex:idx_article_version;comment:文章ID"`
-	Article   *Article `json:"article" gorm:"foreignKey:ArticleID"`
-	Version   uint     `json:"version" gorm:"column:version;uniqueIndex:idx_article_version;comment:版本号"`
-	Content   string   `json:"content" gorm:"column:content;not null;comment:文章内容"`
+	ArticleID   uint     `json:"article_id" gorm:"column:article_id;uniqueIndex:idx_article_version;comment:文章ID"`
+	Article     *Article `json:"article" gorm:"foreignKey:ArticleID"`
+	Version     uint     `json:"version" gorm:"column:version;uniqueIndex:idx_article_version;comment:版本号"`
+	Content     string   `json:"content" gorm:"column:content;not null;comment:文章内容"`
+	Description string   `json:"description" gorm:"column:description;comment:版本描述"`
 }
 
 // Create 创建文章版本
@@ -26,11 +25,6 @@ type ArticleVersion struct {
 //	@author centonhuang
 //	@update 2024-10-16 01:54:18
 func (av *ArticleVersion) Create() (err error) {
-	latestVersion, err := QueryLatestArticleVersionByArticleID(av.ArticleID, []string{"version_number"})
-	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		return
-	}
-	av.Version = latestVersion.Version + 1
 	err = database.DB.Create(av).Error
 	return
 }
@@ -73,7 +67,7 @@ func (av *ArticleVersion) GetDetailedInfo() map[string]interface{} {
 //	@author centonhuang
 //	@update 2024-10-16 10:08:53
 func QueryLatestArticleVersionByArticleID(articleID uint, fields []string) (latestVersion *ArticleVersion, err error) {
-	// err = database.DB.Where(&ArticleVersion{ArticleID: articleID}).Order("version_number DESC").First(&latestVersion).Error
+	// err = database.DB.Where(&ArticleVersion{ArticleID: articleID}).Order("version DESC").First(&latestVersion).Error
 	err = database.DB.Select(fields).Where(&ArticleVersion{ArticleID: articleID}).Last(&latestVersion).Error
 	return
 }

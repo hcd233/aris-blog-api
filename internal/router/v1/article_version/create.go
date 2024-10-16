@@ -1,31 +1,30 @@
-// Package version 文章版本接口
-//
-//	@update 2024-10-16 10:10:30
 package version
 
 import (
+	"errors"
 	"net/http"
+
+	"gorm.io/gorm"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/samber/lo"
 )
 
-// ListArticleVersionsHandler 列出文章版本
+// CreateArticleVersionHandler 创建文章版本
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-10-16 10:13:59
-func ListArticleVersionsHandler(c *gin.Context) {
+//	@update 2024-10-17 12:44:17
+func CreateArticleVersionHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
-	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's article versions",
+			Message: "You have no permission to create other user's article version",
 		})
 		return
 	}
@@ -39,8 +38,8 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	versions, err := model.QueryArticleVersionsByArticleID(article.ID, []string{"id", "version"}, param.Limit, param.Offset)
-	if err != nil {
+	latestVersion, err := model.QueryLatestArticleVersionByArticleID(article.ID, []string{"version"})
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
 			Message: err.Error(),
@@ -48,12 +47,21 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
+	articleVersion := model.ArticleVersion{
+		Article: article,
+		Content: body.Content,
+		Version: latestVersion.Version + 1,
+	}
+	err = articleVersion.Create()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code: protocol.CodeCreateArticleVersionError,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"articleVersions": lo.Map(*versions, func(article model.ArticleVersion, index int) map[string]interface{} {
-				return article.GetBasicInfo()
-			}),
-		},
+		Data: articleVersion.GetBasicInfo(),
 	})
 }

@@ -69,3 +69,11 @@ type UpdateCategoryBody struct {
 	Name     string `json:"name" binding:"omitempty"`
 	ParentID uint   `json:"parentID" binding:"omitempty"`
 }
+
+// CreateArticleVersionBody 创建文章版本请求体
+//
+//	@author centonhuang
+//	@update 2024-10-17 12:43:32
+type CreateArticleVersionBody struct {
+	Content string `json:"content" binding:"required"`
+}
