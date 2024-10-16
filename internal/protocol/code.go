@@ -119,6 +119,10 @@ const (
 	//	@update 2024-10-17 12:46:33
 	CodeCreateArticleVersionError ResponseCode = 1028
 
+	// CodeCreateArticleVersionRateLimitError ResponseCode 创建文章版本频率限制错误
+	//	@update 2024-10-17 01:10:33
+	CodeCreateArticleVersionRateLimitError ResponseCode = 1029
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -160,8 +164,9 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeUpdateCategoryError: "更新分类错误",
 	CodeDeleteCategoryError: "删除分类错误",
 
-	CodeGetArticleVersionError:    "获取文章版本错误",
-	CodeCreateArticleVersionError: "创建文章版本错误",
+	CodeGetArticleVersionError:             "获取文章版本错误",
+	CodeCreateArticleVersionError:          "创建文章版本错误",
+	CodeCreateArticleVersionRateLimitError: "创建文章版本频率限制错误，请稍后再试",
 
 	CodeUnknownError: "未知错误",
 }
