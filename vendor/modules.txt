@@ -167,6 +167,9 @@ github.com/pelletier/go-toml/v2/internal/characters
 github.com/pelletier/go-toml/v2/internal/danger
 github.com/pelletier/go-toml/v2/internal/tracker
 github.com/pelletier/go-toml/v2/unstable
+# github.com/pkg/errors v0.9.1
+## explicit
+github.com/pkg/errors
 # github.com/rogpeppe/go-internal v1.11.0
 ## explicit; go 1.19
 # github.com/sagikazarmark/locafero v0.4.0
@@ -235,6 +238,12 @@ github.com/twitchyliquid64/golang-asm/unsafeheader
 # github.com/ugorji/go/codec v1.2.12
 ## explicit; go 1.11
 github.com/ugorji/go/codec
+# github.com/ulule/limiter/v3 v3.11.2
+## explicit; go 1.17
+github.com/ulule/limiter/v3
+github.com/ulule/limiter/v3/drivers/middleware/gin
+github.com/ulule/limiter/v3/drivers/store/common
+github.com/ulule/limiter/v3/drivers/store/memory
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19
 go.uber.org/multierr

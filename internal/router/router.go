@@ -1,6 +1,8 @@
 package router
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
@@ -109,7 +111,12 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 	articleVersionRouter := r.Group("/version")
 	{
 		articleVersionRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
-		articleVersionRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}), article_version.CreateArticleVersionHandler)
+		articleVersionRouter.POST(
+			"",
+			middleware.RateLimiterMiddleware(middleware.RateLimiterConfig{Period: 10 * time.Second, Limit: 1, Key: "userName", ErrorCode: protocol.CodeCreateArticleVersionRateLimitError}),
+			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
+			article_version.CreateArticleVersionHandler,
+		)
 		// articleVersionRouter.GET("v:version", middleware.ValidateParamMiddleware(&protocol.QueryArticleVersionParam{}), article.GetArticleVersionHandler)
 	}
 }
