@@ -32,10 +32,17 @@ func CreateArticleHandler(c *gin.Context) {
 	}
 
 	tags, err := model.QueryTagsBySlugs(body.Tags, []string{"id"})
-	if err != nil {
+	if err != nil{
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
 			Message: err.Error(),
+		})
+		return
+	}
+	if len(*tags) != len(body.Tags) {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeQueryTagError,
+			Message: "find invalid tags",
 		})
 		return
 	}
