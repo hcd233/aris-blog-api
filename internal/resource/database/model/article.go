@@ -102,11 +102,11 @@ func (a *Article) GetDetailedInfo() map[string]interface{} {
 		"category":     a.CategoryID,
 		"status":       a.Status,
 		"published_at": a.PublishedAt,
-		"tags":         a.Tags,
+		"tags":         lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
 		"comments":     a.Comments,
 		"views":        a.Views,
 		"likes":        a.Likes,
-		"versions":     a.Versions,
+		"versions":     lo.Map(a.Versions, func(version ArticleVersion, idx int) map[string]interface{} { return version.GetBasicInfo() }),
 	}
 }
 
@@ -119,7 +119,7 @@ func (a *Article) GetDetailedInfo() map[string]interface{} {
 //	@author centonhuang
 //	@update 2024-09-21 09:17:50
 func QueryArticleBySlugAndUserName(articleSlug string, userName string, fields []string) (article *Article, err error) {
-	err = database.DB.Select(
+	err = database.DB.Preload("Tags").Preload("Versions").Select(
 		lo.Map(fields, func(field string, idx int) string { return "articles." + field }),
 	).Joins(
 		"JOIN users ON user_id = users.id",
