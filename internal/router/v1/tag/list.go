@@ -12,12 +12,12 @@ import (
 	"github.com/samber/lo"
 )
 
-// ListTagHandler 标签列表
+// ListTagsHandler 标签列表
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-22 02:41:01
-func ListTagHandler(c *gin.Context) {
+func ListTagsHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	tags, err := model.QueryTags(param.Limit, param.Offset, []string{"id", "slug"})

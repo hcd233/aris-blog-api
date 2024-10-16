@@ -22,6 +22,7 @@ func CreateArticleHandler(c *gin.Context) {
 	if uri.UserName != userName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code: protocol.CodeNotPermissionError,
+			Message: "You have no permission to create other user's article",
 		})
 		return
 	}

@@ -21,7 +21,7 @@ func GetArticleInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{
-		"id", "slug", "title", "status", "category",
+		"id", "slug", "title", "status", "category_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
 	})
@@ -113,7 +113,7 @@ func UpdateArticleHandler(c *gin.Context) {
 func DeleteArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
-	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id"})
+	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id", "slug"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
