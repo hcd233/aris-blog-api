@@ -38,11 +38,19 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := model.QueryLatestArticleVersionByArticleID(article.ID, []string{"version"})
+	latestVersion, err := model.QueryLatestArticleVersionByArticleID(article.ID, []string{"version", "content"})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if latestVersion.Content == body.Content {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeCreateArticleVersionError,
+			Message: "The content of the new version is the same as the latest version",
 		})
 		return
 	}
