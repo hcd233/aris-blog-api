@@ -17,7 +17,7 @@ var (
 	articleVersionOnce         sync.Once
 )
 
-// GetCategoryDAO 获取类别数据访问对象
+// GetCategoryDAO 获取类别DAO
 //
 //	@return *categoryDAO
 //	@author centonhuang
@@ -29,7 +29,7 @@ func GetCategoryDAO() *CategoryDAO {
 	return categoryDAOSingleton
 }
 
-// GetUserDAO 获取用户数据访问对象
+// GetUserDAO 获取用户DAO
 //
 //	@return *baseDAO
 //	@author centonhuang
@@ -41,7 +41,7 @@ func GetUserDAO() *UserDAO {
 	return userDAOSingleton
 }
 
-// GetTagDAO 获取标签数据访问对象
+// GetTagDAO 获取标签DAO
 //
 //	@return *tagDAO
 //	@author centonhuang
@@ -53,7 +53,7 @@ func GetTagDAO() *TagDAO {
 	return tagDAOSingleton
 }
 
-// GetArticleDAO 获取文章数据访问对象
+// GetArticleDAO 获取文章DAO
 //
 //	@return *ArticleDAO
 //	@author centonhuang
@@ -65,7 +65,7 @@ func GetArticleDAO() *ArticleDAO {
 	return articleDAOSingleton
 }
 
-// GetArticleVersionDAO 获取文章版本数据访问对象
+// GetArticleVersionDAO 获取文章版本DAO
 //
 //	@return *ArticleVersionDAO
 //	@author centonhuang

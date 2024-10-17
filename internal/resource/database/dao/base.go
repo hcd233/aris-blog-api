@@ -1,4 +1,4 @@
-// Package dao 数据访问对象
+// Package dao DAO
 //
 //	@update 2024-10-17 02:31:49
 package dao
@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// baseDAO 基础数据访问对象
+// baseDAO 基础DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 02:32:22

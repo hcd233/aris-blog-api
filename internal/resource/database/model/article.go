@@ -54,10 +54,10 @@ type Article struct {
 //	@update 2024-09-21 09:35:50
 func (a *Article) GetBasicInfo() map[string]interface{} {
 	return map[string]interface{}{
-		"id":    a.ID,
-		"title": a.Title,
-		"slug":  a.Slug,
-		// TODO support tags and category
+		"id":     a.ID,
+		"title":  a.Title,
+		"slug":   a.Slug,
+		"status": a.Status,
 	}
 }
 
