@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/samber/lo"
 )
@@ -21,6 +23,8 @@ func ListRootCategoriesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
+	dao := dao.GetCategoryDAO()
+
 	user, err := model.QueryUserByName(uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
@@ -30,7 +34,7 @@ func ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	rootCategory, err := model.QueryRootCategoryByUserID(user.ID, []string{"id"})
+	rootCategory, err := dao.GetRootByUserID(database.DB, user.ID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -39,7 +43,7 @@ func ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	categories, err := model.QueryChildrenCategoriesByUserID(rootCategory.ID, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
+	categories, err := dao.GetChildren(database.DB, rootCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
@@ -67,7 +71,18 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	categories, err := model.QueryChildrenCategoriesByUserID(uri.CategoryID, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
+	dao := dao.GetCategoryDAO()
+
+	parentCategory, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	categories, err := dao.GetChildren(database.DB, parentCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
@@ -95,7 +110,19 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	articles, err := model.QueryChildrenArticlesByCategoryID(uri.CategoryID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
+	dao := dao.GetCategoryDAO()
+
+	parentCategory, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	// FIXME need refactor
+	articles, err := model.QueryChildrenArticlesByCategoryID(parentCategory.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
