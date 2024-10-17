@@ -33,3 +33,12 @@ type CategoryURI struct {
 	UserURI
 	CategoryID uint `uri:"categoryID" binding:"required"`
 }
+
+// ArticleVersionURI 文章版本路径参数
+//
+//	@author centonhuang
+//	@update 2024-10-18 03:13:26
+type ArticleVersionURI struct {
+	ArticleURI
+	Version uint `uri:"version" binding:"required,min=1"`
+}

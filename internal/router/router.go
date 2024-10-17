@@ -76,8 +76,10 @@ func initUserRouter(r *gin.RouterGroup) {
 func initArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article")
 	{
-		articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
+		// TODO move this router
+		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryArticleHandler)
 		articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
+		articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
 	}
 
 	articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
@@ -112,12 +114,16 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 	articleVersionRouter := r.Group("/version")
 	{
 		articleVersionRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
+		
 		articleVersionRouter.POST(
 			"",
 			middleware.RateLimiterMiddleware(middleware.RateLimiterConfig{Period: 10 * time.Second, Limit: 1, Key: "userName", ErrorCode: protocol.CodeCreateArticleVersionRateLimitError}),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			article_version.CreateArticleVersionHandler,
 		)
-		// articleVersionRouter.GET("v:version", middleware.ValidateParamMiddleware(&protocol.QueryArticleVersionParam{}), article.GetArticleVersionHandler)
+		articleVersionNumberRouter := articleVersionRouter.Group("/v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}))
+		{
+			articleVersionNumberRouter.GET("", article_version.GetArticleVersionInfoHandler)
+		}
 	}
 }
