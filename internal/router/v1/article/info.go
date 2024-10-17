@@ -7,8 +7,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/samber/lo"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 )
 
@@ -20,13 +24,24 @@ import (
 func GetArticleInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
-	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{
+	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+
+	user, err := userDAO.GetByName(database.DB, uri.UserName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{
 		"id", "slug", "title", "status", "category_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
 	})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
+		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
@@ -47,6 +62,18 @@ func GetArticleInfoHandler(c *gin.Context) {
 func UpdateArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
+
+	userName := c.MustGet("userName").(string)
+
+	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to update other user's article",
+		})
+		return
+	}
 
 	updateFields := make(map[string]interface{})
 	// TODO split it into handler
@@ -79,23 +106,33 @@ func UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(database.DB, userName, []string{"id"})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
 		return
 	}
 
-	article, err = model.UpdateArticleInfoByID(article.ID, updateFields)
-	if err != nil {
+	if err := articleDAO.Update(database.DB, article, updateFields); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateArticleError,
 			Message: err.Error(),
 		})
 		return
 	}
+
+	article = lo.Must1(articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{"id"}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
@@ -113,17 +150,29 @@ func UpdateArticleHandler(c *gin.Context) {
 func DeleteArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
-	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id", "slug"})
+	userName := c.MustGet("userName").(string)
+
+	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+
+	user, err := userDAO.GetByName(database.DB, userName, []string{"id"})
 	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{"id", "slug"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
 		})
 		return
 	}
 
-	err = article.Delete()
-	if err != nil {
+	if err := articleDAO.Delete(database.DB, article); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
