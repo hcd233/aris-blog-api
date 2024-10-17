@@ -5,7 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 )
 
 // GetCategoryInfoHandler 获取分类信息
@@ -17,15 +18,17 @@ func GetCategoryInfoHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
+	dao := dao.GetCategoryDAO()
+
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
-			Code: protocol.CodeNotPermissionError,
+			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to get other user's category",
 		})
 		return
 	}
 
-	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id", "name", "parent_id"})
+	category, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -50,9 +53,11 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
 
+	dao := dao.GetCategoryDAO()
+
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
-			Code: protocol.CodeNotPermissionError,
+			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to update other user's category",
 		})
 		return
@@ -76,7 +81,7 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id"})
+	category, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -85,7 +90,7 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err = model.UpdateCategoryInfoByID(category.ID, updateFields)
+	err = dao.Update(database.DB, category, updateFields)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateCategoryError,
@@ -109,15 +114,17 @@ func DeleteCategoryHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
+	dao := dao.GetCategoryDAO()
+
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
-			Code: protocol.CodeNotPermissionError,
+			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to delete other user's category",
 		})
 		return
 	}
 
-	category, err := model.QueryCategoryByID(uri.CategoryID, []string{"id", "parent_id"})
+	category, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -134,7 +141,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	err = model.ReclusiveDeleteCategoryByID(category.ID)
+	err = dao.DeleteReclusiveByID(database.DB, category.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteCategoryError,

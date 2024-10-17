@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 )
 
@@ -18,9 +20,11 @@ func CreateCategoryHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
 
+	dao := dao.GetCategoryDAO()
+
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
-			Code: protocol.CodeNotPermissionError,
+			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to create other user's category",
 		})
 		return
@@ -29,13 +33,14 @@ func CreateCategoryHandler(c *gin.Context) {
 	var err error
 	var parentCategory *model.Category
 	if body.ParentID == 0 {
-		parentCategory, err = model.QueryRootCategoryByUserID(userID, []string{"id"})
+		parentCategory, err = dao.GetRootByUserID(database.DB, userID, []string{"id"})
 	} else {
-		parentCategory, err = model.QueryCategoryByID(body.ParentID, []string{"id"})
+		parentCategory, err = dao.GetByID(database.DB, body.ParentID, []string{"id"})
 	}
 	if err != nil {
-		c.JSON(http.StatusNotFound, protocol.Response{
+		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code: protocol.CodeGetCategoryError,
+			Message: err.Error(),
 		})
 		return
 	}
@@ -47,7 +52,7 @@ func CreateCategoryHandler(c *gin.Context) {
 		UserID:   userID,
 	}
 
-	if err := category.Create(); err != nil {
+	if err := dao.Create(database.DB, category); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
 			Message: err.Error(),

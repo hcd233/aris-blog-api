@@ -1,0 +1,133 @@
+package dao
+
+import (
+	"fmt"
+	"time"
+
+	"github.com/google/uuid"
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"gorm.io/gorm"
+)
+
+// CategoryDAO 类别数据访问对象
+//
+//	@author centonhuang
+//	@update 2024-10-17 02:30:24
+type CategoryDAO struct {
+	baseDAO[model.Category]
+}
+
+// Delete 删除类别
+//
+//	@receiver dao *CategoryDAO
+//	@param db *gorm.DB
+//	@param category *model.Category
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 02:59:11
+func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error) {
+	UUID := uuid.New().String()
+	err = db.Model(category).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", category.Name, UUID), "deleted_at": time.Now()}).Error
+	return
+}
+
+// GetChildren 获取子类别
+//
+//	@receiver dao *CategoryDAO
+//	@param db *gorm.DB
+//	@param category *model.Category
+//	@return children *[]model.Category
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 03:03:47
+func (dao *CategoryDAO) GetChildren(db *gorm.DB, category *model.Category, fields []string, limit, offset int) (children *[]model.Category, err error) {
+	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Category{ParentID: category.ID}).Find(&children).Error
+	return
+}
+
+// GetParent 获取父类别
+//
+//	@receiver dao *CategoryDAO
+//	@param db *gorm.DB
+//	@param category *model.Category
+//	@return parent *model.Category
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 03:04:41
+func (dao *CategoryDAO) GetParent(db *gorm.DB, category *model.Category, fields []string) (parent *model.Category, err error) {
+	err = db.Select(fields).Where(&model.Category{ID: category.ParentID}).First(&parent).Error
+	return
+}
+
+// GetRootByUserID 获取根类别
+//
+//	@receiver dao *CategoryDAO
+//	@param db *gorm.DB
+//	@param userID uint
+//	@param fields []string
+//	@return category *model.Category
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 03:15:59
+func (dao *CategoryDAO) GetRootByUserID(db *gorm.DB, userID uint, fields []string) (category *model.Category, err error) {
+	err = db.Select(fields).Where(&model.Category{UserID: userID}).Where("parent_id IS NULL").First(&category).Error
+	return
+}
+
+// DeleteReclusiveByID 递归删除类别
+//
+//	@receiver dao *CategoryDAO
+//	@param db *gorm.DB
+//	@param id uint
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 03:36:05
+func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
+	categories, err := dao.reclusiveFindChildrenIDsByID(db, id)
+	if err != nil {
+		return
+	}
+
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			err = fmt.Errorf("panic occurred: %v", r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	rootCategory, err := dao.GetByID(db, id, []string{"id", "name"})
+	if err != nil {
+		return
+	}
+
+	*categories = append(*categories, *rootCategory)
+	for _, category := range *categories {
+		err = dao.Delete(tx, &category)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (dao *CategoryDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, categoryID uint) (categories *[]model.Category, err error) {
+	categories, err = dao.GetChildren(db, &model.Category{ID: categoryID}, []string{"id", "name"}, -1, -1)
+	if err != nil {
+		return
+	}
+
+	for _, category := range *categories {
+		childrenCategories, err := dao.reclusiveFindChildrenIDsByID(db, category.ID)
+		if err != nil {
+			return nil, err
+		}
+		*categories = append(*categories, *childrenCategories...)
+	}
+
+	return
+}
