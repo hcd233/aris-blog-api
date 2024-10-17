@@ -77,3 +77,11 @@ type UpdateCategoryBody struct {
 type CreateArticleVersionBody struct {
 	Content string `json:"content" binding:"required"`
 }
+
+// UpdateArticleStatusBody 更新文章状态请求体
+//
+//	@author centonhuang
+//	@update 2024-10-17 09:28:07
+type UpdateArticleStatusBody struct {
+	Status model.ArticleStatus `json:"status" binding:"required,oneof=draft publish"`
+}

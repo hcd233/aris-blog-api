@@ -15,6 +15,8 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
+	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
 // GetUserInfoHandler 用户信息
@@ -63,8 +65,10 @@ func UpdateInfoHandler(c *gin.Context) {
 	userID, userName := c.GetUint("userID"), c.GetString("userName")
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	dao := dao.GetUserDAO()
+	docDAO := docdao.GetUserDocDAO()
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -88,7 +92,7 @@ func UpdateInfoHandler(c *gin.Context) {
 	}))
 	user = lo.Must1(dao.GetByID(db, userID, []string{"id", "name", "avatar"}))
 
-	search.UpdateUserInIndex(user.GetBasicInfo())
+	docDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,

@@ -17,6 +17,8 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
+	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 	"github.com/samber/lo"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -59,8 +61,10 @@ func GithubCallbackHandler(c *gin.Context) {
 	params := protocol.GithubCallbackParam{}
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	dao := dao.GetUserDAO()
+	docDAO := docdao.GetUserDocDAO()
 
 	if err := c.BindQuery(&params); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
@@ -109,7 +113,7 @@ func GithubCallbackHandler(c *gin.Context) {
 		lo.Must0(dao.Update(db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}))
-		lo.Must0(search.UpdateUserInIndex(user.GetBasicInfo()))
+		lo.Must0(docDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user)))
 
 		user = lo.Must1(dao.GetByID(db, user.ID, []string{"id", "name", "avatar"}))
 	} else {
@@ -127,7 +131,8 @@ func GithubCallbackHandler(c *gin.Context) {
 			Category:   []model.Category{*defaultCategory},
 		}
 		lo.Must0(dao.Create(db, user))
-		lo.Must0(search.AddUserIntoIndex(user.GetBasicInfo()))
+		lo.Must0(docDAO.AddDocument(searchEngine, document.TransformUserToDocument(user)))
+
 	}
 
 	if user.GithubBindID == "" {
