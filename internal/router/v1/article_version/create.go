@@ -23,7 +23,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
-	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -51,7 +51,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := model.QueryLatestArticleVersionByArticleID(article.ID, []string{"version", "content"})
+	latestVersion, err := articleVersionDAO.GetLatestByArticleID(database.DB, article.ID, []string{"version", "content"})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,

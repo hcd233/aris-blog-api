@@ -5,14 +5,16 @@ import (
 )
 
 var (
-	categoryDAOSingleton *CategoryDAO
-	userDAOSingleton     *UserDAO
-	tagDAOSingleton      *TagDAO
-	articleDAOSingleton  *ArticleDAO
-	categoryOnce         sync.Once
-	userOnce             sync.Once
-	tagOnce              sync.Once
-	articleOnce          sync.Once
+	categoryDAOSingleton       *CategoryDAO
+	userDAOSingleton           *UserDAO
+	tagDAOSingleton            *TagDAO
+	articleDAOSingleton        *ArticleDAO
+	articleVersionDAOSingleton *ArticleVersionDAO
+	categoryOnce               sync.Once
+	userOnce                   sync.Once
+	tagOnce                    sync.Once
+	articleOnce                sync.Once
+	articleVersionOnce         sync.Once
 )
 
 // GetCategoryDAO 获取类别数据访问对象
@@ -61,4 +63,16 @@ func GetArticleDAO() *ArticleDAO {
 		articleDAOSingleton = &ArticleDAO{}
 	})
 	return articleDAOSingleton
+}
+
+// GetArticleVersionDAO 获取文章版本数据访问对象
+//
+//	@return *ArticleVersionDAO
+//	@author centonhuang
+//	@update 2024-10-17 08:12:02
+func GetArticleVersionDAO() *ArticleVersionDAO {
+	articleVersionOnce.Do(func() {
+		articleVersionDAOSingleton = &ArticleVersionDAO{}
+	})
+	return articleVersionDAOSingleton
 }
