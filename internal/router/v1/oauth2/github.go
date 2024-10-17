@@ -101,7 +101,7 @@ func GithubCallbackHandler(c *gin.Context) {
 	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
 	user, err := dao.GetByEmail(db, email, []string{"id", "name", "avatar"})
-	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
 			Message: err.Error(),
@@ -109,7 +109,7 @@ func GithubCallbackHandler(c *gin.Context) {
 		return
 	}
 
-	if user != nil {
+	if user.ID != 0 {
 		lo.Must0(dao.Update(db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}))

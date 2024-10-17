@@ -25,7 +25,7 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	dao := dao.GetTagDAO()
 
-	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"})
+	tag, err := dao.GetAllBySlug(db, uri.TagSlug)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,

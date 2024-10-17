@@ -45,3 +45,18 @@ func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields []string) (tag *mo
 	err = db.Select(fields).Where(model.Tag{Slug: slug}).First(&tag).Error
 	return
 }
+
+// GetAllBySlug 通过slug获取标签全部字段
+//
+//	@receiver dao *TagDAO
+//	@param db *gorm.DB
+//	@param slug string
+//	@param fields []string
+//	@return tag *model.Tag
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 05:58:06
+func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err error) {
+	err = db.Preload("User").Where(model.Tag{Slug: slug}).First(&tag).Error
+	return
+}
