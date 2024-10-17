@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/samber/lo"
 )
@@ -18,7 +20,9 @@ func ListArticlesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	user, err := model.QueryUserByName(uri.UserName, []string{"id"})
+	dao := dao.GetUserDAO()
+
+	user, err := dao.GetByName(database.DB, uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,

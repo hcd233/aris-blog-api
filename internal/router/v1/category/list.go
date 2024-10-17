@@ -23,9 +23,9 @@ func ListRootCategoriesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	dao := dao.GetCategoryDAO()
+	categoryDAO, userDAO := dao.GetCategoryDAO(), dao.GetUserDAO()
 
-	user, err := model.QueryUserByName(uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(database.DB, uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -34,7 +34,7 @@ func ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	rootCategory, err := dao.GetRootByUserID(database.DB, user.ID, []string{"id"})
+	rootCategory, err := categoryDAO.GetRootByUserID(database.DB, user.ID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -43,7 +43,7 @@ func ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	categories, err := dao.GetChildren(database.DB, rootCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
+	categories, err := categoryDAO.GetChildren(database.DB, rootCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,

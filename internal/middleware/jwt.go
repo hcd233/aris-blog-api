@@ -10,7 +10,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/auth"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 )
 
 // JwtMiddleware JWT 中间件
@@ -45,7 +46,9 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		user, err := model.QueryUserFieldsByID(userID, []string{"name", "permission"}, false)
+		dao := dao.GetUserDAO()
+
+		user, err := dao.GetByID(database.DB, userID, []string{"name", "permission"})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeQueryUserError,
