@@ -57,32 +57,3 @@ func (av *ArticleVersion) GetDetailedInfo() map[string]interface{} {
 		"content":   av.Content,
 	}
 }
-
-// QueryLatestArticleVersionByArticleID 查询指定 ArticleID 的最新文章版本
-//
-//	@param articleID uint
-//	@param fields []string
-//	@return latestVersion ArticleVersion
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-16 10:08:53
-func QueryLatestArticleVersionByArticleID(articleID uint, fields []string) (latestVersion *ArticleVersion, err error) {
-	// err = database.DB.Where(&ArticleVersion{ArticleID: articleID}).Order("version DESC").First(&latestVersion).Error
-	err = database.DB.Select(fields).Where(&ArticleVersion{ArticleID: articleID}).Last(&latestVersion).Error
-	return
-}
-
-// QueryArticleVersionsByArticleID 查询指定 ArticleID 的所有文章版本
-//
-//	@param articleID uint
-//	@param fields []string
-//	@param limit int
-//	@param offset int
-//	@return versions []ArticleVersion
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-16 10:08:48
-func QueryArticleVersionsByArticleID(articleID uint, fields []string, limit, offset int) (versions *[]ArticleVersion, err error) {
-	err = database.DB.Select(fields).Where(&ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&versions).Error
-	return
-}

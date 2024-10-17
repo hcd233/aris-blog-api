@@ -24,7 +24,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
-	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -52,7 +52,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	versions, err := model.QueryArticleVersionsByArticleID(article.ID, []string{"id", "version"}, param.Limit, param.Offset)
+	versions, err := articleVersionDAO.ListByArticleID(database.DB, article.ID, []string{"version", "content"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
