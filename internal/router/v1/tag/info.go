@@ -5,18 +5,23 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
+	"github.com/samber/lo"
 )
 
 // GetTagInfoHandler 获取标签信息
-//	@param c *gin.Context 
-//	@author centonhuang 
-//	@update 2024-10-01 04:58:01 
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-01 04:58:01
 func GetTagInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := model.QueryTagBySlug(uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"})
+	dao := dao.GetTagDAO()
+
+	tag, err := dao.GetBySlug(database.DB, uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -36,6 +41,17 @@ func UpdateTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
+	dao := dao.GetTagDAO()
+
+	tag, err := dao.GetBySlug(database.DB, uri.TagSlug, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetTagError,
+			Message: err.Error(),
+		})
+		return
+	}
+
 	updateFields := make(map[string]interface{})
 	if body.Name != "" {
 		updateFields["name"] = body.Name
@@ -54,7 +70,7 @@ func UpdateTagHandler(c *gin.Context) {
 		})
 		return
 	}
-	tag, err := model.UpdateTagBySlug(uri.TagSlug, updateFields)
+	err = dao.Update(database.DB, tag, updateFields)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
@@ -62,6 +78,8 @@ func UpdateTagHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	tag = lo.Must1(dao.GetBySlug(database.DB, uri.TagSlug, []string{"id"}))
 
 	// 同步到搜索引擎
 	err = search.UpdateTagInIndex(tag.GetDetailedInfo())
@@ -83,7 +101,9 @@ func UpdateTagHandler(c *gin.Context) {
 func DeleteTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := model.QueryTagBySlug(uri.TagSlug, []string{"id", "name", "slug"})
+	dao := dao.GetTagDAO()
+
+	tag, err := dao.GetBySlug(database.DB, uri.TagSlug, []string{"id", "name", "slug"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -92,7 +112,7 @@ func DeleteTagHandler(c *gin.Context) {
 		return
 	}
 
-	err = tag.Delete()
+	err = dao.Delete(database.DB, tag)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteTagError,

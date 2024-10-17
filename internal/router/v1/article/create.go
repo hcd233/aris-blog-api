@@ -5,6 +5,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 )
 
@@ -16,12 +18,13 @@ import (
 func CreateArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateArticleBody)
-
 	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+
+	tagDAO, articleDAO := dao.GetTagDAO(), dao.GetArticleDAO()
 
 	if uri.UserName != userName {
 		c.JSON(http.StatusForbidden, protocol.Response{
-			Code: protocol.CodeNotPermissionError,
+			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to create other user's article",
 		})
 		return
@@ -31,38 +34,34 @@ func CreateArticleHandler(c *gin.Context) {
 		body.Slug = body.Title
 	}
 
-	tags, err := model.QueryTagsBySlugs(body.Tags, []string{"id"})
-	if err != nil{
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeQueryTagError,
-			Message: err.Error(),
-		})
-		return
-	}
-	if len(*tags) != len(body.Tags) {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeQueryTagError,
-			Message: "find invalid tags",
-		})
-		return
+	tags := []model.Tag{}
+	for _, tag := range body.Tags {
+		tag, err := tagDAO.GetBySlug(database.DB, tag, []string{"id"})
+		if err != nil {
+			c.JSON(http.StatusBadRequest, protocol.Response{
+				Code:    protocol.CodeGetTagError,
+				Message: err.Error(),
+			})
+			return
+		}
+		tags = append(tags, *tag)
 	}
 
-	article := model.Article{
+	article := &model.Article{
 		UserID:     userID,
 		Status:     model.ArticleStatusDraft,
 		Title:      body.Title,
 		Slug:       body.Slug,
-		Tags:       *tags,
+		Tags:       tags,
 		CategoryID: body.CategoryID,
 		Comments:   []model.Comment{},
 		Versions:   []model.ArticleVersion{},
 	}
 
-	err = article.Create()
-	if err != nil {
+	if err := articleDAO.Create(database.DB, article); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateArticleError,
-				Message: err.Error(),
+			Message: err.Error(),
 		})
 		return
 	}

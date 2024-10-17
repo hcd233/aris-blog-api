@@ -1,11 +1,6 @@
 package model
 
 import (
-	"fmt"
-	"time"
-
-	"github.com/google/uuid"
-	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
 
@@ -19,19 +14,6 @@ type Tag struct {
 	CreateBy    uint      `json:"create_by" gorm:"column:create_by;not null;comment:创建者ID"`
 	User        *User     `json:"user" gorm:"foreignKey:CreateBy"`
 	Articles    []Article `json:"articles" gorm:"many2many:article_tags;"`
-}
-
-// Create 创建标签
-func (t *Tag) Create() (err error) {
-	err = database.DB.Create(t).Error
-	return
-}
-
-// Delete 删除标签
-func (t *Tag) Delete() (err error) {
-	UUID := uuid.New().String()
-	err = database.DB.Model(t).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", t.Name, UUID), "slug": fmt.Sprintf("%s-%s", t.Slug, UUID), "deleted_at": time.Now()}).Error
-	return
 }
 
 // GetBasicInfo 获取基本信息
@@ -76,62 +58,4 @@ func (t *Tag) GetDetailedInfoWithUser() map[string]interface{} {
 		"description": t.Description,
 		"creator":     t.User.Name,
 	}
-}
-
-// QueryTags 查询标签
-//
-//	@param limit int
-//	@param offset int
-//	@param fields []string
-//	@return tags []Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-22 03:15:30
-func QueryTags(limit int, offset int, fields []string) (tags *[]Tag, err error) {
-	err = database.DB.Select(fields).Limit(limit).Offset(offset).Find(&tags).Error
-	return
-}
-
-// QueryTagBySlug 查询标签
-//
-//	@param tagSlug string
-//	@param fields []string
-//	@return tag Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-22 04:45:22
-func QueryTagBySlug(tagSlug string, fields []string) (tag *Tag, err error) {
-	err = database.DB.Preload("User").Select(fields).Where(&Tag{Slug: tagSlug}).First(&tag).Error
-	return
-}
-
-// QueryTagsBySlugs 查询多个标签
-//
-//	@param tagSlugs []string
-//	@param fields []string
-//	@return tags []Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-02 01:05:34
-func QueryTagsBySlugs(tagSlugs []string, fields []string) (tags *[]Tag, err error) {
-	err = database.DB.Preload("User").Select(fields).Where("slug IN ?", tagSlugs).Find(&tags).Error
-	return
-}
-
-// UpdateTagBySlug 更新标签
-//
-//	@param tagSlug string
-//	@param info map[string]interface{}
-//	@return tag Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-22 04:10:07
-func UpdateTagBySlug(tagSlug string, info map[string]interface{}) (tag *Tag, err error) {
-	info["updated_at"] = time.Now()
-	err = database.DB.Model(&Tag{}).Where(&Tag{Slug: tagSlug}).Updates(info).Error
-	if err != nil {
-		return
-	}
-	err = database.DB.Preload("User").Where(&Tag{Slug: tagSlug}).First(&tag).Error
-	return
 }

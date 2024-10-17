@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/samber/lo"
 )
@@ -20,7 +22,9 @@ import (
 func ListTagsHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	tags, err := model.QueryTags(param.Limit, param.Offset, []string{"id", "slug"})
+	dao := dao.GetTagDAO()
+
+	tags, err := dao.Paginate(database.DB, []string{"id", "slug"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
