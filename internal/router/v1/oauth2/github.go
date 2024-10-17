@@ -4,6 +4,7 @@ package oauth2
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"strconv"
 	"time"
@@ -12,11 +13,14 @@ import (
 	"github.com/hcd233/Aris-blog/internal/auth"
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/samber/lo"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+	"gorm.io/gorm"
 )
 
 const (
@@ -53,6 +57,9 @@ func GithubLoginHandler(c *gin.Context) {
 //	@update 2024-09-16 01:56:03
 func GithubCallbackHandler(c *gin.Context) {
 	params := protocol.GithubCallbackParam{}
+
+	dao := dao.GetUserDAO()
+
 	if err := c.BindQuery(&params); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeURIError,
@@ -87,8 +94,8 @@ func GithubCallbackHandler(c *gin.Context) {
 
 	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
-	user, err := model.QueryUserByEmail(email, []string{"id", "name", "avatar"}, true)
-	if err != nil {
+	user, err := dao.GetByEmail(database.DB, email, []string{"id", "name", "avatar"})
+	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
 			Message: err.Error(),
@@ -97,12 +104,12 @@ func GithubCallbackHandler(c *gin.Context) {
 	}
 
 	if user != nil {
-		// 如果已有用户，刷新信息
-		// atomic
-		user = lo.Must1(model.UpdateUserInfoByID(user.ID, map[string]interface{}{
+		lo.Must0(dao.Update(database.DB, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}))
 		lo.Must0(search.UpdateUserInIndex(user.GetBasicInfo()))
+
+		user = lo.Must1(dao.GetByID(database.DB, user.ID, []string{"id", "name", "avatar"}))
 	} else {
 		// 新用户，保存信息
 		permission := model.PermissionGeneral
@@ -117,12 +124,14 @@ func GithubCallbackHandler(c *gin.Context) {
 			Permission: permission,
 			Category:   []model.Category{*defaultCategory},
 		}
-		lo.Must0(user.Create())
+		lo.Must0(dao.Create(database.DB, user))
 		lo.Must0(search.AddUserIntoIndex(user.GetBasicInfo()))
 	}
 
 	if user.GithubBindID == "" {
-		user.BindGithubID(githubID)
+		dao.Update(database.DB, user, map[string]interface{}{
+			"github_bind_id": githubID,
+		})
 	}
 	tokenString := lo.Must(auth.EncodeToken(user.ID))
 	c.JSON(http.StatusOK, protocol.Response{

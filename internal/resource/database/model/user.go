@@ -5,10 +5,8 @@ package model
 
 import (
 	"database/sql"
-	"errors"
 	"time"
 
-	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
 
@@ -67,40 +65,6 @@ func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
 	return
 }
 
-// Create 创建用户
-//
-//	@receiver u *User
-//	@return error
-//	@author centonhuang
-//	@update 2024-06-22 10:10:07
-func (u *User) Create() (err error) {
-	err = database.DB.Create(u).Error
-	return
-}
-
-// Delete 删除用户
-//
-//	@receiver u *User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-22 04:58:37
-func (u *User) Delete() (err error) {
-	err = database.DB.Delete(u).Error
-	return
-}
-
-// BindGithubID 绑定Github ID
-//
-//	@receiver u *User
-//	@param githubID string
-//	@return error
-//	@author centonhuang
-//	@update 2024-09-16 11:28:18
-func (u *User) BindGithubID(githubID string) (err error) {
-	err = database.DB.Model(u).Update("github_bind_id", githubID).Error
-	return
-}
-
 // GetBasicInfo 获取用户基本信息
 //
 //	@receiver u *User
@@ -131,90 +95,4 @@ func (u *User) GetDetailedInfo() map[string]interface{} {
 		"last_login": u.LastLogin.Time,
 		"permission": u.Permission,
 	}
-}
-
-// UpdateUserInfoByID 使用ID更新用户信息
-//
-//	@param id uint
-//	@param info map[string]interface{}
-//	@return user *User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-18 04:22:03
-func UpdateUserInfoByID(userID uint, info map[string]interface{}) (user *User, err error) {
-	info["updated_at"] = time.Now()
-	err = database.DB.Model(&User{}).Where(&User{ID: userID}).Updates(info).Error
-	if err != nil {
-		return nil, err
-	}
-	err = database.DB.Where(&User{ID: userID}).First(&user).Error
-	return
-}
-
-// QueryUsers 查询用户
-//
-//	@param offset int
-//	@param limit int
-//	@return users []*User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-17 08:18:54
-func QueryUsers(offset int, limit int) (users *[]User, err error) {
-	err = database.DB.Offset(offset).Limit(limit).Find(&users).Error
-	return
-}
-
-// QueryUserByID 根据用户ID查询用户
-//
-//	@param userID uint
-//	@return user *User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-06-22 10:12:46
-func QueryUserByID(userID uint, fields []string) (user *User, err error) {
-	err = database.DB.Select(fields).Where(&User{ID: userID}).First(&user).Error
-	return
-}
-
-// QueryUserByName 根据用户名查询用户
-//
-//	@param userName string
-//	@return user *User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-16 06:05:07
-func QueryUserByName(userName string, fields []string) (user *User, err error) {
-	err = database.DB.Select(fields).Where(&User{Name: userName}).First(&user).Error
-	return
-}
-
-// QueryUserByEmail 根据邮箱查询用户
-//
-//	@param email string
-//	@return user *User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-16 11:21:25
-func QueryUserByEmail(email string, fields []string, allowEmpty bool) (user *User, err error) {
-	err = database.DB.Select(fields).Where(&User{Email: email}).First(&user).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
-		user, err = nil, nil
-	}
-	return
-}
-
-// QueryUserFieldsByID 查询用户指定字段
-//
-//	@param userID int
-//	@param fields []string
-//	@return user *User
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-21 03:08:02
-func QueryUserFieldsByID(userID uint, fields []string, allowEmpty bool) (user *User, err error) {
-	err = database.DB.Select(fields).Where(&User{ID: userID}).First(&user).Error
-	if errors.Is(err, gorm.ErrRecordNotFound) && allowEmpty {
-		user, err = nil, nil
-	}
-	return
 }
