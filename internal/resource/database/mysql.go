@@ -17,7 +17,16 @@ import (
 // DB undefined mysql数据库连接
 //
 //	@update 2024-09-16 01:24:51
-var DB *gorm.DB
+var db *gorm.DB
+
+// GetDBInstance 获取数据库实例
+//
+//	@return *gorm.DB
+//	@author centonhuang
+//	@update 2024-10-17 08:35:47
+func GetDBInstance() *gorm.DB {
+	return db
+}
 
 // InitDatabase 初始化数据库
 //
@@ -26,7 +35,7 @@ var DB *gorm.DB
 func InitDatabase() {
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
 
-	DB = lo.Must(gorm.Open(mysql.New(mysql.Config{
+	db = lo.Must(gorm.Open(mysql.New(mysql.Config{
 		DSN:               dsn,
 		DefaultStringSize: 256,
 	}),
@@ -35,9 +44,9 @@ func InitDatabase() {
 			TranslateError: true,
 		}))
 
-	db := lo.Must(DB.DB())
+	sqlDB := lo.Must(db.DB())
 
-	db.SetMaxIdleConns(10)
-	db.SetMaxOpenConns(100)
-	db.SetConnMaxLifetime(5 * time.Hour)
+	sqlDB.SetMaxIdleConns(10)
+	sqlDB.SetMaxOpenConns(100)
+	sqlDB.SetConnMaxLifetime(5 * time.Hour)
 }

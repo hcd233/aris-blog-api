@@ -19,9 +19,11 @@ import (
 func GetTagInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetTagDAO()
 
-	tag, err := dao.GetBySlug(database.DB, uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"})
+	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -41,9 +43,11 @@ func UpdateTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetTagDAO()
 
-	tag, err := dao.GetBySlug(database.DB, uri.TagSlug, []string{"id"})
+	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -70,7 +74,7 @@ func UpdateTagHandler(c *gin.Context) {
 		})
 		return
 	}
-	err = dao.Update(database.DB, tag, updateFields)
+	err = dao.Update(db, tag, updateFields)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
@@ -79,7 +83,7 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag = lo.Must1(dao.GetBySlug(database.DB, uri.TagSlug, []string{"id"}))
+	tag = lo.Must1(dao.GetBySlug(db, uri.TagSlug, []string{"id"}))
 
 	// 同步到搜索引擎
 	err = search.UpdateTagInIndex(tag.GetDetailedInfo())
@@ -101,9 +105,11 @@ func UpdateTagHandler(c *gin.Context) {
 func DeleteTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetTagDAO()
 
-	tag, err := dao.GetBySlug(database.DB, uri.TagSlug, []string{"id", "name", "slug"})
+	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -112,7 +118,7 @@ func DeleteTagHandler(c *gin.Context) {
 		return
 	}
 
-	err = dao.Delete(database.DB, tag)
+	err = dao.Delete(db, tag)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteTagError,

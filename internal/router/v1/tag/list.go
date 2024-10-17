@@ -22,9 +22,11 @@ import (
 func ListTagsHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetTagDAO()
 
-	tags, err := dao.Paginate(database.DB, []string{"id", "slug"}, param.Limit, param.Offset)
+	tags, err := dao.Paginate(db, []string{"id", "slug"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

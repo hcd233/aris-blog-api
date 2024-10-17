@@ -20,6 +20,8 @@ func CreateCategoryHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetCategoryDAO()
 
 	if userName != uri.UserName {
@@ -33,13 +35,13 @@ func CreateCategoryHandler(c *gin.Context) {
 	var err error
 	var parentCategory *model.Category
 	if body.ParentID == 0 {
-		parentCategory, err = dao.GetRootByUserID(database.DB, userID, []string{"id"})
+		parentCategory, err = dao.GetRootByUserID(db, userID, []string{"id"})
 	} else {
-		parentCategory, err = dao.GetByID(database.DB, body.ParentID, []string{"id"})
+		parentCategory, err = dao.GetByID(db, body.ParentID, []string{"id"})
 	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code: protocol.CodeGetCategoryError,
+			Code:    protocol.CodeGetCategoryError,
 			Message: err.Error(),
 		})
 		return
@@ -52,7 +54,7 @@ func CreateCategoryHandler(c *gin.Context) {
 		UserID:   userID,
 	}
 
-	if err := dao.Create(database.DB, category); err != nil {
+	if err := dao.Create(db, category); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
 			Message: err.Error(),

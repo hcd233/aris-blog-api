@@ -20,9 +20,11 @@ func ListArticlesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
+	db := database.GetDBInstance()
+
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
-	user, err := userDAO.GetByName(database.DB, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -30,7 +32,7 @@ func ListArticlesHandler(c *gin.Context) {
 		})
 		return
 	}
-	articles, err := articleDAO.ListByUserID(database.DB, user.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset, )
+	articles, err := articleDAO.ListByUserID(db, user.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

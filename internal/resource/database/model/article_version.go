@@ -1,7 +1,6 @@
 package model
 
 import (
-	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"gorm.io/gorm"
 )
 
@@ -16,17 +15,6 @@ type ArticleVersion struct {
 	Version     uint     `json:"version" gorm:"column:version;uniqueIndex:idx_article_version;comment:版本号"`
 	Content     string   `json:"content" gorm:"column:content;not null;comment:文章内容"`
 	Description string   `json:"description" gorm:"column:description;comment:版本描述"`
-}
-
-// Create 创建文章版本
-//
-//	@receiver av *ArticleVersion
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-16 01:54:18
-func (av *ArticleVersion) Create() (err error) {
-	err = database.DB.Create(av).Error
-	return
 }
 
 // GetBasicInfo 获取文章基本信息

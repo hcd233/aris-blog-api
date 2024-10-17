@@ -24,6 +24,8 @@ func ListArticleVersionsHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
+	db := database.GetDBInstance()
+
 	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
 	if userName != uri.UserName {
@@ -34,7 +36,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := userDAO.GetByName(database.DB, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -43,7 +45,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{"id"})
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -52,7 +54,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	versions, err := articleVersionDAO.ListByArticleID(database.DB, article.ID, []string{"version", "content"}, param.Limit, param.Offset)
+	versions, err := articleVersionDAO.ListByArticleID(db, article.ID, []string{"created_at", "version", "content"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
