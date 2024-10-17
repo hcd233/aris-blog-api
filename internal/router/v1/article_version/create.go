@@ -23,6 +23,8 @@ func CreateArticleVersionHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
+	db := database.GetDBInstance()
+
 	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
 	if userName != uri.UserName {
@@ -33,7 +35,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := userDAO.GetByName(database.DB, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -42,7 +44,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{"id"})
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -51,7 +53,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := articleVersionDAO.GetLatestByArticleID(database.DB, article.ID, []string{"version", "content"})
+	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"version", "content"})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -68,13 +70,13 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	articleVersion := model.ArticleVersion{
+	articleVersion := &model.ArticleVersion{
 		Article: article,
 		Content: body.Content,
 		Version: latestVersion.Version + 1,
 	}
-	err = articleVersion.Create()
-	if err != nil {
+
+	if err = articleVersionDAO.Create(db, articleVersion); err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code: protocol.CodeCreateArticleVersionError,
 		})

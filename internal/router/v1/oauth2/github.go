@@ -58,6 +58,8 @@ func GithubLoginHandler(c *gin.Context) {
 func GithubCallbackHandler(c *gin.Context) {
 	params := protocol.GithubCallbackParam{}
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetUserDAO()
 
 	if err := c.BindQuery(&params); err != nil {
@@ -94,7 +96,7 @@ func GithubCallbackHandler(c *gin.Context) {
 
 	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
-	user, err := dao.GetByEmail(database.DB, email, []string{"id", "name", "avatar"})
+	user, err := dao.GetByEmail(db, email, []string{"id", "name", "avatar"})
 	if err != nil && errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -104,12 +106,12 @@ func GithubCallbackHandler(c *gin.Context) {
 	}
 
 	if user != nil {
-		lo.Must0(dao.Update(database.DB, user, map[string]interface{}{
+		lo.Must0(dao.Update(db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}))
 		lo.Must0(search.UpdateUserInIndex(user.GetBasicInfo()))
 
-		user = lo.Must1(dao.GetByID(database.DB, user.ID, []string{"id", "name", "avatar"}))
+		user = lo.Must1(dao.GetByID(db, user.ID, []string{"id", "name", "avatar"}))
 	} else {
 		// 新用户，保存信息
 		permission := model.PermissionGeneral
@@ -124,12 +126,12 @@ func GithubCallbackHandler(c *gin.Context) {
 			Permission: permission,
 			Category:   []model.Category{*defaultCategory},
 		}
-		lo.Must0(dao.Create(database.DB, user))
+		lo.Must0(dao.Create(db, user))
 		lo.Must0(search.AddUserIntoIndex(user.GetBasicInfo()))
 	}
 
 	if user.GithubBindID == "" {
-		dao.Update(database.DB, user, map[string]interface{}{
+		dao.Update(db, user, map[string]interface{}{
 			"github_bind_id": githubID,
 		})
 	}

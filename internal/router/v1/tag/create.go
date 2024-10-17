@@ -16,6 +16,8 @@ func CreateTagHandler(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
 	body := c.MustGet("body").(*protocol.CreateTagBody)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetTagDAO()
 
 	tag := &model.Tag{
@@ -25,7 +27,7 @@ func CreateTagHandler(c *gin.Context) {
 		CreateBy:    userID,
 	}
 
-	if err := dao.Create(database.DB, tag); err != nil {
+	if err := dao.Create(db, tag); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
 			Message: err.Error(),

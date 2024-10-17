@@ -20,6 +20,8 @@ func CreateArticleHandler(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.CreateArticleBody)
 	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 
+	db := database.GetDBInstance()
+
 	tagDAO, articleDAO := dao.GetTagDAO(), dao.GetArticleDAO()
 
 	if uri.UserName != userName {
@@ -36,7 +38,7 @@ func CreateArticleHandler(c *gin.Context) {
 
 	tags := []model.Tag{}
 	for _, tag := range body.Tags {
-		tag, err := tagDAO.GetBySlug(database.DB, tag, []string{"id"})
+		tag, err := tagDAO.GetBySlug(db, tag, []string{"id"})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeGetTagError,
@@ -58,7 +60,7 @@ func CreateArticleHandler(c *gin.Context) {
 		Versions:   []model.ArticleVersion{},
 	}
 
-	if err := articleDAO.Create(database.DB, article); err != nil {
+	if err := articleDAO.Create(db, article); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateArticleError,
 			Message: err.Error(),

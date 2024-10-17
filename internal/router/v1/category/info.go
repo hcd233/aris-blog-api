@@ -18,6 +18,8 @@ func GetCategoryInfoHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetCategoryDAO()
 
 	if userName != uri.UserName {
@@ -28,7 +30,7 @@ func GetCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
+	category, err := dao.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -52,6 +54,8 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
+
+	db := database.GetDBInstance()
 
 	dao := dao.GetCategoryDAO()
 
@@ -81,7 +85,7 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
+	category, err := dao.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -90,7 +94,7 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	err = dao.Update(database.DB, category, updateFields)
+	err = dao.Update(db, category, updateFields)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateCategoryError,
@@ -114,6 +118,8 @@ func DeleteCategoryHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
+	db := database.GetDBInstance()
+
 	dao := dao.GetCategoryDAO()
 
 	if userName != uri.UserName {
@@ -124,7 +130,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
+	category, err := dao.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -141,7 +147,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	err = dao.DeleteReclusiveByID(database.DB, category.ID)
+	err = dao.DeleteReclusiveByID(db, category.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteCategoryError,
