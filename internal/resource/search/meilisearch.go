@@ -7,34 +7,39 @@ import (
 	"fmt"
 
 	"github.com/hcd233/Aris-blog/internal/config"
-	"github.com/hcd233/Aris-blog/internal/logger"
+	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/samber/lo"
-	"go.uber.org/zap"
 )
 
 const (
-	primaryKey   = "id"
-	userIndex    = "user"
-	tagIndex     = "tag"
-	articleIndex = "article"
+	primaryKey = "id"
 )
 
-// ServiceManager meilisearch 服务管理
+// serviceManager meilisearch 服务管理
 //
 //	@update 2024-09-18 12:29:08
-var ServiceManager meilisearch.ServiceManager
+var serviceManager meilisearch.ServiceManager
+
+// GetSearchEngine 获取搜索引擎实例
+//
+//	@return meilisearch.ServiceManager
+//	@author centonhuang
+//	@update 2024-10-17 09:47:38
+func GetSearchEngine() meilisearch.ServiceManager {
+	return serviceManager
+}
 
 // InitSearchEngine 初始化搜索引擎
 //
 //	@author centonhuang
 //	@update 2024-09-22 10:05:14
 func InitSearchEngine() {
-	ServiceManager = meilisearch.New(
+	serviceManager = meilisearch.New(
 		fmt.Sprintf("http://%s:%s", config.MeilisearchHost, config.MeilisearchPort),
 		meilisearch.WithAPIKey(config.MeilisearchMasterKey),
 	)
-	lo.Must1(ServiceManager.Health())
+	lo.Must1(serviceManager.Health())
 }
 
 // CreateIndex 创建索引
@@ -43,16 +48,16 @@ func InitSearchEngine() {
 //	@author centonhuang
 //	@update 2024-09-18 12:43:35
 func CreateIndex() (err error) {
-	tasks := []func() error{
-		createUserIndex,
-		createTagIndex,
-		createArticleIndex,
+	client := GetSearchEngine()
+
+	daoArr := []docdao.DocDAO{
+		docdao.GetUserDocDAO(),
+		docdao.GetTagDocDAO(),
+		docdao.GetArticleDocDAO(),
 	}
-	for _, task := range tasks {
-		err = task()
-		if err != nil {
-			return
-		}
+
+	for _, dao := range daoArr {
+		lo.Must0(dao.CreateIndex(client))
 	}
 	return
 }
@@ -63,91 +68,16 @@ func CreateIndex() (err error) {
 //	@author centonhuang
 //	@update 2024-09-18 01:24:35
 func DeleteIndex() (err error) {
-	tasks := []func() error{
-		deleteUserIndex,
-		deleteTagIndex,
-		deleteArticleIndex,
-	}
-	for _, task := range tasks {
-		err = task()
-		if err != nil {
-			return
-		}
-	}
-	return
-}
+	client := GetSearchEngine()
 
-func deleteUserIndex() (err error) {
-	info, err := ServiceManager.DeleteIndex(userIndex)
-	if err != nil {
-		logger.Logger.Error("[Delete Index] failed to delete index", zap.Error(err))
-		return
+	daoArr := []docdao.DocDAO{
+		docdao.GetUserDocDAO(),
+		docdao.GetTagDocDAO(),
+		docdao.GetArticleDocDAO(),
 	}
 
-	logger.Logger.Info("[Delete Index] success to delete index", zap.String("Index", userIndex), zap.String("Status", string(info.Status)))
-	return
-}
-
-func deleteTagIndex() (err error) {
-	info, err := ServiceManager.DeleteIndex(tagIndex)
-	if err != nil {
-		logger.Logger.Error("[Delete Tag Index] failed to delete index", zap.Error(err))
-		return
+	for _, dao := range daoArr {
+		lo.Must0(dao.DeleteIndex(client))
 	}
-
-	logger.Logger.Info("[Delete Tag Index] success to delete index", zap.String("Index", tagIndex), zap.String("Status", string(info.Status)))
-	return
-}
-
-func deleteArticleIndex() (err error) {
-	info, err := ServiceManager.DeleteIndex(articleIndex)
-	if err != nil {
-		logger.Logger.Error("[Delete Article Index] failed to delete index", zap.Error(err))
-		return
-	}
-
-	logger.Logger.Info("[Delete Article Index] success to delete index", zap.String("Index", articleIndex), zap.String("Status", string(info.Status)))
-	return
-}
-
-func createUserIndex() (err error) {
-	info, err := ServiceManager.CreateIndex(&meilisearch.IndexConfig{
-		Uid:        userIndex,
-		PrimaryKey: primaryKey,
-	})
-	if err != nil {
-		logger.Logger.Error("[Create Index] failed to create index", zap.Error(err))
-		return
-	}
-
-	logger.Logger.Info("[Create Index] success to create index", zap.String("Index", userIndex), zap.String("Status", string(info.Status)))
-	return
-}
-
-func createTagIndex() (err error) {
-	info, err := ServiceManager.CreateIndex(&meilisearch.IndexConfig{
-		Uid:        tagIndex,
-		PrimaryKey: primaryKey,
-	})
-	if err != nil {
-		logger.Logger.Error("[Create Tag Index] failed to create index", zap.Error(err))
-		return
-	}
-
-	logger.Logger.Info("[Create Tag Index] success to create index", zap.String("Index", "tag"), zap.String("Status", string(info.Status)))
-	return
-}
-
-func createArticleIndex() (err error) {
-	info, err := ServiceManager.CreateIndex(&meilisearch.IndexConfig{
-		Uid:        articleIndex,
-		PrimaryKey: primaryKey,
-	})
-	if err != nil {
-		logger.Logger.Error("[Create Article Index] failed to create index", zap.Error(err))
-		return
-	}
-
-	logger.Logger.Info("[Create Article Index] success to create index", zap.String("Index", "article"), zap.String("Status", string(info.Status)))
 	return
 }
