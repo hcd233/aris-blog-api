@@ -9,6 +9,8 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
+	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
 // CreateTagHandler 创建标签
@@ -17,8 +19,10 @@ func CreateTagHandler(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.CreateTagBody)
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	dao := dao.GetTagDAO()
+	docDAO := docdao.GetTagDocDAO()
 
 	tag := &model.Tag{
 		Name:        body.Name,
@@ -36,7 +40,7 @@ func CreateTagHandler(c *gin.Context) {
 	}
 
 	// 同步到搜索引擎
-	if err := search.AddTagIntoIndex(tag.GetDetailedInfo()); err != nil {
+	if err := docDAO.AddDocument(searchEngine, document.TransformTagToDocument(tag)); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
 			Message: err.Error(),

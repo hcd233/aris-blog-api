@@ -8,6 +8,8 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
+	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 	"github.com/samber/lo"
 )
 
@@ -44,8 +46,10 @@ func UpdateTagHandler(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	dao := dao.GetTagDAO()
+	docDAO := docdao.GetTagDocDAO()
 
 	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id"})
 	if err != nil {
@@ -86,7 +90,7 @@ func UpdateTagHandler(c *gin.Context) {
 	tag = lo.Must1(dao.GetBySlug(db, uri.TagSlug, []string{"id"}))
 
 	// 同步到搜索引擎
-	err = search.UpdateTagInIndex(tag.GetDetailedInfo())
+	err = docDAO.UpdateDocument(searchEngine, document.TransformTagToDocument(tag))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
@@ -106,8 +110,10 @@ func DeleteTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	dao := dao.GetTagDAO()
+	docDAO := docdao.GetTagDocDAO()
 
 	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug"})
 	if err != nil {
@@ -126,7 +132,7 @@ func DeleteTagHandler(c *gin.Context) {
 		})
 		return
 	}
-	search.DeleteTagFromIndex(tag.ID)
+	docDAO.DeleteDocument(searchEngine, tag.ID)
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
