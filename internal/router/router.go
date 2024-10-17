@@ -85,6 +85,7 @@ func initArticleRouter(r *gin.RouterGroup) {
 		articleSlugRouter.GET("", article.GetArticleInfoHandler)
 		articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
 		articleSlugRouter.DELETE("", article.DeleteArticleHandler)
+		articleSlugRouter.PATCH("/status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
 
 		initArticleVersionRouter(articleSlugRouter)
 	}

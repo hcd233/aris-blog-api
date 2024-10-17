@@ -14,6 +14,9 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/resource/search"
+	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
 // GetArticleInfoHandler 文章信息
@@ -136,6 +139,87 @@ func UpdateArticleHandler(c *gin.Context) {
 	}
 
 	article = lo.Must1(articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id"}))
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"article": article.GetBasicInfo(),
+		},
+	})
+}
+
+// UpdateArticleStatusHandler 更新文章状态
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-17 09:28:54
+func UpdateArticleStatusHandler(c *gin.Context) {
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
+	userName := c.MustGet("userName").(string)
+
+	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
+
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
+
+	articleDocDAO := docdao.GetArticleDocDAO()
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to update other user's article",
+		})
+		return
+	}
+
+	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetAllBySlugAndUserID(db, uri.ArticleSlug, user.ID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if article.Status == body.Status {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUpdateArticleError,
+			Message: "The status is the same as the current status",
+		})
+		return
+	}
+
+	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"content"})
+
+	if body.Status == model.ArticleStatusPublish {
+		if err := articleDAO.Update(db, article, map[string]interface{}{"status": body.Status, "published_at": time.Now()}); err != nil {
+			c.JSON(http.StatusBadRequest, protocol.Response{
+				Code:    protocol.CodeUpdateArticleError,
+				Message: err.Error(),
+			})
+			return
+		}
+		lo.Must0(articleDocDAO.AddDocument(searchEngine, document.TransformArticleToDocument(article, latestVersion)))
+	} else if body.Status == model.ArticleStatusDraft {
+		if err := articleDAO.Update(db, article, map[string]interface{}{"status": body.Status, "published_at": nil}); err != nil {
+			c.JSON(http.StatusBadRequest, protocol.Response{
+				Code:    protocol.CodeUpdateArticleError,
+				Message: err.Error(),
+			})
+			return
+		}
+		lo.Must0(articleDocDAO.DeleteDocument(searchEngine, article.ID))
+	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
