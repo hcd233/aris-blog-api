@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// CategoryDAO 类别数据访问对象
+// CategoryDAO 类别DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 02:30:24

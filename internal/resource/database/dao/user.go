@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// UserDAO 用户数据访问对象
+// UserDAO 用户DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 02:30:24

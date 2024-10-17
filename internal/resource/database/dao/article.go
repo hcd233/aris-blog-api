@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ArticleDAO 标签数据访问对象
+// ArticleDAO 标签DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 06:34:00
@@ -44,6 +44,21 @@ func (dao *ArticleDAO) Delete(db *gorm.DB, article *model.Article) (err error) {
 //	@update 2024-10-17 07:17:59
 func (dao *ArticleDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint, fields []string) (article *model.Article, err error) {
 	err = db.Select(fields).Where(&model.Article{Slug: slug, UserID: userID}).First(&article).Error
+	return
+}
+
+// GetAllBySlugAndUserID  通过slug和用户ID获取文章全部字段
+//
+//	@receiver dao *ArticleDAO
+//	@param db *gorm.DB
+//	@param slug string
+//	@param userID uint
+//	@return article *model.Article
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-18 02:21:20
+func (dao *ArticleDAO) GetAllBySlugAndUserID(db *gorm.DB, slug string, userID uint) (article *model.Article, err error) {
+	err = db.Preload("Category").Preload("Tags").Preload("User").Where(&model.Article{Slug: slug, UserID: userID}).First(&article).Error
 	return
 }
 

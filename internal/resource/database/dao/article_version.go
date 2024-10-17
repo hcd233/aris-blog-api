@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// ArticleVersionDAO 标签数据访问对象
+// ArticleVersionDAO 标签DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 02:30:24

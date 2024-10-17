@@ -9,7 +9,7 @@ import (
 	"gorm.io/gorm"
 )
 
-// TagDAO 标签数据访问对象
+// TagDAO 标签DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 02:30:24
