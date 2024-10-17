@@ -8,6 +8,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 )
 
@@ -21,6 +23,8 @@ func CreateArticleVersionHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
+	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
@@ -29,7 +33,16 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := model.QueryArticleBySlugAndUserName(uri.ArticleSlug, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(database.DB, userName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetBySlugAndUserID(database.DB, uri.ArticleSlug, user.ID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

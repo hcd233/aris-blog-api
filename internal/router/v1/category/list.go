@@ -110,9 +110,9 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	dao := dao.GetCategoryDAO()
+	categoryDAO, articleDAO := dao.GetCategoryDAO(), dao.GetArticleDAO()
 
-	parentCategory, err := dao.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
+	parentCategory, err := categoryDAO.GetByID(database.DB, uri.CategoryID, []string{"id", "name", "parent_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -121,8 +121,7 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	// FIXME need refactor
-	articles, err := model.QueryChildrenArticlesByCategoryID(parentCategory.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
+	articles, err := articleDAO.ListByCategoryID(database.DB, parentCategory.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
