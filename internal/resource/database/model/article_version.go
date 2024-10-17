@@ -26,7 +26,7 @@ type ArticleVersion struct {
 func (av *ArticleVersion) GetBasicInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":        av.ID,
-		"create_at": av.CreatedAt,
+		"created_at": av.CreatedAt,
 		"version":   av.Version,
 	}
 }
@@ -40,7 +40,7 @@ func (av *ArticleVersion) GetBasicInfo() map[string]interface{} {
 func (av *ArticleVersion) GetDetailedInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":        av.ID,
-		"create_at": av.CreatedAt,
+		"created_at": av.CreatedAt,
 		"version":   av.Version,
 		"content":   av.Content,
 	}

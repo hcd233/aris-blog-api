@@ -28,6 +28,22 @@ func (dao *ArticleVersionDAO) GetLatestByArticleID(db *gorm.DB, articleID uint, 
 	return
 }
 
+// GetByArticleIDAndVersion 通过文章ID和版本号获取文章版本
+//
+//	@receiver dao *ArticleVersionDAO
+//	@param db *gorm.DB
+//	@param articleID uint
+//	@param version uint
+//	@param fields []string
+//	@return articleVersion *model.ArticleVersion
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-18 03:17:06
+func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, version uint, fields []string) (articleVersion *model.ArticleVersion, err error) {
+	err = db.Select(fields).Where(&model.ArticleVersion{ArticleID: articleID, Version: version}).Last(&articleVersion).Error
+	return
+}
+
 // ListByArticleID 通过文章ID获取文章版本列表
 //
 //	@receiver dao *ArticleVersionDAO
