@@ -11,18 +11,19 @@ import (
 //	@update 2024-10-17 10:05:45
 type ArticleDocument struct {
 	ID      uint     `json:"id"`
-	Title   string   `json:"title"`
-	Author  string   `json:"author"`
-	Content string   `json:"content"`
-	Tags    []string `json:"tags"`
+	Title   string   `json:"title,omitempty"`
+	Author  string   `json:"author,omitempty"`
+	Content string   `json:"content,omitempty"`
+	Tags    []string `json:"tags,omitempty"`
 }
 
 // TransformArticleToDocument 将文章转换为文档
-//	@param article *model.Article 
-//	@param latestVersion *model.ArticleVersion 
-//	@return *ArticleDocument 
-//	@author centonhuang 
-//	@update 2024-10-18 01:34:41 
+//
+//	@param article *model.Article
+//	@param latestVersion *model.ArticleVersion
+//	@return *ArticleDocument
+//	@author centonhuang
+//	@update 2024-10-18 01:34:41
 func TransformArticleToDocument(article *model.Article, latestVersion *model.ArticleVersion) *ArticleDocument {
 	return &ArticleDocument{
 		ID:      article.ID,

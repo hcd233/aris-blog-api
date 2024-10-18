@@ -60,3 +60,20 @@ func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err e
 	err = db.Preload("User").Where(model.Tag{Slug: slug}).First(&tag).Error
 	return
 }
+
+// ListByUserID 通过用户ID获取标签
+//
+//	@receiver dao *TagDAO
+//	@param db *gorm.DB
+//	@param userID uint
+//	@param fields []string
+//	@param limit int
+//	@param offset int
+//	@return tags *[]model.Tag
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-18 04:08:02
+func (dao *TagDAO) ListByUserID(db *gorm.DB, userID uint, fields []string, limit, offset int) (tags *[]model.Tag, err error) {
+	err = db.Select(fields).Where(model.Tag{CreateBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
+	return
+}
