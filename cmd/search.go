@@ -36,9 +36,4 @@ func init() {
 	searchCmd.AddCommand(createIndexCmd)
 	searchCmd.AddCommand(deleteIndexCmd)
 	rootCmd.AddCommand(searchCmd)
-
-	createIndexCmd.Flags().StringP("uid", "", "", "索引的唯一标识符")
-	createIndexCmd.Flags().StringP("primaryKey", "", "", "索引的主键字段")
-
-	createIndexCmd.MarkFlagRequired("uid")
 }
