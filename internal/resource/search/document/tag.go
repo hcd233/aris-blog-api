@@ -8,9 +8,10 @@ import "github.com/hcd233/Aris-blog/internal/resource/database/model"
 //	@update 2024-10-17 09:55:25
 type TagDocument struct {
 	ID          uint   `json:"id"`
-	Name        string `json:"name"`
-	Slug        string `json:"slug"`
-	Description string `json:"description"`
+	Name        string `json:"name,omitempty"`
+	Slug        string `json:"slug,omitempty"`
+	Creator     string `json:"creator,omitempty"`
+	Description string `json:"description,omitempty"`
 }
 
 // TransformTagToDocument 将标签转换为文档
@@ -24,6 +25,7 @@ func TransformTagToDocument(tag *model.Tag) *TagDocument {
 		ID:          tag.ID,
 		Name:        tag.Name,
 		Slug:        tag.Slug,
+		Creator:     tag.User.Name,
 		Description: tag.Description,
 	}
 }

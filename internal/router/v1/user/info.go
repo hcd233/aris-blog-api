@@ -67,8 +67,8 @@ func UpdateInfoHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
 
-	dao := dao.GetUserDAO()
-	docDAO := docdao.GetUserDocDAO()
+	userDAO, tagDAO, articleDAO := dao.GetUserDAO(), dao.GetTagDAO(), dao.GetArticleDAO()
+	userDocDAO, tagDocDAO, articleDocDAO := docdao.GetUserDocDAO(), docdao.GetTagDocDAO(), docdao.GetArticleDocDAO()
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -78,7 +78,7 @@ func UpdateInfoHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := dao.GetByName(db, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUserNotFoundError,
@@ -87,12 +87,21 @@ func UpdateInfoHandler(c *gin.Context) {
 		return
 	}
 
-	lo.Must0(dao.Update(db, &model.User{ID: userID}, map[string]interface{}{
+	lo.Must0(userDAO.Update(db, &model.User{ID: userID}, map[string]interface{}{
 		"name": body.UserName,
 	}))
-	user = lo.Must1(dao.GetByID(db, userID, []string{"id", "name", "avatar"}))
+	user = lo.Must1(userDAO.GetByID(db, userID, []string{"id", "name", "avatar"}))
 
-	docDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user))
+	createdTags := lo.Must1(tagDAO.ListByUserID(db, userID, []string{"id"}, -1, -1))
+	createdArticles := lo.Must1(articleDAO.ListByUserID(db, userID, []string{"id"}, -1, -1))
+
+	lo.Must0(tagDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdTags, func(tag model.Tag, idx int) *document.TagDocument {
+		return &document.TagDocument{ID: tag.ID, Creator: user.Name}
+	})))
+	lo.Must0(articleDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdArticles, func(article model.Article, idx int) *document.ArticleDocument {
+		return &document.ArticleDocument{ID: article.ID, Author: user.Name}
+	})))
+	lo.Must0(userDocDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user)))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,

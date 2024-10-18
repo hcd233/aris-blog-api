@@ -164,6 +164,35 @@ func (dao *BaseDocDAO[T]) UpdateDocument(client meilisearch.ServiceManager, doc 
 	return nil
 }
 
+// BatchUpdateDocuments 批量更新文档
+//
+//	@param dao *BaseDocDAO[T]
+//	@return BatchUpdateDocuments
+//	@author centonhuang
+//	@update 2024-10-18 04:12:10
+func (dao *BaseDocDAO[T]) BatchUpdateDocuments(client meilisearch.ServiceManager, docs []*T) error {
+	if len(docs) == 0 {
+		logger.Logger.Warn("[Batch Update Document]", zap.String("indexName", dao.IndexName), zap.String("message", "No document to update"))
+		return nil
+	}
+	taskInfo, err := client.Index(dao.IndexName).UpdateDocuments(docs)
+	if err != nil {
+		logger.Logger.Error("[Update Document]",
+			zap.String("indexName", dao.IndexName),
+			zap.Error(err),
+		)
+		return err
+	}
+	logger.Logger.Info("[Batch Update Document]",
+		zap.Int("docNum", len(docs)),
+		zap.String("taskType", string(taskInfo.Type)),
+		zap.Int64("taskUID", taskInfo.TaskUID),
+		zap.String("indexUID", taskInfo.IndexUID),
+		zap.String("status", string(taskInfo.Status)),
+	)
+	return nil
+}
+
 // DeleteDocument 删除文档
 //
 //	@param dao *BaseDocDAO[T]
