@@ -21,17 +21,25 @@ func CreateTagHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
 
-	dao := dao.GetTagDAO()
+	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
+
+	user, err := userDAO.GetByID(db, userID, []string{"id", "name"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+	}
 
 	tag := &model.Tag{
 		Name:        body.Name,
 		Slug:        body.Slug,
 		Description: body.Description,
-		CreateBy:    userID,
+		User:        user,
 	}
 
-	if err := dao.Create(db, tag); err != nil {
+	if err := tagDAO.Create(db, tag); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
 			Message: err.Error(),
