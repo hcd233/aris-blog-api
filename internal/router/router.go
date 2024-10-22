@@ -25,6 +25,7 @@ func InitRouter(r *gin.Engine) {
 	{
 		initOauth2Router(v1Router)
 		initTagRouter(v1Router)
+		initArticleRouter(v1Router)
 		initUserRouter(v1Router)
 	}
 }
@@ -56,6 +57,13 @@ func initTagRouter(r *gin.RouterGroup) {
 	}
 }
 
+func initArticleRouter(r *gin.RouterGroup) {
+	articleRouter := r.Group("/article", middleware.JwtMiddleware())
+	{
+		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryArticleHandler)
+	}
+}
+
 func initUserRouter(r *gin.RouterGroup) {
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
@@ -77,7 +85,7 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article")
 	{
 		// TODO move this router
-		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryArticleHandler)
+		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryUserArticleHandler)
 		articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
 		articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
 	}

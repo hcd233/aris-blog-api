@@ -11,12 +11,12 @@ import (
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
-// QueryArticleHandler 查询文章
+// QueryUserArticleHandler 查询用户文章
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-10-18 03:02:01
-func QueryArticleHandler(c *gin.Context) {
+//	@update 2024-10-23 12:13:21
+func QueryUserArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	params := c.MustGet("param").(*protocol.QueryParam)
 
@@ -36,6 +36,35 @@ func QueryArticleHandler(c *gin.Context) {
 	}
 
 	articles, err := docDAO.QueryDocument(searchEngine, params.Query, append(params.Filter, "author="+uri.UserName), params.Limit, params.Offset)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeQueryArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"articles": articles,
+		},
+	})
+}
+
+// QueryArticleHandler 查询文章
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-23 12:13:17
+func QueryArticleHandler(c *gin.Context) {
+	params := c.MustGet("param").(*protocol.QueryParam)
+
+	searchEngine := search.GetSearchEngine()
+
+	docDAO := docdao.GetArticleDocDAO()
+
+	articles, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Limit, params.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,
