@@ -58,6 +58,7 @@ func CreateIndex() (err error) {
 
 	for _, dao := range daoArr {
 		lo.Must0(dao.CreateIndex(client))
+		lo.Must0(dao.SetFilterableAttributes(client))
 	}
 	return
 }

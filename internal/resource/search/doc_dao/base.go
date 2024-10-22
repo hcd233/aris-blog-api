@@ -18,6 +18,7 @@ import (
 type DocDAO interface {
 	CreateIndex(client meilisearch.ServiceManager) error
 	DeleteIndex(client meilisearch.ServiceManager) error
+	SetFilterableAttributes(client meilisearch.ServiceManager) error
 }
 
 // BaseDocDAO 基础文档DAO
@@ -26,6 +27,7 @@ type DocDAO interface {
 //	@update 2024-10-17 10:40:45
 type BaseDocDAO[T interface{}] struct {
 	IndexName string
+	Filters   []string
 }
 
 // CreateIndex 创建索引
@@ -81,17 +83,43 @@ func (dao *BaseDocDAO[T]) DeleteIndex(client meilisearch.ServiceManager) error {
 	return nil
 }
 
+// SetFilterableAttributes 设置可过滤属性
+//
+//	@param dao *BaseDocDAO[T]
+//	@return SetFilterableAttributes
+//	@author centonhuang
+//	@update 2024-10-18 03:05:51
+func (dao *BaseDocDAO[T]) SetFilterableAttributes(client meilisearch.ServiceManager) error {
+	taskInfo, err := client.Index(dao.IndexName).UpdateFilterableAttributes(&dao.Filters)
+	if err != nil {
+		logger.Logger.Error("[Set Filterable Attributes]",
+			zap.String("indexName", dao.IndexName),
+			zap.Error(err),
+		)
+		return err
+	}
+
+	logger.Logger.Info("[Set Filterable Attributes]",
+		zap.String("taskType", string(taskInfo.Type)),
+		zap.Int64("taskUID", taskInfo.TaskUID),
+		zap.String("indexUID", taskInfo.IndexUID),
+		zap.String("status", string(taskInfo.Status)),
+	)
+	return nil
+}
+
 // QueryDocument 查询文档
 //
 //	@param dao *BaseDocDAO[T]
 //	@return QueryDocument
 //	@author centonhuang
 //	@update 2024-10-17 10:40:43
-func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query string, limit int, offset int) ([]T, error) {
+func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query string, filter []string, limit int, offset int) ([]T, error) {
 	searchRequest := &meilisearch.SearchRequest{
 		Query:  query,
 		Limit:  int64(limit),
 		Offset: int64(offset),
+		Filter: filter,
 	}
 	searchResponse, err := client.Index(dao.IndexName).Search(query, searchRequest)
 	if err != nil {
