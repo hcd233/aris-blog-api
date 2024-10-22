@@ -168,7 +168,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to update other user's article",
+			Message: "You have no permission to update other user's article status",
 		})
 		return
 	}

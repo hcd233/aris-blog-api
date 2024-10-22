@@ -22,6 +22,7 @@ type ArticleURI struct {
 //	@author centonhuang
 //	@update 2024-09-22 03:20:00
 type TagURI struct {
+	UserURI
 	TagSlug string `uri:"tagSlug" binding:"required"`
 }
 

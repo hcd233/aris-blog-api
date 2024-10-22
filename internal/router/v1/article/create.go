@@ -22,7 +22,7 @@ func CreateArticleHandler(c *gin.Context) {
 
 	db := database.GetDBInstance()
 
-	tagDAO, articleDAO := dao.GetTagDAO(), dao.GetArticleDAO()
+	userDAO, tagDAO, articleDAO := dao.GetUserDAO(), dao.GetTagDAO(), dao.GetArticleDAO()
 
 	if uri.UserName != userName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -36,9 +36,18 @@ func CreateArticleHandler(c *gin.Context) {
 		body.Slug = body.Title
 	}
 
+	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
 	tags := []model.Tag{}
 	for _, tag := range body.Tags {
-		tag, err := tagDAO.GetBySlug(db, tag, []string{"id"})
+		tag, err := tagDAO.GetBySlugAndUserID(db, tag, user.ID, []string{"id"})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeGetTagError,

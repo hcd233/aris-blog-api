@@ -31,18 +31,19 @@ func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 	return
 }
 
-// GetBySlug 通过slug获取标签
+// GetBySlugAndUserID 通过slug和用户ID获取标签
 //
 //	@receiver dao *TagDAO
 //	@param db *gorm.DB
 //	@param slug string
+//	@param userID uint
 //	@param fields []string
 //	@return tag *model.Tag
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-17 05:58:06
-func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields []string) (tag *model.Tag, err error) {
-	err = db.Select(fields).Where(model.Tag{Slug: slug}).First(&tag).Error
+//	@update 2024-10-23 12:53:25
+func (dao *TagDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint, fields []string) (tag *model.Tag, err error) {
+	err = db.Select(fields).Where(model.Tag{Slug: slug, CreateBy: userID}).First(&tag).Error
 	return
 }
 

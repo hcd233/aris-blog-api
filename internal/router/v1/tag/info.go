@@ -23,9 +23,18 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	db := database.GetDBInstance()
 
-	dao := dao.GetTagDAO()
+	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
 
-	tag, err := dao.GetAllBySlug(db, uri.TagSlug)
+	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	tag, err := tagDAO.GetAllBySlug(db, uri.TagSlug)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -42,16 +51,33 @@ func GetTagInfoHandler(c *gin.Context) {
 
 // UpdateTagHandler 更新标签
 func UpdateTagHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to update other user's tag",
+		})
+		return
+	}
 
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
 
-	dao := dao.GetTagDAO()
+	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+	}
+
+	tag, err := tagDAO.GetBySlugAndUserID(db, uri.TagSlug, user.ID, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -78,7 +104,7 @@ func UpdateTagHandler(c *gin.Context) {
 		})
 		return
 	}
-	err = dao.Update(db, tag, updateFields)
+	err = tagDAO.Update(db, tag, updateFields)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
@@ -87,7 +113,7 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag = lo.Must1(dao.GetBySlug(db, uri.TagSlug, []string{"id"}))
+	tag = lo.Must1(tagDAO.GetBySlugAndUserID(db, uri.TagSlug, user.ID, []string{"id"}))
 
 	// 同步到搜索引擎
 	err = docDAO.UpdateDocument(searchEngine, document.TransformTagToDocument(tag))
@@ -107,15 +133,30 @@ func UpdateTagHandler(c *gin.Context) {
 
 // DeleteTagHandler 删除标签
 func DeleteTagHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.TagURI)
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's tag",
+		})
+		return
+	}
 
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
-
-	dao := dao.GetTagDAO()
+	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	tag, err := dao.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+	}
+
+	tag, err := tagDAO.GetBySlugAndUserID(db, uri.TagSlug, user.ID, []string{"id", "name", "slug"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -124,7 +165,7 @@ func DeleteTagHandler(c *gin.Context) {
 		return
 	}
 
-	err = dao.Delete(db, tag)
+	err = tagDAO.Delete(db, tag)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteTagError,
