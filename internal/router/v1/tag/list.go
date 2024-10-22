@@ -44,3 +44,44 @@ func ListTagsHandler(c *gin.Context) {
 		},
 	})
 }
+
+// ListUserTagsHandler 列出用户标签
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-09-22 02:41:01
+func ListUserTagsHandler(c *gin.Context) {
+	uri := c.MustGet("uri").(*protocol.UserURI)
+	param := c.MustGet("param").(*protocol.PageParam)
+
+	db := database.GetDBInstance()
+
+	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
+
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	tags, err := tagDAO.ListByUserID(db, user.ID, []string{"id", "slug"}, param.Limit, param.Offset)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"tags": lo.Map(*tags, func(article model.Tag, index int) map[string]interface{} {
+				return article.GetBasicInfo()
+			}),
+		},
+	})
+}

@@ -44,16 +44,8 @@ func initOauth2Router(r *gin.RouterGroup) {
 func initTagRouter(r *gin.RouterGroup) {
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
-		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.SearchTagHandler)
-		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
+		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.QueryTagHandler)
 		tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListTagsHandler)
-
-		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
-		{
-			tagSlugRouter.GET("", tag.GetTagInfoHandler)
-			tagSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}), tag.UpdateTagHandler)
-			tagSlugRouter.DELETE("", tag.DeleteTagHandler)
-		}
 	}
 }
 
@@ -76,6 +68,7 @@ func initUserRouter(r *gin.RouterGroup) {
 
 			initUserArticleRouter(userNameRouter)
 			initUserCategoryRouter(userNameRouter)
+			initUserTagRouter(userNameRouter)
 		}
 
 	}
@@ -98,6 +91,21 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleSlugRouter.PATCH("/status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
 
 		initArticleVersionRouter(articleSlugRouter)
+	}
+}
+
+func initUserTagRouter(r *gin.RouterGroup) {
+	tagRouter := r.Group("/tag")
+	{
+		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.QueryUserTagHandler)
+		tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListUserTagsHandler)
+		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
+		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
+		{
+			tagSlugRouter.GET("", tag.GetTagInfoHandler)
+			tagSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}), tag.UpdateTagHandler)
+			tagSlugRouter.DELETE("", tag.DeleteTagHandler)
+		}
 	}
 }
 
