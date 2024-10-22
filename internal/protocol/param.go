@@ -15,7 +15,8 @@ type PageParam struct {
 //	@update 2024-09-18 02:56:39
 type QueryParam struct {
 	PageParam
-	Query string `form:"query" binding:"required"`
+	Query  string   `form:"query" binding:"required"`
+	Filter []string `form:"filter"`
 }
 
 // GithubCallbackParam Github回调请求参数

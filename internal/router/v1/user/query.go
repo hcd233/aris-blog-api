@@ -21,7 +21,7 @@ func QueryUserHandler(c *gin.Context) {
 
 	docDAO := docdao.GetUserDocDAO()
 
-	users, err := docDAO.QueryDocument(searchEngine, params.Query, params.Limit, params.Offset)
+	users, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Limit, params.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,

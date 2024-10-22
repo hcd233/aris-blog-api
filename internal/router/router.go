@@ -66,14 +66,14 @@ func initUserRouter(r *gin.RouterGroup) {
 			userNameRouter.GET("", user.GetUserInfoHandler)
 			userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), user.UpdateInfoHandler)
 
-			initArticleRouter(userNameRouter)
-			initCategoryRouter(userNameRouter)
+			initUserArticleRouter(userNameRouter)
+			initUserCategoryRouter(userNameRouter)
 		}
 
 	}
 }
 
-func initArticleRouter(r *gin.RouterGroup) {
+func initUserArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article")
 	{
 		// TODO move this router
@@ -93,7 +93,7 @@ func initArticleRouter(r *gin.RouterGroup) {
 	}
 }
 
-func initCategoryRouter(r *gin.RouterGroup) {
+func initUserCategoryRouter(r *gin.RouterGroup) {
 	categoryRouter := r.Group("/category")
 	{
 		categoryRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListRootCategoriesHandler)
