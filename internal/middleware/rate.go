@@ -12,25 +12,20 @@ import (
 	"github.com/ulule/limiter/v3/drivers/store/memory"
 )
 
-// RateLimiterConfig 限频配置
-type RateLimiterConfig struct {
-	Period    time.Duration         // 限频周期
-	Limit     int64                 // 限制次数
-	Key       string                // 用于生成限频key
-	ErrorCode protocol.ResponseCode // 限频错误码
-}
-
 // RateLimiterMiddleware 限频中间件
 //
-//	@param config RateLimiterConfig
+//	@param period time.Duration
+//	@param limit int64
+//	@param key string
+//	@param errCode protocol.ResponseCode
 //	@return gin.HandlerFunc
-//	@author AliceAI
-//	@update 2023-05-22 15:30:00
-func RateLimiterMiddleware(config RateLimiterConfig) gin.HandlerFunc {
+//	@author centonhuang
+//	@update 2024-10-22 05:01:51
+func RateLimiterMiddleware(period time.Duration, limit int64, key string, errorCode protocol.ResponseCode) gin.HandlerFunc {
 	// 创建限频规则
 	rate := limiter.Rate{
-		Period: config.Period,
-		Limit:  config.Limit,
+		Period: period,
+		Limit:  limit,
 	}
 
 	// 使用内存存储限频数据
@@ -42,20 +37,19 @@ func RateLimiterMiddleware(config RateLimiterConfig) gin.HandlerFunc {
 	// 创建中间件
 	middleware := mgin.NewMiddleware(instance, mgin.WithLimitReachedHandler(func(c *gin.Context) {
 		c.JSON(http.StatusTooManyRequests, protocol.Response{
-			Code: config.ErrorCode,
+			Code: errorCode,
 		})
-		
 	}))
 
 	return func(c *gin.Context) {
 		// 获取限频 key
-		key := c.Param(config.Key)
+		value := c.Param(key)
 		if key == "" {
-			key = c.ClientIP() // 如果没有指定的参数，则使用 IP 地址作为 key
+			value = c.ClientIP() // 如果没有指定的参数，则使用 IP 地址作为 key
 		}
 
 		// 设置限频 key
-		c.Set("limiter", fmt.Sprintf("%s:%s", config.Key, key))
+		c.Set("limiter", fmt.Sprintf("%s:%s", key, value))
 
 		// 应用限频中间件
 		middleware(c)
