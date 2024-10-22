@@ -17,7 +17,7 @@ func SearchTagHandler(c *gin.Context) {
 
 	docDAO := docdao.GetTagDocDAO()
 
-	tags, err := docDAO.QueryDocument(searchEngine, params.Query, params.Limit, params.Offset)
+	tags, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Limit, params.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,

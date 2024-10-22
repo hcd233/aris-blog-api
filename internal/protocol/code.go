@@ -123,6 +123,10 @@ const (
 	//	@update 2024-10-17 01:10:33
 	CodeCreateArticleVersionRateLimitError ResponseCode = 1029
 
+	// CodeQueryArticleError ResponseCode 查询文章错误
+	//	@update 2024-10-23 12:05:24
+	CodeQueryArticleError ResponseCode = 1030
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -152,6 +156,7 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeCreateArticleError: "创建文章错误",
 	CodeUpdateArticleError: "更新文章错误",
 	CodeDeleteArticleError: "删除文章错误",
+	CodeQueryArticleError:  "查询文章错误",
 
 	CodeGetTagError:    "获取标签错误",
 	CodeCreateTagError: "创建标签错误",
