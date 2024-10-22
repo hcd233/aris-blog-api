@@ -114,10 +114,10 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 	articleVersionRouter := r.Group("/version")
 	{
 		articleVersionRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
-		
+
 		articleVersionRouter.POST(
 			"",
-			middleware.RateLimiterMiddleware(middleware.RateLimiterConfig{Period: 10 * time.Second, Limit: 1, Key: "userName", ErrorCode: protocol.CodeCreateArticleVersionRateLimitError}),
+			middleware.RateLimiterMiddleware(10*time.Second, 1, "userName", protocol.CodeCreateArticleVersionRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			article_version.CreateArticleVersionHandler,
 		)
