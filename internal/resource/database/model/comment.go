@@ -17,3 +17,18 @@ type Comment struct {
 	Parent    *Comment  `json:"parent" gorm:"foreignKey:ParentID"`
 	Children  []Comment `json:"children" gorm:"foreignKey:ParentID"`
 }
+
+// GetBasicInfo 获取基本信息
+//
+//	@receiver c *Comment
+//	@return map
+//	@author centonhuang
+//	@update 2024-10-23 07:17:26
+func (c *Comment) GetBasicInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":      c.ID,
+		"userID":  c.UserID,
+		"content": c.Content,
+		"likes":   c.Likes,
+	}
+}

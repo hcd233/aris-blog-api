@@ -1,0 +1,123 @@
+package dao
+
+import (
+	"fmt"
+
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"gorm.io/gorm"
+)
+
+// CommentDAO 评论DAO
+//
+//	@author centonhuang
+//	@update 2024-10-23 05:22:38
+type CommentDAO struct {
+	baseDAO[model.Comment]
+}
+
+// GetChildren 获取子评论
+//
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param comment *model.Comment
+//	@param fields []string
+//	@param limit int
+//	@param offset int
+//	@return children *[]model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-23 05:22:43
+func (dao *CommentDAO) GetChildren(db *gorm.DB, comment *model.Comment, fields []string, limit, offset int) (children *[]model.Comment, err error) {
+	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ParentID: comment.ID}).Find(&children).Error
+	return
+}
+
+// GetParent 获取父类别
+//
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param comment *model.Comment
+//	@param fields []string
+//	@return parent *model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-23 05:22:55
+func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields []string) (parent *model.Comment, err error) {
+	err = db.Select(fields).Where(&model.Comment{ID: comment.ParentID}).First(&parent).Error
+	return
+}
+
+// GetRootsByArticleID 获取文章的根评论
+//
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param articleID uint
+//	@param fields []string
+//	@param limit int
+//	@param offset int
+//	@return comments *[]model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-23 07:15:21
+func (dao *CommentDAO) GetRootsByArticleID(db *gorm.DB, articleID uint, fields []string, limit, offset int) (comments *[]model.Comment, err error) {
+	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Find(&comments).Error
+	return
+}
+
+// DeleteReclusiveByID 递归删除评论
+//
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param id uint
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-23 05:23:03
+func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
+	categories, err := dao.reclusiveFindChildrenIDsByID(db, id)
+	if err != nil {
+		return
+	}
+
+	tx := db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			err = fmt.Errorf("panic occurred: %v", r)
+		} else if err != nil {
+			tx.Rollback()
+		} else {
+			tx.Commit()
+		}
+	}()
+
+	rootComment, err := dao.GetByID(db, id, []string{"id"})
+	if err != nil {
+		return
+	}
+
+	*categories = append(*categories, *rootComment)
+	for _, comment := range *categories {
+		err = dao.Delete(tx, &comment)
+		if err != nil {
+			return
+		}
+	}
+	return
+}
+
+func (dao *CommentDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, commentID uint) (categories *[]model.Comment, err error) {
+	categories, err = dao.GetChildren(db, &model.Comment{ID: commentID}, []string{"id"}, -1, -1)
+	if err != nil {
+		return
+	}
+
+	for _, comment := range *categories {
+		childrenCategories, err := dao.reclusiveFindChildrenIDsByID(db, comment.ID)
+		if err != nil {
+			return nil, err
+		}
+		*categories = append(*categories, *childrenCategories...)
+	}
+
+	return
+}

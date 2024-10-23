@@ -10,11 +10,13 @@ var (
 	tagDAOSingleton            *TagDAO
 	articleDAOSingleton        *ArticleDAO
 	articleVersionDAOSingleton *ArticleVersionDAO
+	commentDAOSingleton        *CommentDAO
 	categoryOnce               sync.Once
 	userOnce                   sync.Once
 	tagOnce                    sync.Once
 	articleOnce                sync.Once
 	articleVersionOnce         sync.Once
+	commentOnce                sync.Once
 )
 
 // GetCategoryDAO 获取类别DAO
@@ -75,4 +77,16 @@ func GetArticleVersionDAO() *ArticleVersionDAO {
 		articleVersionDAOSingleton = &ArticleVersionDAO{}
 	})
 	return articleVersionDAOSingleton
+}
+
+// GetCommentDAO 获取评论DAO
+//
+//	@return *CommentDAO
+//	@author centonhuang
+//	@update 2024-10-23 06:01:15
+func GetCommentDAO() *CommentDAO {
+	commentOnce.Do(func() {
+		commentDAOSingleton = &CommentDAO{}
+	})
+	return commentDAOSingleton
 }

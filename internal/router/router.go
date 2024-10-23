@@ -12,6 +12,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
+	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
 )
 
 // InitRouter initializes the router.
@@ -91,6 +92,7 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleSlugRouter.PATCH("/status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
 
 		initArticleVersionRouter(articleSlugRouter)
+		initArticleCommentRouter(articleSlugRouter)
 	}
 }
 
@@ -141,4 +143,12 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 			articleVersionNumberRouter.GET("", article_version.GetArticleVersionInfoHandler)
 		}
 	}
+}
+
+func initArticleCommentRouter(r *gin.RouterGroup) {
+	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), comment.ListArticleCommentsHandler)
+	// commentRouter := r.Group("/comment")
+	// {
+	// 	commentRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}), article.CreateArticleCommentHandler)
+	// }
 }
