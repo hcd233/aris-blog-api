@@ -127,6 +127,10 @@ const (
 	//	@update 2024-10-23 12:05:24
 	CodeQueryArticleError ResponseCode = 1030
 
+	// CodeGetCommentError ResponseCode 获取评论错误
+	//	@update 2024-10-23 07:16:33
+	CodeGetCommentError ResponseCode = 1031
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -172,6 +176,8 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeGetArticleVersionError:             "获取文章版本错误",
 	CodeCreateArticleVersionError:          "创建文章版本错误",
 	CodeCreateArticleVersionRateLimitError: "创建文章版本频率限制错误，请稍后再试",
+
+	CodeGetCommentError: "获取评论错误",
 
 	CodeUnknownError: "未知错误",
 }
