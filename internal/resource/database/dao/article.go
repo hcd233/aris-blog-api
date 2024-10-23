@@ -95,3 +95,20 @@ func (dao *ArticleDAO) ListByCategoryID(db *gorm.DB, categoryID uint, fields []s
 	err = db.Select(fields).Where(&model.Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
 	return
 }
+
+// ListByPublished 列出已发布的文章
+//
+//	@receiver dao *ArticleDAO
+//	@param db *gorm.DB
+//	@param userID uint
+//	@param fields []string
+//	@param limit int
+//	@param offset int
+//	@return articles *[]model.Article
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-17 07:34:43
+func (dao *ArticleDAO) ListByPublished(db *gorm.DB, fields []string, limit, offset int) (articles *[]model.Article, err error) {
+	err = db.Select(fields).Where(&model.Article{Status: model.ArticleStatusPublish}).Limit(limit).Offset(offset).Find(&articles).Error
+	return
+}

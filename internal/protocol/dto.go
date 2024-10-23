@@ -26,10 +26,9 @@ type CreateArticleBody struct {
 //	@author centonhuang
 //	@update 2024-09-22 03:56:09
 type UpdateArticleBody struct {
-	Title      string              `json:"title" binding:"omitempty"`
-	Slug       string              `json:"slug" binding:"omitempty"`
-	CategoryID uint                `json:"categoryID" binding:"omitempty"`
-	Status     model.ArticleStatus `json:"status" binding:"omitempty,oneof=draft publish"`
+	Title      string `json:"title" binding:"omitempty"`
+	Slug       string `json:"slug" binding:"omitempty"`
+	CategoryID uint   `json:"categoryID" binding:"omitempty"`
 }
 
 // UpdateTagBody 更新标签请求体

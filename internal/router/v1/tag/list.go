@@ -38,8 +38,8 @@ func ListTagsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": lo.Map(*tags, func(article model.Tag, index int) map[string]interface{} {
-				return article.GetBasicInfo()
+			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
+				return tag.GetBasicInfo()
 			}),
 		},
 	})
@@ -79,8 +79,8 @@ func ListUserTagsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": lo.Map(*tags, func(article model.Tag, index int) map[string]interface{} {
-				return article.GetBasicInfo()
+			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
+				return tag.GetBasicInfo()
 			}),
 		},
 	})

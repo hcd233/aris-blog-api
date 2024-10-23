@@ -14,56 +14,6 @@ import (
 	"github.com/samber/lo"
 )
 
-// ListRootCategoriesHandler 列出根分类
-//
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-09-23 11:45:08
-func ListRootCategoriesHandler(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
-	param := c.MustGet("param").(*protocol.PageParam)
-
-	db := database.GetDBInstance()
-
-	categoryDAO, userDAO := dao.GetCategoryDAO(), dao.GetUserDAO()
-
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	rootCategory, err := categoryDAO.GetRootByUserID(db, user.ID, []string{"id"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	categories, err := categoryDAO.GetChildren(db, rootCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeCreateCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"categories": lo.Map(*categories, func(category model.Category, index int) map[string]interface{} {
-				return category.GetBasicInfo()
-			}),
-		},
-	})
-}
-
 // ListChildrenCategoriesHandler 列出子分类
 //
 //	@param c *gin.Context
