@@ -45,6 +45,51 @@ func GetCategoryInfoHandler(c *gin.Context) {
 	})
 }
 
+// GetRootCategoriesHandler 获取根分类信息
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-23 03:56:26
+func GetRootCategoriesHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
+	uri := c.MustGet("uri").(*protocol.UserURI)
+
+	db := database.GetDBInstance()
+
+	categoryDAO, userDAO := dao.GetCategoryDAO(), dao.GetUserDAO()
+
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's root category",
+		})
+		return
+	}
+
+	rootCategory, err := categoryDAO.GetRootByUserID(db, user.ID, []string{"id", "name"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCategoryError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: rootCategory.GetBasicInfo(),
+	})
+}
+
 // UpdateCategoryInfoHandler 更新分类信息
 //
 //	@param c *gin.Context

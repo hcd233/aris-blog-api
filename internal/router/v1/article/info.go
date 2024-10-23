@@ -82,22 +82,12 @@ func UpdateArticleHandler(c *gin.Context) {
 	}
 
 	updateFields := make(map[string]interface{})
-	// TODO split it into handler
 
 	if body.Title != "" {
 		updateFields["title"] = body.Title
 	}
 	if body.Slug != "" {
 		updateFields["slug"] = body.Slug
-	}
-
-	if body.Status != "" {
-		updateFields["status"] = body.Status
-		if body.Status == model.ArticleStatusDraft {
-			updateFields["published_at"] = nil
-		} else if body.Status == model.ArticleStatusPublish {
-			updateFields["published_at"] = time.Now()
-		}
 	}
 
 	if body.CategoryID != 0 {

@@ -53,6 +53,7 @@ func initArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
 		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryArticleHandler)
+		articleRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
 	}
 }
 
@@ -75,12 +76,11 @@ func initUserRouter(r *gin.RouterGroup) {
 }
 
 func initUserArticleRouter(r *gin.RouterGroup) {
+	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListUserArticlesHandler)
 	articleRouter := r.Group("/article")
 	{
-		// TODO move this router
 		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryUserArticleHandler)
 		articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
-		articleRouter.GET("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
 	}
 
 	articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
@@ -95,10 +95,10 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 }
 
 func initUserTagRouter(r *gin.RouterGroup) {
+	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListUserTagsHandler)
 	tagRouter := r.Group("/tag")
 	{
 		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.QueryUserTagHandler)
-		tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListUserTagsHandler)
 		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
 		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
 		{
@@ -110,9 +110,9 @@ func initUserTagRouter(r *gin.RouterGroup) {
 }
 
 func initUserCategoryRouter(r *gin.RouterGroup) {
+	r.GET("rootCategory", category.GetRootCategoriesHandler)
 	categoryRouter := r.Group("/category")
 	{
-		categoryRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListRootCategoriesHandler)
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), category.CreateCategoryHandler)
 	}
 
@@ -127,10 +127,9 @@ func initUserCategoryRouter(r *gin.RouterGroup) {
 }
 
 func initArticleVersionRouter(r *gin.RouterGroup) {
+	r.GET("versions", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
 	articleVersionRouter := r.Group("/version")
 	{
-		articleVersionRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
-
 		articleVersionRouter.POST(
 			"",
 			middleware.RateLimiterMiddleware(10*time.Second, 1, "userName", protocol.CodeCreateArticleVersionRateLimitError),
