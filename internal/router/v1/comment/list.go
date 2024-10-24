@@ -66,7 +66,9 @@ func ListArticleCommentsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} { return comment.GetBasicInfo() }),
+			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} {
+				return comment.GetBasicInfo()
+			}),
 		},
 	})
 }

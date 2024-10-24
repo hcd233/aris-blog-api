@@ -119,7 +119,7 @@ const (
 	//	@update 2024-10-17 12:46:33
 	CodeCreateArticleVersionError ResponseCode = 1028
 
-	// CodeCreateArticleVersionRateLimitError ResponseCode 创建文章版本频率限制错误
+	// CodeCreateArticleVersionRateLimitError ResponseCode 达到创建文章版本频率限制错误
 	//	@update 2024-10-17 01:10:33
 	CodeCreateArticleVersionRateLimitError ResponseCode = 1029
 
@@ -130,6 +130,14 @@ const (
 	// CodeGetCommentError ResponseCode 获取评论错误
 	//	@update 2024-10-23 07:16:33
 	CodeGetCommentError ResponseCode = 1031
+
+	// CodeCreateCommentError ResponseCode 创建评论错误
+	//	@update 2024-10-24 04:45:21
+	CodeCreateCommentError ResponseCode = 1032
+
+	// CodeCreateCommentRateLimitError ResponseCode 达到创建评论频率限制错误
+	//	@update 2024-10-24 05:52:47
+	CodeCreateCommentRateLimitError ResponseCode = 1033
 
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
@@ -175,9 +183,11 @@ var CodeMessageMapping = map[ResponseCode]string{
 
 	CodeGetArticleVersionError:             "获取文章版本错误",
 	CodeCreateArticleVersionError:          "创建文章版本错误",
-	CodeCreateArticleVersionRateLimitError: "创建文章版本频率限制错误，请稍后再试",
+	CodeCreateArticleVersionRateLimitError: "达到创建文章版本频率限制，请稍后再试",
 
-	CodeGetCommentError: "获取评论错误",
+	CodeGetCommentError:             "获取评论错误",
+	CodeCreateCommentError:          "创建评论错误",
+	CodeCreateCommentRateLimitError: "达到创建评论频率限制，请稍后再试",
 
 	CodeUnknownError: "未知错误",
 }

@@ -84,3 +84,12 @@ type CreateArticleVersionBody struct {
 type UpdateArticleStatusBody struct {
 	Status model.ArticleStatus `json:"status" binding:"required,oneof=draft publish"`
 }
+
+// CreateArticleCommentBody 创建文章评论请求体
+//
+//	@author centonhuang
+//	@update 2024-10-24 04:29:01
+type CreateArticleCommentBody struct {
+	ReplyTo uint   `json:"replyTo" binding:"omitempty"`
+	Content string `json:"content" binding:"required,min=1,max=300"`
+}

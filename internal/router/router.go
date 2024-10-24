@@ -9,10 +9,10 @@ import (
 	"github.com/hcd233/Aris-blog/internal/router/v1/article"
 	article_version "github.com/hcd233/Aris-blog/internal/router/v1/article_version"
 	"github.com/hcd233/Aris-blog/internal/router/v1/category"
+	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
-	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
 )
 
 // InitRouter initializes the router.
@@ -89,7 +89,7 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleSlugRouter.GET("", article.GetArticleInfoHandler)
 		articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
 		articleSlugRouter.DELETE("", article.DeleteArticleHandler)
-		articleSlugRouter.PATCH("/status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
+		articleSlugRouter.PUT("/status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
 
 		initArticleVersionRouter(articleSlugRouter)
 		initArticleCommentRouter(articleSlugRouter)
@@ -123,8 +123,8 @@ func initUserCategoryRouter(r *gin.RouterGroup) {
 		categoryIDRouter.GET("", category.GetCategoryInfoHandler)
 		categoryIDRouter.DELETE("", category.DeleteCategoryHandler)
 		categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), category.UpdateCategoryInfoHandler)
-		categoryIDRouter.GET("subCategory", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenCategoriesHandler)
-		categoryIDRouter.GET("subArticle", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenArticlesHandler)
+		categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenCategoriesHandler)
+		categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenArticlesHandler)
 	}
 }
 
@@ -134,7 +134,7 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 	{
 		articleVersionRouter.POST(
 			"",
-			middleware.RateLimiterMiddleware(10*time.Second, 1, "userName", protocol.CodeCreateArticleVersionRateLimitError),
+			middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeCreateArticleVersionRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			article_version.CreateArticleVersionHandler,
 		)
@@ -147,8 +147,13 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 
 func initArticleCommentRouter(r *gin.RouterGroup) {
 	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), comment.ListArticleCommentsHandler)
-	// commentRouter := r.Group("/comment")
-	// {
-	// 	commentRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}), article.CreateArticleCommentHandler)
-	// }
+	commentRouter := r.Group("/comment")
+	{
+		commentRouter.POST(
+			"", 
+			middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeCreateCommentRateLimitError),
+			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}), comment.CreateArticleCommentHandler,
+		)
+
+	}
 }
