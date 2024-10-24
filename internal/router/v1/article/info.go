@@ -190,6 +190,13 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 	}
 
 	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"content"})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleVersionError,
+			Message: err.Error(),
+		})
+		return
+	}
 
 	if body.Status == model.ArticleStatusPublish {
 		if err := articleDAO.Update(db, article, map[string]interface{}{"status": body.Status, "published_at": time.Now()}); err != nil {
