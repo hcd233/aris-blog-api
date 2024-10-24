@@ -154,6 +154,9 @@ func initArticleCommentRouter(r *gin.RouterGroup) {
 			middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeCreateCommentRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}), comment.CreateArticleCommentHandler,
 		)
-
+		commentIDRouter := commentRouter.Group("/:commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
+		{
+			commentIDRouter.GET("", comment.GetCommentInfoHandler)
+		}
 	}
 }
