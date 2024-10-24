@@ -64,6 +64,22 @@ func (dao *CommentDAO) GetRootsByArticleID(db *gorm.DB, articleID uint, fields [
 	return
 }
 
+// GetByArticleIDAndID 根据文章ID和评论ID获取评论
+//
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param articleID uint
+//	@param id uint
+//	@param fields []string
+//	@return comment *model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-10-24 06:01:04
+func (dao *CommentDAO) GetByArticleIDAndID(db *gorm.DB, articleID, id uint, fields []string) (comment *model.Comment, err error) {
+	err = db.Select(fields).Where(&model.Comment{ArticleID: articleID, ID: id}).First(&comment).Error
+	return
+}
+
 // DeleteReclusiveByID 递归删除评论
 //
 //	@receiver dao *CommentDAO
