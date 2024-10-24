@@ -72,3 +72,70 @@ func ListArticleCommentsHandler(c *gin.Context) {
 		},
 	})
 }
+
+// ListChildrenCommentsHandler 列出子评论
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-24 06:55:45
+func ListChildrenCommentsHandler(c *gin.Context) {
+	uri := c.MustGet("uri").(*protocol.CommentURI)
+	param := c.MustGet("param").(*protocol.PageParam)
+
+	db := database.GetDBInstance()
+
+	userDAO, articleDAO, commentDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetCommentDAO()
+
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "status"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	parentComment, err := commentDAO.GetByID(db, uri.CommentID, []string{"id", "article_id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetCommentError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if parentComment.ArticleID != article.ID {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeURIError,
+			Message: "The comment is not in this article",
+		})
+		return
+	}
+
+	comments, err := commentDAO.GetChildren(db, parentComment, []string{"id", "content", "created_at", "likes"}, param.Limit, param.Offset)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetCommentError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} {
+				return comment.GetBasicInfo()
+			}),
+		},
+	})
+}
