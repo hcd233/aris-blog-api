@@ -112,7 +112,7 @@ func initUserTagRouter(r *gin.RouterGroup) {
 }
 
 func initUserCategoryRouter(r *gin.RouterGroup) {
-	r.GET("rootCategory", category.GetRootCategoriesHandler)
+	r.GET("rootCategory", category.ListRootCategoriesHandler)
 	categoryRouter := r.Group("/category")
 	{
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), category.CreateCategoryHandler)
@@ -152,7 +152,8 @@ func initArticleCommentRouter(r *gin.RouterGroup) {
 		commentRouter.POST(
 			"",
 			middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeCreateCommentRateLimitError),
-			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}), comment.CreateArticleCommentHandler,
+			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}),
+			comment.CreateArticleCommentHandler,
 		)
 		commentIDRouter := commentRouter.Group("/:commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
 		{

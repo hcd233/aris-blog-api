@@ -20,14 +20,32 @@ import (
 //	@author centonhuang
 //	@update 2024-10-01 05:09:47
 func ListChildrenCategoriesHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's category",
+		})
+		return
+	}
+
 	db := database.GetDBInstance()
 
-	dao := dao.GetCategoryDAO()
+	categoryDAO, userDAO := dao.GetCategoryDAO(), dao.GetUserDAO()
 
-	parentCategory, err := dao.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id", "name"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	parentCategory, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -36,7 +54,15 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	categories, err := dao.GetChildren(db, parentCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
+	if user.ID != parentCategory.UserID {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's category",
+		})
+		return
+	}
+
+	categories, err := categoryDAO.GetChildren(db, parentCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
@@ -61,18 +87,44 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-02 01:38:12
 func ListChildrenArticlesHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's category",
+		})
+		return
+	}
+
 	db := database.GetDBInstance()
 
-	categoryDAO, articleDAO := dao.GetCategoryDAO(), dao.GetArticleDAO()
+	userDAO, categoryDAO, articleDAO := dao.GetUserDAO(), dao.GetCategoryDAO(), dao.GetArticleDAO()
 
-	parentCategory, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	parentCategory, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if user.ID != parentCategory.UserID {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's category",
 		})
 		return
 	}

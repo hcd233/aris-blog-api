@@ -15,7 +15,16 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func GetArticleVersionInfoHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.ArticleVersionURI)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's article version",
+		})
+		return
+	}
 
 	db := database.GetDBInstance()
 
