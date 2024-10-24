@@ -24,10 +24,6 @@ func ListArticleVersionsHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
-	db := database.GetDBInstance()
-
-	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
-
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
@@ -35,6 +31,10 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	db := database.GetDBInstance()
+
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
 	user, err := userDAO.GetByName(db, userName, []string{"id"})
 	if err != nil {

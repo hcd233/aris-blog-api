@@ -69,10 +69,6 @@ func UpdateArticleHandler(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 	userName := c.MustGet("userName").(string)
 
-	db := database.GetDBInstance()
-
-	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
-
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
@@ -80,6 +76,10 @@ func UpdateArticleHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	db := database.GetDBInstance()
+
+	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
 	updateFields := make(map[string]interface{})
 
@@ -144,16 +144,9 @@ func UpdateArticleHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-17 09:28:54
 func UpdateArticleStatusHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
-	userName := c.MustGet("userName").(string)
-
-	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
-
-	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
-
-	articleDocDAO := docdao.GetArticleDocDAO()
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -162,6 +155,13 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
+
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
+
+	articleDocDAO := docdao.GetArticleDocDAO()
 
 	user, err := userDAO.GetByName(db, userName, []string{"id"})
 	if err != nil {
@@ -232,14 +232,22 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-22 04:32:37
 func DeleteArticleHandler(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	userName := c.MustGet("userName").(string)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's article",
+		})
+		return
+	}
 
 	db := database.GetDBInstance()
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,

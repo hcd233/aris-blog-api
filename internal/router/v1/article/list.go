@@ -63,6 +63,7 @@ func ListUserArticlesHandler(c *gin.Context) {
 		})
 		return
 	}
+
 	articles, err := articleDAO.ListByUserID(db, user.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{

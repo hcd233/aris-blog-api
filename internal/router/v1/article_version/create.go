@@ -28,10 +28,6 @@ func CreateArticleVersionHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
-	db := database.GetDBInstance()
-
-	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
-
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
@@ -39,6 +35,10 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	db := database.GetDBInstance()
+
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
 	user, err := userDAO.GetByName(db, userName, []string{"id"})
 	if err != nil {

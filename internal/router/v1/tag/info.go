@@ -25,7 +25,7 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
 
-	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -34,7 +34,7 @@ func GetTagInfoHandler(c *gin.Context) {
 		return
 	}
 
-	tag, err := tagDAO.GetAllBySlug(db, uri.TagSlug)
+	tag, err := tagDAO.GetAllBySlugAndUserID(db, uri.TagSlug, user.ID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -173,7 +173,7 @@ func DeleteTagHandler(c *gin.Context) {
 		})
 		return
 	}
-	docDAO.DeleteDocument(searchEngine, tag.ID)
+	lo.Must0(docDAO.DeleteDocument(searchEngine, tag.ID))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,

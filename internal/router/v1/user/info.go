@@ -29,9 +29,9 @@ func GetUserInfoHandler(c *gin.Context) {
 
 	db := database.GetDBInstance()
 
-	dao := dao.GetUserDAO()
+	userDAO := dao.GetUserDAO()
 
-	user, err := dao.GetByName(db, uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,

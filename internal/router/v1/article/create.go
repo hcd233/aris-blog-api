@@ -32,10 +32,6 @@ func CreateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	if body.Slug == "" {
-		body.Slug = body.Title
-	}
-
 	user, err := userDAO.GetByName(db, userName, []string{"id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
@@ -43,6 +39,10 @@ func CreateArticleHandler(c *gin.Context) {
 			Message: err.Error(),
 		})
 		return
+	}
+
+	if body.Slug == "" {
+		body.Slug = body.Title
 	}
 
 	tags := []model.Tag{}
