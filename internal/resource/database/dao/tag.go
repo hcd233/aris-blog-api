@@ -31,7 +31,7 @@ func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 	return
 }
 
-// GetBySlugAndUserID 通过slug和用户ID获取标签
+// GetBySlug 通过slug获取标签
 //
 //	@receiver dao *TagDAO
 //	@param db *gorm.DB
@@ -42,23 +42,22 @@ func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-23 12:53:25
-func (dao *TagDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint, fields []string) (tag *model.Tag, err error) {
-	err = db.Select(fields).Where(model.Tag{Slug: slug, CreateBy: userID}).First(&tag).Error
+func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields []string) (tag *model.Tag, err error) {
+	err = db.Select(fields).Where(model.Tag{Slug: slug}).First(&tag).Error
 	return
 }
 
-// GetAllBySlugAndUserID 通过slug和用户ID获取标签
+// GetAllBySlug 通过slug获取标签
 //
 //	@receiver dao *TagDAO
 //	@param db *gorm.DB
 //	@param slug string
-//	@param userID uint
 //	@return tag *model.Tag
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-24 11:03:24
-func (dao *TagDAO) GetAllBySlugAndUserID(db *gorm.DB, slug string, userID uint) (tag *model.Tag, err error) {
-	err = db.Preload("User").Where(model.Tag{Slug: slug, CreateBy: userID}).First(&tag).Error
+//	@update 2024-10-29 07:44:26
+func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err error) {
+	err = db.Preload("User").Where(model.Tag{Slug: slug}).First(&tag).Error
 	return
 }
 
