@@ -19,10 +19,9 @@ type ArticleURI struct {
 
 // TagURI 标签路径参数
 //
-//	@author centonhuang
-//	@update 2024-09-22 03:20:00
+//	@author centonhuang 
+//	@update 2024-10-29 07:43:35 
 type TagURI struct {
-	UserURI
 	TagSlug string `uri:"tagSlug" binding:"required"`
 }
 

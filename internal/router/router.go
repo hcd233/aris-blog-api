@@ -43,18 +43,25 @@ func initOauth2Router(r *gin.RouterGroup) {
 }
 
 func initTagRouter(r *gin.RouterGroup) {
+	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListTagsHandler)
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
 		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.QueryTagHandler)
-		tagRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tag.ListTagsHandler)
+		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
+		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
+		{
+			tagSlugRouter.GET("", tag.GetTagInfoHandler)
+			tagSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}), tag.UpdateTagHandler)
+			tagSlugRouter.DELETE("", tag.DeleteTagHandler)
+		}
 	}
 }
 
 func initArticleRouter(r *gin.RouterGroup) {
+	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
 		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryArticleHandler)
-		articleRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article.ListArticlesHandler)
 	}
 }
 
@@ -101,13 +108,6 @@ func initUserTagRouter(r *gin.RouterGroup) {
 	tagRouter := r.Group("/tag")
 	{
 		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.QueryUserTagHandler)
-		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
-		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
-		{
-			tagSlugRouter.GET("", tag.GetTagInfoHandler)
-			tagSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}), tag.UpdateTagHandler)
-			tagSlugRouter.DELETE("", tag.DeleteTagHandler)
-		}
 	}
 }
 

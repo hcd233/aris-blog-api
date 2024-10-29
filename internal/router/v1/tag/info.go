@@ -23,18 +23,9 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	db := database.GetDBInstance()
 
-	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
+	tagDAO := dao.GetTagDAO()
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	tag, err := tagDAO.GetAllBySlugAndUserID(db, uri.TagSlug, user.ID)
+	tag, err := tagDAO.GetAllBySlug(db, uri.TagSlug)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -51,37 +42,29 @@ func GetTagInfoHandler(c *gin.Context) {
 
 // UpdateTagHandler 更新标签
 func UpdateTagHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userID := c.MustGet("userID").(uint)
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
-
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to update other user's tag",
-		})
-		return
-	}
 
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
 
-	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
+	tagDAO := dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-	}
-
-	tag, err := tagDAO.GetBySlugAndUserID(db, uri.TagSlug, user.ID, []string{"id"})
+	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "create_by"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if tag.CreateBy != userID {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to update other user's tag",
 		})
 		return
 	}
@@ -104,8 +87,8 @@ func UpdateTagHandler(c *gin.Context) {
 		})
 		return
 	}
-	err = tagDAO.Update(db, tag, updateFields)
-	if err != nil {
+
+	if err := tagDAO.Update(db, tag, updateFields); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
 			Message: err.Error(),
@@ -113,7 +96,7 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag = lo.Must1(tagDAO.GetBySlugAndUserID(db, uri.TagSlug, user.ID, []string{"id"}))
+	tag = lo.Must1(tagDAO.GetAllBySlug(db, uri.TagSlug))
 
 	// 同步到搜索引擎
 	err = docDAO.UpdateDocument(searchEngine, document.TransformTagToDocument(tag))
@@ -133,34 +116,27 @@ func UpdateTagHandler(c *gin.Context) {
 
 // DeleteTagHandler 删除标签
 func DeleteTagHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userID := c.MustGet("userID").(uint)
 	uri := c.MustGet("uri").(*protocol.TagURI)
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to delete other user's tag",
-		})
-		return
-	}
 
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
-	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
+	tagDAO := dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-	}
-
-	tag, err := tagDAO.GetBySlugAndUserID(db, uri.TagSlug, user.ID, []string{"id", "name", "slug"})
+	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "create_by"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if tag.CreateBy != userID {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's tag",
 		})
 		return
 	}

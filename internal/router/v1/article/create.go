@@ -22,21 +22,12 @@ func CreateArticleHandler(c *gin.Context) {
 
 	db := database.GetDBInstance()
 
-	userDAO, tagDAO, articleDAO := dao.GetUserDAO(), dao.GetTagDAO(), dao.GetArticleDAO()
+	tagDAO, articleDAO := dao.GetTagDAO(), dao.GetArticleDAO()
 
 	if uri.UserName != userName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to create other user's article",
-		})
-		return
-	}
-
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
 		})
 		return
 	}
@@ -47,7 +38,7 @@ func CreateArticleHandler(c *gin.Context) {
 
 	tags := []model.Tag{}
 	for _, tag := range body.Tags {
-		tag, err := tagDAO.GetBySlugAndUserID(db, tag, user.ID, []string{"id"})
+		tag, err := tagDAO.GetBySlug(db, tag, []string{"id"})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeGetTagError,

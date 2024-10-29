@@ -15,37 +15,20 @@ import (
 
 // CreateTagHandler 创建标签
 func CreateTagHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
-	uri := c.MustGet("uri").(*protocol.UserURI)
+	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	body := c.MustGet("body").(*protocol.CreateTagBody)
-
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to create other user's tag",
-		})
-		return
-	}
 
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
 
-	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
+	tagDAO := dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
-
-	user, err := userDAO.GetByName(db, userName, []string{"id", "name"})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-	}
 
 	tag := &model.Tag{
 		Name:        body.Name,
 		Slug:        body.Slug,
 		Description: body.Description,
-		User:        user,
+		User:        &model.User{ID: userID, Name: userName},
 	}
 
 	if err := tagDAO.Create(db, tag); err != nil {
