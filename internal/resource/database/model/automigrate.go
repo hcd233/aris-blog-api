@@ -2,7 +2,7 @@ package model
 
 // Models undefined
 //
-//	@update 2024-06-22 11:56:26
+//	@update 2024-10-29 12:43:4
 var Models = []interface{}{
 	&User{},
 	&Category{},
@@ -10,4 +10,5 @@ var Models = []interface{}{
 	&Tag{},
 	&Comment{},
 	&Article{},
+	&UserLike{},
 }

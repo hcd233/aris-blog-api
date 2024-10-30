@@ -14,6 +14,7 @@ type Tag struct {
 	CreateBy    uint      `json:"create_by" gorm:"column:create_by;not null;comment:创建者ID"`
 	User        *User     `json:"user" gorm:"foreignKey:CreateBy"`
 	Articles    []Article `json:"articles" gorm:"many2many:article_tags;"`
+	Likes       uint      `json:"likes" gorm:"column:likes;default:0;comment:点赞数"`
 }
 
 // GetBasicInfo 获取基本信息

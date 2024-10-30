@@ -10,6 +10,7 @@ import (
 	article_version "github.com/hcd233/Aris-blog/internal/router/v1/article_version"
 	"github.com/hcd233/Aris-blog/internal/router/v1/category"
 	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
+	"github.com/hcd233/Aris-blog/internal/router/v1/like"
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
@@ -78,6 +79,7 @@ func initUserRouter(r *gin.RouterGroup) {
 			initUserArticleRouter(userNameRouter)
 			initUserCategoryRouter(userNameRouter)
 			initUserTagRouter(userNameRouter)
+			initUserOperationRouter(userNameRouter)
 		}
 
 	}
@@ -125,6 +127,22 @@ func initUserCategoryRouter(r *gin.RouterGroup) {
 		categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), category.UpdateCategoryInfoHandler)
 		categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenCategoriesHandler)
 		categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), category.ListChildrenArticlesHandler)
+	}
+}
+
+func initUserOperationRouter(r *gin.RouterGroup) {
+	operationRouter := r.Group("/operation")
+	{
+		initUserLikeRouter(operationRouter)
+	}
+}
+
+func initUserLikeRouter(r *gin.RouterGroup) {
+	userLikeRouter := r.Group("/like")
+	{
+		userLikeRouter.POST("article", middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}), like.UserLikeArticleHandler)
+		userLikeRouter.POST("comment", middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}), like.UserLikeCommentHandler)
+		userLikeRouter.POST("tag", middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}), like.UserLikeTagHandler)
 	}
 }
 

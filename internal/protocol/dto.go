@@ -93,3 +93,39 @@ type CreateArticleCommentBody struct {
 	ReplyTo uint   `json:"replyTo" binding:"omitempty"`
 	Content string `json:"content" binding:"required,min=1,max=300"`
 }
+
+// LikeBody 点赞请求体
+//
+//	@author centonhuang
+//	@update 2024-10-29 06:49:35
+type LikeBody struct {
+	Undo bool `json:"undo" binding:"omitempty"`
+}
+
+// LikeArticleBody 点赞文章请求体
+//
+//	@author centonhuang
+//	@update 2024-10-29 06:49:41
+type LikeArticleBody struct {
+	LikeBody
+	Author      string `json:"author" binding:"required"`
+	ArticleSlug string `json:"articleSlug" binding:"required"`
+}
+
+// LikeCommentBody 点赞评论请求体
+//
+//	@author centonhuang
+//	@update 2024-10-29 06:59:21
+type LikeCommentBody struct {
+	LikeBody
+	CommentID uint `json:"commentID" binding:"required"`
+}
+
+// LikeTagBody 点赞标签请求体
+//
+//	@author centonhuang
+//	@update 2024-10-29 06:50:42
+type LikeTagBody struct {
+	LikeBody
+	TagSlug string `json:"tagSlug" binding:"required"`
+}

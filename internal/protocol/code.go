@@ -143,6 +143,18 @@ const (
 	//	@update 2024-10-24 05:52:47
 	CodeCreateCommentRateLimitError ResponseCode = 1034
 
+	// CodeLikeTagError ResponseCode 点赞/取消点赞标签错误
+	//	@update 2024-10-30 04:16:22
+	CodeLikeTagError ResponseCode = 1035
+
+	// CodeLikeArticleError ResponseCode 点赞/取消点赞文章错误
+	//	@update 2024-10-30 04:16:43
+	CodeLikeArticleError ResponseCode = 1036
+
+	// CodeLikeCommentError ResponseCode 点赞/取消点赞评论错误
+	//	@update 2024-10-30 04:16:39
+	CodeLikeCommentError ResponseCode = 1037
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -193,6 +205,10 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeCreateCommentError:          "创建评论错误",
 	CodeDeleteCommentError:          "删除评论错误",
 	CodeCreateCommentRateLimitError: "达到创建评论频率限制，请稍后再试",
+
+	CodeLikeTagError:     "点赞/取消点赞标签错误",
+	CodeLikeArticleError: "点赞/取消点赞文章错误",
+	CodeLikeCommentError: "点赞/取消点赞评论错误",
 
 	CodeUnknownError: "未知错误",
 }
