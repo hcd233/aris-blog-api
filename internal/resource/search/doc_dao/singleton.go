@@ -24,7 +24,7 @@ var (
 	articleFilters = []string{"author"}
 )
 
-// GetUserDocDAO 获取用户文档DTO单例
+// GetUserDocDAO 获取用户文档DAO单例
 //
 //	@return *BaseDocDAO
 //	@author centonhuang
@@ -39,7 +39,7 @@ func GetUserDocDAO() *BaseDocDAO[document.UserDocument] {
 	return userDocDAOSingleton
 }
 
-// GetTagDocDAO 获取标签文档DTO单例
+// GetTagDocDAO 获取标签文档DAO单例
 //
 //	@return *BaseDocDAO
 //	@author centonhuang
@@ -54,7 +54,7 @@ func GetTagDocDAO() *BaseDocDAO[document.TagDocument] {
 	return tagDocDAOSingleton
 }
 
-// GetArticleDocDAO 获取文章文档DTO单例
+// GetArticleDocDAO 获取文章文档DAO单例
 //
 //	@return *BaseDocDAO
 //	@author centonhuang

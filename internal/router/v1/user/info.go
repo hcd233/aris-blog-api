@@ -6,6 +6,7 @@ package user
 import (
 	"fmt"
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/samber/lo"
@@ -92,16 +93,83 @@ func UpdateInfoHandler(c *gin.Context) {
 	}))
 	user = lo.Must1(userDAO.GetByID(db, userID, []string{"id", "name", "avatar"}))
 
-	createdTags := lo.Must1(tagDAO.ListByUserID(db, userID, []string{"id"}, -1, -1))
-	createdArticles := lo.Must1(articleDAO.ListByUserID(db, userID, []string{"id"}, -1, -1))
+	var wg sync.WaitGroup
+	var listTagErr, listArticleErr, updateTagDocErr, updateArticleDocErr, updateUserDocErr error
+	var createdTags *[]model.Tag
+	var createdArticles *[]model.Article
 
-	lo.Must0(tagDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdTags, func(tag model.Tag, idx int) *document.TagDocument {
-		return &document.TagDocument{ID: tag.ID, Creator: user.Name}
-	})))
-	lo.Must0(articleDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdArticles, func(article model.Article, idx int) *document.ArticleDocument {
-		return &document.ArticleDocument{ID: article.ID, Author: user.Name}
-	})))
-	lo.Must0(userDocDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user)))
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		createdTags, listTagErr = tagDAO.ListByUserID(db, userID, []string{"id"}, -1, -1)
+	}()
+	go func() {
+		defer wg.Done()
+		createdArticles, listArticleErr = articleDAO.ListByUserID(db, userID, []string{"id"}, -1, -1)
+	}()
+
+	wg.Wait()
+
+	if listTagErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetTagError,
+			Message: listTagErr.Error(),
+		})
+		return
+	}
+	if listArticleErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: listArticleErr.Error(),
+		})
+		return
+	}
+
+	wg.Add(3)
+
+	go func() {
+		defer wg.Done()
+		updateTagDocErr = tagDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdTags, func(tag model.Tag, idx int) *document.TagDocument {
+			return &document.TagDocument{ID: tag.ID, Creator: user.Name}
+		}))
+	}()
+	go func() {
+		defer wg.Done()
+		updateArticleDocErr = articleDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdArticles, func(article model.Article, idx int) *document.ArticleDocument {
+			return &document.ArticleDocument{ID: article.ID, Author: user.Name}
+		}))
+	}()
+	go func() {
+		defer wg.Done()
+		updateUserDocErr = userDocDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user))
+	}()
+
+	wg.Wait()
+
+	if updateTagDocErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUpdateTagError,
+			Message: updateTagDocErr.Error(),
+		})
+		return
+	}
+
+	if updateArticleDocErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUpdateArticleError,
+			Message: updateArticleDocErr.Error(),
+		})
+		return
+	}
+
+	if updateUserDocErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUpdateUserError,
+			Message: updateUserDocErr.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,

@@ -5,6 +5,7 @@ package article
 
 import (
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/samber/lo"
@@ -78,6 +79,7 @@ func UpdateArticleHandler(c *gin.Context) {
 	}
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
@@ -103,6 +105,8 @@ func UpdateArticleHandler(c *gin.Context) {
 	}
 
 	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	articleDocDAO := docdao.GetArticleDocDAO()
+
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -111,7 +115,7 @@ func UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id"})
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "status"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -128,7 +132,11 @@ func UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article = lo.Must1(articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id"}))
+	article = lo.Must1(articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "title", "slug", "status"}))
+	if article.Status == model.ArticleStatusPublish {
+		article.User = &model.User{}
+		lo.Must0(articleDocDAO.UpdateDocument(searchEngine, document.TransformArticleToDocument(article, &model.ArticleVersion{})))
+	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
@@ -244,8 +252,11 @@ func DeleteArticleHandler(c *gin.Context) {
 	}
 
 	db := database.GetDBInstance()
+	searchEngine := search.GetSearchEngine()
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
+
+	articleDocDAO := docdao.GetArticleDocDAO()
 
 	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
 	if err != nil {
@@ -265,10 +276,32 @@ func DeleteArticleHandler(c *gin.Context) {
 		return
 	}
 
-	if err := articleDAO.Delete(db, article); err != nil {
+	var wg sync.WaitGroup
+	var deleteArticleErr, deleteDocErr error
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		deleteArticleErr = articleDAO.Delete(db, article)
+	}()
+
+	go func() {
+		defer wg.Done()
+		deleteDocErr = articleDocDAO.DeleteDocument(searchEngine, article.ID)
+	}()
+
+	if deleteArticleErr != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
-			Message: err.Error(),
+			Message: deleteArticleErr.Error(),
+		})
+		return
+	}
+
+	if deleteDocErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteArticleError,
+			Message: deleteDocErr.Error(),
 		})
 		return
 	}

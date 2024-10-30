@@ -167,6 +167,10 @@ const (
 	//	@update 2024-10-30 06:00:21
 	CodeLikeTagRateLimitError ResponseCode = 1040
 
+	// CodeUpdateUserError ResponseCode 更新用户错误
+	//	@update 2024-10-30 09:54:53
+	CodeUpdateUserError ResponseCode = 1041
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -189,6 +193,7 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeURIError:   "路径参数错误",
 
 	CodeGetUserError:      "获取用户信息错误",
+	CodeUpdateUserError:   "更新用户信息错误",
 	CodeUserNotFoundError: "用户未找到",
 	CodeQueryUserError:    "查询用户错误",
 
