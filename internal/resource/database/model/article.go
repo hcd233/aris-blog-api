@@ -39,8 +39,8 @@ type Article struct {
 	Category    *Category        `json:"category" gorm:"foreignKey:CategoryID"`
 	Status      ArticleStatus    `json:"status" gorm:"column:status;not null;default:'draft';comment:文章状态"`
 	PublishedAt time.Time        `json:"published_at" gorm:"column:published_at;default:NULL;comment:发布时间"`
-	Views       uint             `json:"views" gorm:"column:views;default:0;comment:浏览量"`
-	Likes       uint             `json:"likes" gorm:"column:likes;default:0;comment:点赞量"`
+	Views       uint             `json:"views" gorm:"column:views;default:0;comment:浏览数"`
+	Likes       uint             `json:"likes" gorm:"column:likes;default:0;comment:点赞数"`
 	Tags        []Tag            `json:"tags" gorm:"many2many:article_tags;"`
 	Comments    []Comment        `json:"comments" gorm:"foreignKey:ArticleID"`
 	Versions    []ArticleVersion `json:"versions" gorm:"foreignKey:ArticleID"`

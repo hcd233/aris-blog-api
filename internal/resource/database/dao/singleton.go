@@ -11,12 +11,15 @@ var (
 	articleDAOSingleton        *ArticleDAO
 	articleVersionDAOSingleton *ArticleVersionDAO
 	commentDAOSingleton        *CommentDAO
-	categoryOnce               sync.Once
-	userOnce                   sync.Once
-	tagOnce                    sync.Once
-	articleOnce                sync.Once
-	articleVersionOnce         sync.Once
-	commentOnce                sync.Once
+	userLikeDAOSingleton       *UserLikeDAO
+
+	categoryOnce       sync.Once
+	userOnce           sync.Once
+	tagOnce            sync.Once
+	articleOnce        sync.Once
+	articleVersionOnce sync.Once
+	commentOnce        sync.Once
+	userLikeOnce       sync.Once
 )
 
 // GetCategoryDAO 获取类别DAO
@@ -89,4 +92,16 @@ func GetCommentDAO() *CommentDAO {
 		commentDAOSingleton = &CommentDAO{}
 	})
 	return commentDAOSingleton
+}
+
+// GetUserLikeDAO 获取用户点赞DAO
+//
+//	@return *UserLikeDAO
+//	@author centonhuang
+//	@update 2024-10-30 03:50:52
+func GetUserLikeDAO() *UserLikeDAO {
+	userLikeOnce.Do(func() {
+		userLikeDAOSingleton = &UserLikeDAO{}
+	})
+	return userLikeDAOSingleton
 }
