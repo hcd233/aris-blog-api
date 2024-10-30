@@ -2,6 +2,7 @@ package tag
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
@@ -141,15 +142,37 @@ func DeleteTagHandler(c *gin.Context) {
 		return
 	}
 
-	err = tagDAO.Delete(db, tag)
-	if err != nil {
+	var wg sync.WaitGroup
+	var deleteTagErr, deleteDocErr error
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		deleteTagErr = tagDAO.Delete(db, tag)
+	}()
+
+	go func() {
+		defer wg.Done()
+		deleteDocErr = docDAO.DeleteDocument(searchEngine, tag.ID)
+	}()
+
+	wg.Wait()
+
+	if deleteTagErr != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteTagError,
-			Message: err.Error(),
+			Message: deleteTagErr.Error(),
 		})
 		return
 	}
-	lo.Must0(docDAO.DeleteDocument(searchEngine, tag.ID))
+
+	if deleteDocErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteTagError,
+			Message: deleteDocErr.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,

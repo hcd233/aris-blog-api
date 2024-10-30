@@ -2,6 +2,7 @@ package tag
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
@@ -31,19 +32,35 @@ func CreateTagHandler(c *gin.Context) {
 		User:        &model.User{ID: userID, Name: userName},
 	}
 
-	if err := tagDAO.Create(db, tag); err != nil {
+	var wg sync.WaitGroup
+	var createTagErr, createDocErr error
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		createTagErr = tagDAO.Create(db, tag)
+	}()
+
+	go func() {
+		defer wg.Done()
+		createDocErr = docDAO.AddDocument(searchEngine, document.TransformTagToDocument(tag))
+	}()
+
+	wg.Wait()
+
+	if createTagErr != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
-			Message: err.Error(),
+			Message: createTagErr.Error(),
 		})
 		return
 	}
 
-	// 同步到搜索引擎
-	if err := docDAO.AddDocument(searchEngine, document.TransformTagToDocument(tag)); err != nil {
+	if createDocErr != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateTagError,
-			Message: err.Error(),
+			Message: createDocErr.Error(),
 		})
 		return
 	}

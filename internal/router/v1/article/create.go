@@ -2,6 +2,7 @@ package article
 
 import (
 	"net/http"
+	"sync"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
@@ -37,15 +38,39 @@ func CreateArticleHandler(c *gin.Context) {
 	}
 
 	tags := []model.Tag{}
-	for _, tag := range body.Tags {
-		tag, err := tagDAO.GetBySlug(db, tag, []string{"id"})
+	tagChan, errChan := make(chan *model.Tag, len(body.Tags)), make(chan error, len(body.Tags))
+
+	var wg sync.WaitGroup
+	wg.Add(len(body.Tags))
+
+	getTagFunc := func(tagSlug string) {
+		defer wg.Done()
+		tag, err := tagDAO.GetBySlug(db, tagSlug, []string{"id"})
 		if err != nil {
-			c.JSON(http.StatusBadRequest, protocol.Response{
-				Code:    protocol.CodeGetTagError,
-				Message: err.Error(),
-			})
+			errChan <- err
 			return
 		}
+		tagChan <- tag
+	}
+
+	for _, tagSlug := range body.Tags {
+		go getTagFunc(tagSlug)
+	}
+
+	wg.Wait()
+	close(tagChan)
+	close(errChan)
+
+	if len(errChan) > 0 {
+		err := <-errChan
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetTagError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	for tag := range tagChan {
 		tags = append(tags, *tag)
 	}
 
