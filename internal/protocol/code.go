@@ -155,6 +155,18 @@ const (
 	//	@update 2024-10-30 04:16:39
 	CodeLikeCommentError ResponseCode = 1037
 
+	// CodeLikeArticleRateLimitError ResponseCode 达到创建文章版本频率限制错误
+	//	@update 2024-10-30 06:00:03
+	CodeLikeArticleRateLimitError ResponseCode = 1038
+
+	// CodeLikeCommentRateLimitError ResponseCode 达到创建评论频率限制错误
+	//	@update 2024-10-30 06:00:15
+	CodeLikeCommentRateLimitError ResponseCode = 1039
+
+	// CodeLikeTagRateLimitError ResponseCode 达到创建标签频率限制错误
+	//	@update 2024-10-30 06:00:21
+	CodeLikeTagRateLimitError ResponseCode = 1040
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -209,6 +221,10 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeLikeTagError:     "点赞/取消点赞标签错误",
 	CodeLikeArticleError: "点赞/取消点赞文章错误",
 	CodeLikeCommentError: "点赞/取消点赞评论错误",
+
+	CodeLikeArticleRateLimitError: "达到点赞文章频率限制，请稍后再试",
+	CodeLikeCommentRateLimitError: "达到点赞评论频率限制，请稍后再试",
+	CodeLikeTagRateLimitError:     "达到点赞标签频率限制，请稍后再试",
 
 	CodeUnknownError: "未知错误",
 }
