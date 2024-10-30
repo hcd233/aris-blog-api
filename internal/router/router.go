@@ -138,7 +138,7 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 }
 
 func initUserLikeRouter(r *gin.RouterGroup) {
-	userLikeRouter := r.Group("/like")
+	userLikeRouter := r.Group("/like", middleware.RateLimiterMiddleware(1*time.Second, 2, "userID", protocol.CodeCreateArticleVersionRateLimitError))
 	{
 		userLikeRouter.POST("article", middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}), like.UserLikeArticleHandler)
 		userLikeRouter.POST("comment", middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}), like.UserLikeCommentHandler)
