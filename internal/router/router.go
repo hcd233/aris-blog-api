@@ -138,11 +138,26 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 }
 
 func initUserLikeRouter(r *gin.RouterGroup) {
-	userLikeRouter := r.Group("/like", middleware.RateLimiterMiddleware(1*time.Second, 2, "userID", protocol.CodeCreateArticleVersionRateLimitError))
+	userLikeRouter := r.Group("/like")
 	{
-		userLikeRouter.POST("article", middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}), like.UserLikeArticleHandler)
-		userLikeRouter.POST("comment", middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}), like.UserLikeCommentHandler)
-		userLikeRouter.POST("tag", middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}), like.UserLikeTagHandler)
+		userLikeRouter.POST(
+			"article",
+			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeLikeArticleRateLimitError),
+			middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}),
+			like.UserLikeArticleHandler,
+		)
+		userLikeRouter.POST(
+			"comment",
+			middleware.RateLimiterMiddleware(2*time.Second, 2, "userID", protocol.CodeLikeCommentRateLimitError),
+			middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}),
+			like.UserLikeCommentHandler,
+		)
+		userLikeRouter.POST(
+			"tag",
+			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeLikeTagRateLimitError),
+			middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}),
+			like.UserLikeTagHandler,
+		)
 	}
 }
 
