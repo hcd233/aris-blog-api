@@ -14,6 +14,8 @@ type Comment struct {
 	Content   string    `json:"content" gorm:"column:content;not null;comment:'评论内容'"`
 	ParentID  uint      `json:"parent_id" gorm:"column:parent_id;default:NULL;comment:'父评论ID'"`
 	Likes     uint      `json:"likes" gorm:"column:likes;default:0;comment:'点赞数'"`
+	User      *User     `json:"user" gorm:"foreignKey:UserID"`
+	Article   *Article  `json:"article" gorm:"foreignKey:ArticleID"`
 	Parent    *Comment  `json:"parent" gorm:"foreignKey:ParentID"`
 	Children  []Comment `json:"children" gorm:"foreignKey:ParentID"`
 }
@@ -32,5 +34,25 @@ func (c *Comment) GetBasicInfo() map[string]interface{} {
 		"parentID":  c.ParentID,
 		"content":   c.Content,
 		"likes":     c.Likes,
+	}
+}
+
+// GetDetailedInfo 获取详细信息
+//
+//	@receiver c *Comment
+//	@return map
+//	@author centonhuang
+//	@update 2024-11-01 07:03:31
+func (c *Comment) GetDetailedInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":        c.ID,
+		"userID":    c.UserID,
+		"createdAt": c.CreatedAt,
+		"parentID":  c.ParentID,
+		"content":   c.Content,
+		"likes":     c.Likes,
+		"parent":    c.Parent.GetBasicInfo(),
+		"user":      c.User.GetBasicInfo(),
+		"article":   c.Article.GetBasicInfo(),
 	}
 }

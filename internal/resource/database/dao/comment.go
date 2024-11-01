@@ -102,6 +102,22 @@ func (dao *CommentDAO) GetByArticleIDAndID(db *gorm.DB, articleID, id uint, fiel
 	return
 }
 
+// GetAllByArticleIDAndID 根据文章ID和评论ID获取评论全部字段
+//
+//	@receiver dao *CommentDAO 
+//	@param db *gorm.DB 
+//	@param articleID uint 
+//	@param id uint 
+//	@param fields []string 
+//	@return comment *model.Comment 
+//	@return err error 
+//	@author centonhuang 
+//	@update 2024-11-01 07:05:59 
+func (dao *CommentDAO) GetAllByArticleIDAndID(db *gorm.DB, articleID, id uint, fields []string) (comment *model.Comment, err error) {
+	err = db.Preload("User").Preload("Article").Preload("Parent").Select(fields).Where(&model.Comment{ArticleID: articleID, ID: id}).First(&comment).Error
+	return
+}
+
 // DeleteReclusiveByID 递归删除评论
 //
 //	@receiver dao *CommentDAO
