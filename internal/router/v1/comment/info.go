@@ -50,7 +50,7 @@ func GetCommentInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: comment.GetBasicInfo(),
+		Data: comment.GetDetailedInfo(),
 	})
 }
 
