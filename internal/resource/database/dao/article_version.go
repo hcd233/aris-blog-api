@@ -50,12 +50,13 @@ func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, v
 //	@param db *gorm.DB
 //	@param articleID uint
 //	@param fields []string
-//	@param limit int
-//	@param offset int
-//	@return articleVersions []*model.ArticleVersion
+//	@param page int
+//	@param pageSize int
+//	@return articleVersions *[]model.ArticleVersion
+//	@return pageInfo *PageInfo
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-17 08:15:44
+//	@update 2024-11-01 07:08:50
 func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields []string, page, pageSize int) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&articleVersions).Error
