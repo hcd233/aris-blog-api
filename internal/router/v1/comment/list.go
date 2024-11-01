@@ -54,7 +54,7 @@ func ListArticleCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	comments, err := commentDAO.GetRootsByArticleID(db, article.ID, []string{"id", "content", "created_at", "likes"}, param.Limit, param.Offset)
+	comments, pageInfo, err := commentDAO.PaginateRootsByArticleID(db, article.ID, []string{"id", "content", "created_at", "likes"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -69,6 +69,7 @@ func ListArticleCommentsHandler(c *gin.Context) {
 			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} {
 				return comment.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }
@@ -121,7 +122,7 @@ func ListChildrenCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	comments, err := commentDAO.GetChildren(db, parentComment, []string{"id", "content", "created_at", "likes"}, param.Limit, param.Offset)
+	comments, pageInfo, err := commentDAO.PaginateChildren(db, parentComment, []string{"id", "content", "created_at", "likes"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -136,6 +137,7 @@ func ListChildrenCommentsHandler(c *gin.Context) {
 			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} {
 				return comment.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }

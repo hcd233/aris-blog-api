@@ -15,7 +15,7 @@ type CommentDAO struct {
 	baseDAO[model.Comment]
 }
 
-// GetChildren 获取子评论
+// PaginateChildren 获取子评论
 //
 //	@receiver dao *CommentDAO
 //	@param db *gorm.DB
@@ -27,8 +27,19 @@ type CommentDAO struct {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-23 05:22:43
-func (dao *CommentDAO) GetChildren(db *gorm.DB, comment *model.Comment, fields []string, limit, offset int) (children *[]model.Comment, err error) {
+func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fields []string, page, pageSize int) (children *[]model.Comment, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ParentID: comment.ID}).Find(&children).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.Comment{}).Where(&model.Comment{ParentID: comment.ID}).Count(&pageInfo.Total).Error
 	return
 }
 
@@ -47,7 +58,7 @@ func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields []s
 	return
 }
 
-// GetRootsByArticleID 获取文章的根评论
+// PaginateRootsByArticleID 获取文章的根评论
 //
 //	@receiver dao *CommentDAO
 //	@param db *gorm.DB
@@ -59,8 +70,19 @@ func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields []s
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-23 07:15:21
-func (dao *CommentDAO) GetRootsByArticleID(db *gorm.DB, articleID uint, fields []string, limit, offset int) (comments *[]model.Comment, err error) {
+func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fields []string, page, pageSize int) (comments *[]model.Comment, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Find(&comments).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.Comment{}).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Count(&pageInfo.Total).Error
 	return
 }
 
@@ -122,7 +144,7 @@ func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 }
 
 func (dao *CommentDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, commentID uint) (categories *[]model.Comment, err error) {
-	categories, err = dao.GetChildren(db, &model.Comment{ID: commentID}, []string{"id"}, -1, -1)
+	categories, _, err = dao.PaginateChildren(db, &model.Comment{ID: commentID}, []string{"id"}, 2, -1)
 	if err != nil {
 		return
 	}

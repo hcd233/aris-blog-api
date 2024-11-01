@@ -18,13 +18,13 @@ import (
 //	@update 2024-10-23 12:13:21
 func QueryUserArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
-	params := c.MustGet("param").(*protocol.QueryParam)
+	param := c.MustGet("param").(*protocol.QueryParam)
 
 	db := database.GetDBInstance()
 	searchEngine := search.GetSearchEngine()
 
 	userDAO := dao.GetUserDAO()
-	docDAO := docdao.GetArticleDocDAO()
+	articleDocDAO := docdao.GetArticleDocDAO()
 
 	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
 	if err != nil {
@@ -35,7 +35,7 @@ func QueryUserArticleHandler(c *gin.Context) {
 		return
 	}
 
-	articles, err := docDAO.QueryDocument(searchEngine, params.Query, append(params.Filter, "author="+uri.UserName), params.Limit, params.Offset)
+	articles, queryInfo, err := articleDocDAO.QueryDocument(searchEngine, param.Query, append(param.Filter, "author="+uri.UserName), param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,
@@ -47,7 +47,8 @@ func QueryUserArticleHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": articles,
+			"articles":  articles,
+			"queryInfo": queryInfo,
 		},
 	})
 }
@@ -64,7 +65,7 @@ func QueryArticleHandler(c *gin.Context) {
 
 	docDAO := docdao.GetArticleDocDAO()
 
-	articles, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Limit, params.Offset)
+	articles, queryInfo, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Page, params.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,
@@ -76,7 +77,8 @@ func QueryArticleHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": articles,
+			"articles":  articles,
+			"queryInfo": queryInfo,
 		},
 	})
 }

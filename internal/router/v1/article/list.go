@@ -23,7 +23,7 @@ func ListArticlesHandler(c *gin.Context) {
 
 	articleDAO := dao.GetArticleDAO()
 
-	articles, err := articleDAO.ListByPublished(db, []string{"id", "title", "slug"}, param.Limit, param.Offset)
+	articles, pageInfo, err := articleDAO.PaginateByPublished(db, []string{"id", "title", "slug"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -38,6 +38,7 @@ func ListArticlesHandler(c *gin.Context) {
 			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }
@@ -64,7 +65,7 @@ func ListUserArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	articles, err := articleDAO.ListByUserID(db, user.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
+	articles, pageInfo, err := articleDAO.PaginateByUserID(db, user.ID, []string{"id", "title", "slug"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -79,6 +80,7 @@ func ListUserArticlesHandler(c *gin.Context) {
 			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }

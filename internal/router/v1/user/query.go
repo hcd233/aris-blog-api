@@ -15,13 +15,13 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func QueryUserHandler(c *gin.Context) {
-	params := c.MustGet("param").(*protocol.QueryParam)
+	param := c.MustGet("param").(*protocol.QueryParam)
 
 	searchEngine := search.GetSearchEngine()
 
 	docDAO := docdao.GetUserDocDAO()
 
-	users, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Limit, params.Offset)
+	users, queryInfo, err := docDAO.QueryDocument(searchEngine, param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -33,7 +33,8 @@ func QueryUserHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"users": users,
+			"users":     users,
+			"queryInfo": queryInfo,
 		},
 	})
 }
