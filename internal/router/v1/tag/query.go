@@ -17,13 +17,13 @@ import (
 //	@author centonhuang
 //	@update 2024-10-23 12:35:21
 func QueryTagHandler(c *gin.Context) {
-	params := c.MustGet("param").(*protocol.QueryParam)
+	param := c.MustGet("param").(*protocol.QueryParam)
 
 	searchEngine := search.GetSearchEngine()
 
 	docDAO := docdao.GetTagDocDAO()
 
-	tags, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Limit, params.Offset)
+	tags, queryInfo, err := docDAO.QueryDocument(searchEngine, param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
@@ -35,7 +35,8 @@ func QueryTagHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": tags,
+			"tags":      tags,
+			"queryInfo": queryInfo,
 		},
 	})
 }
@@ -64,7 +65,7 @@ func QueryUserTagHandler(c *gin.Context) {
 		return
 	}
 
-	tags, err := docDAO.QueryDocument(searchEngine, params.Query, append(params.Filter, "creator="+uri.UserName), params.Limit, params.Offset)
+	tags, queryInfo, err := docDAO.QueryDocument(searchEngine, params.Query, append(params.Filter, "creator="+uri.UserName), params.Page, params.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
@@ -76,7 +77,8 @@ func QueryUserTagHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": tags,
+			"tags":      tags,
+			"queryInfo": queryInfo,
 		},
 	})
 }

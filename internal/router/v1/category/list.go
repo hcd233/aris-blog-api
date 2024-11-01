@@ -62,7 +62,7 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	categories, err := categoryDAO.GetChildren(db, parentCategory, []string{"id", "name", "parent_id"}, param.Limit, param.Offset)
+	categories, pageInfo, err := categoryDAO.PaginateChildren(db, parentCategory, []string{"id", "name", "parent_id"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
@@ -77,6 +77,7 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 			"categories": lo.Map(*categories, func(category model.Category, index int) map[string]interface{} {
 				return category.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }
@@ -129,7 +130,7 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	articles, err := articleDAO.ListByCategoryID(db, parentCategory.ID, []string{"id", "title", "slug"}, param.Limit, param.Offset)
+	articles, pageInfo, err := articleDAO.PaginateByCategoryID(db, parentCategory.ID, []string{"id", "title", "slug"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -144,6 +145,7 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }

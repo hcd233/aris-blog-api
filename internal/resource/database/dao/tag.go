@@ -61,7 +61,7 @@ func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err e
 	return
 }
 
-// ListByUserID 通过用户ID获取标签
+// PaginateByUserID 通过用户ID获取标签
 //
 //	@receiver dao *TagDAO
 //	@param db *gorm.DB
@@ -73,7 +73,18 @@ func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err e
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-18 04:08:02
-func (dao *TagDAO) ListByUserID(db *gorm.DB, userID uint, fields []string, limit, offset int) (tags *[]model.Tag, err error) {
+func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, page, pageSize int) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(model.Tag{CreateBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.Tag{}).Where(model.Tag{CreateBy: userID}).Count(&pageInfo.Total).Error
 	return
 }

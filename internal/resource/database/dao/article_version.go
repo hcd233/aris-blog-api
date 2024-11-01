@@ -44,7 +44,7 @@ func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, v
 	return
 }
 
-// ListByArticleID 通过文章ID获取文章版本列表
+// PaginateByArticleID 通过文章ID获取文章版本列表
 //
 //	@receiver dao *ArticleVersionDAO
 //	@param db *gorm.DB
@@ -56,7 +56,18 @@ func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, v
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 08:15:44
-func (dao *ArticleVersionDAO) ListByArticleID(db *gorm.DB, articleID uint, fields []string, limit, offset int) (articleVersions *[]model.ArticleVersion, err error) {
+func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields []string, page, pageSize int) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&articleVersions).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.ArticleVersion{}).Where(&model.ArticleVersion{ArticleID: articleID}).Count(&pageInfo.Total).Error
 	return
 }

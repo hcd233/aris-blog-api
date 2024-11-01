@@ -15,6 +15,16 @@ import (
 //	@update 2024-10-17 02:32:22
 type baseDAO[T interface{}] struct{}
 
+// PageInfo 分页信息
+//
+//	@author centonhuang
+//	@update 2024-11-01 05:17:51
+type PageInfo struct {
+	Page     int   `json:"page"`
+	PageSize int   `json:"pageSize"`
+	Total    int64 `json:"total"`
+}
+
 // Create 创建数据
 //
 //	@param dao *BaseDAO[T]
@@ -66,7 +76,19 @@ func (dao *baseDAO[T]) GetByID(db *gorm.DB, id uint, fields []string) (data *T, 
 //	@return Paginate
 //	@author centonhuang
 //	@update 2024-10-17 03:09:11
-func (dao *baseDAO[T]) Paginate(db *gorm.DB, fields []string, limit, offset int) (data *[]T, err error) {
+func (dao *baseDAO[T]) Paginate(db *gorm.DB, fields []string, page, pageSize int) (data *[]T, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Limit(limit).Offset(offset).Find(&data).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&data).Count(&pageInfo.Total).Error
+
 	return
 }

@@ -54,7 +54,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	versions, err := articleVersionDAO.ListByArticleID(db, article.ID, []string{"created_at", "version", "content"}, param.Limit, param.Offset)
+	versions, pageInfo, err := articleVersionDAO.PaginateByArticleID(db, article.ID, []string{"created_at", "version", "content"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -69,6 +69,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 			"articleVersions": lo.Map(*versions, func(article model.ArticleVersion, index int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }

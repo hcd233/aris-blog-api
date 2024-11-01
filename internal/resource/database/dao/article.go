@@ -62,53 +62,89 @@ func (dao *ArticleDAO) GetAllBySlugAndUserID(db *gorm.DB, slug string, userID ui
 	return
 }
 
-// ListByUserID 通过用户ID获取文章列表
+// PaginateByUserID 通过用户ID获取文章列表
 //
 //	@receiver dao *ArticleDAO
 //	@param db *gorm.DB
 //	@param userID uint
 //	@param fields []string
-//	@param limit int
-//	@param offset int
+//	@param page int
+//	@param pageSize int
 //	@return articles *[]model.Article
+//	@return pageInfo *PageInfo
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-17 07:34:43
-func (dao *ArticleDAO) ListByUserID(db *gorm.DB, userID uint, fields []string, limit, offset int) (articles *[]model.Article, err error) {
+//	@update 2024-11-01 05:33:46
+func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.Article{}).Where(&model.Article{UserID: userID}).Count(&pageInfo.Total).Error
 	return
 }
 
-// ListByCategoryID 通过类别ID获取文章列表
+// PaginateByCategoryID 通过类别ID获取文章列表
 //
 //	@receiver dao *ArticleDAO
 //	@param db *gorm.DB
 //	@param categoryID uint
 //	@param fields []string
-//	@param limit int
-//	@param offset int
+//	@param page int
+//	@param pageSize int
 //	@return articles *[]model.Article
+//	@return pageInfo *PageInfo
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-17 07:34:57
-func (dao *ArticleDAO) ListByCategoryID(db *gorm.DB, categoryID uint, fields []string, limit, offset int) (articles *[]model.Article, err error) {
+//	@update 2024-11-01 05:33:42
+func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.Article{}).Where(&model.Article{CategoryID: categoryID}).Count(&pageInfo.Total).Error
+
 	return
 }
 
-// ListByPublished 列出已发布的文章
+// PaginateByPublished 列出已发布的文章
 //
 //	@receiver dao *ArticleDAO
 //	@param db *gorm.DB
-//	@param userID uint
 //	@param fields []string
-//	@param limit int
-//	@param offset int
+//	@param page int
+//	@param pageSize int
 //	@return articles *[]model.Article
+//	@return pageInfo *PageInfo
 //	@return err error
 //	@author centonhuang
-//	@update 2024-10-17 07:34:43
-func (dao *ArticleDAO) ListByPublished(db *gorm.DB, fields []string, limit, offset int) (articles *[]model.Article, err error) {
+//	@update 2024-11-01 05:33:37
+func (dao *ArticleDAO) PaginateByPublished(db *gorm.DB, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.Article{Status: model.ArticleStatusPublish}).Limit(limit).Offset(offset).Find(&articles).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.Article{}).Where(&model.Article{Status: model.ArticleStatusPublish}).Count(&pageInfo.Total).Error
 	return
 }

@@ -26,7 +26,7 @@ func ListTagsHandler(c *gin.Context) {
 
 	dao := dao.GetTagDAO()
 
-	tags, err := dao.Paginate(db, []string{"id", "slug"}, param.Limit, param.Offset)
+	tags, pageInfo, err := dao.Paginate(db, []string{"id", "slug"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -41,6 +41,7 @@ func ListTagsHandler(c *gin.Context) {
 			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
 				return tag.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }
@@ -67,7 +68,7 @@ func ListUserTagsHandler(c *gin.Context) {
 		return
 	}
 
-	tags, err := tagDAO.ListByUserID(db, user.ID, []string{"id", "slug"}, param.Limit, param.Offset)
+	tags, pageInfo, err := tagDAO.PaginateByUserID(db, user.ID, []string{"id", "slug"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -82,6 +83,7 @@ func ListUserTagsHandler(c *gin.Context) {
 			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
 				return tag.GetBasicInfo()
 			}),
+			"pageInfo": pageInfo,
 		},
 	})
 }

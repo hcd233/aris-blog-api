@@ -5,8 +5,8 @@ package protocol
 //	@author centonhuang
 //	@update 2024-09-21 09:00:57
 type PageParam struct {
-	Limit  int `form:"limit" binding:"required,min=1,max=50"`
-	Offset int `form:"offset" binding:"gte=0"`
+	Page     int `form:"page" binding:"required,gte=1"`
+	PageSize int `form:"pageSize" binding:"min=1,max=50"`
 }
 
 // QueryParam 查询参数
@@ -15,7 +15,7 @@ type PageParam struct {
 //	@update 2024-09-18 02:56:39
 type QueryParam struct {
 	PageParam
-	Query  string   `form:"query" binding:"required"`
+	Query  string   `form:"query" binding:"required,min=2"`
 	Filter []string `form:"filter"`
 }
 

@@ -30,6 +30,18 @@ type BaseDocDAO[T interface{}] struct {
 	Filters   []string
 }
 
+// QueryInfo 查询信息
+//
+//	@author centonhuang
+//	@update 2024-11-01 04:50:05
+type QueryInfo struct {
+	Query    string   `json:"query"`
+	Filter   []string `json:"filter"`
+	Page     int      `json:"page"`
+	PageSize int      `json:"pageSize"`
+	Total    int      `json:"total"`
+}
+
 // CreateIndex 创建索引
 //
 //	@param dao *BaseDocDAO[T]
@@ -114,24 +126,35 @@ func (dao *BaseDocDAO[T]) SetFilterableAttributes(client meilisearch.ServiceMana
 //	@return QueryDocument
 //	@author centonhuang
 //	@update 2024-10-17 10:40:43
-func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query string, filter []string, limit int, offset int) ([]T, error) {
+func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query string, filter []string, page int, pageSize int) (*[]T, *QueryInfo, error) {
+	limit := pageSize
+	offset := (page - 1) * pageSize
+
 	searchRequest := &meilisearch.SearchRequest{
 		Query:  query,
 		Limit:  int64(limit),
 		Offset: int64(offset),
 		Filter: filter,
 	}
+
+	queryInfo := &QueryInfo{
+		Query:    query,
+		Filter:   filter,
+		Page:     page,
+		PageSize: pageSize,
+	}
+
 	searchResponse, err := client.Index(dao.IndexName).Search(query, searchRequest)
 	if err != nil {
 		logger.Logger.Error("[Query Document]",
 			zap.String("indexName", dao.IndexName),
 			zap.Error(err),
 		)
-		return nil, err
+		return nil, queryInfo, err
 	}
 	logger.Logger.Info("[Query Document]",
-		zap.String("IndexUID", searchResponse.IndexUID),
-		zap.Int64("TotalHits", searchResponse.TotalHits),
+		zap.String("IndexName", dao.IndexName),
+		zap.Int("TotalHits", len(searchResponse.Hits)),
 		zap.Int64("ProcessingTimeMs", searchResponse.ProcessingTimeMs),
 	)
 	docs := lo.Map(searchResponse.Hits, func(hit interface{}, _ int) T {
@@ -141,7 +164,9 @@ func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query
 		json.Unmarshal(docBytes, &data)
 		return data
 	})
-	return docs, nil
+
+	queryInfo.Total = int(searchResponse.EstimatedTotalHits)
+	return &docs, queryInfo, nil
 }
 
 // AddDocument 添加文档

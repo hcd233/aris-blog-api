@@ -102,11 +102,11 @@ func UpdateInfoHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		createdTags, listTagErr = tagDAO.ListByUserID(db, userID, []string{"id"}, -1, -1)
+		createdTags, _, listTagErr = tagDAO.PaginateByUserID(db, userID, []string{"id"}, 2, -1)
 	}()
 	go func() {
 		defer wg.Done()
-		createdArticles, listArticleErr = articleDAO.ListByUserID(db, userID, []string{"id"}, -1, -1)
+		createdArticles, _, listArticleErr = articleDAO.PaginateByUserID(db, userID, []string{"id"}, 2, -1)
 	}()
 
 	wg.Wait()
