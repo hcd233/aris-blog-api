@@ -10,7 +10,7 @@ import (
 	article_version "github.com/hcd233/Aris-blog/internal/router/v1/article_version"
 	"github.com/hcd233/Aris-blog/internal/router/v1/category"
 	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
-	"github.com/hcd233/Aris-blog/internal/router/v1/like"
+	user_like "github.com/hcd233/Aris-blog/internal/router/v1/user_like"
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
@@ -20,7 +20,7 @@ import (
 func InitRouter(r *gin.Engine) {
 	rootGroup := r.Group("/")
 	{
-		rootGroup.GET("/", RootHandler)
+		rootGroup.GET("", RootHandler)
 	}
 
 	v1Router := r.Group("/v1")
@@ -37,8 +37,8 @@ func initOauth2Router(r *gin.RouterGroup) {
 	{
 		githubRouter := oauth2Group.Group("/github")
 		{
-			githubRouter.GET("/login", oauth2.GithubLoginHandler)
-			githubRouter.GET("/callback", oauth2.GithubCallbackHandler)
+			githubRouter.GET("login", oauth2.GithubLoginHandler)
+			githubRouter.GET("callback", oauth2.GithubCallbackHandler)
 		}
 	}
 }
@@ -69,7 +69,7 @@ func initArticleRouter(r *gin.RouterGroup) {
 func initUserRouter(r *gin.RouterGroup) {
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
-		userRouter.GET("/", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), user.QueryUserHandler)
+		userRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), user.QueryUserHandler)
 
 		userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 		{
@@ -98,7 +98,7 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleSlugRouter.GET("", article.GetArticleInfoHandler)
 		articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
 		articleSlugRouter.DELETE("", article.DeleteArticleHandler)
-		articleSlugRouter.PUT("/status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
+		articleSlugRouter.PUT("status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
 
 		initArticleVersionRouter(articleSlugRouter)
 		initArticleCommentRouter(articleSlugRouter)
@@ -120,7 +120,7 @@ func initUserCategoryRouter(r *gin.RouterGroup) {
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), category.CreateCategoryHandler)
 	}
 
-	categoryIDRouter := categoryRouter.Group("/:categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
+	categoryIDRouter := categoryRouter.Group(":categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
 	{
 		categoryIDRouter.GET("", category.GetCategoryInfoHandler)
 		categoryIDRouter.DELETE("", category.DeleteCategoryHandler)
@@ -137,6 +137,7 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 	}
 }
 
+
 func initUserLikeRouter(r *gin.RouterGroup) {
 	userLikeRouter := r.Group("/like")
 	{
@@ -144,19 +145,19 @@ func initUserLikeRouter(r *gin.RouterGroup) {
 			"article",
 			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeLikeArticleRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}),
-			like.UserLikeArticleHandler,
+			user_like.UserLikeArticleHandler,
 		)
 		userLikeRouter.POST(
 			"comment",
 			middleware.RateLimiterMiddleware(2*time.Second, 2, "userID", protocol.CodeLikeCommentRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}),
-			like.UserLikeCommentHandler,
+			user_like.UserLikeCommentHandler,
 		)
 		userLikeRouter.POST(
 			"tag",
 			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeLikeTagRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}),
-			like.UserLikeTagHandler,
+			user_like.UserLikeTagHandler,
 		)
 	}
 }
@@ -171,7 +172,7 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			article_version.CreateArticleVersionHandler,
 		)
-		articleVersionNumberRouter := articleVersionRouter.Group("/v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}))
+		articleVersionNumberRouter := articleVersionRouter.Group("v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}))
 		{
 			articleVersionNumberRouter.GET("", article_version.GetArticleVersionInfoHandler)
 		}
@@ -188,7 +189,7 @@ func initArticleCommentRouter(r *gin.RouterGroup) {
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}),
 			comment.CreateArticleCommentHandler,
 		)
-		commentIDRouter := commentRouter.Group("/:commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
+		commentIDRouter := commentRouter.Group(":commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
 		{
 			commentIDRouter.GET("", comment.GetCommentInfoHandler)
 			commentIDRouter.DELETE("", comment.DeleteCommentHandler)
