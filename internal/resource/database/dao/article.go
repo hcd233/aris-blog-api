@@ -74,7 +74,7 @@ func (dao *ArticleDAO) GetAllBySlugAndUserID(db *gorm.DB, slug string, userID ui
 //	@return pageInfo *PageInfo
 //	@return err error
 //	@author centonhuang
-//	@update 2024-11-01 05:33:46
+//	@update 2024-11-01 07:09:20
 func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
@@ -103,7 +103,7 @@ func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []strin
 //	@return pageInfo *PageInfo
 //	@return err error
 //	@author centonhuang
-//	@update 2024-11-01 05:33:42
+//	@update 2024-11-01 07:09:26
 func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(&model.Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
