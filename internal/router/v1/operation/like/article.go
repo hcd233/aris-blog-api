@@ -46,11 +46,19 @@ func UserLikeArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(db, body.ArticleSlug, user.ID, []string{"id", "likes"})
+	article, err := articleDAO.GetBySlugAndUserID(db, body.ArticleSlug, user.ID, []string{"id", "likes", "status", "user_id"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
 			Message: err.Error(),
+		})
+		return
+	}
+
+	if userName != uri.UserName && article.Status != model.ArticleStatusPublish { // 非作者且文章未发布
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to like this article",
 		})
 		return
 	}
