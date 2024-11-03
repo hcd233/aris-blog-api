@@ -37,6 +37,29 @@ func (c *Comment) GetBasicInfo() map[string]interface{} {
 	}
 }
 
+// GetLikeInfo 获取点赞信息
+//
+//	@receiver c *Comment
+//	@return map
+//	@author centonhuang
+//	@update 2024-11-03 08:33:42
+func (c *Comment) GetLikeInfo() map[string]interface{} {
+	infoMap := map[string]interface{}{
+		"id":        c.ID,
+		"user":      c.User.GetBasicInfo(),
+		"createdAt": c.CreatedAt,
+		"parent":    nil,
+		"content":   c.Content,
+		"likes":     c.Likes,
+	}
+
+	if c.Parent != nil {
+		infoMap["parent"] = c.Parent.GetBasicInfo()
+	}
+
+	return infoMap
+}
+
 // GetDetailedInfo 获取详细信息
 //
 //	@receiver c *Comment

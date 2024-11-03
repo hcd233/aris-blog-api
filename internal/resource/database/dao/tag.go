@@ -63,17 +63,17 @@ func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err e
 
 // PaginateByUserID 通过用户ID获取标签
 //
-//	@receiver dao *TagDAO 
-//	@param db *gorm.DB 
-//	@param userID uint 
-//	@param fields []string 
-//	@param page int 
-//	@param pageSize int 
-//	@return tags *[]model.Tag 
-//	@return pageInfo *PageInfo 
-//	@return err error 
-//	@author centonhuang 
-//	@update 2024-11-01 07:10:06 
+//	@receiver dao *TagDAO
+//	@param db *gorm.DB
+//	@param userID uint
+//	@param fields []string
+//	@param page int
+//	@param pageSize int
+//	@return tags *[]model.Tag
+//	@return pageInfo *PageInfo
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-01 07:10:06
 func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, page, pageSize int) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Where(model.Tag{CreateBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
@@ -87,5 +87,19 @@ func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, p
 	}
 
 	err = db.Model(&model.Tag{}).Where(model.Tag{CreateBy: userID}).Count(&pageInfo.Total).Error
+	return
+}
+
+// BatchGetAllByIDs 批量获取标签
+//
+//	@receiver dao *TagDAO
+//	@param db *gorm.DB
+//	@param ids []uint
+//	@return comments *[]model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-03 08:31:10
+func (dao *TagDAO) BatchGetAllByIDs(db *gorm.DB, ids []uint) (tags *[]model.Tag, err error) {
+	err = db.Preload("User").Where("id IN ?", ids).Find(&tags).Error
 	return
 }

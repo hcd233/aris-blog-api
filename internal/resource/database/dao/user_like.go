@@ -47,3 +47,34 @@ func (dao *UserLikeDAO) GetByUserIDAndObject(db *gorm.DB, userID uint, objectID 
 	err = db.Select(fields).Where(model.UserLike{UserID: userID, ObjectID: objectID, ObjectType: objectType}).First(&userLike).Error
 	return
 }
+
+// PaginateByUserIDAndObjectType 分页查询用户点赞信息
+//
+//	@receiver dao *UserLikeDAO
+//	@param db *gorm.DB
+//	@param userID uint
+//	@param objectType model.LikeObjectType
+//	@param page int
+//	@param pageSize int
+//	@param fields []string
+//	@return userLikes *[]model.UserLike
+//	@return total int64
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-03 06:57:34
+func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, page, pageSize int, fields []string) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
+	limit, offset := pageSize, (page-1)*pageSize
+	err = db.Model(&model.UserLike{}).Select(fields).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Limit(limit).Offset(offset).Find(&userLikes).Error
+	if err != nil {
+		return
+	}
+
+	pageInfo = &PageInfo{
+		Page:     page,
+		PageSize: pageSize,
+	}
+
+	err = db.Model(&model.UserLike{}).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Count(&pageInfo.Total).Error
+
+	return
+}

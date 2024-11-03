@@ -10,10 +10,12 @@ import (
 	article_version "github.com/hcd233/Aris-blog/internal/router/v1/article_version"
 	"github.com/hcd233/Aris-blog/internal/router/v1/category"
 	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
-	user_like "github.com/hcd233/Aris-blog/internal/router/v1/user_like"
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
+	user_like "github.com/hcd233/Aris-blog/internal/router/v1/operation/like"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
+
+	"github.com/hcd233/Aris-blog/internal/router/v1/asset"
 )
 
 // InitRouter initializes the router.
@@ -80,6 +82,7 @@ func initUserRouter(r *gin.RouterGroup) {
 			initUserCategoryRouter(userNameRouter)
 			initUserTagRouter(userNameRouter)
 			initUserOperationRouter(userNameRouter)
+			initUserAssetRouter(userNameRouter)
 		}
 
 	}
@@ -93,7 +96,7 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
 	}
 
-	articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
+	articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}))
 	{
 		articleSlugRouter.GET("", article.GetArticleInfoHandler)
 		articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
@@ -137,6 +140,21 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 	}
 }
 
+func initUserAssetRouter(r *gin.RouterGroup) {
+	assetRouter := r.Group("/asset")
+	{
+		initUserAssetLikeRouter(assetRouter)
+	}
+}
+
+func initUserAssetLikeRouter(r *gin.RouterGroup) {
+	likeRouter := r.Group("/like")
+	{
+		likeRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeArticlesHandler)
+		likeRouter.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeCommentsHandler)
+		likeRouter.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeTagsHandler)
+	}
+}
 
 func initUserLikeRouter(r *gin.RouterGroup) {
 	userLikeRouter := r.Group("/like")

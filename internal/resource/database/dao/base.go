@@ -59,6 +59,11 @@ func (dao *baseDAO[T]) Delete(db *gorm.DB, data *T) (err error) {
 	return
 }
 
+func (dao *baseDAO[T]) BatchDelete(db *gorm.DB, data *[]T) (err error) {
+	err = db.Delete(&data).Error
+	return
+}
+
 // GetByID 使用ID查询指定数据
 //
 //	@param dao *BaseDAO[T]
@@ -67,6 +72,17 @@ func (dao *baseDAO[T]) Delete(db *gorm.DB, data *T) (err error) {
 //	@update 2024-10-17 03:06:57
 func (dao *baseDAO[T]) GetByID(db *gorm.DB, id uint, fields []string) (data *T, err error) {
 	err = db.Select(fields).Where("id = ?", id).First(&data).Error
+	return
+}
+
+// BatchGetByIDs 批量使用ID查询指定数据
+//
+//	@param dao *baseDAO[T]
+//	@return BatchGetByIDs
+//	@author centonhuang
+//	@update 2024-11-03 07:34:47
+func (dao *baseDAO[T]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string) (data *[]T, err error) {
+	err = db.Select(fields).Where("id IN ?", ids).Find(&data).Error
 	return
 }
 

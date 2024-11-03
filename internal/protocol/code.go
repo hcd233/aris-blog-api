@@ -171,6 +171,10 @@ const (
 	//	@update 2024-10-30 09:54:53
 	CodeUpdateUserError ResponseCode = 1041
 
+	// CodeGetUserLikeError ResponseCode 获取用户点赞信息错误
+	//	@update 2024-11-03 07:10:30
+	CodeGetUserLikeError ResponseCode = 1042
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -230,6 +234,8 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeLikeArticleRateLimitError: "达到点赞文章频率限制，请稍后再试",
 	CodeLikeCommentRateLimitError: "达到点赞评论频率限制，请稍后再试",
 	CodeLikeTagRateLimitError:     "达到点赞标签频率限制，请稍后再试",
+
+	CodeGetUserLikeError: "获取用户点赞信息错误",
 
 	CodeUnknownError: "未知错误",
 }
