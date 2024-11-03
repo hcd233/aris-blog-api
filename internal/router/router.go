@@ -146,12 +146,12 @@ func initUserAssetRouter(r *gin.RouterGroup) {
 }
 
 func initUserAssetLikeRouter(r *gin.RouterGroup) {
-	likeRouter := r.Group("/like")
-	{
-		likeRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeArticlesHandler)
-		likeRouter.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeCommentsHandler)
-		likeRouter.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeTagsHandler)
-	}
+	// likeRouter := r.Group("/like")
+	// {
+	// 	likeRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeArticlesHandler)
+	// 	likeRouter.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeCommentsHandler)
+	// 	likeRouter.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeTagsHandler)
+	// }
 }
 
 func initUserLikeRouter(r *gin.RouterGroup) {
