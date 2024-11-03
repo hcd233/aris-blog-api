@@ -14,8 +14,6 @@ import (
 	user_like "github.com/hcd233/Aris-blog/internal/router/v1/operation/like"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
-
-	"github.com/hcd233/Aris-blog/internal/router/v1/asset"
 )
 
 // InitRouter initializes the router.
