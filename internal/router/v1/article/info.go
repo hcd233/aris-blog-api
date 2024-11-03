@@ -26,7 +26,7 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func GetArticleInfoHandler(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	db := database.GetDBInstance()
 
@@ -66,7 +66,7 @@ func GetArticleInfoHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-21 08:59:40
 func UpdateArticleHandler(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 	userName := c.MustGet("userName").(string)
 
@@ -153,7 +153,7 @@ func UpdateArticleHandler(c *gin.Context) {
 //	@update 2024-10-17 09:28:54
 func UpdateArticleStatusHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
 
 	if userName != uri.UserName {
@@ -241,7 +241,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 //	@update 2024-09-22 04:32:37
 func DeleteArticleHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{

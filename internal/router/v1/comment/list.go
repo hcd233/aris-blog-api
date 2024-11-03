@@ -21,7 +21,7 @@ import (
 //	@update 2024-10-23 05:59:57
 func ListArticleCommentsHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	db := database.GetDBInstance()

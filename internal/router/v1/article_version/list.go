@@ -22,7 +22,7 @@ import (
 func ListArticleVersionsHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
 	param := c.MustGet("param").(*protocol.PageParam)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{

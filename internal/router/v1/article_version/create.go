@@ -25,7 +25,7 @@ import (
 //	@update 2024-10-17 12:44:17
 func CreateArticleVersionHandler(c *gin.Context) {
 	userName := c.MustGet("userName").(string)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
 	if userName != uri.UserName {
