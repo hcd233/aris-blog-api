@@ -18,7 +18,7 @@ import (
 //	@update 2024-10-24 04:29:47
 func CreateArticleCommentHandler(c *gin.Context) {
 	userID := c.MustGet("userID").(uint)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.CreateArticleCommentBody)
 
 	db := database.GetDBInstance()
