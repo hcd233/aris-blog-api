@@ -8,19 +8,19 @@ type UserURI struct {
 	UserName string `uri:"userName" binding:"required"`
 }
 
-// ArticleURI 文章路径参数
+// ArticleSlugURI 文章别名路径参数
 //
 //	@author centonhuang
 //	@update 2024-09-21 06:13:15
-type ArticleURI struct {
+type ArticleSlugURI struct {
 	UserURI
 	ArticleSlug string `uri:"articleSlug" binding:"required"`
 }
 
 // TagURI 标签路径参数
 //
-//	@author centonhuang 
-//	@update 2024-10-29 07:43:35 
+//	@author centonhuang
+//	@update 2024-10-29 07:43:35
 type TagURI struct {
 	TagSlug string `uri:"tagSlug" binding:"required"`
 }
@@ -39,7 +39,7 @@ type CategoryURI struct {
 //	@author centonhuang
 //	@update 2024-10-18 03:13:26
 type ArticleVersionURI struct {
-	ArticleURI
+	ArticleSlugURI
 	Version uint `uri:"version" binding:"required,min=1"`
 }
 
@@ -48,6 +48,15 @@ type ArticleVersionURI struct {
 //	@author centonhuang
 //	@update 2024-10-24 05:57:22
 type CommentURI struct {
-	ArticleURI
+	ArticleSlugURI
 	CommentID uint `uri:"commentID" binding:"required,min=1"`
+}
+
+// ArticleURI 文章路径参数
+//
+//	@author centonhuang
+//	@update 2024-11-01 07:43:24
+type ArticleURI struct {
+	UserURI
+	ArticleID uint `uri:"articleID" binding:"required"`
 }
