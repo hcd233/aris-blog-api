@@ -30,6 +30,22 @@ func (t *Tag) GetBasicInfo() map[string]interface{} {
 	}
 }
 
+// GetLikeInfo 获取点赞信息
+//
+//	@receiver t *Tag
+//	@return map
+//	@author centonhuang
+//	@update 2024-11-03 08:57:20
+func (t *Tag) GetLikeInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":        t.ID,
+		"slug":      t.Slug,
+		"createdAt": t.CreatedAt,
+		"creator":   t.User.GetBasicInfo(),
+		"likes":     t.Likes,
+	}
+}
+
 // GetDetailedInfo 获取详细信息
 //
 //	@receiver t *Tag

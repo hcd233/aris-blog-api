@@ -17,17 +17,17 @@ type CommentDAO struct {
 
 // PaginateChildren 获取子评论
 //
-//	@receiver dao *CommentDAO 
-//	@param db *gorm.DB 
-//	@param comment *model.Comment 
-//	@param fields []string 
-//	@param page int 
-//	@param pageSize int 
-//	@return children *[]model.Comment 
-//	@return pageInfo *PageInfo 
-//	@return err error 
-//	@author centonhuang 
-//	@update 2024-11-01 07:09:55 
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param comment *model.Comment
+//	@param fields []string
+//	@param page int
+//	@param pageSize int
+//	@return children *[]model.Comment
+//	@return pageInfo *PageInfo
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-01 07:09:55
 func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fields []string, page, pageSize int) (children *[]model.Comment, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ParentID: comment.ID}).Find(&children).Error
@@ -61,17 +61,17 @@ func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields []s
 
 // PaginateRootsByArticleID 获取文章的根评论
 //
-//	@receiver dao *CommentDAO 
-//	@param db *gorm.DB 
-//	@param articleID uint 
-//	@param fields []string 
-//	@param page int 
-//	@param pageSize int 
-//	@return comments *[]model.Comment 
-//	@return pageInfo *PageInfo 
-//	@return err error 
-//	@author centonhuang 
-//	@update 2024-11-01 07:10:00 
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param articleID uint
+//	@param fields []string
+//	@param page int
+//	@param pageSize int
+//	@return comments *[]model.Comment
+//	@return pageInfo *PageInfo
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-01 07:10:00
 func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fields []string, page, pageSize int) (comments *[]model.Comment, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Find(&comments).Error
@@ -106,15 +106,15 @@ func (dao *CommentDAO) GetByArticleIDAndID(db *gorm.DB, articleID, id uint, fiel
 
 // GetAllByArticleIDAndID 根据文章ID和评论ID获取评论全部字段
 //
-//	@receiver dao *CommentDAO 
-//	@param db *gorm.DB 
-//	@param articleID uint 
-//	@param id uint 
-//	@param fields []string 
-//	@return comment *model.Comment 
-//	@return err error 
-//	@author centonhuang 
-//	@update 2024-11-01 07:05:59 
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param articleID uint
+//	@param id uint
+//	@param fields []string
+//	@return comment *model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-01 07:05:59
 func (dao *CommentDAO) GetAllByArticleIDAndID(db *gorm.DB, articleID, id uint, fields []string) (comment *model.Comment, err error) {
 	err = db.Preload("User").Preload("Article").Preload("Parent").Select(fields).Where(&model.Comment{ArticleID: articleID, ID: id}).First(&comment).Error
 	return
@@ -175,5 +175,19 @@ func (dao *CommentDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, commentID uint)
 		*categories = append(*categories, *childrenCategories...)
 	}
 
+	return
+}
+
+// BatchGetAllByIDs 批量获取评论
+//
+//	@receiver dao *CommentDAO
+//	@param db *gorm.DB
+//	@param ids []uint
+//	@return comments *[]model.Comment
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-03 08:31:10
+func (dao *CommentDAO) BatchGetAllByIDs(db *gorm.DB, ids []uint) (comments *[]model.Comment, err error) {
+	err = db.Preload("User").Preload("Article").Preload("Parent").Where("id IN ?", ids).Find(&comments).Error
 	return
 }

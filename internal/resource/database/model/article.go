@@ -61,6 +61,24 @@ func (a *Article) GetBasicInfo() map[string]interface{} {
 	}
 }
 
+// GetLikeInfo 获取文章点赞信息
+//
+//	@receiver a *Article
+//	@return map
+//	@author centonhuang
+//	@update 2024-11-03 07:34:08
+func (a *Article) GetLikeInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":           a.ID,
+		"title":        a.Title,
+		"slug":         a.Slug,
+		"published_at": a.PublishedAt,
+		"user":         a.User.GetBasicInfo(),
+		"tags":         lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
+		"likes":        a.Likes,
+	}
+}
+
 // GetDetailedInfo 获取文章详细信息
 //
 //	@receiver a *Article
