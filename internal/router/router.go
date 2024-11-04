@@ -135,6 +135,7 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 	operationRouter := r.Group("/operation")
 	{
 		initUserLikeRouter(operationRouter)
+		initUserViewRouter(operationRouter)
 	}
 }
 
@@ -176,6 +177,25 @@ func initUserLikeRouter(r *gin.RouterGroup) {
 			user_like.UserLikeTagHandler,
 		)
 	}
+}
+
+func initUserViewRouter(r *gin.RouterGroup) {
+	// viewRouter := r.Group("/view")
+	// {
+	// 	viewRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserViewArticlesHandler)
+	// 	articleRouter := viewRouter.Group("/article/:articleID", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
+	// 	{
+	// 		viewRouter.POST(
+	// 			"",
+	// 			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeViewArticleRateLimitError),
+	// 			middleware.ValidateBodyMiddleware(&protocol.ViewArticleBody{}),
+	// 			user_like.UserViewArticleHandler,
+	// 		)
+
+	// 		articleRouter.GET("", asset.GetArticleViewInfoHandler)
+	// 	}
+
+	// }
 }
 
 func initArticleVersionRouter(r *gin.RouterGroup) {
