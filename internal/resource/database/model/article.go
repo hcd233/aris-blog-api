@@ -69,13 +69,13 @@ func (a *Article) GetBasicInfo() map[string]interface{} {
 //	@update 2024-11-03 07:34:08
 func (a *Article) GetLikeInfo() map[string]interface{} {
 	return map[string]interface{}{
-		"id":           a.ID,
-		"title":        a.Title,
-		"slug":         a.Slug,
-		"published_at": a.PublishedAt,
-		"user":         a.User.GetBasicInfo(),
-		"tags":         lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
-		"likes":        a.Likes,
+		"id":          a.ID,
+		"title":       a.Title,
+		"slug":        a.Slug,
+		"publishedAt": a.PublishedAt,
+		"user":        a.User.GetBasicInfo(),
+		"tags":        lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
+		"likes":       a.Likes,
 	}
 }
 
@@ -87,17 +87,17 @@ func (a *Article) GetLikeInfo() map[string]interface{} {
 //	@update 2024-09-21 09:21:50
 func (a *Article) GetDetailedInfo() map[string]interface{} {
 	return map[string]interface{}{
-		"id":           a.ID,
-		"title":        a.Title,
-		"slug":         a.Slug,
-		"user_id":      a.UserID,
-		"category":     a.CategoryID,
-		"status":       a.Status,
-		"published_at": a.PublishedAt,
-		"tags":         lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
-		"comments":     a.Comments,
-		"views":        a.Views,
-		"likes":        a.Likes,
-		"versions":     lo.Map(a.Versions, func(version ArticleVersion, idx int) map[string]interface{} { return version.GetBasicInfo() }),
+		"id":          a.ID,
+		"title":       a.Title,
+		"slug":        a.Slug,
+		"userID":      a.UserID,
+		"category":    a.CategoryID,
+		"status":      a.Status,
+		"publishedAt": a.PublishedAt,
+		"tags":        lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
+		"comments":    a.Comments,
+		"views":       a.Views,
+		"likes":       a.Likes,
+		"versions":    lo.Map(a.Versions, func(version ArticleVersion, idx int) map[string]interface{} { return version.GetBasicInfo() }),
 	}
 }
