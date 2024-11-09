@@ -66,6 +66,9 @@ func GithubCallbackHandler(c *gin.Context) {
 	dao := dao.GetUserDAO()
 	docDAO := docdao.GetUserDocDAO()
 
+	jwtAccessTokenSvc := auth.GetJwtAccessTokenSvc()
+	jwtRefreshTokenSvc := auth.GetJwtRefreshTokenSvc()
+
 	if err := c.BindQuery(&params); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeURIError,
@@ -140,12 +143,16 @@ func GithubCallbackHandler(c *gin.Context) {
 			"github_bind_id": githubID,
 		})
 	}
-	tokenString := lo.Must(auth.EncodeToken(user.ID))
+
+	accessToken := lo.Must(jwtAccessTokenSvc.EncodeToken(user.ID))
+	refreshToken := lo.Must(jwtRefreshTokenSvc.EncodeToken(user.ID))
+
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Login success",
 		Data: map[string]interface{}{
-			"token": tokenString,
+			"accessToken":  accessToken,
+			"refreshToken": refreshToken,
 		},
 	})
 }

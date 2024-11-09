@@ -36,7 +36,9 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		userID, err := auth.DecodeToken(tokenString[7:])
+		jwtAccessTokenSvc := auth.GetJwtAccessTokenSvc()
+
+		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString[7:])
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeTokenVerifyError,
