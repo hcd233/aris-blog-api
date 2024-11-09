@@ -28,7 +28,7 @@ func UserLikeArticleHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to operate other user",
+			Message: "You have no permission to operate other user's like",
 		})
 		return
 	}

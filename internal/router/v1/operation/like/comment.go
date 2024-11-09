@@ -17,9 +17,9 @@ import (
 
 // UserLikeCommentHandler 点赞评论
 //
-//	@param c *gin.Context 
-//	@author centonhuang 
-//	@update 2024-10-30 05:52:08 
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-10-30 05:52:08
 func UserLikeCommentHandler(c *gin.Context) {
 	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -28,7 +28,7 @@ func UserLikeCommentHandler(c *gin.Context) {
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to operate other user",
+			Message: "You have no permission to operate other user's like",
 		})
 		return
 	}
