@@ -13,6 +13,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
 	user_like "github.com/hcd233/Aris-blog/internal/router/v1/operation/like"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
+	"github.com/hcd233/Aris-blog/internal/router/v1/token"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
 )
 
@@ -25,10 +26,18 @@ func InitRouter(r *gin.Engine) {
 
 	v1Router := r.Group("/v1")
 	{
+		initTokenRouter(v1Router)
 		initOauth2Router(v1Router)
 		initTagRouter(v1Router)
 		initArticleRouter(v1Router)
 		initUserRouter(v1Router)
+	}
+}
+
+func initTokenRouter(r *gin.RouterGroup) {
+	tokenRouter := r.Group("/token")
+	{
+		tokenRouter.POST("refresh", middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}), token.RefreshTokenHandler)
 	}
 }
 

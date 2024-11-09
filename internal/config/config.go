@@ -78,13 +78,21 @@ var (
 	//	@update 2024-09-18 12:13:29
 	MeilisearchMasterKey string
 
-	// JwtTokenExpired int Jwt Token过期时间
+	// JwtAccessTokenExpired time.Duration Access Jwt Token过期时间
 	//	@update 2024-06-22 11:09:19
-	JwtTokenExpired int
+	JwtAccessTokenExpired time.Duration
 
-	// JwtTokenSecret string Jwt Token密钥
+	// JwtAccessTokenSecret string Jwt Access Token密钥
 	//	@update 2024-06-22 11:15:55
-	JwtTokenSecret string
+	JwtAccessTokenSecret string
+
+	// JwtRefreshTokenExpired time.Duration Refresh Jwt Token过期时间
+	//	@update 2024-06-22 11:09:19
+	JwtRefreshTokenExpired time.Duration
+
+	// JwtRefreshTokenSecret string Jwt Refresh Token密钥
+	//	@update 2024-06-22 11:15:55
+	JwtRefreshTokenSecret string
 )
 
 func init() {
@@ -126,8 +134,11 @@ func initEnvironment() {
 	MeilisearchPort = config.GetString("meilisearch.port")
 	MeilisearchMasterKey = config.GetString("meilisearch.master.key")
 
-	JwtTokenExpired = config.GetInt("jwt.token.expired")
-	JwtTokenSecret = config.GetString("jwt.token.secret")
+	JwtAccessTokenExpired = config.GetDuration("jwt.access.token.expired")
+	JwtAccessTokenSecret = config.GetString("jwt.access.token.secret")
+
+	JwtRefreshTokenExpired = config.GetDuration("jwt.refresh.token.expired")
+	JwtRefreshTokenSecret = config.GetString("jwt.refresh.token.secret")
 
 	if Oauth2GithubClientID == "" {
 		panic("oauth2.github.client.id is required")

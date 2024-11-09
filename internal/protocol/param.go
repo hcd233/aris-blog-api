@@ -1,5 +1,13 @@
 package protocol
 
+// CreateTagBody 刷新token请求体
+//
+//	@Author centonhuang
+//	@Update 2024-11-09 02:56:39
+type RefreshTokenBody struct {
+	RefreshToken string `json:"refreshToken" binding:"required"`
+}
+
 // PageParam 列表参数
 //
 //	@author centonhuang
