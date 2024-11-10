@@ -175,6 +175,26 @@ const (
 	//	@update 2024-11-03 07:10:30
 	CodeGetUserLikeError ResponseCode = 1042
 
+	// CodeLogUserViewRateLimitError ResponseCode 达到记录文章阅读进度频率限制错误
+	//	@update 2024-11-03 07:10:30
+	CodeLogUserViewRateLimitError ResponseCode = 1043
+
+	// CodeGetUserViewError ResponseCode 获取用户浏览错误
+	//	@update 2024-11-03 07:10:30
+	CodeGetUserViewError ResponseCode = 1044
+
+	// CodeUpdateUserViewError ResponseCode 更新用户浏览错误
+	//	@update 2024-11-03 07:10:30
+	CodeUpdateUserViewError ResponseCode = 1045
+
+	// CodeLogUserViewError ResponseCode 记录用户浏览错误
+	//	@update 2024-11-03 07:10:30
+	CodeLogUserViewError ResponseCode = 1046
+
+	// CodeRefreshTokenRateLimitError ResponseCode 达到刷新令牌频率限制错误
+	//	@update 2024-11-03 07:10:30
+	CodeRefreshTokenRateLimitError ResponseCode = 1047
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -236,6 +256,12 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeLikeTagRateLimitError:     "达到点赞标签频率限制，请稍后再试",
 
 	CodeGetUserLikeError: "获取用户点赞信息错误",
+
+	CodeGetUserViewError:          "获取用户浏览错误",
+	CodeLogUserViewError:          "记录用户浏览错误",
+	CodeLogUserViewRateLimitError: "达到记录文章阅读进度频率限制，请稍后再试",
+
+	CodeRefreshTokenRateLimitError: "达到刷新令牌频率限制，请稍后再试",
 
 	CodeUnknownError: "未知错误",
 }

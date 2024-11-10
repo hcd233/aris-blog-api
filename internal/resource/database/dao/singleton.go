@@ -12,6 +12,7 @@ var (
 	articleVersionDAOSingleton *ArticleVersionDAO
 	commentDAOSingleton        *CommentDAO
 	userLikeDAOSingleton       *UserLikeDAO
+	userViewDAOSingleton       *UserViewDAO
 
 	categoryOnce       sync.Once
 	userOnce           sync.Once
@@ -20,6 +21,7 @@ var (
 	articleVersionOnce sync.Once
 	commentOnce        sync.Once
 	userLikeOnce       sync.Once
+	userViewOnce       sync.Once
 )
 
 // GetCategoryDAO 获取类别DAO
@@ -104,4 +106,16 @@ func GetUserLikeDAO() *UserLikeDAO {
 		userLikeDAOSingleton = &UserLikeDAO{}
 	})
 	return userLikeDAOSingleton
+}
+
+// GetUserViewDAO 获取用户浏览DAO
+//
+//	@return *UserLikeDAO
+//	@author centonhuang
+//	@update 2024-10-30 03:50:52
+func GetUserViewDAO() *UserViewDAO {
+	userViewOnce.Do(func() {
+		userViewDAOSingleton = &UserViewDAO{}
+	})
+	return userViewDAOSingleton
 }

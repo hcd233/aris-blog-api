@@ -4,14 +4,17 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/router/v1/article"
 	article_version "github.com/hcd233/Aris-blog/internal/router/v1/article_version"
+	"github.com/hcd233/Aris-blog/internal/router/v1/asset"
 	"github.com/hcd233/Aris-blog/internal/router/v1/category"
 	"github.com/hcd233/Aris-blog/internal/router/v1/comment"
 	"github.com/hcd233/Aris-blog/internal/router/v1/oauth2"
 	user_like "github.com/hcd233/Aris-blog/internal/router/v1/operation/like"
+	user_view "github.com/hcd233/Aris-blog/internal/router/v1/operation/view"
 	"github.com/hcd233/Aris-blog/internal/router/v1/tag"
 	"github.com/hcd233/Aris-blog/internal/router/v1/token"
 	"github.com/hcd233/Aris-blog/internal/router/v1/user"
@@ -37,7 +40,12 @@ func InitRouter(r *gin.Engine) {
 func initTokenRouter(r *gin.RouterGroup) {
 	tokenRouter := r.Group("/token")
 	{
-		tokenRouter.POST("refresh", middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}), token.RefreshTokenHandler)
+		tokenRouter.POST(
+			"refresh",
+			middleware.RateLimiterMiddleware(config.JwtAccessTokenExpired/4, 2, "", protocol.CodeRefreshTokenRateLimitError),
+			middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}),
+			token.RefreshTokenHandler,
+		)
 	}
 }
 
@@ -152,16 +160,8 @@ func initUserAssetRouter(r *gin.RouterGroup) {
 	assetRouter := r.Group("/asset")
 	{
 		initUserAssetLikeRouter(assetRouter)
+		initUserAssetViewRouter(assetRouter)
 	}
-}
-
-func initUserAssetLikeRouter(r *gin.RouterGroup) {
-	// likeRouter := r.Group("/like")
-	// {
-	// 	likeRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeArticlesHandler)
-	// 	likeRouter.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeCommentsHandler)
-	// 	likeRouter.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeTagsHandler)
-	// }
 }
 
 func initUserLikeRouter(r *gin.RouterGroup) {
@@ -189,22 +189,31 @@ func initUserLikeRouter(r *gin.RouterGroup) {
 }
 
 func initUserViewRouter(r *gin.RouterGroup) {
-	// viewRouter := r.Group("/view")
-	// {
-	// 	viewRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserViewArticlesHandler)
-	// 	articleRouter := viewRouter.Group("/article/:articleID", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
-	// 	{
-	// 		viewRouter.POST(
-	// 			"",
-	// 			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeViewArticleRateLimitError),
-	// 			middleware.ValidateBodyMiddleware(&protocol.ViewArticleBody{}),
-	// 			user_like.UserViewArticleHandler,
-	// 		)
+	viewRouter := r.Group("/view")
+	{
+		viewRouter.POST(
+			"article",
+			middleware.RateLimiterMiddleware(10*time.Second, 2, "userID", protocol.CodeLogUserViewRateLimitError),
+			middleware.ValidateBodyMiddleware(&protocol.LogUserViewArticleBody{}),
+			user_view.LogUserViewArticleHandler,
+		)
+	}
+}
 
-	// 		articleRouter.GET("", asset.GetArticleViewInfoHandler)
-	// 	}
+func initUserAssetLikeRouter(r *gin.RouterGroup) {
+	likeRouter := r.Group("/like")
+	{
+		likeRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeArticlesHandler)
+		likeRouter.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeCommentsHandler)
+		likeRouter.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserLikeTagsHandler)
+	}
+}
 
-	// }
+func initUserAssetViewRouter(r *gin.RouterGroup) {
+	viewRouter := r.Group("/view")
+	{
+		viewRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserViewArticlesHandler)
+	}
 }
 
 func initArticleVersionRouter(r *gin.RouterGroup) {
