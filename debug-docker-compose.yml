@@ -32,6 +32,23 @@ services:
     env_file:
       - ./env/mysql.env
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - 9000:9000
+    volumes:
+      - minio-data:/data
+    command: server /data
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    env_file:
+      - ./env/minio.env
+
+
 volumes:
   mysql-data:
     name: mysql-data
@@ -39,7 +56,11 @@ volumes:
   meilisearch-data:
     name: meilisearch-data
     external: true
+  minio-data:
+    name: minio-data
+    external: true
 
 # docker volume create mysql-data 
 # docker volume create meilisearch-data
+# docker volume create minio-data
 # docker compose -f debug-docker-compose.yml up -d
