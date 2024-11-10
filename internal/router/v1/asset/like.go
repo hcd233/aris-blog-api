@@ -60,7 +60,7 @@ func ListUserLikeArticlesHandler(c *gin.Context) {
 		return like.ObjectID
 	})
 
-	articles, err := articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "title", "slug", "published_at", "likes"}, []string{"User", "Tags"})
+	articles, err := articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "title", "slug", "published_at", "likes", "user_id"}, []string{"User", "Tags"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

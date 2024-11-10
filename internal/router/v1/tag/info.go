@@ -97,7 +97,7 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag = lo.Must1(tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description"}, []string{"User"}))
+	tag = lo.Must1(tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description", "created_by"}, []string{"User"}))
 
 	// 同步到搜索引擎
 	err = docDAO.UpdateDocument(searchEngine, document.TransformTagToDocument(tag))

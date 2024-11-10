@@ -149,17 +149,3 @@ func (dao *ArticleDAO) PaginateByPublished(db *gorm.DB, fields []string, page, p
 	err = db.Model(&articles).Where(&model.Article{Status: model.ArticleStatusPublish}).Count(&pageInfo.Total).Error
 	return
 }
-
-// BatchGetAllByIDs 批量获取文章
-//
-//	@receiver dao *ArticleDAO
-//	@param db *gorm.DB
-//	@param ids []uint
-//	@return articles *[]model.Article
-//	@return err error
-//	@author centonhuang
-//	@update 2024-11-03 07:35:58
-func (dao *ArticleDAO) BatchGetAllByIDs(db *gorm.DB, ids []uint) (articles *[]model.Article, err error) {
-	err = db.Preload("Category").Preload("Tags").Preload("User").Where("id IN ?", ids).Find(&articles).Error
-	return
-}
