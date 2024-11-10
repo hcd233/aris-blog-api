@@ -58,7 +58,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"version", "content"})
+	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"version", "content"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,

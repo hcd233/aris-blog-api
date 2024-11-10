@@ -23,8 +23,12 @@ type ArticleVersionDAO struct {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 08:14:09
-func (dao *ArticleVersionDAO) GetLatestByArticleID(db *gorm.DB, articleID uint, fields []string) (articleVersion *model.ArticleVersion, err error) {
-	err = db.Select(fields).Where(&model.ArticleVersion{ArticleID: articleID}).Last(&articleVersion).Error
+func (dao *ArticleVersionDAO) GetLatestByArticleID(db *gorm.DB, articleID uint, fields, preloads []string) (articleVersion *model.ArticleVersion, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.ArticleVersion{ArticleID: articleID}).Last(&articleVersion).Error
 	return
 }
 
@@ -39,8 +43,12 @@ func (dao *ArticleVersionDAO) GetLatestByArticleID(db *gorm.DB, articleID uint, 
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-18 03:17:06
-func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, version uint, fields []string) (articleVersion *model.ArticleVersion, err error) {
-	err = db.Select(fields).Where(&model.ArticleVersion{ArticleID: articleID, Version: version}).Last(&articleVersion).Error
+func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, version uint, fields, preloads []string) (articleVersion *model.ArticleVersion, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.ArticleVersion{ArticleID: articleID, Version: version}).Last(&articleVersion).Error
 	return
 }
 
@@ -57,9 +65,15 @@ func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, v
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:08:50
-func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields []string, page, pageSize int) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
+func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, page, pageSize int) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Where(&model.ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&articleVersions).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&articleVersions).Error
+
 	if err != nil {
 		return
 	}
