@@ -37,7 +37,7 @@ func UserLikeArticleHandler(c *gin.Context) {
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
-	user, err := userDAO.GetByName(db, body.Author, []string{"id"})
+	user, err := userDAO.GetByName(db, body.Author, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

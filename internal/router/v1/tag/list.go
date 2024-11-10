@@ -59,7 +59,7 @@ func ListUserTagsHandler(c *gin.Context) {
 
 	userDAO, tagDAO := dao.GetUserDAO(), dao.GetTagDAO()
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

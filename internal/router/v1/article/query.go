@@ -26,7 +26,7 @@ func QueryUserArticleHandler(c *gin.Context) {
 	userDAO := dao.GetUserDAO()
 	articleDocDAO := docdao.GetArticleDocDAO()
 
-	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

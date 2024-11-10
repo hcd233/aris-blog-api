@@ -36,7 +36,7 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 
 	categoryDAO, userDAO := dao.GetCategoryDAO(), dao.GetUserDAO()
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id", "name"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id", "name"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -104,7 +104,7 @@ func ListChildrenArticlesHandler(c *gin.Context) {
 
 	userDAO, categoryDAO, articleDAO := dao.GetUserDAO(), dao.GetCategoryDAO(), dao.GetArticleDAO()
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

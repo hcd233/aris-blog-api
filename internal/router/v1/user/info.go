@@ -32,7 +32,7 @@ func GetUserInfoHandler(c *gin.Context) {
 
 	userDAO := dao.GetUserDAO()
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -79,7 +79,7 @@ func UpdateInfoHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUserNotFoundError,

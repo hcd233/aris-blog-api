@@ -35,7 +35,7 @@ func LogUserViewArticleHandler(c *gin.Context) {
 
 	userDAO, articleDAO, userViewDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetUserViewDAO()
 
-	user, err := userDAO.GetByName(db, body.Author, []string{"id"})
+	user, err := userDAO.GetByName(db, body.Author, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

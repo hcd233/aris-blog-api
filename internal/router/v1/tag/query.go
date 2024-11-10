@@ -56,7 +56,7 @@ func QueryUserTagHandler(c *gin.Context) {
 	userDAO := dao.GetUserDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
