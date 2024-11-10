@@ -32,7 +32,7 @@ func ListUserViewArticlesHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 	_, userViewDAO := dao.GetArticleDAO(), dao.GetUserViewDAO()
 
-	userViews, pageInfo, err := userViewDAO.PaginateWithPreloadsByUserID(db, userID, pageParam.Page, pageParam.PageSize)
+	userViews, pageInfo, err := userViewDAO.PaginateByUserID(db, userID, []string{"id", "progress", "last_viewed_at"}, []string{"User", "Article", "Article.Tags", "Article.User"}, pageParam.Page, pageParam.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserViewError,

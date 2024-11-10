@@ -99,7 +99,7 @@ func transactLikeComment(tx *gorm.DB, comment *model.Comment, userLike *model.Us
 
 func transactUndoLikeComment(tx *gorm.DB, comment *model.Comment, userLike *model.UserLike) (err error) {
 	commentDAO, userLikeDAO := dao.GetCommentDAO(), dao.GetUserLikeDAO()
-	userLikeWithID, err := userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"})
+	userLikeWithID, err := userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
 	if err != nil {
 		err = fmt.Errorf("transaction get user like failed: %v", err)
 		return

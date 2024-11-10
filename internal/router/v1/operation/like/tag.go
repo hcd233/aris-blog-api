@@ -99,7 +99,7 @@ func transactLikeTag(tx *gorm.DB, tag *model.Tag, userLike *model.UserLike) (err
 
 func transactUndoLikeTag(tx *gorm.DB, tag *model.Tag, userLike *model.UserLike) (err error) {
 	tagDAO, userLikeDAO := dao.GetTagDAO(), dao.GetUserLikeDAO()
-	userLikeWithID, err := userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"})
+	userLikeWithID, err := userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
 	if err != nil {
 		err = fmt.Errorf("transaction get user like failed: %v", err)
 		return

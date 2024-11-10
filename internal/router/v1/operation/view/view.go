@@ -61,7 +61,7 @@ func LogUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	userView, err := userViewDAO.GetLatestViewByUserIDAndArticleID(db, userID, article.ID, []string{"id", "created_at", "progress"})
+	userView, err := userViewDAO.GetLatestViewByUserIDAndArticleID(db, userID, article.ID, []string{"id", "created_at", "progress"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserViewError,

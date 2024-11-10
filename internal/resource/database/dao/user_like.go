@@ -43,8 +43,12 @@ func (dao *UserLikeDAO) Delete(db *gorm.DB, userLike *model.UserLike) (err error
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-30 04:46:50
-func (dao *UserLikeDAO) GetByUserIDAndObject(db *gorm.DB, userID uint, objectID uint, objectType model.LikeObjectType, fields []string) (userLike *model.UserLike, err error) {
-	err = db.Select(fields).Where(model.UserLike{UserID: userID, ObjectID: objectID, ObjectType: objectType}).First(&userLike).Error
+func (dao *UserLikeDAO) GetByUserIDAndObject(db *gorm.DB, userID uint, objectID uint, objectType model.LikeObjectType, fields, preloads []string) (userLike *model.UserLike, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(model.UserLike{UserID: userID, ObjectID: objectID, ObjectType: objectType}).First(&userLike).Error
 	return
 }
 
@@ -69,7 +73,7 @@ func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, 
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	err = sql.Limit(limit).Offset(offset).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Find(&userLikes).Error
+	err = sql.Where(model.UserLike{UserID: userID, ObjectType: objectType}).Limit(limit).Offset(offset).Find(&userLikes).Error
 
 	if err != nil {
 		return
