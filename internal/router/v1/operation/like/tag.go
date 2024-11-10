@@ -37,7 +37,7 @@ func UserLikeTagHandler(c *gin.Context) {
 
 	tagDAO := dao.GetTagDAO()
 
-	tag, err := tagDAO.GetBySlug(db, body.TagSlug, []string{"id", "likes"})
+	tag, err := tagDAO.GetBySlug(db, body.TagSlug, []string{"id", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,

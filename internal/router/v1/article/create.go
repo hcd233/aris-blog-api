@@ -45,7 +45,7 @@ func CreateArticleHandler(c *gin.Context) {
 
 	getTagFunc := func(tagSlug string) {
 		defer wg.Done()
-		tag, err := tagDAO.GetBySlug(db, tagSlug, []string{"id"})
+		tag, err := tagDAO.GetBySlug(db, tagSlug, []string{"id"}, []string{})
 		if err != nil {
 			errChan <- err
 			return
