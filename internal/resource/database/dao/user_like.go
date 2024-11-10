@@ -84,7 +84,7 @@ func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, 
 		PageSize: pageSize,
 	}
 
-	err = db.Where(model.UserLike{UserID: userID, ObjectType: objectType}).Count(&pageInfo.Total).Error
+	err = db.Model(&userLikes).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Count(&pageInfo.Total).Error
 
 	return
 }

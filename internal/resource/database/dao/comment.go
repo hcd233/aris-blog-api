@@ -46,7 +46,7 @@ func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fie
 		PageSize: pageSize,
 	}
 
-	err = db.Where(&model.Comment{ParentID: comment.ID}).Count(&pageInfo.Total).Error
+	err = db.Model(&children).Where(&model.Comment{ParentID: comment.ID}).Count(&pageInfo.Total).Error
 	return
 }
 
@@ -100,7 +100,7 @@ func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fie
 		PageSize: pageSize,
 	}
 
-	err = db.Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Count(&pageInfo.Total).Error
+	err = db.Model(&comments).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Count(&pageInfo.Total).Error
 	return
 }
 

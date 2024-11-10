@@ -26,7 +26,7 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	tagDAO := dao.GetTagDAO()
 
-	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description"}, []string{"User"})
+	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"}, []string{"User"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -62,7 +62,7 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	if tag.CreateBy != userID {
+	if tag.CreatedBy != userID {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to update other user's tag",
@@ -134,7 +134,7 @@ func DeleteTagHandler(c *gin.Context) {
 		return
 	}
 
-	if tag.CreateBy != userID {
+	if tag.CreatedBy != userID {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to delete other user's tag",

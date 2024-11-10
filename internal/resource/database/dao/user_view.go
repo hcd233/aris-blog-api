@@ -41,6 +41,6 @@ func (dao *UserViewDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, prelo
 		PageSize: pageSize,
 	}
 
-	err = db.Where(model.UserView{UserID: userID}).Count(&pageInfo.Total).Error
+	err = db.Model(&userViews).Where(model.UserView{UserID: userID}).Count(&pageInfo.Total).Error
 	return
 }

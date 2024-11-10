@@ -83,6 +83,6 @@ func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, f
 		PageSize: pageSize,
 	}
 
-	err = db.Where(&model.ArticleVersion{ArticleID: articleID}).Count(&pageInfo.Total).Error
+	err = db.Model(&articleVersions).Where(&model.ArticleVersion{ArticleID: articleID}).Count(&pageInfo.Total).Error
 	return
 }
