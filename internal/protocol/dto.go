@@ -129,3 +129,13 @@ type LikeTagBody struct {
 	LikeBody
 	TagSlug string `json:"tagSlug" binding:"required"`
 }
+
+// LogUserViewArticleBody 记录文章浏览请求体
+//
+//	@author centonhuang
+//	@update 2024-11-09 07:34:14
+type LogUserViewArticleBody struct {
+	Author      string `json:"author" binding:"required"`
+	ArticleSlug string `json:"articleSlug" binding:"required"`
+	Progress    int8   `json:"progress" binding:"min=0,max=100"`
+}
