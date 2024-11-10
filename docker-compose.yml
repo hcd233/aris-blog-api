@@ -32,6 +32,22 @@ services:
     env_file:
       - ./env/mysql.env
 
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    ports:
+      - 9000:9000
+    volumes:
+      - minio-data:/data
+    command: server /data
+    healthcheck: 
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    env_file:
+      - ./env/minio.env
+
   aris-db-migrate:
     image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
     container_name: aris-db-migrate
@@ -56,6 +72,8 @@ services:
         condition: service_healthy
       meilisearch:
         condition: service_healthy
+      minio:
+        condition: service_healthy
       aris-db-migrate:
         condition: service_completed_successfully
     healthcheck:
@@ -73,7 +91,11 @@ volumes:
   meilisearch-data:
     name: meilisearch-data
     external: true
+  minio-data:
+    name: minio-data
+    external: true
 
 # docker volume create mysql-data 
 # docker volume create meilisearch-data
+# docker volume create minio-data
 # docker compose up -d
