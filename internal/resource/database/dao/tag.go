@@ -51,20 +51,6 @@ func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields, preloads []string
 	return
 }
 
-// GetAllBySlug 通过slug获取标签
-//
-//	@receiver dao *TagDAO
-//	@param db *gorm.DB
-//	@param slug string
-//	@return tag *model.Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-29 07:44:26
-func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err error) {
-	err = db.Preload("User").Where(model.Tag{Slug: slug}).First(&tag).Error
-	return
-}
-
 // PaginateByUserID 通过用户ID获取标签
 //
 //	@receiver dao *TagDAO
