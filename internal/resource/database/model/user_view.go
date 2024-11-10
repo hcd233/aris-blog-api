@@ -20,7 +20,15 @@ type UserView struct {
 	Progress     int8      `json:"progress" gorm:"not null;comment:浏览进度"`
 }
 
-func (uv *UserView) GetViewInfo() map[string]interface{} {
+func (uv *UserView) GetBasicInfo() map[string]interface{} {
+	return map[string]interface{}{
+		"id":           uv.ID,
+		"progress":     uv.Progress,
+		"lastViewedAt": uv.LastViewedAt,
+	}
+}
+
+func (uv *UserView) GetDetailedInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":           uv.ID,
 		"viewer":       uv.User.GetBasicInfo(),

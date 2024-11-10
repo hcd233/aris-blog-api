@@ -212,6 +212,7 @@ func initUserAssetLikeRouter(r *gin.RouterGroup) {
 func initUserAssetViewRouter(r *gin.RouterGroup) {
 	viewRouter := r.Group("/view")
 	{
+		viewRouter.GET("article", middleware.ValidateParamMiddleware(&protocol.ArticleParam{}), asset.GetUserViewArticleHandler)
 		viewRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserViewArticlesHandler)
 	}
 }

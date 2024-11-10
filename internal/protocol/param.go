@@ -9,14 +9,6 @@ type GithubCallbackParam struct {
 	State string `form:"state" binding:"required"`
 }
 
-// CreateTagBody 刷新token请求体
-//
-//	@Author centonhuang
-//	@Update 2024-11-09 02:56:39
-type RefreshTokenBody struct {
-	RefreshToken string `json:"refreshToken" binding:"required"`
-}
-
 // PageParam 列表参数
 //
 //	@author centonhuang
@@ -34,4 +26,13 @@ type QueryParam struct {
 	PageParam
 	Query  string   `form:"query" binding:"required,min=2"`
 	Filter []string `form:"filter"`
+}
+
+// ArticleParam 文章参数
+//
+//	@author centonhuang
+//	@update 2024-09-21 09:59:55
+type ArticleParam struct {
+	ArticleSlug string `form:"articleSlug" binding:"required"`
+	Author      string `form:"author" binding:"required"`
 }
