@@ -47,7 +47,7 @@ func ListUserLikeArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	userLikes, pageInfo, err := userLikeDAO.PaginateByUserIDAndObjectType(db, user.ID, model.LikeObjectTypeArticle, param.Page, param.PageSize, []string{"object_id"})
+	userLikes, pageInfo, err := userLikeDAO.PaginateByUserIDAndObjectType(db, user.ID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserLikeError,
@@ -60,7 +60,7 @@ func ListUserLikeArticlesHandler(c *gin.Context) {
 		return like.ObjectID
 	})
 
-	articles, err := articleDAO.BatchGetAllByIDs(db, articleIDs)
+	articles, err := articleDAO.BatchGetByIDs(db, articleIDs, []string{"id", "title", "slug", "published_at", "likes"}, []string{"User", "Tags"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -132,7 +132,7 @@ func ListUserLikeCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	userLikes, pageInfo, err := userLikeDAO.PaginateByUserIDAndObjectType(db, user.ID, model.LikeObjectTypeComment, param.Page, param.PageSize, []string{"object_id"})
+	userLikes, pageInfo, err := userLikeDAO.PaginateByUserIDAndObjectType(db, user.ID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserLikeError,
@@ -217,7 +217,7 @@ func ListUserLikeTagsHandler(c *gin.Context) {
 		return
 	}
 
-	userLikes, pageInfo, err := userLikeDAO.PaginateByUserIDAndObjectType(db, user.ID, model.LikeObjectTypeTag, param.Page, param.PageSize, []string{"object_id"})
+	userLikes, pageInfo, err := userLikeDAO.PaginateByUserIDAndObjectType(db, user.ID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserLikeError,

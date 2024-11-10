@@ -51,7 +51,7 @@ func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, 
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	err = sql.Limit(limit).Offset(offset).Where(&model.Category{ParentID: category.ID}).Find(&children).Error
+	err = sql.Where(&model.Category{ParentID: category.ID}).Limit(limit).Offset(offset).Find(&children).Error
 
 	if err != nil {
 		return
