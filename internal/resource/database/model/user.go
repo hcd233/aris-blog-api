@@ -48,8 +48,8 @@ type User struct {
 	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;not null;comment:最后登录时间"`
 	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
 	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
-	Category     []Category   `json:"category" gorm:"foreignKey:UserID"`
-	Tag          []Tag        `json:"tag" gorm:"foreignKey:CreateBy"`
+	Categories   []Category   `json:"categories" gorm:"foreignKey:UserID"`
+	Tags         []Tag        `json:"tags" gorm:"foreignKey:CreateBy"`
 }
 
 // BeforeCreate 创建用户前

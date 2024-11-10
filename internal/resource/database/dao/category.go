@@ -33,17 +33,17 @@ func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error
 
 // PaginateChildren 获取子类别
 //
-//	@receiver dao *CategoryDAO 
-//	@param db *gorm.DB 
-//	@param category *model.Category 
-//	@param fields []string 
-//	@param page int 
-//	@param pageSize int 
-//	@return children *[]model.Category 
-//	@return pageInfo *PageInfo 
-//	@return err error 
-//	@author centonhuang 
-//	@update 2024-11-01 07:09:50 
+//	@receiver dao *CategoryDAO
+//	@param db *gorm.DB
+//	@param category *model.Category
+//	@param fields []string
+//	@param page int
+//	@param pageSize int
+//	@return children *[]model.Category
+//	@return pageInfo *PageInfo
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-01 07:09:50
 func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields []string, page, pageSize int) (children *[]model.Category, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Category{ParentID: category.ID}).Find(&children).Error
@@ -115,7 +115,7 @@ func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 		}
 	}()
 
-	rootCategory, err := dao.GetByID(db, id, []string{"id", "name"})
+	rootCategory, err := dao.GetByID(db, id, []string{"id", "name"}, []string{})
 	if err != nil {
 		return
 	}

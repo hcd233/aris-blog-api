@@ -118,7 +118,7 @@ func GithubCallbackHandler(c *gin.Context) {
 		}))
 		lo.Must0(docDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user)))
 
-		user = lo.Must1(dao.GetByID(db, user.ID, []string{"id", "name", "avatar"}))
+		user = lo.Must1(dao.GetByID(db, user.ID, []string{"id", "name", "avatar"}, []string{}))
 	} else {
 		// 新用户，保存信息
 		permission := model.PermissionGeneral
@@ -131,7 +131,7 @@ func GithubCallbackHandler(c *gin.Context) {
 			Email:      email,
 			Avatar:     avatar,
 			Permission: permission,
-			Category:   []model.Category{*defaultCategory},
+			Categories: []model.Category{*defaultCategory},
 		}
 		lo.Must0(dao.Create(db, user))
 		lo.Must0(docDAO.AddDocument(searchEngine, document.TransformUserToDocument(user)))

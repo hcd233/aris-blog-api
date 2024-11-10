@@ -146,7 +146,7 @@ func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 		}
 	}()
 
-	rootComment, err := dao.GetByID(db, id, []string{"id"})
+	rootComment, err := dao.GetByID(db, id, []string{"id"}, []string{})
 	if err != nil {
 		return
 	}

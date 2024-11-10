@@ -13,7 +13,7 @@ import (
 //
 //	@author centonhuang
 //	@update 2024-10-17 02:32:22
-type baseDAO[T interface{}] struct{}
+type baseDAO[ModelT interface{}] struct{}
 
 // PageInfo 分页信息
 //
@@ -31,7 +31,7 @@ type PageInfo struct {
 //	@return Create
 //	@author centonhuang
 //	@update 2024-10-17 02:51:49
-func (dao *baseDAO[T]) Create(db *gorm.DB, data *T) (err error) {
+func (dao *baseDAO[ModelT]) Create(db *gorm.DB, data *ModelT) (err error) {
 	err = db.Create(&data).Error
 	return
 }
@@ -42,7 +42,7 @@ func (dao *baseDAO[T]) Create(db *gorm.DB, data *T) (err error) {
 //	@return Update
 //	@author centonhuang
 //	@update 2024-10-17 02:52:18
-func (dao *baseDAO[T]) Update(db *gorm.DB, data *T, info map[string]interface{}) (err error) {
+func (dao *baseDAO[ModelT]) Update(db *gorm.DB, data *ModelT, info map[string]interface{}) (err error) {
 	info["updated_at"] = time.Now()
 	err = db.Model(&data).Updates(info).Error
 	return
@@ -54,12 +54,12 @@ func (dao *baseDAO[T]) Update(db *gorm.DB, data *T, info map[string]interface{})
 //	@return Delete
 //	@author centonhuang
 //	@update 2024-10-17 02:52:33
-func (dao *baseDAO[T]) Delete(db *gorm.DB, data *T) (err error) {
+func (dao *baseDAO[ModelT]) Delete(db *gorm.DB, data *ModelT) (err error) {
 	err = db.Delete(&data).Error
 	return
 }
 
-func (dao *baseDAO[T]) BatchDelete(db *gorm.DB, data *[]T) (err error) {
+func (dao *baseDAO[ModelT]) BatchDelete(db *gorm.DB, data *[]ModelT) (err error) {
 	err = db.Delete(&data).Error
 	return
 }
@@ -70,8 +70,13 @@ func (dao *baseDAO[T]) BatchDelete(db *gorm.DB, data *[]T) (err error) {
 //	@return GetByID
 //	@author centonhuang
 //	@update 2024-10-17 03:06:57
-func (dao *baseDAO[T]) GetByID(db *gorm.DB, id uint, fields []string) (data *T, err error) {
-	err = db.Select(fields).Where("id = ?", id).First(&data).Error
+func (dao *baseDAO[ModelT]) GetByID(db *gorm.DB, id uint, fields []string, preloads []string) (data *ModelT, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+
+	err = sql.Where("id = ?", id).First(&data).Error
 	return
 }
 
@@ -81,8 +86,12 @@ func (dao *baseDAO[T]) GetByID(db *gorm.DB, id uint, fields []string) (data *T, 
 //	@return BatchGetByIDs
 //	@author centonhuang
 //	@update 2024-11-03 07:34:47
-func (dao *baseDAO[T]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string) (data *[]T, err error) {
-	err = db.Select(fields).Where("id IN ?", ids).Find(&data).Error
+func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string, preloads []string) (data *[]ModelT, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where("id IN ?", ids).Find(&data).Error
 	return
 }
 
@@ -92,9 +101,15 @@ func (dao *baseDAO[T]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []string) (
 //	@return Paginate
 //	@author centonhuang
 //	@update 2024-10-17 03:09:11
-func (dao *baseDAO[T]) Paginate(db *gorm.DB, fields []string, page, pageSize int) (data *[]T, pageInfo *PageInfo, err error) {
+func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, page, pageSize int) (data *[]ModelT, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Limit(limit).Offset(offset).Find(&data).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Limit(limit).Offset(offset).Find(&data).Error
+
 	if err != nil {
 		return
 	}
