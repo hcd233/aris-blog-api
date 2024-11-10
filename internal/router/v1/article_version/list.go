@@ -54,7 +54,7 @@ func ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	versions, pageInfo, err := articleVersionDAO.PaginateByArticleID(db, article.ID, []string{"created_at", "version", "content"}, param.Page, param.PageSize)
+	versions, pageInfo, err := articleVersionDAO.PaginateByArticleID(db, article.ID, []string{"created_at", "version", "content"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,

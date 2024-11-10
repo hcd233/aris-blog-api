@@ -197,7 +197,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"content"})
+	latestVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"content"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
