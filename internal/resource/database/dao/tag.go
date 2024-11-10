@@ -85,17 +85,3 @@ func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads [
 	err = db.Model(&model.Tag{}).Where(model.Tag{CreateBy: userID}).Count(&pageInfo.Total).Error
 	return
 }
-
-// BatchGetAllByIDs 批量获取标签
-//
-//	@receiver dao *TagDAO
-//	@param db *gorm.DB
-//	@param ids []uint
-//	@return comments *[]model.Comment
-//	@return err error
-//	@author centonhuang
-//	@update 2024-11-03 08:31:10
-func (dao *TagDAO) BatchGetAllByIDs(db *gorm.DB, ids []uint) (tags *[]model.Tag, err error) {
-	err = db.Preload("User").Where("id IN ?", ids).Find(&tags).Error
-	return
-}
