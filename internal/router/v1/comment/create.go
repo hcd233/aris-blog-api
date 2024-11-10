@@ -53,7 +53,7 @@ func CreateArticleCommentHandler(c *gin.Context) {
 
 	var parent *model.Comment
 	if body.ReplyTo != 0 {
-		parent, err = commentDAO.GetByID(db, body.ReplyTo, []string{"id", "article_id"})
+		parent, err = commentDAO.GetByID(db, body.ReplyTo, []string{"id", "article_id"}, []string{})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeGetCommentError,
@@ -86,7 +86,7 @@ func CreateArticleCommentHandler(c *gin.Context) {
 		return
 	}
 
-	comment = lo.Must1(commentDAO.GetByID(db, comment.ID, []string{"id", "created_at", "content", "parent_id"}))
+	comment = lo.Must1(commentDAO.GetByID(db, comment.ID, []string{"id", "created_at", "content", "parent_id"}, []string{}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,

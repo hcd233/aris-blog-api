@@ -38,7 +38,7 @@ func GetCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
+	category, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -147,7 +147,7 @@ func UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"})
+	category, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -201,7 +201,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"})
+	category, err := categoryDAO.GetByID(db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,

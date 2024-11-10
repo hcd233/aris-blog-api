@@ -51,7 +51,7 @@ func JwtMiddleware() gin.HandlerFunc {
 		dao := dao.GetUserDAO()
 
 		db := database.GetDBInstance()
-		user, err := dao.GetByID(db, userID, []string{"name", "permission"})
+		user, err := dao.GetByID(db, userID, []string{"name", "permission"}, []string{})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeQueryUserError,

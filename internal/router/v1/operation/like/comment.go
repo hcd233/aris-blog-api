@@ -37,7 +37,7 @@ func UserLikeCommentHandler(c *gin.Context) {
 
 	commentDAO := dao.GetCommentDAO()
 
-	comment, err := commentDAO.GetByID(db, body.CommentID, []string{"id", "likes"})
+	comment, err := commentDAO.GetByID(db, body.CommentID, []string{"id", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCommentError,

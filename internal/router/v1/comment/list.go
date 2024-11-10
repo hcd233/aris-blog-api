@@ -105,7 +105,7 @@ func ListChildrenCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	parentComment, err := commentDAO.GetByID(db, uri.CommentID, []string{"id", "article_id"})
+	parentComment, err := commentDAO.GetByID(db, uri.CommentID, []string{"id", "article_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCommentError,

@@ -91,7 +91,7 @@ func UpdateInfoHandler(c *gin.Context) {
 	lo.Must0(userDAO.Update(db, &model.User{ID: userID}, map[string]interface{}{
 		"name": body.UserName,
 	}))
-	user = lo.Must1(userDAO.GetByID(db, userID, []string{"id", "name", "avatar"}))
+	user = lo.Must1(userDAO.GetByID(db, userID, []string{"id", "name", "avatar"}, []string{}))
 
 	var wg sync.WaitGroup
 	var listTagErr, listArticleErr, updateTagDocErr, updateArticleDocErr, updateUserDocErr error

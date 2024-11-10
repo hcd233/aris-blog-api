@@ -20,7 +20,6 @@ func CreateCategoryHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
 
-
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
@@ -46,7 +45,7 @@ func CreateCategoryHandler(c *gin.Context) {
 	if body.ParentID == 0 {
 		parentCategory, err = categoryDAO.GetRootByUserID(db, user.ID, []string{"id"})
 	} else {
-		parentCategory, err = categoryDAO.GetByID(db, body.ParentID, []string{"id"})
+		parentCategory, err = categoryDAO.GetByID(db, body.ParentID, []string{"id"}, []string{})
 	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{

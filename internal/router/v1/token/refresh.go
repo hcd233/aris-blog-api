@@ -31,7 +31,7 @@ func RefreshTokenHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = userDAO.GetByID(db, userID, []string{"id"})
+	_, err = userDAO.GetByID(db, userID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
