@@ -43,7 +43,7 @@ func CreateCategoryHandler(c *gin.Context) {
 
 	var parentCategory *model.Category
 	if body.ParentID == 0 {
-		parentCategory, err = categoryDAO.GetRootByUserID(db, user.ID, []string{"id"})
+		parentCategory, err = categoryDAO.GetRootByUserID(db, user.ID, []string{"id"}, []string{})
 	} else {
 		parentCategory, err = categoryDAO.GetByID(db, body.ParentID, []string{"id"}, []string{})
 	}
