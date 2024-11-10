@@ -78,6 +78,18 @@ var (
 	//	@update 2024-09-18 12:13:29
 	MeilisearchMasterKey string
 
+	// MinioHost string Minio主机
+	MinioHost string
+
+	// MinioPort string Minio端口
+	MinioPort string
+
+	// MinioAccessID string Minio Access ID
+	MinioAccessID string
+
+	// MinioAccessKey string Minio Access Key
+	MinioAccessKey string
+
 	// JwtAccessTokenExpired time.Duration Access Jwt Token过期时间
 	//	@update 2024-06-22 11:09:19
 	JwtAccessTokenExpired time.Duration
@@ -133,6 +145,11 @@ func initEnvironment() {
 	MeilisearchHost = config.GetString("meilisearch.host")
 	MeilisearchPort = config.GetString("meilisearch.port")
 	MeilisearchMasterKey = config.GetString("meilisearch.master.key")
+
+	MinioHost = config.GetString("minio.host")
+	MinioPort = config.GetString("minio.port")
+	MinioAccessID = config.GetString("minio.access.id")
+	MinioAccessKey = config.GetString("minio.access.key")
 
 	JwtAccessTokenExpired = config.GetDuration("jwt.access.token.expired")
 	JwtAccessTokenSecret = config.GetString("jwt.access.token.secret")
