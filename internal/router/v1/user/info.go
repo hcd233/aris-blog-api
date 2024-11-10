@@ -102,7 +102,7 @@ func UpdateInfoHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		createdTags, _, listTagErr = tagDAO.PaginateByUserID(db, userID, []string{"id"}, 2, -1)
+		createdTags, _, listTagErr = tagDAO.PaginateByUserID(db, userID, []string{"id"}, []string{}, 2, -1)
 	}()
 	go func() {
 		defer wg.Done()

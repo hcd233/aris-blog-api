@@ -26,7 +26,7 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	tagDAO := dao.GetTagDAO()
 
-	tag, err := tagDAO.GetAllBySlug(db, uri.TagSlug)
+	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description"}, []string{"User"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -37,7 +37,7 @@ func GetTagInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: tag.GetDetailedInfoWithUser(),
+		Data: tag.GetDetailedInfo(),
 	})
 }
 
@@ -53,7 +53,7 @@ func UpdateTagHandler(c *gin.Context) {
 	tagDAO := dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "create_by"})
+	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "create_by"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -97,7 +97,7 @@ func UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag = lo.Must1(tagDAO.GetAllBySlug(db, uri.TagSlug))
+	tag = lo.Must1(tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "description"}, []string{"User"}))
 
 	// 同步到搜索引擎
 	err = docDAO.UpdateDocument(searchEngine, document.TransformTagToDocument(tag))
@@ -125,7 +125,7 @@ func DeleteTagHandler(c *gin.Context) {
 	tagDAO := dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
 
-	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "create_by"})
+	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "create_by"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,

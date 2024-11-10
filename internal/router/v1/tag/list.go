@@ -68,7 +68,7 @@ func ListUserTagsHandler(c *gin.Context) {
 		return
 	}
 
-	tags, pageInfo, err := tagDAO.PaginateByUserID(db, user.ID, []string{"id", "slug"}, param.Page, param.PageSize)
+	tags, pageInfo, err := tagDAO.PaginateByUserID(db, user.ID, []string{"id", "slug"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

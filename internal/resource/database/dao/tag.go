@@ -42,8 +42,12 @@ func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-23 12:53:25
-func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields []string) (tag *model.Tag, err error) {
-	err = db.Select(fields).Where(model.Tag{Slug: slug}).First(&tag).Error
+func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields, preloads []string) (tag *model.Tag, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(model.Tag{Slug: slug}).First(&tag).Error
 	return
 }
 
@@ -74,9 +78,15 @@ func (dao *TagDAO) GetAllBySlug(db *gorm.DB, slug string) (tag *model.Tag, err e
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:10:06
-func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, page, pageSize int) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
+func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, page, pageSize int) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Where(model.Tag{CreateBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(model.Tag{CreateBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
+
 	if err != nil {
 		return
 	}
