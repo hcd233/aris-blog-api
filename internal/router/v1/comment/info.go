@@ -39,7 +39,7 @@ func GetCommentInfoHandler(c *gin.Context) {
 		return
 	}
 
-	comment, err := commentDAO.GetByArticleIDAndID(db, article.ID, uri.CommentID, []string{"id", "created_at", "content", "parent_id"})
+	comment, err := commentDAO.GetByArticleIDAndID(db, article.ID, uri.CommentID, []string{"id", "created_at", "content", "parent_id"}, []string{"user"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -85,7 +85,7 @@ func DeleteCommentHandler(c *gin.Context) {
 		return
 	}
 
-	comment, err := commentDAO.GetByArticleIDAndID(db, article.ID, uri.CommentID, []string{"id", "user_id"})
+	comment, err := commentDAO.GetByArticleIDAndID(db, article.ID, uri.CommentID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -102,7 +102,7 @@ func DeleteCommentHandler(c *gin.Context) {
 		return
 	}
 
-	if err := commentDAO.DeleteReclusiveByID(db, comment.ID); err != nil {
+	if err := commentDAO.DeleteReclusiveByID(db, comment.ID, []string{"id"}, []string{}); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteCommentError,
 			Message: err.Error(),

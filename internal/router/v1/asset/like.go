@@ -145,7 +145,7 @@ func ListUserLikeCommentsHandler(c *gin.Context) {
 		return like.ObjectID
 	})
 
-	comments, err := commentDAO.BatchGetAllByIDs(db, commentIDs)
+	comments, err := commentDAO.BatchGetByIDs(db, commentIDs, []string{"id", "user", "createdAt", "content", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

@@ -28,9 +28,15 @@ type CommentDAO struct {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:09:55
-func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fields []string, page, pageSize int) (children *[]model.Comment, pageInfo *PageInfo, err error) {
+func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fields, preloads []string, page, pageSize int) (children *[]model.Comment, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ParentID: comment.ID}).Find(&children).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Limit(limit).Offset(offset).Where(&model.Comment{ParentID: comment.ID}).Find(&children).Error
+
 	if err != nil {
 		return
 	}
@@ -54,8 +60,12 @@ func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fie
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-23 05:22:55
-func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields []string) (parent *model.Comment, err error) {
-	err = db.Select(fields).Where(&model.Comment{ID: comment.ParentID}).First(&parent).Error
+func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields, preloads []string) (parent *model.Comment, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Comment{ID: comment.ParentID}).First(&parent).Error
 	return
 }
 
@@ -72,9 +82,15 @@ func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields []s
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:10:00
-func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fields []string, page, pageSize int) (comments *[]model.Comment, pageInfo *PageInfo, err error) {
+func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, page, pageSize int) (comments *[]model.Comment, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Find(&comments).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Limit(limit).Offset(offset).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Find(&comments).Error
+
 	if err != nil {
 		return
 	}
@@ -99,24 +115,12 @@ func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fie
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-24 06:01:04
-func (dao *CommentDAO) GetByArticleIDAndID(db *gorm.DB, articleID, id uint, fields []string) (comment *model.Comment, err error) {
-	err = db.Select(fields).Where(&model.Comment{ArticleID: articleID, ID: id}).First(&comment).Error
-	return
-}
-
-// GetAllByArticleIDAndID 根据文章ID和评论ID获取评论全部字段
-//
-//	@receiver dao *CommentDAO
-//	@param db *gorm.DB
-//	@param articleID uint
-//	@param id uint
-//	@param fields []string
-//	@return comment *model.Comment
-//	@return err error
-//	@author centonhuang
-//	@update 2024-11-01 07:05:59
-func (dao *CommentDAO) GetAllByArticleIDAndID(db *gorm.DB, articleID, id uint, fields []string) (comment *model.Comment, err error) {
-	err = db.Preload("User").Preload("Article").Preload("Parent").Select(fields).Where(&model.Comment{ArticleID: articleID, ID: id}).First(&comment).Error
+func (dao *CommentDAO) GetByArticleIDAndID(db *gorm.DB, articleID, id uint, fields, preloads []string) (comment *model.Comment, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Comment{ArticleID: articleID, ID: id}).First(&comment).Error
 	return
 }
 
@@ -128,8 +132,8 @@ func (dao *CommentDAO) GetAllByArticleIDAndID(db *gorm.DB, articleID, id uint, f
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-23 05:23:03
-func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
-	categories, err := dao.reclusiveFindChildrenIDsByID(db, id)
+func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint, fields, preloads []string) (err error) {
+	categories, err := dao.reclusiveFindChildrenIDsByID(db, id, fields, preloads)
 	if err != nil {
 		return
 	}
@@ -146,7 +150,7 @@ func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 		}
 	}()
 
-	rootComment, err := dao.GetByID(db, id, []string{"id"}, []string{})
+	rootComment, err := dao.GetByID(db, id, fields, preloads)
 	if err != nil {
 		return
 	}
@@ -161,33 +165,19 @@ func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 	return
 }
 
-func (dao *CommentDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, commentID uint) (categories *[]model.Comment, err error) {
-	categories, _, err = dao.PaginateChildren(db, &model.Comment{ID: commentID}, []string{"id"}, 2, -1)
+func (dao *CommentDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, commentID uint, fields, preloads []string) (categories *[]model.Comment, err error) {
+	categories, _, err = dao.PaginateChildren(db, &model.Comment{ID: commentID}, fields, preloads, 2, -1)
 	if err != nil {
 		return
 	}
 
 	for _, comment := range *categories {
-		childrenCategories, err := dao.reclusiveFindChildrenIDsByID(db, comment.ID)
+		childrenCategories, err := dao.reclusiveFindChildrenIDsByID(db, comment.ID, fields, preloads)
 		if err != nil {
 			return nil, err
 		}
 		*categories = append(*categories, *childrenCategories...)
 	}
 
-	return
-}
-
-// BatchGetAllByIDs 批量获取评论
-//
-//	@receiver dao *CommentDAO
-//	@param db *gorm.DB
-//	@param ids []uint
-//	@return comments *[]model.Comment
-//	@return err error
-//	@author centonhuang
-//	@update 2024-11-03 08:31:10
-func (dao *CommentDAO) BatchGetAllByIDs(db *gorm.DB, ids []uint) (comments *[]model.Comment, err error) {
-	err = db.Preload("User").Preload("Article").Preload("Parent").Where("id IN ?", ids).Find(&comments).Error
 	return
 }
