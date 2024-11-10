@@ -46,7 +46,7 @@ func UserLikeArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(db, body.ArticleSlug, user.ID, []string{"id", "likes", "status", "user_id"})
+	article, err := articleDAO.GetBySlugAndUserID(db, body.ArticleSlug, user.ID, []string{"id", "likes", "status", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
