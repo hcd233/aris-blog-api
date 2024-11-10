@@ -82,7 +82,7 @@ func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloa
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.Article{}).Where(&model.Article{UserID: userID}).Count(&pageInfo.Total).Error
+	err = db.Where(&model.Article{UserID: userID}).Count(&pageInfo.Total).Error
 	return
 }
 
@@ -117,7 +117,7 @@ func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.Article{}).Where(&model.Article{CategoryID: categoryID}).Count(&pageInfo.Total).Error
+	err = db.Where(&model.Article{CategoryID: categoryID}).Count(&pageInfo.Total).Error
 
 	return
 }
@@ -146,7 +146,7 @@ func (dao *ArticleDAO) PaginateByPublished(db *gorm.DB, fields []string, page, p
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.Article{}).Where(&model.Article{Status: model.ArticleStatusPublish}).Count(&pageInfo.Total).Error
+	err = db.Where(&model.Article{Status: model.ArticleStatusPublish}).Count(&pageInfo.Total).Error
 	return
 }
 

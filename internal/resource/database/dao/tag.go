@@ -82,6 +82,6 @@ func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads [
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.Tag{}).Where(model.Tag{CreateBy: userID}).Count(&pageInfo.Total).Error
+	err = db.Where(model.Tag{CreateBy: userID}).Count(&pageInfo.Total).Error
 	return
 }
