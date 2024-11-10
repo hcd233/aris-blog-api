@@ -49,7 +49,7 @@ type User struct {
 	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
 	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
 	Categories   []Category   `json:"categories" gorm:"foreignKey:UserID"`
-	Tags         []Tag        `json:"tags" gorm:"foreignKey:CreateBy"`
+	Tags         []Tag        `json:"tags" gorm:"foreignKey:CreatedBy"`
 }
 
 // BeforeCreate 创建用户前

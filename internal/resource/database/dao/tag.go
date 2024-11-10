@@ -71,7 +71,7 @@ func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads [
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	err = sql.Where(model.Tag{CreateBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
+	err = sql.Where(model.Tag{CreatedBy: userID}).Limit(limit).Offset(offset).Find(&tags).Error
 
 	if err != nil {
 		return
@@ -82,6 +82,6 @@ func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads [
 		PageSize: pageSize,
 	}
 
-	err = db.Where(model.Tag{CreateBy: userID}).Count(&pageInfo.Total).Error
+	err = db.Model(&tags).Where(model.Tag{CreatedBy: userID}).Count(&pageInfo.Total).Error
 	return
 }
