@@ -62,7 +62,7 @@ func ListChildrenCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	categories, pageInfo, err := categoryDAO.PaginateChildren(db, parentCategory, []string{"id", "name", "parent_id"}, param.Page, param.PageSize)
+	categories, pageInfo, err := categoryDAO.PaginateChildren(db, parentCategory, []string{"id", "name", "parent_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,

@@ -83,7 +83,7 @@ func ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	rootCategory, err := categoryDAO.GetRootByUserID(db, user.ID, []string{"id", "name"})
+	rootCategory, err := categoryDAO.GetRootByUserID(db, user.ID, []string{"id", "name"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -226,7 +226,7 @@ func DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	err = categoryDAO.DeleteReclusiveByID(db, category.ID)
+	err = categoryDAO.DeleteReclusiveByID(db, category.ID, []string{"id", "name"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteCategoryError,

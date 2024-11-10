@@ -44,9 +44,15 @@ func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:09:50
-func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields []string, page, pageSize int) (children *[]model.Category, pageInfo *PageInfo, err error) {
+func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields, preloads []string, page, pageSize int) (children *[]model.Category, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Limit(limit).Offset(offset).Where(&model.Category{ParentID: category.ID}).Find(&children).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Limit(limit).Offset(offset).Where(&model.Category{ParentID: category.ID}).Find(&children).Error
+
 	if err != nil {
 		return
 	}
@@ -69,8 +75,12 @@ func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, 
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 03:04:41
-func (dao *CategoryDAO) GetParent(db *gorm.DB, category *model.Category, fields []string) (parent *model.Category, err error) {
-	err = db.Select(fields).Where(&model.Category{ID: category.ParentID}).First(&parent).Error
+func (dao *CategoryDAO) GetParent(db *gorm.DB, category *model.Category, fields, preloads []string) (parent *model.Category, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Category{ID: category.ParentID}).First(&parent).Error
 	return
 }
 
@@ -84,8 +94,12 @@ func (dao *CategoryDAO) GetParent(db *gorm.DB, category *model.Category, fields 
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 03:15:59
-func (dao *CategoryDAO) GetRootByUserID(db *gorm.DB, userID uint, fields []string) (category *model.Category, err error) {
-	err = db.Select(fields).Where(&model.Category{UserID: userID}).Where("parent_id IS NULL").First(&category).Error
+func (dao *CategoryDAO) GetRootByUserID(db *gorm.DB, userID uint, fields, preloads []string) (category *model.Category, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Category{UserID: userID}).Where("parent_id IS NULL").First(&category).Error
 	return
 }
 
@@ -97,8 +111,8 @@ func (dao *CategoryDAO) GetRootByUserID(db *gorm.DB, userID uint, fields []strin
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 03:36:05
-func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
-	categories, err := dao.reclusiveFindChildrenIDsByID(db, id)
+func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint, fields, preloads []string) (err error) {
+	categories, err := dao.reclusiveFindChildrenIDsByID(db, id, fields, preloads)
 	if err != nil {
 		return
 	}
@@ -115,7 +129,7 @@ func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 		}
 	}()
 
-	rootCategory, err := dao.GetByID(db, id, []string{"id", "name"}, []string{})
+	rootCategory, err := dao.GetByID(db, id, fields, preloads)
 	if err != nil {
 		return
 	}
@@ -130,14 +144,14 @@ func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint) (err error) {
 	return
 }
 
-func (dao *CategoryDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, categoryID uint) (categories *[]model.Category, err error) {
-	categories, _, err = dao.PaginateChildren(db, &model.Category{ID: categoryID}, []string{"id", "name"}, 2, -1)
+func (dao *CategoryDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, categoryID uint, fields, preloads []string) (categories *[]model.Category, err error) {
+	categories, _, err = dao.PaginateChildren(db, &model.Category{ID: categoryID}, fields, preloads, 2, -1)
 	if err != nil {
 		return
 	}
 
 	for _, category := range *categories {
-		childrenCategories, err := dao.reclusiveFindChildrenIDsByID(db, category.ID)
+		childrenCategories, err := dao.reclusiveFindChildrenIDsByID(db, category.ID, fields, preloads)
 		if err != nil {
 			return nil, err
 		}
