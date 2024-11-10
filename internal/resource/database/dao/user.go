@@ -23,8 +23,12 @@ type UserDAO struct {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 05:08:00
-func (dao *UserDAO) GetByEmail(db *gorm.DB, email string, fields []string) (user *model.User, err error) {
-	err = db.Select(fields).Where(model.User{Email: email}).First(&user).Error
+func (dao *UserDAO) GetByEmail(db *gorm.DB, email string, fields, preloads []string) (user *model.User, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(model.User{Email: email}).First(&user).Error
 	return
 }
 
@@ -38,7 +42,11 @@ func (dao *UserDAO) GetByEmail(db *gorm.DB, email string, fields []string) (user
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 05:18:46
-func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields []string) (user *model.User, err error) {
-	err = db.Select(fields).Where(model.User{Name: name}).First(&user).Error
+func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields, preloads []string) (user *model.User, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(model.User{Name: name}).First(&user).Error
 	return
 }

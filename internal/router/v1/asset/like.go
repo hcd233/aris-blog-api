@@ -38,7 +38,7 @@ func ListUserLikeArticlesHandler(c *gin.Context) {
 
 	userDAO, userLikeDAO, articleDAO := dao.GetUserDAO(), dao.GetUserLikeDAO(), dao.GetArticleDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -123,7 +123,7 @@ func ListUserLikeCommentsHandler(c *gin.Context) {
 
 	userDAO, userLikeDAO, commentDAO := dao.GetUserDAO(), dao.GetUserLikeDAO(), dao.GetCommentDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -208,7 +208,7 @@ func ListUserLikeTagsHandler(c *gin.Context) {
 
 	userDAO, userLikeDAO, tagDAO := dao.GetUserDAO(), dao.GetUserLikeDAO(), dao.GetTagDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

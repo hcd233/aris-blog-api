@@ -56,7 +56,7 @@ func ListUserArticlesHandler(c *gin.Context) {
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
-	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,

@@ -25,7 +25,7 @@ func CreateArticleCommentHandler(c *gin.Context) {
 
 	userDAO, articleDAO, commentDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetCommentDAO()
 
-	author, err := userDAO.GetByName(db, uri.UserName, []string{"id"})
+	author, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,

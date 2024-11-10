@@ -40,7 +40,7 @@ func CreateArticleVersionHandler(c *gin.Context) {
 
 	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
-	user, err := userDAO.GetByName(db, userName, []string{"id"})
+	user, err := userDAO.GetByName(db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
