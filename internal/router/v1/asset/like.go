@@ -145,7 +145,7 @@ func ListUserLikeCommentsHandler(c *gin.Context) {
 		return like.ObjectID
 	})
 
-	comments, err := commentDAO.BatchGetByIDs(db, commentIDs, []string{"id", "user", "createdAt", "content", "likes"}, []string{})
+	comments, err := commentDAO.BatchGetByIDs(db, commentIDs, []string{"id", "user", "created_at", "content", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -230,7 +230,7 @@ func ListUserLikeTagsHandler(c *gin.Context) {
 		return like.ObjectID
 	})
 
-	tags, err := tagDAO.BatchGetAllByIDs(db, tagIDs)
+	tags, err := tagDAO.BatchGetByIDs(db, tagIDs, []string{"id", "created_at", "name", "slug", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
