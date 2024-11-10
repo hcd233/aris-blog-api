@@ -45,7 +45,7 @@ func GetArticleInfoHandler(c *gin.Context) {
 		"id", "slug", "title", "status", "category_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
-	})
+	}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -115,7 +115,7 @@ func UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "status"})
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -132,7 +132,7 @@ func UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article = lo.Must1(articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "title", "slug", "status"}))
+	article = lo.Must1(articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "title", "slug", "status"}, []string{}))
 	if article.Status == model.ArticleStatusPublish {
 		article.User = &model.User{}
 		lo.Must0(articleDocDAO.UpdateDocument(searchEngine, document.TransformArticleToDocument(article, &model.ArticleVersion{})))
@@ -180,7 +180,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetAllBySlugAndUserID(db, uri.ArticleSlug, user.ID)
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "status", "title"}, []string{"User", "Category", "Tags"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -267,7 +267,7 @@ func DeleteArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "slug"})
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "slug"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

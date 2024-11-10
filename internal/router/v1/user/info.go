@@ -106,7 +106,7 @@ func UpdateInfoHandler(c *gin.Context) {
 	}()
 	go func() {
 		defer wg.Done()
-		createdArticles, _, listArticleErr = articleDAO.PaginateByUserID(db, userID, []string{"id"}, 2, -1)
+		createdArticles, _, listArticleErr = articleDAO.PaginateByUserID(db, userID, []string{"id"}, []string{}, 2, -1)
 	}()
 
 	wg.Wait()

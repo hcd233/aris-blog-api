@@ -42,23 +42,12 @@ func (dao *ArticleDAO) Delete(db *gorm.DB, article *model.Article) (err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-10-17 07:17:59
-func (dao *ArticleDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint, fields []string) (article *model.Article, err error) {
-	err = db.Select(fields).Where(&model.Article{Slug: slug, UserID: userID}).First(&article).Error
-	return
-}
-
-// GetAllBySlugAndUserID  通过slug和用户ID获取文章全部字段
-//
-//	@receiver dao *ArticleDAO
-//	@param db *gorm.DB
-//	@param slug string
-//	@param userID uint
-//	@return article *model.Article
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-18 02:21:20
-func (dao *ArticleDAO) GetAllBySlugAndUserID(db *gorm.DB, slug string, userID uint) (article *model.Article, err error) {
-	err = db.Preload("Category").Preload("Tags").Preload("User").Where(&model.Article{Slug: slug, UserID: userID}).First(&article).Error
+func (dao *ArticleDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint, fields, preloads []string) (article *model.Article, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Article{Slug: slug, UserID: userID}).First(&article).Error
 	return
 }
 
@@ -75,9 +64,15 @@ func (dao *ArticleDAO) GetAllBySlugAndUserID(db *gorm.DB, slug string, userID ui
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:09:20
-func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Where(&model.Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
+
 	if err != nil {
 		return
 	}
@@ -104,9 +99,15 @@ func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields []strin
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 07:09:26
-func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields []string, preloads []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Where(&model.Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
+
 	if err != nil {
 		return
 	}
