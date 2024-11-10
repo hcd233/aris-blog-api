@@ -62,9 +62,15 @@ func (dao *UserLikeDAO) GetByUserIDAndObject(db *gorm.DB, userID uint, objectID 
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-03 06:57:34
-func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, page, pageSize int, fields []string) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
+func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, fields, preloads []string, page, pageSize int) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Model(&model.UserLike{}).Select(fields).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Limit(limit).Offset(offset).Find(&userLikes).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Limit(limit).Offset(offset).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Find(&userLikes).Error
+
 	if err != nil {
 		return
 	}
@@ -74,7 +80,7 @@ func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, 
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.UserLike{}).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Count(&pageInfo.Total).Error
+	err = db.Where(model.UserLike{UserID: userID, ObjectType: objectType}).Count(&pageInfo.Total).Error
 
 	return
 }

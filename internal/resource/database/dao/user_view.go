@@ -21,7 +21,7 @@ func (dao *UserViewDAO) GetLatestViewByUserIDAndArticleID(db *gorm.DB, userID ui
 func (dao *UserViewDAO) PaginateWithPreloadsByUserID(db *gorm.DB, userID uint, page int, pageSize int) (userViews *[]model.UserView, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 
-	err = db.Model(&model.UserView{}).Preload("User").Preload("Article").Preload("Article.Tags").Preload("Article.User").Where(model.UserView{UserID: userID}).Limit(limit).Offset(offset).Find(&userViews).Error
+	err = db.Preload("User").Preload("Article").Preload("Article.Tags").Preload("Article.User").Where(model.UserView{UserID: userID}).Limit(limit).Offset(offset).Find(&userViews).Error
 	if err != nil {
 		return
 	}
@@ -31,6 +31,6 @@ func (dao *UserViewDAO) PaginateWithPreloadsByUserID(db *gorm.DB, userID uint, p
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.UserView{}).Where(model.UserView{UserID: userID}).Count(&pageInfo.Total).Error
+	err = db.Where(model.UserView{UserID: userID}).Count(&pageInfo.Total).Error
 	return
 }

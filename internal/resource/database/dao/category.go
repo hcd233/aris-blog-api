@@ -62,7 +62,7 @@ func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, 
 		PageSize: pageSize,
 	}
 
-	err = db.Model(&model.Category{}).Where(&model.Category{ParentID: category.ID}).Count(&pageInfo.Total).Error
+	err = db.Where(&model.Category{ParentID: category.ID}).Count(&pageInfo.Total).Error
 	return
 }
 
