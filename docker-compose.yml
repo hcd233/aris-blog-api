@@ -37,9 +37,10 @@ services:
     container_name: minio
     ports:
       - 9000:9000
+      - 9090:9090
     volumes:
       - minio-data:/data
-    command: server /data
+    command: server /data --console-address ":9090"
     healthcheck: 
       test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
