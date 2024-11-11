@@ -7,6 +7,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/hcd233/Aris-blog/internal/router/v1/article"
 	article_version "github.com/hcd233/Aris-blog/internal/router/v1/article_version"
 	"github.com/hcd233/Aris-blog/internal/router/v1/asset"
@@ -65,12 +66,26 @@ func initTagRouter(r *gin.RouterGroup) {
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
 		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tag.QueryTagHandler)
-		tagRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}), tag.CreateTagHandler)
+		tagRouter.POST(
+			"",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}),
+			tag.CreateTagHandler,
+		)
 		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
 		{
 			tagSlugRouter.GET("", tag.GetTagInfoHandler)
-			tagSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}), tag.UpdateTagHandler)
-			tagSlugRouter.DELETE("", tag.DeleteTagHandler)
+			tagSlugRouter.PUT(
+				"",
+				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}),
+				tag.UpdateTagHandler,
+			)
+			tagSlugRouter.DELETE(
+				"",
+				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				tag.DeleteTagHandler,
+			)
 		}
 	}
 }
@@ -108,15 +123,34 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article")
 	{
 		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), article.QueryUserArticleHandler)
-		articleRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}), article.CreateArticleHandler)
+		articleRouter.POST(
+			"",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
+			article.CreateArticleHandler,
+		)
 	}
 
 	articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}))
 	{
 		articleSlugRouter.GET("", article.GetArticleInfoHandler)
-		articleSlugRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}), article.UpdateArticleHandler)
-		articleSlugRouter.DELETE("", article.DeleteArticleHandler)
-		articleSlugRouter.PUT("status", middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}), article.UpdateArticleStatusHandler)
+		articleSlugRouter.PUT(
+			"",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}),
+			article.UpdateArticleHandler,
+		)
+		articleSlugRouter.DELETE(
+			"",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			article.DeleteArticleHandler,
+		)
+		articleSlugRouter.PUT(
+			"status",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}),
+			article.UpdateArticleStatusHandler,
+		)
 
 		initArticleVersionRouter(articleSlugRouter)
 		initArticleCommentRouter(articleSlugRouter)
@@ -132,8 +166,8 @@ func initUserTagRouter(r *gin.RouterGroup) {
 }
 
 func initUserCategoryRouter(r *gin.RouterGroup) {
-	r.GET("rootCategory", category.ListRootCategoriesHandler)
-	categoryRouter := r.Group("/category")
+	r.GET("rootCategory", middleware.LimitUserPermissionMiddleware(model.PermissionCreator), category.ListRootCategoriesHandler)
+	categoryRouter := r.Group("/category", middleware.LimitUserPermissionMiddleware(model.PermissionCreator))
 	{
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), category.CreateCategoryHandler)
 	}
@@ -161,6 +195,7 @@ func initUserAssetRouter(r *gin.RouterGroup) {
 	{
 		initUserAssetLikeRouter(assetRouter)
 		initUserAssetViewRouter(assetRouter)
+		initUserAssetObjectRouter(assetRouter)
 	}
 }
 
@@ -220,7 +255,7 @@ func initUserAssetViewRouter(r *gin.RouterGroup) {
 
 func initArticleVersionRouter(r *gin.RouterGroup) {
 	r.GET("versions", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
-	articleVersionRouter := r.Group("/version")
+	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware(model.PermissionCreator))
 	{
 		articleVersionRouter.POST(
 			"",

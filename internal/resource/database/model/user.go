@@ -15,6 +15,11 @@ type (
 	//	@update 2024-09-21 01:34:29
 	Permission string
 
+	// PermissionLevel int8 权限等级
+	//	@update 2024-09-21 01:34:29
+
+	PermissionLevel int8
+
 	// Platform string 平台
 	//	@update 2024-09-21 01:34:12
 	Platform string
@@ -26,13 +31,27 @@ const (
 	//	@update 2024-06-22 10:05:13
 	PlatformGithub Platform = "github"
 
-	// PermissionGeneral general permission
+	// PermissionReader general permission
 	//	@update 2024-06-22 10:05:15
-	PermissionGeneral Permission = "general"
+	PermissionReader Permission = "reader"
+
+	// PermissionCreator creator permission
+	//	@update 2024-06-22 10:05:17
+	PermissionCreator Permission = "creator"
+
 	// PermissionAdmin admin permission
 	//	@update 2024-06-22 10:05:17
 	PermissionAdmin Permission = "admin"
 )
+
+// PermissionLevelMapping 权限等级映射
+//
+//	@update 2024-09-21 01:34:29
+var PermissionLevelMapping = map[Permission]int8{
+	PermissionReader:  1,
+	PermissionCreator: 2,
+	PermissionAdmin:   3,
+}
 
 // User 用户数据库模型
 //

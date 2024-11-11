@@ -16,7 +16,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
@@ -69,7 +69,7 @@ func UpdateInfoHandler(c *gin.Context) {
 	searchEngine := search.GetSearchEngine()
 
 	userDAO, tagDAO, articleDAO := dao.GetUserDAO(), dao.GetTagDAO(), dao.GetArticleDAO()
-	userDocDAO, tagDocDAO, articleDocDAO := docdao.GetUserDocDAO(), docdao.GetTagDocDAO(), docdao.GetArticleDocDAO()
+	userDocDAO, tagDocDAO, articleDocDAO := doc_dao.GetUserDocDAO(), doc_dao.GetTagDocDAO(), doc_dao.GetArticleDocDAO()
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
