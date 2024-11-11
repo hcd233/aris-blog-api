@@ -17,15 +17,15 @@ import (
 //	@author centonhuang
 //	@update 2024-09-21 09:58:14
 func CreateArticleHandler(c *gin.Context) {
+	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateArticleBody)
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 
 	db := database.GetDBInstance()
 
 	tagDAO, articleDAO := dao.GetTagDAO(), dao.GetArticleDAO()
 
-	if uri.UserName != userName {
+	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to create other user's article",
