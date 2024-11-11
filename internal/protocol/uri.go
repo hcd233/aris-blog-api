@@ -60,3 +60,12 @@ type ViewURI struct {
 	UserURI
 	ViewID uint `uri:"viewID" binding:"required"`
 }
+
+// ObjectURI 对象路径参数
+//
+//	@author centonhuang
+//	@update 2024-10-29 07:43:35
+type ObjectURI struct {
+	UserURI
+	ObjectName string `uri:"objectName" binding:"required"`
+}
