@@ -253,6 +253,41 @@ func initUserAssetViewRouter(r *gin.RouterGroup) {
 	}
 }
 
+func initUserAssetObjectRouter(r *gin.RouterGroup) {
+	objectRouter := r.Group("/object")
+	{
+		objectRouter.POST(
+			"bucket",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			asset.MakeBucketHandler,
+		)
+
+		objectRouter.GET(
+			"images",
+			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			asset.ListImagesHandler,
+		)
+		imageRouter := objectRouter.Group("/image")
+		{
+			imageRouter.POST(
+				"",
+				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeUploadImageRateLimitError),
+				asset.UploadImageHandler,
+			)
+			imageIDRouter := imageRouter.Group("/:objectName", middleware.ValidateURIMiddleware(&protocol.ObjectURI{}))
+			{
+				imageIDRouter.GET("", asset.GetImageHandler)
+				// imageIDRouter.DELETE(
+				// 	"",
+				// 	middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				// 	asset.DeleteImageHandler,
+				// )
+			}
+		}
+	}
+}
+
 func initArticleVersionRouter(r *gin.RouterGroup) {
 	r.GET("versions", middleware.ValidateParamMiddleware(&protocol.PageParam{}), article_version.ListArticleVersionsHandler)
 	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware(model.PermissionCreator))

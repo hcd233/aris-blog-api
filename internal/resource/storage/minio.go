@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hcd233/Aris-blog/internal/config"
@@ -15,8 +16,10 @@ var minioClient *minio.Client
 func InitMinioClient() {
 	minioClient = lo.Must1(minio.New(fmt.Sprintf("%s:%s", config.MinioHost, config.MinioPort), &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioAccessID, config.MinioAccessKey, ""),
-		Secure: true,
+		Secure: false,
 	}))
+
+	_ = lo.Must1(minioClient.ListBuckets(context.Background()))
 }
 
 // GetObjectStorage 获取对象存储客户端

@@ -199,6 +199,26 @@ const (
 	//	@update 2024-11-03 07:10:30
 	CodeDeleteUserViewError ResponseCode = 1048
 
+	// CodeMakeBucketError ResponseCode 创建存储桶错误
+	//	@update 2024-09-21 08:22:14
+	CodeMakeBucketError ResponseCode = 1049
+
+	// CodeListImagesError ResponseCode 列出图片错误
+	//	@update 2024-09-21 08:22:14
+	CodeListImagesError ResponseCode = 1050
+
+	// CodeUploadImageError ResponseCode 上传图片错误
+	//	@update 2024-09-21 08:22:14
+	CodeUploadImageError ResponseCode = 1051
+
+	// CodeGetImageError ResponseCode 获取图片错误
+	//	@update 2024-09-21 08:22:14
+	CodeGetImageError ResponseCode = 1052
+
+	// CodeUploadImageRateLimitError ResponseCode 达到上传图片频率限制错误
+	//	@update 2024-09-21 08:22:14
+	CodeUploadImageRateLimitError ResponseCode = 1053
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -266,6 +286,12 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeLogUserViewRateLimitError: "达到记录文章阅读进度频率限制，请稍后再试",
 	CodeUpdateUserViewError:       "更新用户浏览错误",
 	CodeDeleteUserViewError:       "删除用户浏览错误",
+
+	CodeMakeBucketError:           "创建存储桶错误",
+	CodeListImagesError:           "列出图片错误",
+	CodeUploadImageError:          "上传图片错误",
+	CodeGetImageError:             "获取图片错误",
+	CodeUploadImageRateLimitError: "达到上传图片频率限制，请稍后再试",
 
 	CodeRefreshTokenRateLimitError: "达到刷新令牌频率限制，请稍后再试",
 
