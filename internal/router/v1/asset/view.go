@@ -12,11 +12,11 @@ import (
 )
 
 func GetUserViewArticleHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.ArticleParam)
 
-	if uri.UserName != c.MustGet("userName").(string) {
+	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to get other user's view",
@@ -66,11 +66,11 @@ func GetUserViewArticleHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-11-03 06:45:42
 func ListUserViewArticlesHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	pageParam := c.MustGet("param").(*protocol.PageParam)
 
-	if uri.UserName != c.MustGet("userName").(string) {
+	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to list other user's view",
@@ -102,10 +102,10 @@ func ListUserViewArticlesHandler(c *gin.Context) {
 }
 
 func DeleteUserViewHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.ViewURI)
 
-	if uri.UserName != c.MustGet("userName").(string) {
+	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
 			Code:    protocol.CodeNotPermissionError,
 			Message: "You have no permission to delete other user's view",
