@@ -195,6 +195,10 @@ const (
 	//	@update 2024-11-03 07:10:30
 	CodeRefreshTokenRateLimitError ResponseCode = 1047
 
+	// CodeDeleteUserViewError ResponseCode 删除用户浏览错误
+	//	@update 2024-11-03 07:10:30
+	CodeDeleteUserViewError ResponseCode = 1048
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -260,6 +264,8 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeGetUserViewError:          "获取用户浏览错误",
 	CodeLogUserViewError:          "记录用户浏览错误",
 	CodeLogUserViewRateLimitError: "达到记录文章阅读进度频率限制，请稍后再试",
+	CodeUpdateUserViewError:       "更新用户浏览错误",
+	CodeDeleteUserViewError:       "删除用户浏览错误",
 
 	CodeRefreshTokenRateLimitError: "达到刷新令牌频率限制，请稍后再试",
 
