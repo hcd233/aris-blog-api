@@ -51,3 +51,12 @@ type CommentURI struct {
 	ArticleSlugURI
 	CommentID uint `uri:"commentID" binding:"required,min=1"`
 }
+
+// ViewURI 查看路径参数
+//
+//	@author centonhuang
+//	@update 2024-10-29 07:43:35
+type ViewURI struct {
+	UserURI
+	ViewID uint `uri:"viewID" binding:"required"`
+}

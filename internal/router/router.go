@@ -214,6 +214,7 @@ func initUserAssetViewRouter(r *gin.RouterGroup) {
 	{
 		viewRouter.GET("article", middleware.ValidateParamMiddleware(&protocol.ArticleParam{}), asset.GetUserViewArticleHandler)
 		viewRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), asset.ListUserViewArticlesHandler)
+		viewRouter.DELETE(":viewID", middleware.ValidateURIMiddleware(&protocol.ViewURI{}), asset.DeleteUserViewHandler)
 	}
 }
 

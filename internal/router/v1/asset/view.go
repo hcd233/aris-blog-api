@@ -100,3 +100,58 @@ func ListUserViewArticlesHandler(c *gin.Context) {
 		},
 	})
 }
+
+func DeleteUserViewHandler(c *gin.Context) {
+	userID := c.MustGet("userID").(uint)
+	uri := c.MustGet("uri").(*protocol.ViewURI)
+
+	if uri.UserName != c.MustGet("userName").(string) {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's view",
+		})
+		return
+	}
+
+	db := database.GetDBInstance()
+	userDAO, userViewDAO := dao.GetUserDAO(), dao.GetUserViewDAO()
+
+	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	userView, err := userViewDAO.GetByID(db, uri.ViewID, []string{"id", "user_id"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeGetUserViewError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	if userView.UserID != userID {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's view",
+		})
+		return
+	}
+
+	err = userViewDAO.Delete(db, userView)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteUserViewError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+	})
+}
