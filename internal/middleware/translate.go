@@ -8,6 +8,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 )
 
 type responseBodyWriter struct {
@@ -37,12 +38,15 @@ func TranslateMiddleware() gin.HandlerFunc {
 				Code: protocol.CodeUnknownError,
 			})
 		}
+		if w.Header().Get("Content-Type") != "application/json; charset=utf-8" {
+			c.Status(c.Writer.Status())
+			return
+		}
 		err := json.Unmarshal(w.body.Bytes(), &response)
 		if err != nil {
-			logger.Logger.Error(w.body.String())
+			logger.Logger.Error("[TranslateMiddleware]", zap.Error(err))
 			response = protocol.Response{
-				Code:    protocol.CodeUnknownError,
-				Message: err.Error(),
+				Code: protocol.CodeUnknownError,
 			}
 		}
 
