@@ -31,17 +31,17 @@ func TranslateMiddleware() gin.HandlerFunc {
 		c.Writer = w
 
 		c.Next()
-
+		if w.Header().Get("Content-Type") != "application/json; charset=utf-8" {
+			w.ResponseWriter.Write(w.body.Bytes())
+			return
+		}
 		response := protocol.Response{}
 		if w.body.String() == "" {
 			c.JSON(c.Writer.Status(), protocol.Response{
 				Code: protocol.CodeUnknownError,
 			})
 		}
-		if w.Header().Get("Content-Type") != "application/json; charset=utf-8" {
-			c.Status(c.Writer.Status())
-			return
-		}
+
 		err := json.Unmarshal(w.body.Bytes(), &response)
 		if err != nil {
 			logger.Logger.Error("[TranslateMiddleware]", zap.Error(err))
@@ -60,8 +60,5 @@ func TranslateMiddleware() gin.HandlerFunc {
 
 		translatedResponse := lo.Must1(json.Marshal(response))
 		w.ResponseWriter.Write(translatedResponse)
-		w.body.Reset()
-
-		c.JSON(c.Writer.Status(), translatedResponse)
 	}
 }
