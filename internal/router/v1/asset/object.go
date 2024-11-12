@@ -244,19 +244,17 @@ func GetImageHandler(c *gin.Context) {
 	imageObjDAO, thumbnailObjDAO := obj_dao.GetImageObjDAO(), obj_dao.GetThumbnailObjDAO()
 
 	var (
-		object     io.ReadCloser
 		objectInfo *obj_dao.ObjectInfo
 		err        error
 	)
 	switch param.Quality {
 	case "raw":
-		object, objectInfo, err = imageObjDAO.DownloadObject(userID, uri.ObjectName)
+		objectInfo, err = imageObjDAO.DownloadObject(userID, uri.ObjectName, c.Writer)
 	case "thumb":
-		object, objectInfo, err = thumbnailObjDAO.DownloadObject(userID, uri.ObjectName)
+		objectInfo, err = thumbnailObjDAO.DownloadObject(userID, uri.ObjectName, c.Writer)
 	default:
 		panic(fmt.Sprintf("Invalid image quality: %s", param.Quality))
 	}
-	defer object.Close()
 
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
@@ -265,8 +263,6 @@ func GetImageHandler(c *gin.Context) {
 		})
 		return
 	}
-
-	_ = lo.Must1(io.Copy(c.Writer, object))
 
 	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", objectInfo.ObjectName))
 	c.Writer.Header().Set("Content-Type", objectInfo.ContentType)

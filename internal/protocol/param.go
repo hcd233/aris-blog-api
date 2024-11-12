@@ -38,5 +38,5 @@ type ArticleParam struct {
 }
 
 type ImageParam struct {
-	Quality string `form:"quality" binding:"required, oneof=raw thumb"`
+	Quality string `form:"quality" binding:"required,oneof=raw thumb"`
 }
