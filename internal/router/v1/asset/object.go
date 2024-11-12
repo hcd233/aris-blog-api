@@ -1,12 +1,15 @@
 package asset
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"image"
 	"io"
 	"net/http"
 	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/storage"
@@ -182,6 +185,26 @@ func UploadImageHandler(c *gin.Context) {
 		})
 		return
 	}
+
+	src.Seek(0, 0)
+	img, _ := lo.Must2(image.Decode(src))
+	// restrict image into 512*512 max size
+	x, y := img.Bounds().Dx(), img.Bounds().Dy()
+	for ; x > 512 || y > 512; x, y = x/2, y/2 {
+	}
+	img = imaging.Resize(img, x, y, imaging.Lanczos)
+
+	var buf bytes.Buffer
+	err = imaging.Encode(&buf, img, lo.Must1(imaging.FormatFromFilename(file.Filename)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeUploadImageError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	_ = lo.Must1(objectStorage.PutObject(ctx, fmt.Sprintf("user-%d", userID), fmt.Sprintf("thumbnail-%s", file.Filename), &buf, int64(buf.Len()), minio.PutObjectOptions{}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
