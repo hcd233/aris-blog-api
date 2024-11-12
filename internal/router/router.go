@@ -277,12 +277,8 @@ func initUserAssetObjectRouter(r *gin.RouterGroup) {
 			)
 			imageIDRouter := imageRouter.Group("/:objectName", middleware.ValidateURIMiddleware(&protocol.ObjectURI{}))
 			{
-				imageIDRouter.GET("", asset.GetImageHandler)
-				imageIDRouter.DELETE(
-					"",
-					middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
-					asset.DeleteImageHandler,
-				)
+				imageIDRouter.GET("", middleware.ValidateParamMiddleware(&protocol.ImageParam{}), asset.GetImageHandler)
+				imageIDRouter.DELETE("", middleware.LimitUserPermissionMiddleware(model.PermissionCreator), asset.DeleteImageHandler)
 			}
 		}
 	}

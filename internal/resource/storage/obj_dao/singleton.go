@@ -1,0 +1,45 @@
+package objdao
+
+import (
+	"sync"
+
+	"github.com/hcd233/Aris-blog/internal/resource/storage"
+)
+
+var (
+	ImageObjDAOSingleton     *BaseMinioObjDAO
+	ThumbnailObjDAOSingleton *BaseMinioObjDAO
+
+	imageObjOnce     sync.Once
+	thumbnailObjOnce sync.Once
+)
+
+// GetImageObjDAO 获取图片对象DAO单例
+//
+//	@return *BaseMinioObjDAO
+//	@author centonhuang
+//	@update 2024-10-18 01:10:28
+func GetImageObjDAO() *BaseMinioObjDAO {
+	imageObjOnce.Do(func() {
+		ImageObjDAOSingleton = &BaseMinioObjDAO{
+			ObjectType: ObjectTypeImage,
+			client:     storage.GetObjectStorage(),
+		}
+	})
+	return ImageObjDAOSingleton
+}
+
+// GetThumbnailObjDAO 获取缩略图对象DAO单例
+//
+//	@return *BaseMinioObjDAO
+//	@author centonhuang
+//	@update 2024-10-18 01:09:59
+func GetThumbnailObjDAO() *BaseMinioObjDAO {
+	thumbnailObjOnce.Do(func() {
+		ThumbnailObjDAOSingleton = &BaseMinioObjDAO{
+			ObjectType: ObjectTypeThumbnail,
+			client:     storage.GetObjectStorage(),
+		}
+	})
+	return ThumbnailObjDAOSingleton
+}
