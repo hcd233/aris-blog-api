@@ -259,7 +259,7 @@ func initUserAssetObjectRouter(r *gin.RouterGroup) {
 		objectRouter.POST(
 			"bucket",
 			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
-			asset.MakeBucketHandler,
+			asset.CreateBucketHandler,
 		)
 
 		objectRouter.GET(
