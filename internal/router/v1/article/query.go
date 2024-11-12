@@ -7,7 +7,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
@@ -21,7 +20,6 @@ func QueryUserArticleHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	userDAO := dao.GetUserDAO()
 	articleDocDAO := docdao.GetArticleDocDAO()
@@ -35,7 +33,7 @@ func QueryUserArticleHandler(c *gin.Context) {
 		return
 	}
 
-	articles, queryInfo, err := articleDocDAO.QueryDocument(searchEngine, param.Query, append(param.Filter, "author="+uri.UserName), param.Page, param.PageSize)
+	articles, queryInfo, err := articleDocDAO.QueryDocument(param.Query, append(param.Filter, "author="+uri.UserName), param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,
@@ -61,11 +59,9 @@ func QueryUserArticleHandler(c *gin.Context) {
 func QueryArticleHandler(c *gin.Context) {
 	params := c.MustGet("param").(*protocol.QueryParam)
 
-	searchEngine := search.GetSearchEngine()
-
 	docDAO := docdao.GetArticleDocDAO()
 
-	articles, queryInfo, err := docDAO.QueryDocument(searchEngine, params.Query, params.Filter, params.Page, params.PageSize)
+	articles, queryInfo, err := docDAO.QueryDocument(params.Query, params.Filter, params.Page, params.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,

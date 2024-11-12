@@ -15,7 +15,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
@@ -79,7 +78,6 @@ func UpdateArticleHandler(c *gin.Context) {
 	}
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
@@ -135,7 +133,7 @@ func UpdateArticleHandler(c *gin.Context) {
 	article = lo.Must1(articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id", "title", "slug", "status"}, []string{}))
 	if article.Status == model.ArticleStatusPublish {
 		article.User = &model.User{}
-		lo.Must0(articleDocDAO.UpdateDocument(searchEngine, document.TransformArticleToDocument(article, &model.ArticleVersion{})))
+		lo.Must0(articleDocDAO.UpdateDocument(document.TransformArticleToDocument(article, &model.ArticleVersion{})))
 	}
 
 	c.JSON(http.StatusOK, protocol.Response{
@@ -165,7 +163,6 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 	}
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
@@ -214,7 +211,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 			})
 			return
 		}
-		lo.Must0(articleDocDAO.AddDocument(searchEngine, document.TransformArticleToDocument(article, latestVersion)))
+		lo.Must0(articleDocDAO.AddDocument(document.TransformArticleToDocument(article, latestVersion)))
 	} else if body.Status == model.ArticleStatusDraft {
 		if err := articleDAO.Update(db, article, map[string]interface{}{"status": body.Status, "published_at": nil}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
@@ -223,7 +220,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 			})
 			return
 		}
-		lo.Must0(articleDocDAO.DeleteDocument(searchEngine, article.ID))
+		lo.Must0(articleDocDAO.DeleteDocument(article.ID))
 	}
 
 	c.JSON(http.StatusOK, protocol.Response{
@@ -252,7 +249,6 @@ func DeleteArticleHandler(c *gin.Context) {
 	}
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
@@ -287,7 +283,7 @@ func DeleteArticleHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		deleteDocErr = articleDocDAO.DeleteDocument(searchEngine, article.ID)
+		deleteDocErr = articleDocDAO.DeleteDocument(article.ID)
 	}()
 
 	if deleteArticleErr != nil {

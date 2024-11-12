@@ -9,7 +9,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
@@ -20,7 +19,6 @@ func CreateTagHandler(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.CreateTagBody)
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	tagDAO := dao.GetTagDAO()
 	docDAO := docdao.GetTagDocDAO()
@@ -44,7 +42,7 @@ func CreateTagHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		createDocErr = docDAO.AddDocument(searchEngine, document.TransformTagToDocument(tag))
+		createDocErr = docDAO.AddDocument(document.TransformTagToDocument(tag))
 	}()
 
 	wg.Wait()

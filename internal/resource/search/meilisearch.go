@@ -7,7 +7,6 @@ import (
 	"fmt"
 
 	"github.com/hcd233/Aris-blog/internal/config"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/samber/lo"
 )
@@ -39,46 +38,5 @@ func InitSearchEngine() {
 		fmt.Sprintf("http://%s:%s", config.MeilisearchHost, config.MeilisearchPort),
 		meilisearch.WithAPIKey(config.MeilisearchMasterKey),
 	)
-	lo.Must1(serviceManager.Health())
-}
-
-// CreateIndex 创建索引
-//
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-18 12:43:35
-func CreateIndex() (err error) {
-	client := GetSearchEngine()
-
-	daoArr := []docdao.DocDAO{
-		docdao.GetUserDocDAO(),
-		docdao.GetTagDocDAO(),
-		docdao.GetArticleDocDAO(),
-	}
-
-	for _, dao := range daoArr {
-		lo.Must0(dao.CreateIndex(client))
-		lo.Must0(dao.SetFilterableAttributes(client))
-	}
-	return
-}
-
-// DeleteIndex 删除索引
-//
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-18 01:24:35
-func DeleteIndex() (err error) {
-	client := GetSearchEngine()
-
-	daoArr := []docdao.DocDAO{
-		docdao.GetUserDocDAO(),
-		docdao.GetTagDocDAO(),
-		docdao.GetArticleDocDAO(),
-	}
-
-	for _, dao := range daoArr {
-		lo.Must0(dao.DeleteIndex(client))
-	}
-	return
+	_ = lo.Must1(serviceManager.Health())
 }

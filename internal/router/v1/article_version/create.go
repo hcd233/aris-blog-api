@@ -12,7 +12,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 	"github.com/samber/lo"
@@ -89,10 +88,9 @@ func CreateArticleVersionHandler(c *gin.Context) {
 	}
 
 	if article.Status == model.ArticleStatusPublish {
-		searchEngine := search.GetSearchEngine()
 		articleDocDAO := docdao.GetArticleDocDAO()
 
-		lo.Must0(articleDocDAO.UpdateDocument(searchEngine, document.TransformArticleToDocument(&model.Article{ID: article.ID, User: &model.User{}}, articleVersion)))
+		lo.Must0(articleDocDAO.UpdateDocument(document.TransformArticleToDocument(&model.Article{ID: article.ID, User: &model.User{}}, articleVersion)))
 
 		if err := articleDAO.Update(db, article, map[string]interface{}{"published_at": time.Now()}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
