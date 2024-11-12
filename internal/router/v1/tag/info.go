@@ -8,7 +8,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 	"github.com/samber/lo"
 )
@@ -49,7 +49,7 @@ func UpdateTagHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 
 	tagDAO := dao.GetTagDAO()
-	docDAO := docdao.GetTagDocDAO()
+	docDAO := doc_dao.GetTagDocDAO()
 
 	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "create_by"}, []string{})
 	if err != nil {
@@ -121,7 +121,7 @@ func DeleteTagHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 
 	tagDAO := dao.GetTagDAO()
-	docDAO := docdao.GetTagDocDAO()
+	docDAO := doc_dao.GetTagDocDAO()
 
 	tag, err := tagDAO.GetBySlug(db, uri.TagSlug, []string{"id", "name", "slug", "create_by"}, []string{})
 	if err != nil {

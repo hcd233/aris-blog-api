@@ -9,7 +9,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
@@ -21,7 +21,7 @@ func CreateTagHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 
 	tagDAO := dao.GetTagDAO()
-	docDAO := docdao.GetTagDocDAO()
+	docDAO := doc_dao.GetTagDocDAO()
 
 	tag := &model.Tag{
 		Name:        body.Name,

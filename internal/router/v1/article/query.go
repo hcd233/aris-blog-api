@@ -7,7 +7,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
 // QueryUserArticleHandler 查询用户文章
@@ -22,7 +22,7 @@ func QueryUserArticleHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 
 	userDAO := dao.GetUserDAO()
-	articleDocDAO := docdao.GetArticleDocDAO()
+	articleDocDAO := doc_dao.GetArticleDocDAO()
 
 	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
@@ -59,7 +59,7 @@ func QueryUserArticleHandler(c *gin.Context) {
 func QueryArticleHandler(c *gin.Context) {
 	params := c.MustGet("param").(*protocol.QueryParam)
 
-	docDAO := docdao.GetArticleDocDAO()
+	docDAO := doc_dao.GetArticleDocDAO()
 
 	articles, queryInfo, err := docDAO.QueryDocument(params.Query, params.Filter, params.Page, params.PageSize)
 	if err != nil {
