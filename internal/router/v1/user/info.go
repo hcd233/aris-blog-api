@@ -15,7 +15,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
@@ -66,7 +65,6 @@ func UpdateInfoHandler(c *gin.Context) {
 	userID, userName := c.GetUint("userID"), c.GetString("userName")
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	userDAO, tagDAO, articleDAO := dao.GetUserDAO(), dao.GetTagDAO(), dao.GetArticleDAO()
 	userDocDAO, tagDocDAO, articleDocDAO := doc_dao.GetUserDocDAO(), doc_dao.GetTagDocDAO(), doc_dao.GetArticleDocDAO()
@@ -130,19 +128,19 @@ func UpdateInfoHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		updateTagDocErr = tagDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdTags, func(tag model.Tag, idx int) *document.TagDocument {
+		updateTagDocErr = tagDocDAO.BatchUpdateDocuments(lo.Map(*createdTags, func(tag model.Tag, idx int) *document.TagDocument {
 			return &document.TagDocument{ID: tag.ID, Creator: user.Name}
 		}))
 	}()
 	go func() {
 		defer wg.Done()
-		updateArticleDocErr = articleDocDAO.BatchUpdateDocuments(searchEngine, lo.Map(*createdArticles, func(article model.Article, idx int) *document.ArticleDocument {
+		updateArticleDocErr = articleDocDAO.BatchUpdateDocuments(lo.Map(*createdArticles, func(article model.Article, idx int) *document.ArticleDocument {
 			return &document.ArticleDocument{ID: article.ID, Author: user.Name}
 		}))
 	}()
 	go func() {
 		defer wg.Done()
-		updateUserDocErr = userDocDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user))
+		updateUserDocErr = userDocDAO.UpdateDocument(document.TransformUserToDocument(user))
 	}()
 
 	wg.Wait()

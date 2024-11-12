@@ -16,18 +16,19 @@ import (
 //	@author centonhuang
 //	@update 2024-10-18 01:38:58
 type DocDAO interface {
-	CreateIndex(client meilisearch.ServiceManager) error
-	DeleteIndex(client meilisearch.ServiceManager) error
-	SetFilterableAttributes(client meilisearch.ServiceManager) error
+	CreateIndex() error
+	DeleteIndex() error
+	SetFilterableAttributes() error
 }
 
-// BaseDocDAO 基础文档DAO
+// BaseMeiliSearchDocDAO 基础文档DAO
 //
 //	@author centonhuang
 //	@update 2024-10-17 10:40:45
-type BaseDocDAO[T interface{}] struct {
+type BaseMeiliSearchDocDAO[T interface{}] struct {
 	IndexName string
 	Filters   []string
+	client    meilisearch.ServiceManager
 }
 
 // QueryInfo 查询信息
@@ -48,8 +49,8 @@ type QueryInfo struct {
 //	@return CreateIndex
 //	@author centonhuang
 //	@update 2024-10-18 01:12:47
-func (dao *BaseDocDAO[T]) CreateIndex(client meilisearch.ServiceManager) error {
-	taskInfo, err := client.CreateIndex(&meilisearch.IndexConfig{
+func (dao *BaseMeiliSearchDocDAO[T]) CreateIndex() error {
+	taskInfo, err := dao.client.CreateIndex(&meilisearch.IndexConfig{
 		Uid:        dao.IndexName,
 		PrimaryKey: "id",
 	})
@@ -76,8 +77,8 @@ func (dao *BaseDocDAO[T]) CreateIndex(client meilisearch.ServiceManager) error {
 //	@return DeleteIndex
 //	@author centonhuang
 //	@update 2024-10-18 01:13:11
-func (dao *BaseDocDAO[T]) DeleteIndex(client meilisearch.ServiceManager) error {
-	taskInfo, err := client.DeleteIndex(dao.IndexName)
+func (dao *BaseMeiliSearchDocDAO[T]) DeleteIndex() error {
+	taskInfo, err := dao.client.DeleteIndex(dao.IndexName)
 	if err != nil {
 		logger.Logger.Error("[Delete Index]",
 			zap.String("indexName", dao.IndexName),
@@ -101,8 +102,8 @@ func (dao *BaseDocDAO[T]) DeleteIndex(client meilisearch.ServiceManager) error {
 //	@return SetFilterableAttributes
 //	@author centonhuang
 //	@update 2024-10-18 03:05:51
-func (dao *BaseDocDAO[T]) SetFilterableAttributes(client meilisearch.ServiceManager) error {
-	taskInfo, err := client.Index(dao.IndexName).UpdateFilterableAttributes(&dao.Filters)
+func (dao *BaseMeiliSearchDocDAO[T]) SetFilterableAttributes() error {
+	taskInfo, err := dao.client.Index(dao.IndexName).UpdateFilterableAttributes(&dao.Filters)
 	if err != nil {
 		logger.Logger.Error("[Set Filterable Attributes]",
 			zap.String("indexName", dao.IndexName),
@@ -126,7 +127,7 @@ func (dao *BaseDocDAO[T]) SetFilterableAttributes(client meilisearch.ServiceMana
 //	@return QueryDocument
 //	@author centonhuang
 //	@update 2024-10-17 10:40:43
-func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query string, filter []string, page int, pageSize int) (*[]T, *QueryInfo, error) {
+func (dao *BaseMeiliSearchDocDAO[T]) QueryDocument(query string, filter []string, page int, pageSize int) (*[]T, *QueryInfo, error) {
 	limit := pageSize
 	offset := (page - 1) * pageSize
 
@@ -144,7 +145,7 @@ func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query
 		PageSize: pageSize,
 	}
 
-	searchResponse, err := client.Index(dao.IndexName).Search(query, searchRequest)
+	searchResponse, err := dao.client.Index(dao.IndexName).Search(query, searchRequest)
 	if err != nil {
 		logger.Logger.Error("[Query Document]",
 			zap.String("indexName", dao.IndexName),
@@ -175,8 +176,8 @@ func (dao *BaseDocDAO[T]) QueryDocument(client meilisearch.ServiceManager, query
 //	@return AddDocument
 //	@author centonhuang
 //	@update 2024-10-17 10:40:59
-func (dao *BaseDocDAO[T]) AddDocument(client meilisearch.ServiceManager, doc *T) error {
-	taskInfo, err := client.Index(dao.IndexName).AddDocuments([]*T{doc})
+func (dao *BaseMeiliSearchDocDAO[T]) AddDocument(doc *T) error {
+	taskInfo, err := dao.client.Index(dao.IndexName).AddDocuments([]*T{doc})
 	if err != nil {
 		logger.Logger.Error("[Add Document]",
 			zap.String("indexName", dao.IndexName),
@@ -199,8 +200,8 @@ func (dao *BaseDocDAO[T]) AddDocument(client meilisearch.ServiceManager, doc *T)
 //	@return UpdateDocument
 //	@author centonhuang
 //	@update 2024-10-17 10:41:04
-func (dao *BaseDocDAO[T]) UpdateDocument(client meilisearch.ServiceManager, doc *T) error {
-	taskInfo, err := client.Index(dao.IndexName).UpdateDocuments([]*T{doc})
+func (dao *BaseMeiliSearchDocDAO[T]) UpdateDocument(doc *T) error {
+	taskInfo, err := dao.client.Index(dao.IndexName).UpdateDocuments([]*T{doc})
 	if err != nil {
 		logger.Logger.Error("[Update Document]",
 			zap.String("indexName", dao.IndexName),
@@ -223,12 +224,12 @@ func (dao *BaseDocDAO[T]) UpdateDocument(client meilisearch.ServiceManager, doc 
 //	@return BatchUpdateDocuments
 //	@author centonhuang
 //	@update 2024-10-18 04:12:10
-func (dao *BaseDocDAO[T]) BatchUpdateDocuments(client meilisearch.ServiceManager, docs []*T) error {
+func (dao *BaseMeiliSearchDocDAO[T]) BatchUpdateDocuments(docs []*T) error {
 	if len(docs) == 0 {
 		logger.Logger.Warn("[Batch Update Document]", zap.String("indexName", dao.IndexName), zap.String("message", "No document to update"))
 		return nil
 	}
-	taskInfo, err := client.Index(dao.IndexName).UpdateDocuments(docs)
+	taskInfo, err := dao.client.Index(dao.IndexName).UpdateDocuments(docs)
 	if err != nil {
 		logger.Logger.Error("[Update Document]",
 			zap.String("indexName", dao.IndexName),
@@ -252,8 +253,8 @@ func (dao *BaseDocDAO[T]) BatchUpdateDocuments(client meilisearch.ServiceManager
 //	@return DeleteDocument
 //	@author centonhuang
 //	@update 2024-10-17 10:41:10
-func (dao *BaseDocDAO[T]) DeleteDocument(client meilisearch.ServiceManager, id uint) error {
-	taskInfo, err := client.Index(dao.IndexName).DeleteDocument(strconv.FormatUint(uint64(id), 10))
+func (dao *BaseMeiliSearchDocDAO[T]) DeleteDocument(id uint) error {
+	taskInfo, err := dao.client.Index(dao.IndexName).DeleteDocument(strconv.FormatUint(uint64(id), 10))
 	if err != nil {
 		logger.Logger.Error("[Delete Document]",
 			zap.String("indexName", dao.IndexName),

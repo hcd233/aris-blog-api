@@ -3,13 +3,14 @@ package docdao
 import (
 	"sync"
 
+	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
 var (
-	userDocDAOSingleton    *BaseDocDAO[document.UserDocument]
-	tagDocDAOSingleton     *BaseDocDAO[document.TagDocument]
-	articleDocDAOSingleton *BaseDocDAO[document.ArticleDocument]
+	userDocDAOSingleton    *BaseMeiliSearchDocDAO[document.UserDocument]
+	tagDocDAOSingleton     *BaseMeiliSearchDocDAO[document.TagDocument]
+	articleDocDAOSingleton *BaseMeiliSearchDocDAO[document.ArticleDocument]
 
 	userDocOnce    sync.Once
 	tagDocOnce     sync.Once
@@ -29,11 +30,12 @@ var (
 //	@return *BaseDocDAO
 //	@author centonhuang
 //	@update 2024-10-18 01:10:28
-func GetUserDocDAO() *BaseDocDAO[document.UserDocument] {
+func GetUserDocDAO() *BaseMeiliSearchDocDAO[document.UserDocument] {
 	userDocOnce.Do(func() {
-		userDocDAOSingleton = &BaseDocDAO[document.UserDocument]{
+		userDocDAOSingleton = &BaseMeiliSearchDocDAO[document.UserDocument]{
 			IndexName: userIndex,
 			Filters:   userFilters,
+			client:    search.GetSearchEngine(),
 		}
 	})
 	return userDocDAOSingleton
@@ -44,11 +46,12 @@ func GetUserDocDAO() *BaseDocDAO[document.UserDocument] {
 //	@return *BaseDocDAO
 //	@author centonhuang
 //	@update 2024-10-18 01:09:59
-func GetTagDocDAO() *BaseDocDAO[document.TagDocument] {
+func GetTagDocDAO() *BaseMeiliSearchDocDAO[document.TagDocument] {
 	tagDocOnce.Do(func() {
-		tagDocDAOSingleton = &BaseDocDAO[document.TagDocument]{
+		tagDocDAOSingleton = &BaseMeiliSearchDocDAO[document.TagDocument]{
 			IndexName: tagIndex,
 			Filters:   tagFilters,
+			client:    search.GetSearchEngine(),
 		}
 	})
 	return tagDocDAOSingleton
@@ -59,11 +62,12 @@ func GetTagDocDAO() *BaseDocDAO[document.TagDocument] {
 //	@return *BaseDocDAO
 //	@author centonhuang
 //	@update 2024-10-18 01:10:45
-func GetArticleDocDAO() *BaseDocDAO[document.ArticleDocument] {
+func GetArticleDocDAO() *BaseMeiliSearchDocDAO[document.ArticleDocument] {
 	articleDocOnce.Do(func() {
-		articleDocDAOSingleton = &BaseDocDAO[document.ArticleDocument]{
+		articleDocDAOSingleton = &BaseMeiliSearchDocDAO[document.ArticleDocument]{
 			IndexName: articleIndex,
 			Filters:   articleFilters,
+			client:    search.GetSearchEngine(),
 		}
 	})
 	return articleDocDAOSingleton

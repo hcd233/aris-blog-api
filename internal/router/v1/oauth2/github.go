@@ -16,7 +16,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 	"github.com/samber/lo"
@@ -61,7 +60,6 @@ func GithubCallbackHandler(c *gin.Context) {
 	params := protocol.GithubCallbackParam{}
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	dao := dao.GetUserDAO()
 	docDAO := docdao.GetUserDocDAO()
@@ -116,7 +114,7 @@ func GithubCallbackHandler(c *gin.Context) {
 		lo.Must0(dao.Update(db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}))
-		lo.Must0(docDAO.UpdateDocument(searchEngine, document.TransformUserToDocument(user)))
+		lo.Must0(docDAO.UpdateDocument(document.TransformUserToDocument(user)))
 
 		user = lo.Must1(dao.GetByID(db, user.ID, []string{"id", "name", "avatar"}, []string{}))
 	} else {
@@ -134,7 +132,7 @@ func GithubCallbackHandler(c *gin.Context) {
 		// 插入用户信息
 		lo.Must0(dao.Create(db, user))
 		// 插入用户到搜索引擎
-		lo.Must0(docDAO.AddDocument(searchEngine, document.TransformUserToDocument(user)))
+		lo.Must0(docDAO.AddDocument(document.TransformUserToDocument(user)))
 	}
 
 	if user.GithubBindID == "" {

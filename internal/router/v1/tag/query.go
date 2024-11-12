@@ -7,7 +7,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
@@ -19,11 +18,9 @@ import (
 func QueryTagHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
-	searchEngine := search.GetSearchEngine()
-
 	docDAO := docdao.GetTagDocDAO()
 
-	tags, queryInfo, err := docDAO.QueryDocument(searchEngine, param.Query, param.Filter, param.Page, param.PageSize)
+	tags, queryInfo, err := docDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
@@ -51,7 +48,6 @@ func QueryUserTagHandler(c *gin.Context) {
 	params := c.MustGet("param").(*protocol.QueryParam)
 
 	db := database.GetDBInstance()
-	searchEngine := search.GetSearchEngine()
 
 	userDAO := dao.GetUserDAO()
 	docDAO := docdao.GetTagDocDAO()
@@ -65,7 +61,7 @@ func QueryUserTagHandler(c *gin.Context) {
 		return
 	}
 
-	tags, queryInfo, err := docDAO.QueryDocument(searchEngine, params.Query, append(params.Filter, "creator="+uri.UserName), params.Page, params.PageSize)
+	tags, queryInfo, err := docDAO.QueryDocument(params.Query, append(params.Filter, "creator="+uri.UserName), params.Page, params.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,

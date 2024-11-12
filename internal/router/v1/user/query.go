@@ -5,7 +5,6 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
@@ -17,11 +16,9 @@ import (
 func QueryUserHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
-	searchEngine := search.GetSearchEngine()
-
 	docDAO := docdao.GetUserDocDAO()
 
-	users, queryInfo, err := docDAO.QueryDocument(searchEngine, param.Query, param.Filter, param.Page, param.PageSize)
+	users, queryInfo, err := docDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
