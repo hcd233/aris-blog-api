@@ -174,7 +174,7 @@ func UploadImageHandler(c *gin.Context) {
 	for ; x > maxPixel || y > maxPixel; x, y = x/2, y/2 {
 	}
 
-	thumbnailImage := imaging.Resize(rawImage, x, y, imaging.Lanczos)
+	thumbnailImage := imaging.Thumbnal(rawImage, x, y, imaging.Lanczos)
 
 	var thumbnailBuffer bytes.Buffer
 	err = imaging.Encode(&thumbnailBuffer, thumbnailImage, lo.Must1(imaging.FormatFromFilename(file.Filename)))
