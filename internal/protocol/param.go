@@ -36,3 +36,7 @@ type ArticleParam struct {
 	ArticleSlug string `form:"articleSlug" binding:"required"`
 	Author      string `form:"author" binding:"required"`
 }
+
+type ImageParam struct {
+	Quality string `form:"quality" binding:"required, oneof=raw thumb"`
+}

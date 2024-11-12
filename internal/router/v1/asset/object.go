@@ -2,23 +2,22 @@ package asset
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"image"
 	"io"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/storage"
+	obj_dao "github.com/hcd233/Aris-blog/internal/resource/storage/obj_dao"
 	"github.com/hcd233/Aris-blog/internal/util"
-	"github.com/minio/minio-go/v7"
 	"github.com/samber/lo"
 )
 
-func MakeBucketHandler(c *gin.Context) {
+func CreateBucketHandler(c *gin.Context) {
 	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
@@ -30,33 +29,46 @@ func MakeBucketHandler(c *gin.Context) {
 		return
 	}
 
-	objectStorage := storage.GetObjectStorage()
+	imageObjDAO, thumbnailObjDAO := obj_dao.GetImageObjDAO(), obj_dao.GetThumbnailObjDAO()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	var wg sync.WaitGroup
+	var imageBucketExist, thumbnailBucketExist bool
+	var imageBucketErr, thumbnailBucketErr error
 
-	exist, err := objectStorage.BucketExists(ctx, fmt.Sprintf("user-%d", userID))
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code:    protocol.CodeMakeBucketError,
-			Message: err.Error(),
-		})
-		return
-	}
+	wg.Add(2)
 
-	if exist {
+	go func() {
+		defer wg.Done()
+		imageBucketExist, imageBucketErr = imageObjDAO.CreateBucket(userID)
+	}()
+
+	go func() {
+		defer wg.Done()
+		thumbnailBucketExist, thumbnailBucketErr = thumbnailObjDAO.CreateBucket(userID)
+	}()
+
+	wg.Wait()
+
+	if imageBucketExist && thumbnailBucketExist {
 		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeMakeBucketError,
+			Code:    protocol.CodeBucketExistError,
 			Message: "Bucket already exists",
 		})
 		return
 	}
 
-	err = objectStorage.MakeBucket(ctx, fmt.Sprintf("user-%d", userID), minio.MakeBucketOptions{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code:    protocol.CodeMakeBucketError,
-			Message: err.Error(),
+	if imageBucketErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeCreateBucketError,
+			Message: imageBucketErr.Error(),
+		})
+		return
+	}
+
+	if thumbnailBucketErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeCreateBucketError,
+			Message: thumbnailBucketErr.Error(),
 		})
 		return
 	}
@@ -79,40 +91,21 @@ func ListImagesHandler(c *gin.Context) {
 		return
 	}
 
-	objectStorage := storage.GetObjectStorage()
+	imageObjDAO := obj_dao.GetImageObjDAO()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	objectsCh := objectStorage.ListObjects(ctx, fmt.Sprintf("user-%d", userID), minio.ListObjectsOptions{
-		Recursive:    true,
-		WithVersions: false,
-		WithMetadata: false,
-	})
-
-	objects := make([]minio.ObjectInfo, 0)
-	for object := range objectsCh {
-		if object.Err != nil {
-			c.JSON(http.StatusInternalServerError, protocol.Response{
-				Code:    protocol.CodeListImagesError,
-				Message: object.Err.Error(),
-			})
-			return
-		}
-
-		objects = append(objects, object)
+	objectInfos, err := imageObjDAO.ListObjects(userID)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeListImagesError,
+			Message: err.Error(),
+		})
+		return
 	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"objects": lo.Map(objects, func(object minio.ObjectInfo, idx int) map[string]interface{} {
-				return map[string]interface{}{
-					"name":    object.Key,
-					"size":    object.Size,
-					"modTime": object.LastModified,
-				}
-			}),
+			"objects": objectInfos,
 		},
 	})
 }
@@ -162,9 +155,7 @@ func UploadImageHandler(c *gin.Context) {
 		return
 	}
 
-	objectStorage := storage.GetObjectStorage()
-
-	src, err := file.Open()
+	rawImageReader, err := file.Open()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeUploadImageError,
@@ -172,30 +163,21 @@ func UploadImageHandler(c *gin.Context) {
 		})
 		return
 	}
-	defer src.Close()
+	defer rawImageReader.Close()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-
-	uploadInfo, err := objectStorage.PutObject(ctx, fmt.Sprintf("user-%d", userID), file.Filename, src, file.Size, minio.PutObjectOptions{})
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code:    protocol.CodeUploadImageError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	src.Seek(0, 0)
-	img, _ := lo.Must2(image.Decode(src))
+	rawImage, _ := lo.Must2(image.Decode(rawImageReader))
 	// restrict image into 512*512 max size
-	x, y := img.Bounds().Dx(), img.Bounds().Dy()
-	for ; x > 512 || y > 512; x, y = x/2, y/2 {
-	}
-	img = imaging.Resize(img, x, y, imaging.Lanczos)
+	x, y := rawImage.Bounds().Dx(), rawImage.Bounds().Dy()
 
-	var buf bytes.Buffer
-	err = imaging.Encode(&buf, img, lo.Must1(imaging.FormatFromFilename(file.Filename)))
+	maxPixel := 512
+
+	for ; x > maxPixel || y > maxPixel; x, y = x/2, y/2 {
+	}
+
+	thumbnailImage := imaging.Resize(rawImage, x, y, imaging.Lanczos)
+
+	var thumbnailBuffer bytes.Buffer
+	err = imaging.Encode(&thumbnailBuffer, thumbnailImage, lo.Must1(imaging.FormatFromFilename(file.Filename)))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeUploadImageError,
@@ -203,25 +185,53 @@ func UploadImageHandler(c *gin.Context) {
 		})
 		return
 	}
+	rawImageReader.Seek(0, io.SeekStart)
 
-	_ = lo.Must1(objectStorage.PutObject(ctx, fmt.Sprintf("user-%d", userID), fmt.Sprintf("thumbnail-%s", file.Filename), &buf, int64(buf.Len()), minio.PutObjectOptions{}))
+	imageObjDAO, thumbnailObjDAO := obj_dao.GetImageObjDAO(), obj_dao.GetThumbnailObjDAO()
+
+	var wg sync.WaitGroup
+	var imageErr, thumbnailErr error
+
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		imageErr = imageObjDAO.UploadObject(userID, file.Filename, file.Size, rawImageReader)
+	}()
+
+	go func() {
+		defer wg.Done()
+		thumbnailErr = thumbnailObjDAO.UploadObject(userID, file.Filename, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
+	}()
+
+	wg.Wait()
+
+	if imageErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUploadImageError,
+			Message: imageErr.Error(),
+		})
+		return
+	}
+
+	if thumbnailErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeUploadImageError,
+			Message: thumbnailErr.Error(),
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Image uploaded successfully",
-		Data: map[string]interface{}{
-			"object": map[string]interface{}{
-				"name":    uploadInfo.Key,
-				"size":    uploadInfo.Size,
-				"modTime": uploadInfo.LastModified,
-			},
-		},
 	})
 }
 
 func GetImageHandler(c *gin.Context) {
 	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
+	param := c.MustGet("param").(*protocol.ImageParam)
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -231,12 +241,23 @@ func GetImageHandler(c *gin.Context) {
 		return
 	}
 
-	objectStorage := storage.GetObjectStorage()
+	imageObjDAO, thumbnailObjDAO := obj_dao.GetImageObjDAO(), obj_dao.GetThumbnailObjDAO()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	var (
+		object     io.ReadCloser
+		objectInfo *obj_dao.ObjectInfo
+		err        error
+	)
+	switch param.Quality {
+	case "raw":
+		object, objectInfo, err = imageObjDAO.DownloadObject(userID, uri.ObjectName)
+	case "thumb":
+		object, objectInfo, err = thumbnailObjDAO.DownloadObject(userID, uri.ObjectName)
+	default:
+		panic(fmt.Sprintf("Invalid image quality: %s", param.Quality))
+	}
+	defer object.Close()
 
-	object, err := objectStorage.GetObject(ctx, fmt.Sprintf("user-%d", userID), uri.ObjectName, minio.GetObjectOptions{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetImageError,
@@ -245,24 +266,15 @@ func GetImageHandler(c *gin.Context) {
 		return
 	}
 
-	objectInfo, err := object.Stat()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetImageError,
-			Message: err.Error(),
-		})
-		return
-	}
-	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", objectInfo.Key))
+	_ = lo.Must1(io.Copy(c.Writer, object))
+
+	c.Writer.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=%s", objectInfo.ObjectName))
 	c.Writer.Header().Set("Content-Type", objectInfo.ContentType)
 	c.Writer.Header().Set("Content-Length", fmt.Sprintf("%d", objectInfo.Size))
 	c.Writer.Header().Set("Last-Modified", objectInfo.LastModified.Format(http.TimeFormat))
 	c.Writer.Header().Set("ETag", objectInfo.ETag)
 	c.Writer.Header().Set("Cache-Control", "public, max-age=31536000")
 	c.Writer.Header().Set("Expires", time.Now().AddDate(1, 0, 0).Format(http.TimeFormat))
-
-	defer object.Close()
-	_ = lo.Must1(io.Copy(c.Writer, object))
 
 	c.Status(http.StatusOK)
 }
@@ -279,16 +291,37 @@ func DeleteImageHandler(c *gin.Context) {
 		return
 	}
 
-	objectStorage := storage.GetObjectStorage()
+	imageObjDAO, thumbnailObjDAO := obj_dao.GetImageObjDAO(), obj_dao.GetThumbnailObjDAO()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
+	var wg sync.WaitGroup
+	var imageErr, thumbnailErr error
 
-	err := objectStorage.RemoveObject(ctx, fmt.Sprintf("user-%d", userID), uri.ObjectName, minio.RemoveObjectOptions{})
-	if err != nil {
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		imageErr = imageObjDAO.DeleteObject(userID, uri.ObjectName)
+	}()
+
+	go func() {
+		defer wg.Done()
+		thumbnailErr = thumbnailObjDAO.DeleteObject(userID, uri.ObjectName)
+	}()
+
+	wg.Wait()
+
+	if imageErr != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteImageError,
-			Message: err.Error(),
+			Message: imageErr.Error(),
+		})
+		return
+	}
+
+	if thumbnailErr != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteImageError,
+			Message: thumbnailErr.Error(),
 		})
 		return
 	}
