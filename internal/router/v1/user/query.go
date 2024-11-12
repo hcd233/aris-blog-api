@@ -5,7 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
 // QueryUserHandler 查询用户
@@ -16,7 +16,7 @@ import (
 func QueryUserHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
-	docDAO := docdao.GetUserDocDAO()
+	docDAO := doc_dao.GetUserDocDAO()
 
 	users, queryInfo, err := docDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {

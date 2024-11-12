@@ -7,7 +7,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 )
 
 // QueryTagHandler 搜索标签
@@ -18,7 +18,7 @@ import (
 func QueryTagHandler(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
-	docDAO := docdao.GetTagDocDAO()
+	docDAO := doc_dao.GetTagDocDAO()
 
 	tags, queryInfo, err := docDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {
@@ -50,7 +50,7 @@ func QueryUserTagHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 
 	userDAO := dao.GetUserDAO()
-	docDAO := docdao.GetTagDocDAO()
+	docDAO := doc_dao.GetTagDocDAO()
 
 	_, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {

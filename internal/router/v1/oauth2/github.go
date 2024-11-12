@@ -16,7 +16,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 	"github.com/samber/lo"
 	"golang.org/x/oauth2"
@@ -62,7 +62,7 @@ func GithubCallbackHandler(c *gin.Context) {
 	db := database.GetDBInstance()
 
 	dao := dao.GetUserDAO()
-	docDAO := docdao.GetUserDocDAO()
+	docDAO := doc_dao.GetUserDocDAO()
 
 	jwtAccessTokenSvc := auth.GetJwtAccessTokenSvc()
 	jwtRefreshTokenSvc := auth.GetJwtRefreshTokenSvc()

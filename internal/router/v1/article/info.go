@@ -15,7 +15,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	docdao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
+	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
@@ -103,7 +103,7 @@ func UpdateArticleHandler(c *gin.Context) {
 	}
 
 	user, err := userDAO.GetByName(db, userName, []string{"id"}, []string{})
-	articleDocDAO := docdao.GetArticleDocDAO()
+	articleDocDAO := doc_dao.GetArticleDocDAO()
 
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
@@ -166,7 +166,7 @@ func UpdateArticleStatusHandler(c *gin.Context) {
 
 	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
 
-	articleDocDAO := docdao.GetArticleDocDAO()
+	articleDocDAO := doc_dao.GetArticleDocDAO()
 
 	user, err := userDAO.GetByName(db, userName, []string{"id"}, []string{})
 	if err != nil {
@@ -252,7 +252,7 @@ func DeleteArticleHandler(c *gin.Context) {
 
 	userDAO, articleDAO := dao.GetUserDAO(), dao.GetArticleDAO()
 
-	articleDocDAO := docdao.GetArticleDocDAO()
+	articleDocDAO := doc_dao.GetArticleDocDAO()
 
 	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
