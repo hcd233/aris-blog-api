@@ -15,7 +15,7 @@ type ObjDAO interface {
 	CreateBucket(userID uint) (exist bool, err error)
 	ListObjects(userID uint) (objectInfos []ObjectInfo, err error)
 	UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error)
-	DownloadObject(userID uint, objectName string) (reader io.ReadCloser, objectInfo ObjectInfo, err error)
+	DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error)
 	DeleteObject(userID uint, objectName string) (err error)
 }
 
@@ -101,17 +101,17 @@ func (dao *BaseMinioObjDAO) UploadObject(userID uint, objectName string, size in
 	return
 }
 
-func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string) (reader io.ReadCloser, objectInfo *ObjectInfo, err error) {
+func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
 	bucketName := dao.ComposeBucketName(userID)
 
 	ctx, cancel := context.WithTimeout(context.Background(), DownloadObjectTimeout)
 	defer cancel()
 
 	object, err := dao.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
-
 	if err != nil {
 		return
 	}
+	defer object.Close()
 
 	stat := lo.Must1(object.Stat())
 
@@ -124,7 +124,9 @@ func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string) (read
 		ETag:         stat.ETag,
 	}
 
-	return object, objectInfo, nil
+	_, err = io.Copy(writer, object)
+
+	return
 }
 
 func (dao *BaseMinioObjDAO) DeleteObject(userID uint, objectName string) (err error) {
