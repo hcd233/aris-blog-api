@@ -219,6 +219,10 @@ const (
 	//	@update 2024-09-21 08:22:14
 	CodeUploadImageRateLimitError ResponseCode = 1053
 
+	// CodeDeleteImageError ResponseCode 删除图片错误
+	//	@update 2024-09-21 08:22:14
+	CodeDeleteImageError ResponseCode = 1054
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -291,6 +295,7 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeListImagesError:           "列出图片错误",
 	CodeUploadImageError:          "上传图片错误",
 	CodeGetImageError:             "获取图片错误",
+	CodeDeleteImageError:          "删除图片错误",
 	CodeUploadImageRateLimitError: "达到上传图片频率限制，请稍后再试",
 
 	CodeRefreshTokenRateLimitError: "达到刷新令牌频率限制，请稍后再试",

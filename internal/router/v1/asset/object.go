@@ -239,13 +239,39 @@ func GetImageHandler(c *gin.Context) {
 	c.Writer.Header().Set("Expires", time.Now().AddDate(1, 0, 0).Format(http.TimeFormat))
 
 	defer object.Close()
-	if _, err := io.Copy(c.Writer, object); err != nil {
-		c.JSON(http.StatusInternalServerError, protocol.Response{
-			Code:    protocol.CodeGetImageError,
+	_ = lo.Must1(io.Copy(c.Writer, object))
+
+	c.Status(http.StatusOK)
+}
+
+func DeleteImageHandler(c *gin.Context) {
+	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	uri := c.MustGet("uri").(*protocol.ObjectURI)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to delete other user's image",
+		})
+		return
+	}
+
+	objectStorage := storage.GetObjectStorage()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := objectStorage.RemoveObject(ctx, fmt.Sprintf("user-%d", userID), uri.ObjectName, minio.RemoveObjectOptions{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeDeleteImageError,
 			Message: err.Error(),
 		})
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, protocol.Response{
+		Code:    protocol.CodeOk,
+		Message: "Image deleted successfully",
+	})
 }
