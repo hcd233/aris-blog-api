@@ -174,3 +174,55 @@ func UpdateInfoHandler(c *gin.Context) {
 		Message: "Update user info successfully",
 	})
 }
+
+// QueryUserHandler 查询用户
+//
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2024-09-16 05:58:52
+func QueryUserHandler(c *gin.Context) {
+	param := c.MustGet("param").(*protocol.QueryParam)
+
+	docDAO := doc_dao.GetUserDocDAO()
+
+	users, queryInfo, err := docDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeQueryUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"users":     users,
+			"queryInfo": queryInfo,
+		},
+	})
+}
+
+func GetMyInfoHandler(c *gin.Context) {
+	userID := c.GetUint("userID")
+
+	db := database.GetDBInstance()
+
+	userDAO := dao.GetUserDAO()
+
+	user, err := userDAO.GetByID(db, userID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeQueryUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: map[string]interface{}{
+			"user": user.GetDetailedInfo(),
+		},
+	})
+}

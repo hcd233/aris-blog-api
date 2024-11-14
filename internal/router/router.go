@@ -102,7 +102,7 @@ func initUserRouter(r *gin.RouterGroup) {
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
 		userRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), user.QueryUserHandler)
-
+		userRouter.GET("me", user.GetMyInfoHandler)
 		userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 		{
 			userNameRouter.GET("", user.GetUserInfoHandler)
@@ -294,6 +294,7 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			article_version.CreateArticleVersionHandler,
 		)
+		articleVersionRouter.GET("latest", article_version.GetLatestArticleVersionInfoHandler)
 		articleVersionNumberRouter := articleVersionRouter.Group("v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}))
 		{
 			articleVersionNumberRouter.GET("", article_version.GetArticleVersionInfoHandler)

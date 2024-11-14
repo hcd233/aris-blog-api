@@ -27,6 +27,7 @@ func (t *Tag) GetBasicInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":   t.ID,
 		"slug": t.Slug,
+		"name": t.Name,
 	}
 }
 

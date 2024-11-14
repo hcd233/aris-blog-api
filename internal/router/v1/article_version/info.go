@@ -62,3 +62,52 @@ func GetArticleVersionInfoHandler(c *gin.Context) {
 		Data: articleVersion.GetDetailedInfo(),
 	})
 }
+
+func GetLatestArticleVersionInfoHandler(c *gin.Context) {
+	userName := c.MustGet("userName").(string)
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+
+	if userName != uri.UserName {
+		c.JSON(http.StatusForbidden, protocol.Response{
+			Code:    protocol.CodeNotPermissionError,
+			Message: "You have no permission to get other user's article version",
+		})
+		return
+	}
+
+	db := database.GetDBInstance()
+
+	userDAO, articleDAO, articleVersionDAO := dao.GetUserDAO(), dao.GetArticleDAO(), dao.GetArticleVersionDAO()
+
+	user, err := userDAO.GetByName(db, uri.UserName, []string{"id"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetUserError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	articleVersion, err := articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"id", "created_at", "version", "content"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleVersionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, protocol.Response{
+		Code: protocol.CodeOk,
+		Data: articleVersion.GetDetailedInfo(),
+	})
+}

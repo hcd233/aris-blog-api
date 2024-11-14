@@ -134,9 +134,15 @@ func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields
 //	@return err error
 //	@author centonhuang
 //	@update 2024-11-01 05:33:37
-func (dao *ArticleDAO) PaginateByPublished(db *gorm.DB, fields []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByPublished(db *gorm.DB, fields []string, preloads []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
-	err = db.Select(fields).Where(&model.Article{Status: model.ArticleStatusPublish}).Limit(limit).Offset(offset).Find(&articles).Error
+
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Article{Status: model.ArticleStatusPublish}).Limit(limit).Offset(offset).Find(&articles).Error
+
 	if err != nil {
 		return
 	}

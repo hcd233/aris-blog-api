@@ -39,7 +39,7 @@ func GetCommentInfoHandler(c *gin.Context) {
 		return
 	}
 
-	comment, err := commentDAO.GetByArticleIDAndID(db, article.ID, uri.CommentID, []string{"id", "created_at", "content", "parent_id"}, []string{"user"})
+	comment, err := commentDAO.GetByArticleIDAndID(db, article.ID, uri.CommentID, []string{"id", "created_at", "content", "user_id", "parent_id", "article_id"}, []string{"User", "Parent", "Article"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,

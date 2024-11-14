@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -18,6 +19,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
 	doc_dao "github.com/hcd233/Aris-blog/internal/resource/search/doc_dao"
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
+	"github.com/hcd233/Aris-blog/internal/util"
 	"github.com/samber/lo"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
@@ -101,6 +103,7 @@ func GithubCallbackHandler(c *gin.Context) {
 
 	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
+
 	user, err := dao.GetByEmail(db, email, []string{"id", "name", "avatar"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
@@ -115,10 +118,11 @@ func GithubCallbackHandler(c *gin.Context) {
 			"last_login": time.Now(),
 		}))
 		lo.Must0(docDAO.UpdateDocument(document.TransformUserToDocument(user)))
-
-		user = lo.Must1(dao.GetByID(db, user.ID, []string{"id", "name", "avatar"}, []string{}))
 	} else {
 		// 新用户，保存信息
+		if validateErr := util.ValidateUserName(userName); validateErr != nil {
+			userName = fmt.Sprintf("ArisUser" + strconv.FormatInt(time.Now().Unix(), 10))
+		}
 		defaultCategory := &model.Category{Name: userName}
 
 		user = &model.User{

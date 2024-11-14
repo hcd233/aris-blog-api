@@ -86,10 +86,10 @@ func CreateArticleCommentHandler(c *gin.Context) {
 		return
 	}
 
-	comment = lo.Must1(commentDAO.GetByID(db, comment.ID, []string{"id", "created_at", "content", "parent_id"}, []string{}))
+	comment = lo.Must1(commentDAO.GetByID(db, comment.ID, []string{"id", "created_at", "content", "parent_id", "user_id"}, []string{"User", "Parent"}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: comment.GetBasicInfo(),
+		Data: comment.GetDetailedInfo(),
 	})
 }

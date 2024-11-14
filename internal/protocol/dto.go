@@ -82,7 +82,7 @@ type UpdateCategoryBody struct {
 //	@author centonhuang
 //	@update 2024-10-17 12:43:32
 type CreateArticleVersionBody struct {
-	Content string `json:"content" binding:"required,min=100,max=10000"`
+	Content string `json:"content" binding:"required,min=100,max=20000"`
 }
 
 // UpdateArticleStatusBody 更新文章状态请求体
