@@ -9,12 +9,15 @@ import (
 	"sync"
 	"time"
 
+	"path/filepath"
+
 	"github.com/disintegration/imaging"
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	obj_dao "github.com/hcd233/Aris-blog/internal/resource/storage/obj_dao"
 	"github.com/hcd233/Aris-blog/internal/util"
 	"github.com/samber/lo"
+	webp "golang.org/x/image/webp"
 )
 
 func CreateBucketHandler(c *gin.Context) {
@@ -165,7 +168,21 @@ func UploadImageHandler(c *gin.Context) {
 	}
 	defer rawImageReader.Close()
 
-	rawImage, _ := lo.Must2(image.Decode(rawImageReader))
+	var rawImage image.Image
+	var imageFormat imaging.Format
+
+	extension := filepath.Ext(file.Filename)
+	switch extension {
+	case ".webp":
+		rawImage = lo.Must1(webp.Decode(rawImageReader))
+		imageFormat = imaging.PNG
+	case ".png", ".jpg", ".jpeg", ".gif":
+		rawImage, _ = lo.Must2(image.Decode(rawImageReader))
+		imageFormat = lo.Must1(imaging.FormatFromExtension(extension))
+	default:
+		panic(fmt.Sprintf("Invalid image extension: %s", extension))
+	}
+
 	// restrict image into 512*512 max size
 	x, y := rawImage.Bounds().Dx(), rawImage.Bounds().Dy()
 
@@ -177,7 +194,7 @@ func UploadImageHandler(c *gin.Context) {
 	thumbnailImage := imaging.Thumbnail(rawImage, x, y, imaging.Lanczos)
 
 	var thumbnailBuffer bytes.Buffer
-	err = imaging.Encode(&thumbnailBuffer, thumbnailImage, lo.Must1(imaging.FormatFromFilename(file.Filename)))
+	err = imaging.Encode(&thumbnailBuffer, thumbnailImage, imageFormat)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeUploadImageError,
