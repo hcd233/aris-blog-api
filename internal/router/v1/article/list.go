@@ -23,7 +23,12 @@ func ListArticlesHandler(c *gin.Context) {
 
 	articleDAO := dao.GetArticleDAO()
 
-	articles, pageInfo, err := articleDAO.PaginateByPublished(db, []string{"id", "title", "slug"}, param.Page, param.PageSize)
+	articles, pageInfo, err := articleDAO.PaginateByPublished(
+		db,
+		[]string{"id", "title", "slug", "status", "published_at", "views", "likes", "user_id"},
+		[]string{"User", "Comments", "Tags"},
+		param.Page, param.PageSize,
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -36,7 +41,7 @@ func ListArticlesHandler(c *gin.Context) {
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
 			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
-				return article.GetBasicInfo()
+				return article.GetDetailedInfo()
 			}),
 			"pageInfo": pageInfo,
 		},

@@ -28,12 +28,9 @@ type Comment struct {
 //	@update 2024-10-24 05:45:04
 func (c *Comment) GetBasicInfo() map[string]interface{} {
 	return map[string]interface{}{
-		"id":        c.ID,
-		"userID":    c.UserID,
-		"createdAt": c.CreatedAt,
-		"parentID":  c.ParentID,
-		"content":   c.Content,
-		"likes":     c.Likes,
+		"id":      c.ID,
+		"content": c.Content,
+		"likes":   c.Likes,
 	}
 }
 
@@ -54,7 +51,7 @@ func (c *Comment) GetLikeInfo() map[string]interface{} {
 	}
 
 	if c.Parent != nil {
-		infoMap["parent"] = c.Parent.GetBasicInfo()
+		infoMap["parent"] = c.Parent.GetDetailedInfo()
 	}
 
 	return infoMap
@@ -67,15 +64,23 @@ func (c *Comment) GetLikeInfo() map[string]interface{} {
 //	@author centonhuang
 //	@update 2024-11-01 07:03:31
 func (c *Comment) GetDetailedInfo() map[string]interface{} {
-	return map[string]interface{}{
+	infoMap := map[string]interface{}{
 		"id":        c.ID,
-		"userID":    c.UserID,
+		"commenter": c.User.GetBasicInfo(),
 		"createdAt": c.CreatedAt,
-		"parentID":  c.ParentID,
+		"parent":    nil,
 		"content":   c.Content,
 		"likes":     c.Likes,
-		"parent":    c.Parent.GetBasicInfo(),
-		"user":      c.User.GetBasicInfo(),
-		"article":   c.Article.GetBasicInfo(),
 	}
+
+	if c.Parent != nil {
+		infoMap["parent"] = c.Parent.GetBasicInfo()
+	}
+
+	if c.Article != nil {
+		infoMap["article"] = c.Article.GetBasicInfo()
+	}
+
+	return infoMap
+
 }

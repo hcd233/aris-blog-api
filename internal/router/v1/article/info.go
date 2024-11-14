@@ -41,10 +41,10 @@ func GetArticleInfoHandler(c *gin.Context) {
 	}
 
 	article, err := articleDAO.GetBySlugAndUserID(db, uri.ArticleSlug, user.ID, []string{
-		"id", "slug", "title", "status", "user_id", "category_id",
+		"id", "slug", "title", "status", "user_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
-	}, []string{"Tags", "Category", "User"})
+	}, []string{"User", "Comments", "Tags"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,

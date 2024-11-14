@@ -104,17 +104,32 @@ func (a *Article) GetViewInfo() map[string]interface{} {
 //	@author centonhuang
 //	@update 2024-09-21 09:21:50
 func (a *Article) GetDetailedInfo() map[string]interface{} {
-	return map[string]interface{}{
+	infoMap := map[string]interface{}{
 		"id":          a.ID,
 		"title":       a.Title,
 		"slug":        a.Slug,
 		"user":        a.User.GetBasicInfo(),
-		"category":    a.Category.GetBasicInfo(),
 		"status":      a.Status,
 		"publishedAt": a.PublishedAt,
-		"tags":        lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
 		"views":       a.Views,
 		"likes":       a.Likes,
-		"versions":    lo.Map(a.Versions, func(version ArticleVersion, idx int) map[string]interface{} { return version.GetBasicInfo() }),
 	}
+
+	if a.Comments != nil {
+		infoMap["comments"] = len(a.Comments)
+	}
+
+	if a.Versions != nil {
+		infoMap["versions"] = lo.Map(a.Versions, func(version ArticleVersion, idx int) map[string]interface{} { return version.GetBasicInfo() })
+	}
+
+	if a.Category != nil {
+		infoMap["category"] = a.Category.GetBasicInfo()
+	}
+
+	if a.Tags != nil {
+		infoMap["tags"] = lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() })
+	}
+
+	return infoMap
 }
