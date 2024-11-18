@@ -66,6 +66,15 @@ var (
 	//	@update 2024-06-22 09:01:34
 	MysqlDatabase string
 
+	// RedisHost string Redis主机
+	RedisHost string
+
+	// RedisPort string Redis端口
+	RedisPort string
+
+	// RedisPassword string Redis密码
+	RedisPassword string
+
 	// MeilisearchHost string Meilisearch主机
 	//	@update 2024-09-18 12:09:25
 	MeilisearchHost string
@@ -141,6 +150,10 @@ func initEnvironment() {
 	MysqlHost = config.GetString("mysql.host")
 	MysqlPort = config.GetString("mysql.port")
 	MysqlDatabase = config.GetString("mysql.database")
+
+	RedisHost = config.GetString("redis.host")
+	RedisPort = config.GetString("redis.port")
+	RedisPassword = config.GetString("redis.password")
 
 	MeilisearchHost = config.GetString("meilisearch.host")
 	MeilisearchPort = config.GetString("meilisearch.port")

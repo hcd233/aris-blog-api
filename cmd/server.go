@@ -7,6 +7,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/middleware"
+	"github.com/hcd233/Aris-blog/internal/resource/cache"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/hcd233/Aris-blog/internal/resource/storage"
@@ -38,6 +39,7 @@ var startServerCmd = &cobra.Command{
 		router.InitRouter(r)
 
 		database.InitDatabase()
+		cache.InitCache()
 		search.InitSearchEngine()
 		storage.InitMinioClient()
 
