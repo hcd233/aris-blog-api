@@ -26,6 +26,7 @@ func JwtMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, protocol.Response{
 				Code: protocol.CodeUnauthorized,
 			})
+			c.Abort()
 			return
 		}
 		if isBearer := strings.HasPrefix(tokenString, "Bearer "); !isBearer {

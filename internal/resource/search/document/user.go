@@ -11,8 +11,8 @@ import "github.com/hcd233/Aris-blog/internal/resource/database/model"
 //	@update 2024-10-17 09:54:11
 type UserDocument struct {
 	ID       uint   `json:"id"`
-	UserName string `json:"userName,omitempty"`
-	Avatar   string `json:"avatar,omitempty"`
+	UserName string `json:"userName"`
+	Avatar   string `json:"avatar"`
 }
 
 // TransformUserToDocument 将用户转换为文档

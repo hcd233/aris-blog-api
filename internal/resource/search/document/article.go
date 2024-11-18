@@ -11,10 +11,11 @@ import (
 //	@update 2024-10-17 10:05:45
 type ArticleDocument struct {
 	ID      uint     `json:"id"`
-	Title   string   `json:"title,omitempty"`
-	Author  string   `json:"author,omitempty"`
-	Content string   `json:"content,omitempty"`
-	Tags    []string `json:"tags,omitempty"`
+	Title   string   `json:"title"`
+	Slug    string   `json:"slug"`
+	Author  string   `json:"author"`
+	Content string   `json:"content"`
+	Tags    []string `json:"tags"`
 }
 
 // TransformArticleToDocument 将文章转换为文档
@@ -27,6 +28,7 @@ type ArticleDocument struct {
 func TransformArticleToDocument(article *model.Article, latestVersion *model.ArticleVersion) *ArticleDocument {
 	return &ArticleDocument{
 		ID:      article.ID,
+		Slug:    article.Slug,
 		Title:   article.Title,
 		Author:  article.User.Name,
 		Content: latestVersion.Content,
