@@ -29,6 +29,11 @@ var startServerCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
+		database.InitDatabase()
+		cache.InitCache()
+		search.InitSearchEngine()
+		storage.InitMinioClient()
+
 		r := gin.New()
 		r.Use(
 			middleware.CORSMiddleware(),
@@ -36,12 +41,8 @@ var startServerCmd = &cobra.Command{
 			middleware.TranslateMiddleware(),
 			gin.Recovery(),
 		)
-		router.InitRouter(r)
 
-		database.InitDatabase()
-		cache.InitCache()
-		search.InitSearchEngine()
-		storage.InitMinioClient()
+		router.InitRouter(r)
 
 		s := &http.Server{
 			Addr:           fmt.Sprintf("%s:%s", host, port),
