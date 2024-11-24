@@ -37,7 +37,7 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		jwtAccessTokenSvc := auth.GetJwtAccessTokenSvc()
+		jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
 
 		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString[7:])
 		if err != nil {
