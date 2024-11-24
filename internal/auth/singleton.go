@@ -3,27 +3,27 @@ package auth
 import "github.com/hcd233/Aris-blog/internal/config"
 
 var (
-	jwtAccessTokenSvc  *JwtTokenService
-	jwtRefreshTokenSvc *JwtTokenService
+	jwtAccessTokenSvc  *jwtTokenSigner
+	jwtRefreshTokenSvc *jwtTokenSigner
 )
 
-// GetJwtAccessTokenSvc 获取jwt access token服务
-func GetJwtAccessTokenSvc() *JwtTokenService {
+// GetJwtAccessTokenSigner 获取jwt access token服务
+func GetJwtAccessTokenSigner() JwtTokenSigner {
 	return jwtAccessTokenSvc
 }
 
-// GetJwtRefreshTokenSvc 获取jwt refresh token服务
-func GetJwtRefreshTokenSvc() *JwtTokenService {
+// GetJwtRefreshTokenSigner 获取jwt refresh token服务
+func GetJwtRefreshTokenSigner() JwtTokenSigner {
 	return jwtRefreshTokenSvc
 }
 
 func init() {
-	jwtAccessTokenSvc = &JwtTokenService{
+	jwtAccessTokenSvc = &jwtTokenSigner{
 		JwtTokenSecret:  config.JwtAccessTokenSecret,
 		JwtTokenExpired: config.JwtAccessTokenExpired,
 	}
 
-	jwtRefreshTokenSvc = &JwtTokenService{
+	jwtRefreshTokenSvc = &jwtTokenSigner{
 		JwtTokenSecret:  config.JwtRefreshTokenSecret,
 		JwtTokenExpired: config.JwtRefreshTokenExpired,
 	}
