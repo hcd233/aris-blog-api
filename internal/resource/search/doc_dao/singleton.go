@@ -7,10 +7,16 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/search/document"
 )
 
+type (
+	UserDocDAO    = BaseMeiliSearchDocDAO[document.UserDocument]
+	TagDocDAO     = BaseMeiliSearchDocDAO[document.TagDocument]
+	ArticleDocDAO = BaseMeiliSearchDocDAO[document.ArticleDocument]
+)
+
 var (
-	userDocDAOSingleton    *BaseMeiliSearchDocDAO[document.UserDocument]
-	tagDocDAOSingleton     *BaseMeiliSearchDocDAO[document.TagDocument]
-	articleDocDAOSingleton *BaseMeiliSearchDocDAO[document.ArticleDocument]
+	userDocDAOSingleton    *UserDocDAO
+	tagDocDAOSingleton     *TagDocDAO
+	articleDocDAOSingleton *ArticleDocDAO
 
 	userDocOnce    sync.Once
 	tagDocOnce     sync.Once
@@ -30,9 +36,9 @@ var (
 //	@return *BaseDocDAO
 //	@author centonhuang
 //	@update 2024-10-18 01:10:28
-func GetUserDocDAO() *BaseMeiliSearchDocDAO[document.UserDocument] {
+func GetUserDocDAO() *UserDocDAO {
 	userDocOnce.Do(func() {
-		userDocDAOSingleton = &BaseMeiliSearchDocDAO[document.UserDocument]{
+		userDocDAOSingleton = &UserDocDAO{
 			IndexName: userIndex,
 			Filters:   userFilters,
 			client:    search.GetSearchEngine(),
@@ -46,9 +52,9 @@ func GetUserDocDAO() *BaseMeiliSearchDocDAO[document.UserDocument] {
 //	@return *BaseDocDAO
 //	@author centonhuang
 //	@update 2024-10-18 01:09:59
-func GetTagDocDAO() *BaseMeiliSearchDocDAO[document.TagDocument] {
+func GetTagDocDAO() *TagDocDAO {
 	tagDocOnce.Do(func() {
-		tagDocDAOSingleton = &BaseMeiliSearchDocDAO[document.TagDocument]{
+		tagDocDAOSingleton = &TagDocDAO{
 			IndexName: tagIndex,
 			Filters:   tagFilters,
 			client:    search.GetSearchEngine(),
@@ -62,9 +68,9 @@ func GetTagDocDAO() *BaseMeiliSearchDocDAO[document.TagDocument] {
 //	@return *BaseDocDAO
 //	@author centonhuang
 //	@update 2024-10-18 01:10:45
-func GetArticleDocDAO() *BaseMeiliSearchDocDAO[document.ArticleDocument] {
+func GetArticleDocDAO() *ArticleDocDAO {
 	articleDocOnce.Do(func() {
-		articleDocDAOSingleton = &BaseMeiliSearchDocDAO[document.ArticleDocument]{
+		articleDocDAOSingleton = &ArticleDocDAO{
 			IndexName: articleIndex,
 			Filters:   articleFilters,
 			client:    search.GetSearchEngine(),
