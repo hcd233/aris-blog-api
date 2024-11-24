@@ -20,11 +20,12 @@ type Claims struct {
 	UserID uint `json:"user_id"`
 }
 
-// JwtTokenService JWT token服务
-//
-//	@author centonhuang
-//	@update 2024-06-22 11:07:06
-type JwtTokenService struct {
+type JwtTokenSigner interface {
+	EncodeToken(userID uint) (token string, err error)
+	DecodeToken(tokenString string) (userID uint, err error)
+}
+
+type jwtTokenSigner struct {
 	JwtTokenSecret  string
 	JwtTokenExpired time.Duration
 }
@@ -36,7 +37,7 @@ type JwtTokenService struct {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-09-21 02:57:11
-func (s *JwtTokenService) EncodeToken(userID uint) (token string, err error) {
+func (s *jwtTokenSigner) EncodeToken(userID uint) (token string, err error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -55,7 +56,7 @@ func (s *JwtTokenService) EncodeToken(userID uint) (token string, err error) {
 //	@return err error
 //	@author centonhuang
 //	@update 2024-06-22 11:25:00
-func (s *JwtTokenService) DecodeToken(tokenString string) (userID uint, err error) {
+func (s *jwtTokenSigner) DecodeToken(tokenString string) (userID uint, err error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
