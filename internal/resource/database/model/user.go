@@ -5,7 +5,6 @@ package model
 
 import (
 	"database/sql"
-	"time"
 
 	"gorm.io/gorm"
 )
@@ -19,6 +18,8 @@ type (
 	//	@update 2024-09-21 01:34:29
 
 	PermissionLevel int8
+
+	Quota int8
 
 	// Platform string 平台
 	//	@update 2024-09-21 01:34:12
@@ -42,16 +43,30 @@ const (
 	// PermissionAdmin admin permission
 	//	@update 2024-06-22 10:05:17
 	PermissionAdmin Permission = "admin"
+
+	QuotaReader Quota = 5
+
+	QuotaCreator Quota = 30
+
+	QuotaAdmin Quota = 120
 )
 
 // PermissionLevelMapping 权限等级映射
 //
 //	@update 2024-09-21 01:34:29
-var PermissionLevelMapping = map[Permission]int8{
-	PermissionReader:  1,
-	PermissionCreator: 2,
-	PermissionAdmin:   3,
-}
+var (
+	PermissionLevelMapping = map[Permission]int8{
+		PermissionReader:  1,
+		PermissionCreator: 2,
+		PermissionAdmin:   3,
+	}
+
+	PermissionQuotaMapping = map[Permission]Quota{
+		PermissionReader:  QuotaReader,
+		PermissionCreator: QuotaCreator,
+		PermissionAdmin:   QuotaAdmin,
+	}
+)
 
 // User 用户数据库模型
 //
@@ -64,24 +79,12 @@ type User struct {
 	Email        string       `json:"email" gorm:"column:email;unique;not null;comment:邮箱"`
 	Avatar       string       `json:"avatar" gorm:"column:avatar;not null;comment:头像"`
 	Permission   Permission   `json:"permission" gorm:"column:permission;not null;default:'general';comment:权限"`
-	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;not null;comment:最后登录时间"`
+	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;not null;default:CURRENT_TIMESTAMP;comment:最后登录时间"`
 	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
+	LLMQuota     Quota        `json:"llm_quota" gorm:"column:llm_quota;not null;default:0;comment:LLM配额"`
 	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
 	Categories   []Category   `json:"categories" gorm:"foreignKey:UserID"`
 	Tags         []Tag        `json:"tags" gorm:"foreignKey:CreatedBy"`
-}
-
-// BeforeCreate 创建用户前
-//
-//	@receiver u *User
-//	@param _ *gorm.DB
-//	@return err error
-//	@update 2024-06-22 10:10:07
-func (u *User) BeforeCreate(_ *gorm.DB) (err error) {
-	if !u.LastLogin.Valid {
-		u.LastLogin = sql.NullTime{Time: time.Now(), Valid: true}
-	}
-	return
 }
 
 // GetBasicInfo 获取用户基本信息

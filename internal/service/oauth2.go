@@ -139,6 +139,7 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 			Email:      email,
 			Avatar:     avatar,
 			Permission: model.PermissionReader,
+			LLMQuota:   model.QuotaReader,
 			Categories: []model.Category{*defaultCategory},
 		}
 

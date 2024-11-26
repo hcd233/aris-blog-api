@@ -50,3 +50,31 @@ func (dao *UserDAO) GetByName(db *gorm.DB, name string, fields, preloads []strin
 	err = sql.Where(model.User{Name: name}).First(&user).Error
 	return
 }
+
+// DeliverLLMQuota 发放LLM配额
+//
+//	@receiver dao *UserDAO
+//	@param db *gorm.DB
+//	@param userID uint
+//	@param quota model.Quota
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-26 02:48:55
+func (dao *UserDAO) DeliverLLMQuota(db *gorm.DB, userID uint, quota model.Quota) error {
+	return dao.Update(db, &model.User{ID: userID}, map[string]interface{}{
+		"llm_quota": quota,
+	})
+}
+
+// BatchDeliverLLMQuota 批量发放LLM配额
+//
+//	@receiver dao *UserDAO
+//	@param db *gorm.DB
+//	@param userIDs []uint
+//	@param quota model.Quota
+//	@return err error
+//	@author centonhuang
+//	@update 2024-11-26 02:50:15
+func (dao *UserDAO) BatchDeliverLLMQuota(db *gorm.DB, userIDs []uint, quota model.Quota) error {
+	return db.Model(&model.User{}).Where("id IN ?", userIDs).Update("llm_quota", quota).Error
+}

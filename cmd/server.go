@@ -6,6 +6,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/Aris-blog/internal/cron"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/resource/cache"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
@@ -30,6 +31,7 @@ var startServerCmd = &cobra.Command{
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		database.InitDatabase()
+		cron.InitCronJobs()
 		cache.InitCache()
 		search.InitSearchEngine()
 		storage.InitMinioClient()
