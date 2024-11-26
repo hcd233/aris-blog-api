@@ -12,9 +12,25 @@ type cronLoggerAdapter struct {
 }
 
 func (l cronLoggerAdapter) Error(err error, msg string, keysAndValues ...interface{}) {
-	l.logger.Error(msg, zap.Error(err))
+	zapKeyValues := []zap.Field{zap.Error(err)}
+	zapKeyValues = append(zapKeyValues, convertZapKeyValues(keysAndValues...)...)
+	l.logger.Error("[Cron] "+msg, zapKeyValues...)
 }
 
 func (l cronLoggerAdapter) Info(msg string, keysAndValues ...interface{}) {
-	l.logger.Info(msg)
+	zapKeyValues := convertZapKeyValues(keysAndValues...)
+	l.logger.Info("[Cron] "+msg, zapKeyValues...)
+}
+
+func convertZapKeyValues(keysAndValues ...interface{}) []zap.Field {
+	if len(keysAndValues)%2 != 0 {
+		panic("keysAndValues must be a slice of key-value pairs")
+	}
+	len := len(keysAndValues) / 2
+	zapKeyValues := make([]zap.Field, 0, len)
+	for i := 0; i < len; i++ {
+		key, value := keysAndValues[i*2].(string), keysAndValues[i*2+1]
+		zapKeyValues = append(zapKeyValues, zap.Any(key, value))
+	}
+	return zapKeyValues
 }
