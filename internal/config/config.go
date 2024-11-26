@@ -99,6 +99,12 @@ var (
 	// MinioAccessKey string Minio Access Key
 	MinioAccessKey string
 
+	// OpenAIAPIKey string OpenAI API Key
+	OpenAIAPIKey string
+
+	// OpenAIBaseURL string OpenAI Base URL
+	OpenAIBaseURL string
+
 	// JwtAccessTokenExpired time.Duration Access Jwt Token过期时间
 	//	@update 2024-06-22 11:09:19
 	JwtAccessTokenExpired time.Duration
@@ -163,6 +169,9 @@ func initEnvironment() {
 	MinioPort = config.GetString("minio.port")
 	MinioAccessID = config.GetString("minio.access.id")
 	MinioAccessKey = config.GetString("minio.access.key")
+
+	OpenAIAPIKey = config.GetString("openai.api.key")
+	OpenAIBaseURL = config.GetString("openai.base.url")
 
 	JwtAccessTokenExpired = config.GetDuration("jwt.access.token.expired")
 	JwtAccessTokenSecret = config.GetString("jwt.access.token.secret")
