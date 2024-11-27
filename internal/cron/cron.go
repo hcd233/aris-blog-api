@@ -1,6 +1,10 @@
 package cron
 
-import "go.uber.org/zap"
+import (
+	"fmt"
+
+	"go.uber.org/zap"
+)
 
 func InitCronJobs() {
 	quotaCron := NewQuotaCron()
@@ -8,18 +12,26 @@ func InitCronJobs() {
 }
 
 type cronLoggerAdapter struct {
+	prefix string
 	logger *zap.Logger
+}
+
+func newCronLoggerAdapter(prefix string, logger *zap.Logger) cronLoggerAdapter {
+	if prefix == "" {
+		prefix = "[Cron]"
+	}
+	return cronLoggerAdapter{prefix: prefix, logger: logger}
 }
 
 func (l cronLoggerAdapter) Error(err error, msg string, keysAndValues ...interface{}) {
 	zapKeyValues := []zap.Field{zap.Error(err)}
 	zapKeyValues = append(zapKeyValues, convertZapKeyValues(keysAndValues...)...)
-	l.logger.Error("[Cron] "+msg, zapKeyValues...)
+	l.logger.Error(fmt.Sprintf("[%s] %s", l.prefix, msg), zapKeyValues...)
 }
 
 func (l cronLoggerAdapter) Info(msg string, keysAndValues ...interface{}) {
 	zapKeyValues := convertZapKeyValues(keysAndValues...)
-	l.logger.Info("[Cron] "+msg, zapKeyValues...)
+	l.logger.Info(fmt.Sprintf("[%s] %s", l.prefix, msg), zapKeyValues...)
 }
 
 func convertZapKeyValues(keysAndValues ...interface{}) []zap.Field {
