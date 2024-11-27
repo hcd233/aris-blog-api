@@ -10,6 +10,7 @@ import (
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/resource/cache"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
+	"github.com/hcd233/Aris-blog/internal/resource/llm"
 	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/hcd233/Aris-blog/internal/resource/storage"
 	"github.com/hcd233/Aris-blog/internal/router"
@@ -35,6 +36,7 @@ var startServerCmd = &cobra.Command{
 		cache.InitCache()
 		search.InitSearchEngine()
 		storage.InitMinioClient()
+		llm.InitOpenAIClient()
 
 		r := gin.New()
 		r.Use(
