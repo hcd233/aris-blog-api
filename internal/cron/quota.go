@@ -25,7 +25,7 @@ type QuotaCron struct {
 func NewQuotaCron() Cron {
 	return &QuotaCron{
 		cron: cron.New(
-			cron.WithLogger(cronLoggerAdapter{logger: logger.Logger}),
+			cron.WithLogger(newCronLoggerAdapter("QuotaCron", logger.Logger)),
 		),
 		db:      database.GetDBInstance(),
 		userDAO: dao.GetUserDAO(),
