@@ -28,6 +28,7 @@ type articleVersionService struct {
 	userDAO           *dao.UserDAO
 	articleDAO        *dao.ArticleDAO
 	articleVersionDAO *dao.ArticleVersionDAO
+	articleDocDAO     *doc_dao.ArticleDocDAO
 }
 
 func NewArticleVersionService() ArticleVersionService {
@@ -106,9 +107,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 	}
 
 	if article.Status == model.ArticleStatusPublish {
-		articleDocDAO := doc_dao.GetArticleDocDAO()
-
-		lo.Must0(articleDocDAO.UpdateDocument(document.TransformArticleToDocument(&model.Article{ID: article.ID, User: &model.User{}}, articleVersion)))
+		lo.Must0(s.articleDocDAO.UpdateDocument(document.TransformArticleToDocument(&model.Article{ID: article.ID, User: &model.User{}}, articleVersion)))
 
 		if err := s.articleDAO.Update(s.db, article, map[string]interface{}{"published_at": time.Now()}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
