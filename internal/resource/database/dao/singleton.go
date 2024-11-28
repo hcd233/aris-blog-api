@@ -13,6 +13,7 @@ var (
 	commentDAOSingleton        *CommentDAO
 	userLikeDAOSingleton       *UserLikeDAO
 	userViewDAOSingleton       *UserViewDAO
+	promptDAOSingleton         *PromptDAO
 
 	categoryOnce       sync.Once
 	userOnce           sync.Once
@@ -22,6 +23,7 @@ var (
 	commentOnce        sync.Once
 	userLikeOnce       sync.Once
 	userViewOnce       sync.Once
+	promptOnce         sync.Once
 )
 
 // GetCategoryDAO 获取类别DAO
@@ -118,4 +120,16 @@ func GetUserViewDAO() *UserViewDAO {
 		userViewDAOSingleton = &UserViewDAO{}
 	})
 	return userViewDAOSingleton
+}
+
+// GetPromptDAO 获取提示词DAO
+//
+//	@return *PromptDAO
+//	@author centonhuang
+//	@update 2024-11-28 04:26:28
+func GetPromptDAO() *PromptDAO {
+	promptOnce.Do(func() {
+		promptDAOSingleton = &PromptDAO{}
+	})
+	return promptDAOSingleton
 }
