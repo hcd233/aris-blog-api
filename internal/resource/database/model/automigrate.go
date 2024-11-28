@@ -12,4 +12,5 @@ var Models = []interface{}{
 	&Article{},
 	&UserLike{},
 	&UserView{},
+	&Prompt{},
 }
