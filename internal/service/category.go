@@ -137,7 +137,9 @@ func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: category.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"category": category.GetBasicInfo(),
+		},
 	})
 }
 
@@ -178,7 +180,9 @@ func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: rootCategory.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"category": rootCategory.GetBasicInfo(),
+		},
 	})
 }
 
@@ -247,7 +251,9 @@ func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: category.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"category": category.GetBasicInfo(),
+		},
 	})
 }
 

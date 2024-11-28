@@ -92,7 +92,9 @@ func (s *userService) GetUserInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: user.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"user": user.GetDetailedInfo(),
+		},
 	})
 }
 

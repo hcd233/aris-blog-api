@@ -71,7 +71,9 @@ func (s *githubOauth2Service) LoginHandler(c *gin.Context) {
 	c.JSON(200, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Redirect to Github login page",
-		Data:    map[string]interface{}{"redirect_url": url},
+		Data: map[string]interface{}{
+			"redirectURL": url,
+		},
 	})
 }
 

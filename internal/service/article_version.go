@@ -120,7 +120,9 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: articleVersion.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"articleVersion": articleVersion.GetBasicInfo(),
+		},
 	})
 }
 
@@ -170,7 +172,9 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: articleVersion.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"articleVersion": articleVersion.GetDetailedInfo(),
+		},
 	})
 }
 
@@ -215,7 +219,9 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: articleVersion.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"articleVersion": articleVersion.GetDetailedInfo(),
+		},
 	})
 }
 

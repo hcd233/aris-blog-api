@@ -88,7 +88,9 @@ func (s *tagService) CreateTagHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: tag.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"tag": tag.GetBasicInfo(),
+		},
 	})
 }
 
@@ -111,7 +113,9 @@ func (s *tagService) GetTagInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: tag.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"tag": tag.GetDetailedInfo(),
+		},
 	})
 }
 
@@ -178,7 +182,9 @@ func (s *tagService) UpdateTagHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: tag.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"tag": tag.GetDetailedInfo(),
+		},
 	})
 }
 
