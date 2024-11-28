@@ -16,9 +16,9 @@ func NewMultiTurnPrompt(prompts []Prompt) Prompt {
 	}
 }
 
-func (mp *MultiTurnPrompt) Format(params map[string]interface{}) (messages []message.Message, err error) {
+func (mtp *MultiTurnPrompt) Format(params map[string]interface{}) (messages []message.Message, err error) {
 	var msgs []message.Message
-	for _, prompt := range mp.prompts {
+	for _, prompt := range mtp.prompts {
 		msgs, err = prompt.Format(params)
 		if err != nil {
 			err = fmt.Errorf("failed to format prompt: %w", err)
