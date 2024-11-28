@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"net/http"
 	"sync"
 
@@ -78,14 +77,6 @@ func (s *userService) GetUserInfoHandler(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
 			Message: err.Error(),
-		})
-		return
-	}
-
-	if user == nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeUserNotFoundError,
-			Message: fmt.Sprintf("User `%s` not found", uri.UserName),
 		})
 		return
 	}
