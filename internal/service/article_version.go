@@ -118,6 +118,8 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 		}
 	}
 
+	articleVersion = lo.Must1(s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "created_at", "version"}, []string{}))
+
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
