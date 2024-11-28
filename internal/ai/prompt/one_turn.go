@@ -21,12 +21,12 @@ func NewOneTurnPrompt(role, template string) *OneTurnPrompt {
 	}
 }
 
-func (sp *OneTurnPrompt) Format(params map[string]interface{}) (messages []message.Message, err error) {
+func (otp *OneTurnPrompt) Format(params map[string]interface{}) (messages []message.Message, err error) {
 	if params == nil {
 		return nil, fmt.Errorf("params cannot be nil")
 	}
 
-	tmpl, err := template.New("simplePrompt").Option("missingkey=error").Parse(sp.template)
+	tmpl, err := template.New("Prompt").Option("missingkey=error").Parse(otp.template)
 	if err != nil {
 		err = fmt.Errorf("failed to parse template: %w", err)
 		return
@@ -45,7 +45,7 @@ func (sp *OneTurnPrompt) Format(params map[string]interface{}) (messages []messa
 
 	messages = []message.Message{
 		{
-			Role:    sp.role,
+			Role:    otp.role,
 			Content: buf.String(),
 		},
 	}
