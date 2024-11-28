@@ -147,3 +147,12 @@ type LogUserViewArticleBody struct {
 	ArticleSlug string `json:"articleSlug" binding:"required"`
 	Progress    int8   `json:"progress" binding:"min=0,max=100"`
 }
+
+type Template struct {
+	Role    string `json:"role" binding:"required"`
+	Content string `json:"content" binding:"required"`
+}
+
+type CreatePromptBody struct {
+	Templates []Template `json:"templates" binding:"required,min=1,dive"`
+}
