@@ -69,3 +69,12 @@ type ObjectURI struct {
 	UserURI
 	ObjectName string `uri:"objectName" binding:"required"`
 }
+
+type TaskURI struct {
+	TaskName string `uri:"taskName" binding:"required,oneof=contentCompletion articleSummary articleTranslation articleQA termExplaination"`
+}
+
+type PromptVersionURI struct {
+	TaskURI
+	Version uint `uri:"version" binding:"required,min=1"`
+}

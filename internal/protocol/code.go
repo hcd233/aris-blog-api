@@ -227,6 +227,14 @@ const (
 	//	@update 2024-09-21 08:22:14
 	CodeDeleteImageError ResponseCode = 1054
 
+	// CodeGetPromptError ResponseCode 获取提示词错误
+	//	@update 2024-11-28 04:16:22
+	CodeGetPromptError ResponseCode = 1056
+
+	// CodeCreatePromptError ResponseCode 创建提示词错误
+	//	@update 2024-11-28 04:16:22
+	CodeCreatePromptError ResponseCode = 1057
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -302,6 +310,9 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeDeleteImageError:          "删除图片错误",
 	CodeBucketExistError:          "存储桶已存在",
 	CodeUploadImageRateLimitError: "达到上传图片频率限制，请稍后再试",
+
+	CodeGetPromptError:    "获取提示词错误",
+	CodeCreatePromptError: "创建提示词错误",
 
 	CodeRefreshTokenRateLimitError: "达到刷新令牌频率限制，请稍后再试",
 
