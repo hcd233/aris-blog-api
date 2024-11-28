@@ -665,7 +665,9 @@ func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: userView.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"userView": userView.GetBasicInfo(),
+		},
 	})
 }
 

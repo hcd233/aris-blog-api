@@ -128,7 +128,9 @@ func (s *articleService) CreateArticleHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: article.GetBasicInfo(),
+		Data: map[string]interface{}{
+			"article": article.GetBasicInfo(),
+		},
 	})
 }
 
@@ -164,7 +166,9 @@ func (s *articleService) GetArticleInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: article.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"article": article.GetDetailedInfo(),
+		},
 	})
 }
 

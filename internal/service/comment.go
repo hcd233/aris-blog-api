@@ -111,7 +111,9 @@ func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: comment.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"comment": comment.GetDetailedInfo(),
+		},
 	})
 }
 
@@ -152,7 +154,9 @@ func (s *commentService) GetCommentInfoHandler(c *gin.Context) {
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
-		Data: comment.GetDetailedInfo(),
+		Data: map[string]interface{}{
+			"comment": comment.GetDetailedInfo(),
+		},
 	})
 }
 
