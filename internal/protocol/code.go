@@ -235,6 +235,14 @@ const (
 	//	@update 2024-11-28 04:16:22
 	CodeCreatePromptError ResponseCode = 1057
 
+	// CodeGetLockError ResponseCode 获取锁错误
+	//	@update 2024-11-29 04:16:22
+	CodeGetLockError ResponseCode = 1058
+
+	// CodeReleaseLockError ResponseCode 释放锁错误
+	//	@update 2024-11-29 04:16:22
+	CodeReleaseLockError ResponseCode = 1059
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -315,6 +323,9 @@ var CodeMessageMapping = map[ResponseCode]string{
 	CodeCreatePromptError: "创建提示词错误",
 
 	CodeRefreshTokenRateLimitError: "达到刷新令牌频率限制，请稍后再试",
+
+	CodeGetLockError:     "获取锁错误",
+	CodeReleaseLockError: "释放锁错误",
 
 	CodeUnknownError: "未知错误",
 }
