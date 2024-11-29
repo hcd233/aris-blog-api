@@ -40,21 +40,28 @@ func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string
 	instance := limiter.New(store, rate)
 
 	// 创建中间件
-	middleware := mgin.NewMiddleware(instance, mgin.WithLimitReachedHandler(func(c *gin.Context) {
-		c.JSON(http.StatusTooManyRequests, protocol.Response{
-			Code: errorCode,
-		})
-	}))
+	middleware := mgin.NewMiddleware(instance,
+		mgin.WithLimitReachedHandler(func(c *gin.Context) {
+			c.JSON(http.StatusTooManyRequests, protocol.Response{
+				Code: errorCode,
+			})
+			c.Abort()
+		}),
+		mgin.WithKeyGetter(func(c *gin.Context) string {
+			return c.MustGet("limiter").(string)
+		}),
+	)
 
 	return func(c *gin.Context) {
 		// 获取限频 key
 		value := c.MustGet(key)
+
 		if key == "" {
 			value = c.ClientIP() // 如果没有指定的参数，则使用 IP 地址作为 key
 		}
 
 		// 设置限频 key
-		c.Set("limiter", fmt.Sprintf("%s:%s", key, value))
+		c.Set("limiter", fmt.Sprintf("%s:%v", key, value))
 
 		// 应用限频中间件
 		middleware(c)
