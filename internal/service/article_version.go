@@ -46,7 +46,7 @@ func NewArticleVersionService() ArticleVersionService {
 //	@author centonhuang
 //	@update 2024-10-17 12:44:17
 func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
@@ -134,7 +134,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
 func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleVersionURI)
 
 	if userName != uri.UserName {
@@ -181,7 +181,7 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 }
 
 func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	if userName != uri.UserName {
@@ -233,7 +233,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 //	@author centonhuang
 //	@update 2024-10-16 10:13:59
 func (s *articleVersionService) ListArticleVersionsHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 

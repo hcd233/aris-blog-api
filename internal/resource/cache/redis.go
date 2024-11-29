@@ -11,7 +11,7 @@ import (
 
 var rdb *redis.Client
 
-func GetCacheInstance() *redis.Client {
+func GetRedisClient() *redis.Client {
 	return rdb
 }
 

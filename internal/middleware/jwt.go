@@ -20,6 +20,11 @@ import (
 //	@author centonhuang
 //	@update 2024-09-16 05:35:57
 func JwtMiddleware() gin.HandlerFunc {
+
+	db := database.GetDBInstance()
+	dao := dao.GetUserDAO()
+	jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
+
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
@@ -37,8 +42,6 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
-
 		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString[7:])
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
@@ -49,9 +52,6 @@ func JwtMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		dao := dao.GetUserDAO()
-
-		db := database.GetDBInstance()
 		user, err := dao.GetByID(db, userID, []string{"name", "permission"}, []string{})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{

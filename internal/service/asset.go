@@ -71,7 +71,7 @@ func NewAssetService() AssetService {
 //	@author centonhuang
 //	@update 2024-11-03 06:45:42
 func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -152,7 +152,7 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-11-03 06:47:41
 func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -233,7 +233,7 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-11-03 06:47:43
 func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -309,7 +309,8 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 }
 
 func (s *assetService) CreateBucketHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
 	if userName != uri.UserName {
@@ -369,7 +370,8 @@ func (s *assetService) CreateBucketHandler(c *gin.Context) {
 }
 
 func (s *assetService) ListImagesHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
 	if userName != uri.UserName {
@@ -398,7 +400,8 @@ func (s *assetService) ListImagesHandler(c *gin.Context) {
 }
 
 func (s *assetService) UploadImageHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	file, err := c.FormFile("file")
 
@@ -528,7 +531,8 @@ func (s *assetService) UploadImageHandler(c *gin.Context) {
 }
 
 func (s *assetService) GetImageHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
 	param := c.MustGet("param").(*protocol.ImageParam)
 
@@ -573,7 +577,8 @@ func (s *assetService) GetImageHandler(c *gin.Context) {
 }
 
 func (s *assetService) DeleteImageHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
 
 	if userName != uri.UserName {
@@ -624,7 +629,8 @@ func (s *assetService) DeleteImageHandler(c *gin.Context) {
 }
 
 func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.ArticleParam)
 
@@ -677,7 +683,8 @@ func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-11-03 06:45:42
 func (s *assetService) ListUserViewArticlesHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	pageParam := c.MustGet("param").(*protocol.PageParam)
 
@@ -710,7 +717,8 @@ func (s *assetService) ListUserViewArticlesHandler(c *gin.Context) {
 }
 
 func (s *assetService) DeleteUserViewHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ViewURI)
 
 	if userName != uri.UserName {

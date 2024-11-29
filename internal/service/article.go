@@ -54,7 +54,8 @@ func NewArticleService() ArticleService {
 //	@author centonhuang
 //	@update 2024-09-21 09:58:14
 func (s *articleService) CreateArticleHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateArticleBody)
 
@@ -180,7 +181,7 @@ func (s *articleService) GetArticleInfoHandler(c *gin.Context) {
 func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
@@ -259,7 +260,7 @@ func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-17 09:28:54
 func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
 
@@ -342,7 +343,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-22 04:32:37
 func (s *articleService) DeleteArticleHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	if userName != uri.UserName {

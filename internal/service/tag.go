@@ -43,7 +43,8 @@ func NewTagService() TagService {
 }
 
 func (s *tagService) CreateTagHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	body := c.MustGet("body").(*protocol.CreateTagBody)
 
 	tag := &model.Tag{
@@ -120,7 +121,7 @@ func (s *tagService) GetTagInfoHandler(c *gin.Context) {
 }
 
 func (s *tagService) UpdateTagHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
@@ -190,7 +191,7 @@ func (s *tagService) UpdateTagHandler(c *gin.Context) {
 
 // DeleteTagHandler 删除标签
 func (s *tagService) DeleteTagHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
 	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "create_by"}, []string{})

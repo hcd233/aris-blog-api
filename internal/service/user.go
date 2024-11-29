@@ -95,9 +95,10 @@ func (s *userService) GetUserInfoHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-09-18 01:54:05
 func (s *userService) UpdateInfoHandler(c *gin.Context) {
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.UpdateUserBody)
-	userID, userName := c.GetUint("userID"), c.GetString("userName")
 
 	if userName != uri.UserName {
 		c.JSON(http.StatusForbidden, protocol.Response{
