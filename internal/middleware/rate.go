@@ -32,7 +32,9 @@ func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string
 
 	redis := cache.GetRedisClient()
 	// 使用内存存储限频数据
-	store := lo.Must1(redis_store.NewStore(redis))
+	store := lo.Must1(redis_store.NewStoreWithOptions(redis, limiter.StoreOptions{
+		Prefix: prefix,
+	}))
 
 	// 创建限频实例
 	instance := limiter.New(store, rate)
@@ -52,7 +54,7 @@ func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string
 		}
 
 		// 设置限频 key
-		c.Set("limiter", fmt.Sprintf("%s:%s:%s", prefix, key, value))
+		c.Set("limiter", fmt.Sprintf("%s:%s", key, value))
 
 		// 应用限频中间件
 		middleware(c)
