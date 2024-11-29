@@ -49,7 +49,8 @@ func NewOperationService() OperationService {
 //	@author centonhuang
 //	@update 2024-10-30 05:52:24
 func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.LikeArticleBody)
 
@@ -130,7 +131,8 @@ func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-30 05:52:08
 func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.LikeCommentBody)
 
@@ -194,7 +196,8 @@ func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-29 07:10:45
 func (s *operationService) UserLikeTagHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.LikeTagBody)
 
@@ -258,7 +261,8 @@ func (s *operationService) UserLikeTagHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-11-03 06:45:42
 func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
-	userID, userName := c.MustGet("userID").(uint), c.MustGet("userName").(string)
+	userID := c.GetUint("userID")
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.LogUserViewArticleBody)
 

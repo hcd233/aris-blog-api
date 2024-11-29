@@ -44,7 +44,7 @@ func NewCategoryService() CategoryService {
 //	@author centonhuang
 //	@update 2024-09-28 07:03:28
 func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
 
@@ -106,7 +106,7 @@ func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-01 04:58:27
 func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
 	if userName != uri.UserName {
@@ -149,7 +149,7 @@ func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-23 03:56:26
 func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
 	if userName != uri.UserName {
@@ -192,7 +192,7 @@ func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-02 03:45:55
 func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
 
@@ -263,7 +263,7 @@ func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-02 04:55:08
 func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
 	if userName != uri.UserName {
@@ -328,7 +328,7 @@ func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-01 05:09:47
 func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -392,7 +392,7 @@ func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-02 01:38:12
 func (s *categoryService) ListChildrenArticlesHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 

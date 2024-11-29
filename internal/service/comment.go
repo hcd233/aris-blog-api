@@ -42,7 +42,7 @@ func NewCommentService() CommentService {
 //	@author centonhuang
 //	@update 2024-10-24 04:29:47
 func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.CreateArticleCommentBody)
 
@@ -166,7 +166,7 @@ func (s *commentService) GetCommentInfoHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-24 07:05:09
 func (s *commentService) DeleteCommentHandler(c *gin.Context) {
-	userID := c.MustGet("userID").(uint)
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.CommentURI)
 
 	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
@@ -223,7 +223,7 @@ func (s *commentService) DeleteCommentHandler(c *gin.Context) {
 //	@author centonhuang
 //	@update 2024-10-23 05:59:57
 func (s *commentService) ListArticleCommentsHandler(c *gin.Context) {
-	userName := c.MustGet("userName").(string)
+	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
