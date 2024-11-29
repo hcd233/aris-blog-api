@@ -17,7 +17,7 @@ func initArticleCommentRouter(r *gin.RouterGroup) {
 	{
 		commentRouter.POST(
 			"",
-			middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeCreateCommentRateLimitError),
+			middleware.RateLimiterMiddleware(10*time.Second, 1, "createComment", "userID", protocol.CodeCreateCommentRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}),
 			commentService.CreateArticleCommentHandler,
 		)
