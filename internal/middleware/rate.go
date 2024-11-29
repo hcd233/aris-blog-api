@@ -7,9 +7,11 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/resource/cache"
+	"github.com/samber/lo"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
-	"github.com/ulule/limiter/v3/drivers/store/memory"
+	redis_store "github.com/ulule/limiter/v3/drivers/store/redis"
 )
 
 // RateLimiterMiddleware 限频中间件
@@ -21,15 +23,16 @@ import (
 //	@return gin.HandlerFunc
 //	@author centonhuang
 //	@update 2024-10-22 05:01:51
-func RateLimiterMiddleware(period time.Duration, limit int64, key string, errorCode protocol.ResponseCode) gin.HandlerFunc {
+func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string, errorCode protocol.ResponseCode) gin.HandlerFunc {
 	// 创建限频规则
 	rate := limiter.Rate{
 		Period: period,
 		Limit:  limit,
 	}
 
+	redis := cache.GetRedisClient()
 	// 使用内存存储限频数据
-	store := memory.NewStore()
+	store := lo.Must1(redis_store.NewStore(redis))
 
 	// 创建限频实例
 	instance := limiter.New(store, rate)
@@ -43,13 +46,13 @@ func RateLimiterMiddleware(period time.Duration, limit int64, key string, errorC
 
 	return func(c *gin.Context) {
 		// 获取限频 key
-		value := c.Param(key)
+		value := c.MustGet(key)
 		if key == "" {
 			value = c.ClientIP() // 如果没有指定的参数，则使用 IP 地址作为 key
 		}
 
 		// 设置限频 key
-		c.Set("limiter", fmt.Sprintf("%s:%s", key, value))
+		c.Set("limiter", fmt.Sprintf("%s:%s:%s", prefix, key, value))
 
 		// 应用限频中间件
 		middleware(c)

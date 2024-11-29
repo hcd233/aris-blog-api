@@ -309,7 +309,7 @@ github.com/ugorji/go/codec
 github.com/ulule/limiter/v3
 github.com/ulule/limiter/v3/drivers/middleware/gin
 github.com/ulule/limiter/v3/drivers/store/common
-github.com/ulule/limiter/v3/drivers/store/memory
+github.com/ulule/limiter/v3/drivers/store/redis
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19
 go.uber.org/multierr

@@ -14,7 +14,7 @@ func initTokenRouter(r *gin.RouterGroup) {
 	{
 		tokenRouter.POST(
 			"refresh",
-			middleware.RateLimiterMiddleware(config.JwtAccessTokenExpired/4, 2, "", protocol.CodeRefreshTokenRateLimitError),
+			middleware.RateLimiterMiddleware(config.JwtAccessTokenExpired/4, 2, "refreshToken", "userID", protocol.CodeRefreshTokenRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}),
 			tokenService.RefreshTokenHandler,
 		)

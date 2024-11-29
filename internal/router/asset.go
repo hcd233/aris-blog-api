@@ -45,7 +45,7 @@ func initUserAssetRouter(r *gin.RouterGroup) {
 				imageRouter.POST(
 					"",
 					middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
-					middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeUploadImageRateLimitError),
+					middleware.RateLimiterMiddleware(10*time.Second, 1, "uploadImage", "userID", protocol.CodeUploadImageRateLimitError),
 					assetService.UploadImageHandler,
 				)
 				imageIDRouter := imageRouter.Group("/:objectName", middleware.ValidateURIMiddleware(&protocol.ObjectURI{}))

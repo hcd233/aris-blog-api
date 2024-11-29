@@ -18,7 +18,7 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 	{
 		articleVersionRouter.POST(
 			"",
-			middleware.RateLimiterMiddleware(10*time.Second, 1, "userID", protocol.CodeCreateArticleVersionRateLimitError),
+			middleware.RateLimiterMiddleware(10*time.Second, 1, "createArticleVersion", "userID", protocol.CodeCreateArticleVersionRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			articleVersionService.CreateArticleVersionHandler,
 		)
