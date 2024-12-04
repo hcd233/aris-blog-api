@@ -243,6 +243,14 @@ const (
 	//	@update 2024-11-29 04:16:22
 	CodeReleaseLockError ResponseCode = 1059
 
+	// CodeInsufficientQuota ResponseCode 用户额度不足
+	//	@update 2024-12-04 04:16:22
+	CodeInsufficientQuota ResponseCode = 1060
+
+	// CodeGenerateContentCompletionError ResponseCode 生成内容补全错误
+	//	@update 2024-12-04 04:16:22
+	CodeGenerateContentCompletionError ResponseCode = 1061
+
 	// CodeUnknownError ResponseCode 未知错误
 	//	@update 2024-09-21 08:22:14
 	CodeUnknownError ResponseCode = 10000
@@ -326,6 +334,10 @@ var CodeMessageMapping = map[ResponseCode]string{
 
 	CodeGetLockError:     "获取锁错误",
 	CodeReleaseLockError: "释放锁错误",
+
+	CodeInsufficientQuota: "用户额度不足",
+
+	CodeGenerateContentCompletionError: "生成内容补全错误",
 
 	CodeUnknownError: "未知错误",
 }

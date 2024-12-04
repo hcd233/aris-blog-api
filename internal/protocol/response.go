@@ -9,3 +9,9 @@ type Response struct {
 	Code    ResponseCode           `json:"code"`
 	Data    map[string]interface{} `json:"data"`
 }
+
+type AIStreamResponse struct {
+	Delta string `json:"delta"`
+	Stop  bool   `json:"stop"`
+	Error string `json:"error"`
+}
