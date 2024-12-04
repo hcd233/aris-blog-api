@@ -163,7 +163,7 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 		return
 	}
 
-	articleVersion, err := s.articleVersionDAO.GetByArticleIDAndVersion(s.db, article.ID, uri.Version, []string{"id", "created_at", "version", "content"}, []string{})
+	articleVersion, err := s.articleVersionDAO.GetByArticleIDAndVersion(s.db, article.ID, uri.Version, []string{"id", "created_at", "version", "content", "summary"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -210,7 +210,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 		return
 	}
 
-	articleVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "created_at", "version", "content"}, []string{})
+	articleVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "created_at", "version", "content", "summary"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
