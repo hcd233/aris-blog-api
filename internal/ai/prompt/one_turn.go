@@ -14,7 +14,7 @@ type OneTurnPrompt struct {
 	template string
 }
 
-func NewOneTurnPrompt(role, template string) *OneTurnPrompt {
+func NewOneTurnPrompt(role, template string) Prompt {
 	return &OneTurnPrompt{
 		role:     role,
 		template: template,
