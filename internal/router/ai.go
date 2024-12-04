@@ -31,8 +31,18 @@ func initAIRouter(r *gin.RouterGroup) {
 		{
 			creatorToolRouter := aiAppRouter.Group("/creator")
 			{
-				creatorToolRouter.POST("contentCompletion", middleware.ValidateBodyMiddleware(&protocol.GenerateContentCompletionBody{}), middleware.RedisLockMiddleware("contentCompletion", "userID", 30*time.Second), aiService.GenerateContentCompletionHandler)
-				//creatorToolRouter.POST("articleSummary", aiService.GenerateArticleSummaryHandler)
+				creatorToolRouter.POST(
+					"contentCompletion",
+					middleware.ValidateBodyMiddleware(&protocol.GenerateContentCompletionBody{}),
+					middleware.RedisLockMiddleware("contentCompletion", "userID", 30*time.Second),
+					aiService.GenerateContentCompletionHandler,
+				)
+				creatorToolRouter.POST(
+					"articleSummary",
+					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleSummaryBody{}),
+					middleware.RedisLockMiddleware("articleSummary", "userID", 30*time.Second),
+					aiService.GenerateArticleSummaryHandler,
+				)
 				//creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
 
 			}

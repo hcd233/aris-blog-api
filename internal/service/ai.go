@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -34,18 +33,22 @@ type AIService interface {
 }
 
 type aiService struct {
-	db        *gorm.DB
-	userDAO   *dao.UserDAO
-	promptDAO *dao.PromptDAO
-	openAI    *openai.Client
+	db                *gorm.DB
+	userDAO           *dao.UserDAO
+	articleDAO        *dao.ArticleDAO
+	articleVersionDAO *dao.ArticleVersionDAO
+	promptDAO         *dao.PromptDAO
+	openAI            *openai.Client
 }
 
 func NewAIService() AIService {
 	return &aiService{
-		db:        database.GetDBInstance(),
-		userDAO:   dao.GetUserDAO(),
-		promptDAO: dao.GetPromptDAO(),
-		openAI:    llm.GetOpenAIClient(),
+		db:                database.GetDBInstance(),
+		userDAO:           dao.GetUserDAO(),
+		articleDAO:        dao.GetArticleDAO(),
+		articleVersionDAO: dao.GetArticleVersionDAO(),
+		promptDAO:         dao.GetPromptDAO(),
+		openAI:            llm.GetOpenAIClient(),
 	}
 }
 
@@ -197,6 +200,7 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 			Code:    protocol.CodeInsufficientQuota,
 			Message: fmt.Sprintf("Insufficient LLM quota: %d", user.LLMQuota),
 		})
+		return
 	}
 
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
@@ -205,6 +209,7 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 			Code:    protocol.CodeGetPromptError,
 			Message: err.Error(),
 		})
+		return
 	}
 
 	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
@@ -226,48 +231,93 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 			Code:    protocol.CodeGenerateContentCompletionError,
 			Message: err.Error(),
 		})
+		return
 	}
 
-	c.Writer.Header().Set("Content-Type", "text/event-stream")
-	c.Writer.Header().Set("Cache-Control", "no-cache")
-	c.Writer.Header().Set("Connection", "keep-alive")
-
-	for {
-		select {
-		case token, ok := <-tokenChan:
-			if !ok {
-				c.SSEvent("done", string(lo.Must1(json.Marshal(protocol.AIStreamResponse{
-					Delta: "",
-					Stop:  true,
-					Error: "",
-				}))))
-				c.Writer.Flush()
-
-				lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
-				return
-			}
-			c.SSEvent("stream", string(lo.Must1(json.Marshal(protocol.AIStreamResponse{
-				Delta: token,
-				Stop:  false,
-				Error: "",
-			}))))
-			c.Writer.Flush()
-		case err := <-errChan:
-			if err != nil {
-				c.SSEvent("error", string(lo.Must1(json.Marshal(protocol.AIStreamResponse{
-					Delta: "",
-					Stop:  true,
-					Error: err.Error(),
-				}))))
-				c.Writer.Flush()
-				return
-			}
-		}
+	err = util.SendStreamEventResponses(c, tokenChan, errChan)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
 	}
+
+	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }
 
 func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
+	userID := c.GetUint("userID")
+	body := c.MustGet("body").(*protocol.GenerateArticleSummaryBody)
 
+	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	if user.LLMQuota <= 0 {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeInsufficientQuota,
+			Message: fmt.Sprintf("Insufficient LLM quota: %d", user.LLMQuota),
+		})
+		return
+	}
+
+	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleVersionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleSummary, []string{"id", "templates"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetPromptError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	})
+
+	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
+	chatOpenAI := chat_model.NewChatOpenAI(chat_model.OpenAIGPT4oMini, body.Temperature)
+
+	params := map[string]interface{}{
+		"title":       article.Title,
+		"content":     latestVersion.Content,
+		"instruction": body.Instruction,
+	}
+
+	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	err = util.SendStreamEventResponses(c, tokenChan, errChan)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }
 
 func (s *aiService) GenerateArticleTranslationHandler(c *gin.Context) {
