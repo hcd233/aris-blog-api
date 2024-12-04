@@ -31,7 +31,7 @@ func NewChatOpenAI(model OpenAIModel, temperature float64) ChatModel {
 	}
 }
 
-func (o *ChatOpenAI) Invoke(messages []message.Message) (string, error) {
+func (o *ChatOpenAI) Invoke(messages []message.Message) (sequence string, err error) {
 	if len(messages) == 0 {
 		return "", fmt.Errorf("empty messages")
 	}
@@ -61,7 +61,7 @@ func (o *ChatOpenAI) Invoke(messages []message.Message) (string, error) {
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (o *ChatOpenAI) Stream(messages []message.Message) (chan string, chan error, error) {
+func (o *ChatOpenAI) Stream(messages []message.Message) (tokenChan chan string, errChan chan error, err error) {
 	if len(messages) == 0 {
 		return nil, nil, fmt.Errorf("empty messages")
 	}
@@ -85,8 +85,8 @@ func (o *ChatOpenAI) Stream(messages []message.Message) (chan string, chan error
 		return nil, nil, fmt.Errorf("failed to create chat completion stream: %w", err)
 	}
 
-	tokenChan := make(chan string)
-	errChan := make(chan error)
+	tokenChan = make(chan string)
+	errChan = make(chan error)
 
 	go func() {
 		defer close(tokenChan)
