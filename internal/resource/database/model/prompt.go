@@ -22,10 +22,10 @@ const (
 type Prompt struct {
 	gorm.Model
 	ID        uint       `json:"id" gorm:"column:id;primary_key;auto_increment;comment:'提示词ID'"`
-	Task      Task       `json:"task" gorm:"column:task;index:idx_task;not null;comment:'任务类型'"`
+	Task      Task       `json:"task" gorm:"column:task;uniqueIndex:idx_task_version;not null;comment:'任务类型'"`
 	Templates []Template `json:"templates" gorm:"column:templates;type:json;not null;serializer:json;comment:'提示词模板'"`
 	Variables []string   `json:"variables" gorm:"column:variables;type:json;not null;serializer:json;comment:'提示词变量'"`
-	Version   uint       `json:"version" gorm:"column:version;not null;comment:'版本'"`
+	Version   uint       `json:"version" gorm:"column:version;uniqueIndex:idx_task_version;not null;comment:'版本'"`
 }
 
 func (p *Prompt) GetBasicInfo() map[string]interface{} {

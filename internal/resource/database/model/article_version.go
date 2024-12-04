@@ -15,6 +15,7 @@ type ArticleVersion struct {
 	Version     uint     `json:"version" gorm:"column:version;uniqueIndex:idx_article_version;comment:版本号"`
 	Content     string   `json:"content" gorm:"column:content;type:LONGTEXT null;comment:文章内容"`
 	Description string   `json:"description" gorm:"column:description;comment:版本描述"`
+	Summary     string   `json:"summary" gorm:"column:summary;type:LONGTEXT null;comment:版本摘要"`
 }
 
 // GetBasicInfo 获取文章基本信息
@@ -43,5 +44,6 @@ func (av *ArticleVersion) GetDetailedInfo() map[string]interface{} {
 		"createdAt": av.CreatedAt,
 		"version":   av.Version,
 		"content":   av.Content,
+		"summary":   av.Summary,
 	}
 }
