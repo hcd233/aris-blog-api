@@ -242,6 +242,8 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 					Error: "",
 				}))))
 				c.Writer.Flush()
+
+				lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 				return
 			}
 			c.SSEvent("stream", string(lo.Must1(json.Marshal(protocol.AIStreamResponse{
