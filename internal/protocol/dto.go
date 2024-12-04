@@ -167,3 +167,9 @@ type GenerateContentCompletionBody struct {
 	Instruction string `json:"instruction" binding:"required"`
 	Reference   string `json:"reference" binding:"omitempty"`
 }
+
+type GenerateArticleSummaryBody struct {
+	AIAPPRequestBody
+	ArticleSlug string `json:"articleSlug" binding:"required"`
+	Instruction string `json:"instruction" binding:"required"`
+}
