@@ -25,21 +25,21 @@ func initAIRouter(r *gin.RouterGroup) {
 				}
 			}
 		}
-		// aiAppRouter := aiRouter.Group("/app")
-		// {
-		// 	creatorToolRouter := aiAppRouter.Group("/creator")
-		// 	{
-		// 		creatorToolRouter.POST("contentCompletion", aiService.GenerateContentCompletionHandler)
-		// 		creatorToolRouter.POST("articleSummary", aiService.GenerateArticleSummaryHandler)
-		// 		creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
+		aiAppRouter := aiRouter.Group("/app")
+		{
+			creatorToolRouter := aiAppRouter.Group("/creator")
+			{
+				creatorToolRouter.POST("contentCompletion", middleware.ValidateBodyMiddleware(&protocol.GenerateContentCompletionBody{}), aiService.GenerateContentCompletionHandler)
+				//creatorToolRouter.POST("articleSummary", aiService.GenerateArticleSummaryHandler)
+				//creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
 
-		// 	}
-		// 	readerToolRouter := aiAppRouter.Group("/reader")
-		// 	{
-		// 		readerToolRouter.POST("articleQA", aiService.GenerateArticleQAHandler)
-		// 		readerToolRouter.POST("termExplaination", aiService.GenerateTermExplainationHandler)
-		// 	}
+			}
+			// readerToolRouter := aiAppRouter.Group("/reader")
+			// {
+			// 	readerToolRouter.POST("articleQA", aiService.GenerateArticleQAHandler)
+			// 	readerToolRouter.POST("termExplaination", aiService.GenerateTermExplainationHandler)
+			// }
 
-		// }
+		}
 	}
 }
