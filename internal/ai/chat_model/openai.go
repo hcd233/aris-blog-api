@@ -1,4 +1,4 @@
-package llm
+package chatmodel
 
 import (
 	"context"
@@ -17,21 +17,21 @@ const (
 	OpenAIGPT4oMini OpenAIModel = "gpt-4o-mini"
 )
 
-type OpenAILLM struct {
+type ChatOpenAI struct {
 	client      *openai.Client
 	model       OpenAIModel
 	temperature float64
 }
 
-func NewOpenAILLM(model OpenAIModel, temperature float64) LLM {
-	return &OpenAILLM{
+func NewChatOpenAI(model OpenAIModel, temperature float64) ChatModel {
+	return &ChatOpenAI{
 		client:      llm.GetOpenAIClient(),
 		model:       model,
 		temperature: temperature,
 	}
 }
 
-func (o *OpenAILLM) Invoke(messages []message.Message) (string, error) {
+func (o *ChatOpenAI) Invoke(messages []message.Message) (string, error) {
 	if len(messages) == 0 {
 		return "", fmt.Errorf("empty messages")
 	}
@@ -61,7 +61,7 @@ func (o *OpenAILLM) Invoke(messages []message.Message) (string, error) {
 	return resp.Choices[0].Message.Content, nil
 }
 
-func (o *OpenAILLM) Stream(messages []message.Message) (chan string, chan error, error) {
+func (o *ChatOpenAI) Stream(messages []message.Message) (chan string, chan error, error) {
 	if len(messages) == 0 {
 		return nil, nil, fmt.Errorf("empty messages")
 	}
