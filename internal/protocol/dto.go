@@ -156,3 +156,14 @@ type Template struct {
 type CreatePromptBody struct {
 	Templates []Template `json:"templates" binding:"required,min=1,dive"`
 }
+
+type AIAPPRequestBody struct {
+	Temperature float64 `json:"temperature" binding:"omitempty,min=0,max=1"`
+}
+
+type GenerateContentCompletionBody struct {
+	AIAPPRequestBody
+	Context     string `json:"context" binding:"required"`
+	Instruction string `json:"instruction" binding:"required"`
+	Reference   string `json:"reference" binding:"omitempty"`
+}
