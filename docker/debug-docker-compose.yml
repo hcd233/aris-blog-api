@@ -8,7 +8,7 @@ services:
     ports:
       - 7700:7700
     env_file:
-      - ./env/meilisearch.env
+      - ../env/meilisearch.env
     volumes:
       - meilisearch-data:/data.ms
     healthcheck:
@@ -30,8 +30,22 @@ services:
       interval: 5s
       retries: 10
     env_file:
-      - ./env/mysql.env
-
+      - ../env/mysql.env
+  redis:
+    image: bitnami/redis:latest
+    container_name: redis
+    restart: always
+    ports:
+      - 6379:6379
+    volumes:
+      - redis-data:/bitnami/redis/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    env_file:
+      - ../env/redis.env
   minio:
     image: minio/minio:latest
     container_name: minio
@@ -47,12 +61,15 @@ services:
       timeout: 5s
       retries: 3
     env_file:
-      - ./env/minio.env
+      - ../env/minio.env
 
 
 volumes:
   mysql-data:
     name: mysql-data
+    external: true
+  redis-data:
+    name: redis-data
     external: true
   meilisearch-data:
     name: meilisearch-data
@@ -64,4 +81,5 @@ volumes:
 # docker volume create mysql-data 
 # docker volume create meilisearch-data
 # docker volume create minio-data
-# docker compose -f debug-docker-compose.yml up -d
+# docker volume create redis-data
+# docker compose -f docker/debug-docker-compose.yml up -d
