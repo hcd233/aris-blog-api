@@ -55,6 +55,7 @@ var startServerCmd = &cobra.Command{
 			WriteTimeout:   config.WriteTimeout,
 			MaxHeaderBytes: config.MaxHeaderBytes,
 		}
+		defer s.Close()
 		lo.Must0(s.ListenAndServe())
 	},
 }
