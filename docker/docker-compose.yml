@@ -8,7 +8,7 @@ services:
     # ports:
     #   - 7700:7700
     env_file:
-      - ./env/meilisearch.env
+      - ../env/meilisearch.env
     volumes:
       - meilisearch-data:/data.ms
     healthcheck:
@@ -23,21 +23,40 @@ services:
     restart: always
     # ports:
     #   - 3306:3306
+    env_file:
+      - ../env/mysql.env
     volumes:
       - mysql-data:/var/lib/mysql
     healthcheck:
       test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u$$MYSQL_USER -p$$MYSQL_PASSWORD" ]
       interval: 5s
       retries: 10
+
+  redis:
+    image: bitnami/redis:latest
+    container_name: redis
+    restart: always
+    # ports:
+    #   - 6379:6379
     env_file:
-      - ./env/mysql.env
+      - ../env/redis.env
+    volumes:
+      - redis-data:/bitnami/redis/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   minio:
     image: minio/minio:latest
     container_name: minio
+    restart: always
     ports:
-      - 9000:9000
+    #   - 9000:9000
       - 9090:9090
+    env_file:
+      - ../env/minio.env
     volumes:
       - minio-data:/data
     command: server /data --console-address ":9090"
@@ -46,30 +65,31 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    env_file:
-      - ./env/minio.env
+    
 
   aris-db-migrate:
     image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
     container_name: aris-db-migrate
     restart: "no"
     env_file:
-      - ./env/api.env
+      - ../env/api.env
     depends_on:
       mysql:
         condition: service_healthy
     command: ["/app/aris-blog-api", "database", "migrate"]
 
   aris-blog-api:
-    image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
+    image: ghcr.io/hcd233/aris-blog-api:master
     container_name: aris-blog-api
     restart: always
     ports:
-      - 8080:8080
+      - 8170:8080
     env_file:
-      - ./env/api.env
+      - ../env/api.env
     depends_on:
       mysql:
+        condition: service_healthy
+      redis:
         condition: service_healthy
       meilisearch:
         condition: service_healthy
@@ -78,7 +98,7 @@ services:
       aris-db-migrate:
         condition: service_completed_successfully
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://aris-blog-api:8080"]
+      test: ["CMD", "curl", "-f", "http://0.0.0.0:8080"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -89,6 +109,9 @@ volumes:
   mysql-data:
     name: mysql-data
     external: true
+  redis-data:
+    name: redis-data
+    external: true
   meilisearch-data:
     name: meilisearch-data
     external: true
@@ -97,6 +120,7 @@ volumes:
     external: true
 
 # docker volume create mysql-data 
+# docker volume create redis-data
 # docker volume create meilisearch-data
 # docker volume create minio-data
-# docker compose up -d
+# docker compose -f docker/docker-compose.yml up -d

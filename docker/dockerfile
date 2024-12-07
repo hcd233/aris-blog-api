@@ -6,13 +6,12 @@ ENV CGO_ENABLED=0
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY cmd ./cmd
+COPY internal ./internal
 COPY vendor ./vendor
+COPY go.mod go.sum main.go ./
 
 RUN go mod tidy
-
-COPY . .
-
 RUN go build -mod=vendor -o /go/bin/aris-blog-api
 
 FROM alpine:latest
