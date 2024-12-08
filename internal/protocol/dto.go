@@ -193,3 +193,13 @@ type GenerateArticleSummaryBody struct {
 	ArticleSlug string `json:"articleSlug" binding:"required"`
 	Instruction string `json:"instruction" binding:"required"`
 }
+
+// GenerateArticleQABody 生成文章问答请求体
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:38:59
+type GenerateArticleQABody struct {
+	AIAPPRequestBody
+	ArticleSlug string `json:"articleSlug" binding:"required"`
+	Question    string `json:"question" binding:"required"`
+}
