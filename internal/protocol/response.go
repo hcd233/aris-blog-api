@@ -10,6 +10,10 @@ type Response struct {
 	Data    map[string]interface{} `json:"data"`
 }
 
+// AIStreamResponse AI流响应
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:42:20
 type AIStreamResponse struct {
 	Delta string `json:"delta"`
 	Stop  bool   `json:"stop"`

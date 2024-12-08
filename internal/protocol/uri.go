@@ -70,10 +70,18 @@ type ObjectURI struct {
 	ObjectName string `uri:"objectName" binding:"required"`
 }
 
+// TaskURI 任务路径参数
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:42:27
 type TaskURI struct {
 	TaskName string `uri:"taskName" binding:"required,oneof=contentCompletion articleSummary articleTranslation articleQA termExplaination"`
 }
 
+// PromptVersionURI 提示词版本路径参数
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:42:31
 type PromptVersionURI struct {
 	TaskURI
 	Version uint `uri:"version" binding:"required,min=1"`
