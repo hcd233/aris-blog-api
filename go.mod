@@ -12,11 +12,13 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/meilisearch/meilisearch-go v0.28.0
 	github.com/minio/minio-go/v7 v7.0.80
+	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.10.0
 	github.com/ulule/limiter/v3 v3.11.2
+	github.com/yuin/goldmark v1.7.8
 	go.uber.org/zap v1.27.0
 	golang.org/x/image v0.22.0
 	golang.org/x/oauth2 v0.21.0
@@ -27,6 +29,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
+	github.com/dlclark/regexp2 v1.10.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 )
 
