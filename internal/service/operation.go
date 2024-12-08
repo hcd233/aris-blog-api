@@ -14,6 +14,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// OperationService 用户操作服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type OperationService interface {
 	UserLikeArticleHandler(c *gin.Context)
 	UserLikeCommentHandler(c *gin.Context)
@@ -31,6 +35,11 @@ type operationService struct {
 	userViewDAO *dao.UserViewDAO
 }
 
+// NewOperationService 创建用户操作服务
+//
+//	@return OperationService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewOperationService() OperationService {
 	return &operationService{
 		db:          database.GetDBInstance(),

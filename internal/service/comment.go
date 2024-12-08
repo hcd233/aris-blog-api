@@ -12,6 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// CommentService 评论服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type CommentService interface {
 	CreateArticleCommentHandler(c *gin.Context)
 	GetCommentInfoHandler(c *gin.Context)
@@ -27,6 +31,11 @@ type commentService struct {
 	commentDAO *dao.CommentDAO
 }
 
+// NewCommentService 创建评论服务
+//
+//	@return CommentService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewCommentService() CommentService {
 	return &commentService{
 		db:         database.GetDBInstance(),

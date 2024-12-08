@@ -15,6 +15,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// UserService 用户服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type UserService interface {
 	GetMyInfoHandler(c *gin.Context)
 	GetUserInfoHandler(c *gin.Context)
@@ -32,6 +36,11 @@ type userService struct {
 	articleDocDAO *doc_dao.ArticleDocDAO
 }
 
+// NewUserService 创建用户服务
+//
+//	@return UserService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewUserService() UserService {
 	return &userService{
 		db:            database.GetDBInstance(),

@@ -30,10 +30,12 @@ const (
 	githubUserEmailURL = "https://api.github.com/user/emails"
 )
 
-var (
-	githubUserScopes = []string{"user:email", "repo", "read:org"}
-)
+var githubUserScopes = []string{"user:email", "repo", "read:org"}
 
+// Oauth2Service Oauth2服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type Oauth2Service interface {
 	LoginHandler(c *gin.Context)
 	CallbackHandler(c *gin.Context)
@@ -48,6 +50,11 @@ type githubOauth2Service struct {
 	refreshTokenSigner auth.JwtTokenSigner
 }
 
+// NewGithubOauth2Service 创建Github Oauth2服务
+//
+//	@return Oauth2Service
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewGithubOauth2Service() Oauth2Service {
 	return &githubOauth2Service{
 		db:         database.GetDBInstance(),

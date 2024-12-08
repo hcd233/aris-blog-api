@@ -16,6 +16,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// ArticleService 文章服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type ArticleService interface {
 	CreateArticleHandler(c *gin.Context)
 	GetArticleInfoHandler(c *gin.Context)
@@ -38,6 +42,11 @@ type articleService struct {
 	articleDocDAO     *doc_dao.ArticleDocDAO
 }
 
+// NewArticleService 创建文章服务
+//
+//	@return ArticleService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewArticleService() ArticleService {
 	return &articleService{
 		db:          database.GetDBInstance(),

@@ -12,6 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// TokenService 令牌服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type TokenService interface {
 	RefreshTokenHandler(c *gin.Context)
 }
@@ -23,6 +27,11 @@ type tokenService struct {
 	refreshTokenSigner auth.JwtTokenSigner
 }
 
+// NewTokenService 创建令牌服务
+//
+//	@return TokenService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewTokenService() TokenService {
 	return &tokenService{
 		db:                 database.GetDBInstance(),

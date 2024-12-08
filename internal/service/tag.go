@@ -15,6 +15,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// TagService 标签服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type TagService interface {
 	CreateTagHandler(c *gin.Context)
 	GetTagInfoHandler(c *gin.Context)
@@ -33,6 +37,11 @@ type tagService struct {
 	tagDocDAO *doc_dao.TagDocDAO
 }
 
+// NewTagService 创建标签服务
+//
+//	@return TagService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewTagService() TagService {
 	return &tagService{
 		db:        database.GetDBInstance(),
