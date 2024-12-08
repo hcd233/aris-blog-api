@@ -20,6 +20,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// AIService AI服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:45:29
 type AIService interface {
 	GetPromptHandler(c *gin.Context)
 	GetLatestPromptHandler(c *gin.Context)
@@ -41,6 +45,11 @@ type aiService struct {
 	openAI            *openai.Client
 }
 
+// NewAIService 创建AI服务
+//
+//	@return AIService
+//	@author centonhuang
+//	@update 2024-12-08 16:45:37
 func NewAIService() AIService {
 	return &aiService{
 		db:                database.GetDBInstance(),
@@ -94,7 +103,6 @@ func (s *aiService) ListPromptHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TaskURI)
 
 	prompts, pageInfo, err := s.promptDAO.PaginateByTask(s.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version"}, []string{}, param.Page, param.PageSize)
-
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -321,13 +329,81 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 }
 
 func (s *aiService) GenerateArticleTranslationHandler(c *gin.Context) {
-
 }
 
 func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
+	userID := c.GetUint("userID")
+	body := c.MustGet("body").(*protocol.GenerateArticleQABody)
 
+	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	if user.LLMQuota <= 0 {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeInsufficientQuota,
+			Message: fmt.Sprintf("Insufficient LLM quota: %d", user.LLMQuota),
+		})
+		return
+	}
+
+	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleVersionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleQA, []string{"id", "templates"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetPromptError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	})
+
+	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
+	chatOpenAI := chat_model.NewChatOpenAI(chat_model.OpenAIGPT4oMini, body.Temperature)
+
+	params := map[string]interface{}{
+		"title":    article.Title,
+		"content":  latestVersion.Content,
+		"question": body.Question,
+	}
+
+	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	err = util.SendStreamEventResponses(c, tokenChan, errChan)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }
 
 func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
-
 }

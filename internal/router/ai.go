@@ -46,11 +46,20 @@ func initAIRouter(r *gin.RouterGroup) {
 				//creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
 
 			}
-			// readerToolRouter := aiAppRouter.Group("/reader")
-			// {
-			// 	readerToolRouter.POST("articleQA", aiService.GenerateArticleQAHandler)
-			// 	readerToolRouter.POST("termExplaination", aiService.GenerateTermExplainationHandler)
-			// }
+			readerToolRouter := aiAppRouter.Group("/reader")
+			{
+				readerToolRouter.POST(
+					"articleQA",
+					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleQABody{}),
+					middleware.RedisLockMiddleware("articleQA", "userID", 30*time.Second),
+					aiService.GenerateArticleQAHandler,
+				)
+				// readerToolRouter.POST(
+				// 	"termExplaination",
+				// 	middleware.ValidateBodyMiddleware(&protocol.GenerateTermExplainationBody{}),
+				// 	aiService.GenerateTermExplainationHandler,
+				// )
+			}
 
 		}
 	}
