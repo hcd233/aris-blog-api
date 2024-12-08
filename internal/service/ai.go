@@ -1,3 +1,6 @@
+// Package service 服务
+//
+//	@update 2024-12-08 16:59:38
 package service
 
 import (

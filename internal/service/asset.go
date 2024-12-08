@@ -25,6 +25,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// AssetService 资产服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type AssetService interface {
 	ListUserLikeArticlesHandler(c *gin.Context)
 	ListUserLikeCommentsHandler(c *gin.Context)
@@ -51,6 +55,11 @@ type assetService struct {
 	thumbnailObjDAO *obj_dao.BaseMinioObjDAO
 }
 
+// NewAssetService 创建资产服务
+//
+//	@return AssetService
+//	@author centonhuang
+//	@update 2024-12-08 17:02:21
 func NewAssetService() AssetService {
 	return &assetService{
 		db:              database.GetDBInstance(),
@@ -404,7 +413,6 @@ func (s *assetService) UploadImageHandler(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	file, err := c.FormFile("file")
-
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUploadImageError,
@@ -475,7 +483,8 @@ func (s *assetService) UploadImageHandler(c *gin.Context) {
 
 	maxPixel := 512
 
-	for ; x > maxPixel || y > maxPixel; x, y = x/2, y/2 {
+	for x > maxPixel || y > maxPixel {
+		x, y = x/2, y/2
 	}
 
 	thumbnailImage := imaging.Thumbnail(rawImage, x, y, imaging.Lanczos)

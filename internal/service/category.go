@@ -12,6 +12,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// CategoryService 分类服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 type CategoryService interface {
 	CreateCategoryHandler(c *gin.Context)
 	GetCategoryInfoHandler(c *gin.Context)
@@ -29,6 +33,11 @@ type categoryService struct {
 	articleDAO  *dao.ArticleDAO
 }
 
+// NewCategoryService 创建分类服务
+//
+//	@return CategoryService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:38
 func NewCategoryService() CategoryService {
 	return &categoryService{
 		db:          database.GetDBInstance(),

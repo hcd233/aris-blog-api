@@ -16,6 +16,10 @@ import (
 	"gorm.io/gorm"
 )
 
+// ArticleVersionService 文章版本服务
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:59:54
 type ArticleVersionService interface {
 	CreateArticleVersionHandler(c *gin.Context)
 	GetArticleVersionInfoHandler(c *gin.Context)
@@ -31,6 +35,11 @@ type articleVersionService struct {
 	articleDocDAO     *doc_dao.ArticleDocDAO
 }
 
+// NewArticleVersionService 创建文章版本服务
+//
+//	@return ArticleVersionService
+//	@author centonhuang
+//	@update 2024-12-08 16:59:54
 func NewArticleVersionService() ArticleVersionService {
 	return &articleVersionService{
 		db:                database.GetDBInstance(),
