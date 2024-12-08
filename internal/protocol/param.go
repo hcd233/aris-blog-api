@@ -37,6 +37,10 @@ type ArticleParam struct {
 	Author      string `form:"author" binding:"required"`
 }
 
+// ImageParam 图片参数
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:42:00
 type ImageParam struct {
 	Quality string `form:"quality" binding:"required,oneof=raw thumb"`
 }

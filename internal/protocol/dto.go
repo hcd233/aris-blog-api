@@ -2,7 +2,7 @@ package protocol
 
 import "github.com/hcd233/Aris-blog/internal/resource/database/model"
 
-// CreateTagBody 刷新token请求体
+// RefreshTokenBody 刷新token请求体
 //
 //	@Author centonhuang
 //	@Update 2024-11-09 02:56:39
@@ -148,19 +148,35 @@ type LogUserViewArticleBody struct {
 	Progress    int8   `json:"progress" binding:"min=0,max=100"`
 }
 
+// Template 提示词模板
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:39:28
 type Template struct {
 	Role    string `json:"role" binding:"required"`
 	Content string `json:"content" binding:"required"`
 }
 
+// CreatePromptBody 创建提示词请求体
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:39:23
 type CreatePromptBody struct {
 	Templates []Template `json:"templates" binding:"required,min=1,dive"`
 }
 
+// AIAPPRequestBody AI应用请求体
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:39:20
 type AIAPPRequestBody struct {
 	Temperature float64 `json:"temperature" binding:"omitempty,min=0,max=1"`
 }
 
+// GenerateContentCompletionBody 生成内容补全请求体
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:38:59
 type GenerateContentCompletionBody struct {
 	AIAPPRequestBody
 	Context     string `json:"context" binding:"required"`
@@ -168,6 +184,10 @@ type GenerateContentCompletionBody struct {
 	Reference   string `json:"reference" binding:"omitempty"`
 }
 
+// GenerateArticleSummaryBody 生成文章摘要请求体
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:39:09
 type GenerateArticleSummaryBody struct {
 	AIAPPRequestBody
 	ArticleSlug string `json:"articleSlug" binding:"required"`
