@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/Aris-blog/internal/logger"
+	"go.uber.org/zap"
 
 	"github.com/samber/lo"
 	"gorm.io/driver/mysql"
@@ -49,4 +51,6 @@ func InitDatabase() {
 	sqlDB.SetMaxIdleConns(10)
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(5 * time.Hour)
+
+	logger.Logger.Info("[Database] Connected to MySQL database", zap.String("host", config.MysqlHost), zap.String("port", config.MysqlPort), zap.String("database", config.MysqlDatabase))
 }
