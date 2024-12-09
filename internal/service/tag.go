@@ -112,7 +112,7 @@ func (s *tagService) CreateTagHandler(c *gin.Context) {
 func (s *tagService) GetTagInfoHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "description", "create_by"}, []string{"User"})
+	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "description", "created_by"}, []string{"User"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -134,7 +134,7 @@ func (s *tagService) UpdateTagHandler(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
-	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "create_by"}, []string{})
+	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "created_by"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -203,7 +203,7 @@ func (s *tagService) DeleteTagHandler(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "create_by"}, []string{})
+	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "created_by"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
