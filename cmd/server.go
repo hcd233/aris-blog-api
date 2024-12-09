@@ -3,10 +3,13 @@ package cmd
 import (
 	"fmt"
 	"net/http"
+	"time"
 
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/cron"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/resource/cache"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
@@ -40,8 +43,9 @@ var startServerCmd = &cobra.Command{
 
 		r := gin.New()
 		r.Use(
+			ginzap.Ginzap(logger.Logger, time.RFC3339, true),
+			ginzap.RecoveryWithZap(logger.Logger, true),
 			middleware.CORSMiddleware(),
-			middleware.LoggerMiddleware(),
 			middleware.TranslateMiddleware(),
 			gin.Recovery(),
 		)
