@@ -68,15 +68,26 @@ services:
     
 
   aris-db-migrate:
-    image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
+    image: ghcr.io/hcd233/aris-blog-api:master
     container_name: aris-db-migrate
-    restart: "no"
+    restart: no
     env_file:
       - ../env/api.env
     depends_on:
       mysql:
         condition: service_healthy
     command: ["/app/aris-blog-api", "database", "migrate"]
+
+  aris-create-index:
+    image: ghcr.io/hcd233/aris-blog-api:master
+    container_name: aris-create-index
+    restart: no
+    env_file:
+      - ../env/api.env
+    depends_on:
+      meilisearch:
+        condition: service_healthy
+    command: ["/app/aris-blog-api", "search", "create"]
 
   aris-blog-api:
     image: ghcr.io/hcd233/aris-blog-api:master
@@ -96,6 +107,8 @@ services:
       minio:
         condition: service_healthy
       aris-db-migrate:
+        condition: service_completed_successfully
+      aris-create-index:
         condition: service_completed_successfully
     healthcheck:
       test: ["CMD", "curl", "-f", "http://0.0.0.0:8080"]
