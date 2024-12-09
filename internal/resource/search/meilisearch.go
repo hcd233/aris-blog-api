@@ -7,8 +7,10 @@ import (
 	"fmt"
 
 	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/meilisearch/meilisearch-go"
 	"github.com/samber/lo"
+	"go.uber.org/zap"
 )
 
 const (
@@ -39,4 +41,6 @@ func InitSearchEngine() {
 		meilisearch.WithAPIKey(config.MeilisearchMasterKey),
 	)
 	_ = lo.Must1(serviceManager.Health())
+
+	logger.Logger.Info("[Search Engine] Connected to Meilisearch database", zap.String("host", config.MeilisearchHost), zap.String("port", config.MeilisearchPort))
 }

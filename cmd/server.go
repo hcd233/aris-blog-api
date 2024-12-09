@@ -32,11 +32,11 @@ var startServerCmd = &cobra.Command{
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		database.InitDatabase()
-		cron.InitCronJobs()
 		cache.InitCache()
 		search.InitSearchEngine()
-		storage.InitMinioClient()
+		storage.InitObjectStorage()
 		llm.InitOpenAIClient()
+		cron.InitCronJobs()
 
 		r := gin.New()
 		r.Use(

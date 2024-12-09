@@ -1,14 +1,24 @@
+// Package cron 定时任务模块
+//
+//	@update 2024-12-09 15:55:25
 package cron
 
 import (
 	"fmt"
 
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"go.uber.org/zap"
 )
 
+// InitCronJobs 初始化定时任务
+//
+//	@author centonhuang
+//	@update 2024-12-09 15:55:20
 func InitCronJobs() {
 	quotaCron := NewQuotaCron()
 	quotaCron.Start()
+
+	logger.Logger.Info("[Cron] Init cron jobs")
 }
 
 type cronLoggerAdapter struct {
@@ -38,9 +48,9 @@ func convertZapKeyValues(keysAndValues ...interface{}) []zap.Field {
 	if len(keysAndValues)%2 != 0 {
 		panic("keysAndValues must be a slice of key-value pairs")
 	}
-	len := len(keysAndValues) / 2
-	zapKeyValues := make([]zap.Field, 0, len)
-	for i := 0; i < len; i++ {
+	kvLen := len(keysAndValues) / 2
+	zapKeyValues := make([]zap.Field, 0, kvLen)
+	for i := 0; i < kvLen; i++ {
 		key, value := keysAndValues[i*2].(string), keysAndValues[i*2+1]
 		zapKeyValues = append(zapKeyValues, zap.Any(key, value))
 	}
