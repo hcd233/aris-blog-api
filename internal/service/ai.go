@@ -228,7 +228,7 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 	})
 
 	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.OpenAIGPT4oMini, body.Temperature)
+	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, body.Temperature)
 
 	params := map[string]interface{}{
 		"context":     body.Context,
@@ -302,7 +302,7 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 	})
 
 	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.OpenAIGPT4oMini, body.Temperature)
+	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, body.Temperature)
 
 	params := map[string]interface{}{
 		"title":       article.Title,
@@ -379,7 +379,7 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 	})
 
 	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.OpenAIGPT4oMini, body.Temperature)
+	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, body.Temperature)
 
 	params := map[string]interface{}{
 		"title":    article.Title,

@@ -7,6 +7,12 @@ import (
 	"github.com/samber/lo"
 )
 
+// ExtractVariablesFromContent 从模板中提取变量
+//
+//	@param content string
+//	@return []string
+//	@author centonhuang
+//	@update 2024-12-09 17:22:41
 func ExtractVariablesFromContent(content string) []string {
 	// 创建模板并解析内容
 	tmpl, err := template.New("prompt").Parse(content)
