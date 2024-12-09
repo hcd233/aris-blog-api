@@ -16,10 +16,16 @@ type UserView struct {
 	User         *User     `json:"user" gorm:"foreignKey:UserID;references:ID"`
 	ArticleID    uint      `json:"article_id" gorm:"not null;index:user_id_object_type;uniqueIndex:user_object;comment:文章ID"`
 	Article      *Article  `json:"article" gorm:"foreignKey:ArticleID;references:ID"`
-	LastViewedAt time.Time `json:"last_viewed_at" gorm:"not null;default:CURRENT_TIMESTAMP;comment:最后浏览时间"`
+	LastViewedAt time.Time `json:"last_viewed_at" gorm:"not null;default:CURRENT_TIMESTAMP(3);comment:最后浏览时间"`
 	Progress     int8      `json:"progress" gorm:"not null;comment:浏览进度"`
 }
 
+// GetBasicInfo 获取用户浏览基本信息
+//
+//	@receiver uv *UserView
+//	@return map
+//	@author centonhuang
+//	@update 2024-12-09 16:11:07
 func (uv *UserView) GetBasicInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":           uv.ID,
@@ -28,6 +34,12 @@ func (uv *UserView) GetBasicInfo() map[string]interface{} {
 	}
 }
 
+// GetDetailedInfo 获取用户浏览详细信息
+//
+//	@receiver uv *UserView
+//	@return map
+//	@author centonhuang
+//	@update 2024-12-09 16:11:11
 func (uv *UserView) GetDetailedInfo() map[string]interface{} {
 	return map[string]interface{}{
 		"id":           uv.ID,
