@@ -11,7 +11,7 @@ type Tag struct {
 	Name        string    `json:"name" gorm:"column:name;unique;not null;comment:标签名称"`
 	Slug        string    `json:"slug" gorm:"column:slug;unique;not null;comment:标签slug"`
 	Description string    `json:"description" gorm:"column:description;comment:标签描述"`
-	CreatedBy   uint      `json:"create_by" gorm:"column:created_by;not null;comment:创建者ID"`
+	CreatedBy   uint      `json:"created_by" gorm:"column:created_by;not null;comment:创建者ID"`
 	User        *User     `json:"user" gorm:"foreignKey:CreatedBy"`
 	Articles    []Article `json:"articles" gorm:"many2many:article_tags;"`
 	Likes       uint      `json:"likes" gorm:"column:likes;default:0;comment:点赞数"`
