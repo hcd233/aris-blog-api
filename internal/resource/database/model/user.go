@@ -79,7 +79,7 @@ type User struct {
 	Email        string       `json:"email" gorm:"column:email;unique;not null;comment:邮箱"`
 	Avatar       string       `json:"avatar" gorm:"column:avatar;not null;comment:头像"`
 	Permission   Permission   `json:"permission" gorm:"column:permission;not null;default:'general';comment:权限"`
-	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;not null;default:CURRENT_TIMESTAMP;comment:最后登录时间"`
+	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;comment:最后登录时间"`
 	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
 	LLMQuota     Quota        `json:"llm_quota" gorm:"column:llm_quota;not null;default:0;comment:LLM配额"`
 	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
