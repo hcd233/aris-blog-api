@@ -79,7 +79,7 @@ services:
     command: ["/app/aris-blog-api", "database", "migrate"]
 
   aris-blog-api:
-    image: ghcr.io/hcd233/aris-blog-api:master
+    image: aris-blog-api:latest # ghcr.io/hcd233/aris-blog:master
     container_name: aris-blog-api
     restart: always
     ports:
