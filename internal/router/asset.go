@@ -4,14 +4,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/handler"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/service"
 )
 
 func initUserAssetRouter(r *gin.RouterGroup) {
-	assetService := service.NewAssetService()
+	assetService := handler.NewAssetService()
 
 	assetRouter := r.Group("/asset")
 	{

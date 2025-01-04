@@ -2,14 +2,14 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/handler"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/service"
 )
 
 func initUserCategoryRouter(r *gin.RouterGroup) {
-	categoryService := service.NewCategoryService()
+	categoryService := handler.NewCategoryService()
 
 	r.GET("rootCategory", middleware.LimitUserPermissionMiddleware(model.PermissionCreator), categoryService.ListRootCategoriesHandler)
 	categoryRouter := r.Group("/category", middleware.LimitUserPermissionMiddleware(model.PermissionCreator))

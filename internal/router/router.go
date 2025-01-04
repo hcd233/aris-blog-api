@@ -1,13 +1,17 @@
+// Package router 路由
 package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-blog/internal/service"
+	"github.com/hcd233/Aris-blog/internal/handler"
 )
 
-// InitRouter initializes the router.
-func InitRouter(r *gin.Engine) {
-	pingService := service.NewPingService()
+// RegisterRouter 注册路由
+//	@param r *gin.Engine 
+//	@author centonhuang 
+//	@update 2025-01-04 15:32:40 
+func RegisterRouter(r *gin.Engine) {
+	pingService := handler.NewPingService()
 
 	r.GET("", pingService.PingHandler)
 

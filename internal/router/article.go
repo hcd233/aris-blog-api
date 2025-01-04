@@ -2,14 +2,14 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/handler"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/service"
 )
 
 func initArticleRouter(r *gin.RouterGroup) {
-	articleService := service.NewArticleService()
+	articleService := handler.NewArticleService()
 
 	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleService.ListArticlesHandler)
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
@@ -19,7 +19,7 @@ func initArticleRouter(r *gin.RouterGroup) {
 }
 
 func initUserArticleRouter(r *gin.RouterGroup) {
-	articleService := service.NewArticleService()
+	articleService := handler.NewArticleService()
 	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleService.ListUserArticlesHandler)
 	articleRouter := r.Group("/article")
 	{

@@ -4,14 +4,14 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/handler"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/hcd233/Aris-blog/internal/service"
 )
 
 func initAIRouter(r *gin.RouterGroup) {
-	aiService := service.NewAIService()
+	aiService := handler.NewAIService()
 	aiRouter := r.Group("/ai", middleware.JwtMiddleware())
 	{
 		aiPromptRouter := aiRouter.Group("/prompt", middleware.LimitUserPermissionMiddleware(model.PermissionAdmin))
@@ -43,7 +43,7 @@ func initAIRouter(r *gin.RouterGroup) {
 					middleware.RedisLockMiddleware("articleSummary", "userID", 30*time.Second),
 					aiService.GenerateArticleSummaryHandler,
 				)
-				//creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
+				// creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
 
 			}
 			readerToolRouter := aiAppRouter.Group("/reader")

@@ -2,11 +2,11 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-blog/internal/service"
+	"github.com/hcd233/Aris-blog/internal/handler"
 )
 
 func initOauth2Router(r *gin.RouterGroup) {
-	githubOauth2Service := service.NewGithubOauth2Service()
+	githubOauth2Service := handler.NewGithubOauth2Service()
 	oauth2Group := r.Group("/oauth2")
 	{
 		githubRouter := oauth2Group.Group("/github")
