@@ -1,7 +1,7 @@
-// Package service 服务
+// Package handler handler层
 //
 //	@update 2024-12-08 16:59:38
-package service
+package handler
 
 import (
 	"errors"

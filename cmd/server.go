@@ -50,7 +50,7 @@ var startServerCmd = &cobra.Command{
 			gin.Recovery(),
 		)
 
-		router.InitRouter(r)
+		router.RegisterRouter(r)
 
 		s := &http.Server{
 			Addr:           fmt.Sprintf("%s:%s", host, port),

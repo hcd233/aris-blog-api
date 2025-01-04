@@ -2,13 +2,13 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/handler"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/service"
 )
 
 func initUserRouter(r *gin.RouterGroup) {
-	userService := service.NewUserService()
+	userService := handler.NewUserService()
 
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{

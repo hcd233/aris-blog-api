@@ -4,13 +4,13 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/handler"
 	"github.com/hcd233/Aris-blog/internal/middleware"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/service"
 )
 
 func initArticleCommentRouter(r *gin.RouterGroup) {
-	commentService := service.NewCommentService()
+	commentService := handler.NewCommentService()
 
 	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentService.ListArticleCommentsHandler)
 	commentRouter := r.Group("/comment")
