@@ -409,4 +409,90 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 }
 
 func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
+	userID := c.GetUint("userID")
+	body := c.MustGet("body").(*protocol.GenerateTermExplainationBody)
+
+	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	if user.LLMQuota <= 0 {
+		c.JSON(http.StatusBadRequest, protocol.Response{
+			Code:    protocol.CodeInsufficientQuota,
+			Message: fmt.Sprintf("Insufficient LLM quota: %d", user.LLMQuota),
+		})
+		return
+	}
+
+	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetArticleVersionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskTermExplaination, []string{"id", "templates"}, []string{})
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGetPromptError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	})
+
+	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
+	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, body.Temperature)
+
+	contextWindowLen := 200
+
+	var left, right int
+	if int(body.Position) < contextWindowLen/2 {
+		left = 0
+		right = contextWindowLen
+	} else if int(body.Position) > len(latestVersion.Content)-contextWindowLen/2 {
+		left = len(latestVersion.Content) - contextWindowLen
+		right = len(latestVersion.Content)
+	} else {
+		left = int(body.Position) - contextWindowLen/2
+		right = int(body.Position) + contextWindowLen/2
+	}
+
+	params := map[string]interface{}{
+		"title":   article.Title,
+		"content": latestVersion.Content,
+		"context": latestVersion.Content[left:right],
+		"term":    body.Term,
+	}
+
+	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	err = util.SendStreamEventResponses(c, tokenChan, errChan)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, protocol.Response{
+			Code:    protocol.CodeGenerateContentCompletionError,
+			Message: err.Error(),
+		})
+		return
+	}
+
+	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }

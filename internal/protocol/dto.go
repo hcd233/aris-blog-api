@@ -203,3 +203,14 @@ type GenerateArticleQABody struct {
 	ArticleSlug string `json:"articleSlug" binding:"required"`
 	Question    string `json:"question" binding:"required"`
 }
+
+// GenerateTermExplainationBody 生成术语解释请求体
+//
+//	@author centonhuang
+//	@update 2024-12-08 16:38:59
+type GenerateTermExplainationBody struct {
+	AIAPPRequestBody
+	ArticleSlug string `json:"context" binding:"required"`
+	Term        string `json:"term" binding:"required"`
+	Position    uint   `json:"position" binding:"required"`
+}
