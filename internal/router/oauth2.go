@@ -6,13 +6,13 @@ import (
 )
 
 func initOauth2Router(r *gin.RouterGroup) {
-	githubOauth2Service := handler.NewGithubOauth2Service()
+	githubOauth2Handler := handler.NewGithubOauth2Handler()
 	oauth2Group := r.Group("/oauth2")
 	{
 		githubRouter := oauth2Group.Group("/github")
 		{
-			githubRouter.GET("login", githubOauth2Service.LoginHandler)
-			githubRouter.GET("callback", githubOauth2Service.CallbackHandler)
+			githubRouter.GET("login", githubOauth2Handler.HandleLogin)
+			githubRouter.GET("callback", githubOauth2Handler.HandleCallback)
 		}
 	}
 }

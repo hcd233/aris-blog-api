@@ -9,48 +9,48 @@ import (
 )
 
 func initArticleRouter(r *gin.RouterGroup) {
-	articleService := handler.NewArticleService()
+	articleHandler := handler.NewArticleHandler()
 
-	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleService.ListArticlesHandler)
+	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
-		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), articleService.QueryArticleHandler)
+		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), articleHandler.HandleQueryArticle)
 	}
 }
 
 func initUserArticleRouter(r *gin.RouterGroup) {
-	articleService := handler.NewArticleService()
-	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleService.ListUserArticlesHandler)
+	articleHandler := handler.NewArticleHandler()
+	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListUserArticles)
 	articleRouter := r.Group("/article")
 	{
-		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), articleService.QueryUserArticleHandler)
+		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), articleHandler.HandleQueryUserArticle)
 		articleRouter.POST(
 			"",
 			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
-			articleService.CreateArticleHandler,
+			articleHandler.HandleCreateArticle,
 		)
 	}
 
 	articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}))
 	{
-		articleSlugRouter.GET("", articleService.GetArticleInfoHandler)
+		articleSlugRouter.GET("", articleHandler.HandleGetArticleInfo)
 		articleSlugRouter.PUT(
 			"",
 			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}),
-			articleService.UpdateArticleHandler,
+			articleHandler.HandleUpdateArticle,
 		)
 		articleSlugRouter.DELETE(
 			"",
 			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
-			articleService.DeleteArticleHandler,
+			articleHandler.HandleDeleteArticle,
 		)
 		articleSlugRouter.PUT(
 			"status",
 			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}),
-			articleService.UpdateArticleStatusHandler,
+			articleHandler.HandleUpdateArticleStatus,
 		)
 
 		initArticleVersionRouter(articleSlugRouter)

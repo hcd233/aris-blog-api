@@ -9,42 +9,42 @@ import (
 )
 
 func initTagRouter(r *gin.RouterGroup) {
-	tagService := handler.NewTagService()
+	tagHandler := handler.NewTagHandler()
 
-	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagService.ListTagsHandler)
+	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagHandler.HandleListTags)
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
-		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagService.QueryTagHandler)
+		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagHandler.HandleQueryTag)
 		tagRouter.POST(
 			"",
 			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}),
-			tagService.CreateTagHandler,
+			tagHandler.HandleCreateTag,
 		)
 		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
 		{
-			tagSlugRouter.GET("", tagService.GetTagInfoHandler)
+			tagSlugRouter.GET("", tagHandler.HandleGetTagInfo)
 			tagSlugRouter.PUT(
 				"",
 				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
 				middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}),
-				tagService.UpdateTagHandler,
+				tagHandler.HandleUpdateTag,
 			)
 			tagSlugRouter.DELETE(
 				"",
 				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
-				tagService.DeleteTagHandler,
+				tagHandler.HandleDeleteTag,
 			)
 		}
 	}
 }
 
 func initUserTagRouter(r *gin.RouterGroup) {
-	tagService := handler.NewTagService()
+	tagHandler := handler.NewTagHandler()
 
-	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagService.ListUserTagsHandler)
+	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagHandler.HandleListUserTags)
 	tagRouter := r.Group("/tag")
 	{
-		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagService.QueryUserTagHandler)
+		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagHandler.HandleQueryUserTag)
 	}
 }

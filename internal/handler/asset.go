@@ -25,25 +25,25 @@ import (
 	"gorm.io/gorm"
 )
 
-// AssetService 资产服务
+// AssetHandler 资产服务
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-type AssetService interface {
-	ListUserLikeArticlesHandler(c *gin.Context)
-	ListUserLikeCommentsHandler(c *gin.Context)
-	ListUserLikeTagsHandler(c *gin.Context)
-	CreateBucketHandler(c *gin.Context)
-	ListImagesHandler(c *gin.Context)
-	UploadImageHandler(c *gin.Context)
-	GetImageHandler(c *gin.Context)
-	DeleteImageHandler(c *gin.Context)
-	GetUserViewArticleHandler(c *gin.Context)
-	ListUserViewArticlesHandler(c *gin.Context)
-	DeleteUserViewHandler(c *gin.Context)
+type AssetHandler interface {
+	HandleListUserLikeArticles(c *gin.Context)
+	HandleListUserLikeComments(c *gin.Context)
+	HandleListUserLikeTags(c *gin.Context)
+	HandleCreateBucket(c *gin.Context)
+	HandleListImages(c *gin.Context)
+	HandleUploadImage(c *gin.Context)
+	HandleGetImage(c *gin.Context)
+	HandleDeleteImage(c *gin.Context)
+	HandleGetUserViewArticle(c *gin.Context)
+	HandleListUserViewArticles(c *gin.Context)
+	HandleDeleteUserView(c *gin.Context)
 }
 
-type assetService struct {
+type assetHandler struct {
 	db              *gorm.DB
 	userDAO         *dao.UserDAO
 	tagDAO          *dao.TagDAO
@@ -55,13 +55,13 @@ type assetService struct {
 	thumbnailObjDAO *obj_dao.BaseMinioObjDAO
 }
 
-// NewAssetService 创建资产服务
+// NewAssetHandler 创建资产处理器
 //
-//	@return AssetService
+//	@return AssetHandler
 //	@author centonhuang
 //	@update 2024-12-08 17:02:21
-func NewAssetService() AssetService {
-	return &assetService{
+func NewAssetHandler() AssetHandler {
+	return &assetHandler{
 		db:              database.GetDBInstance(),
 		userDAO:         dao.GetUserDAO(),
 		tagDAO:          dao.GetTagDAO(),
@@ -74,12 +74,12 @@ func NewAssetService() AssetService {
 	}
 }
 
-// ListUserLikeArticlesHandler 列出用户喜欢的文章
+// HandleListUserLikeArticles 列出用户喜欢的文章
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-11-03 06:45:42
-func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
+func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -92,7 +92,7 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -101,7 +101,7 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(s.db, user.ID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, param.Page, param.PageSize)
+	userLikes, pageInfo, err := h.userLikeDAO.PaginateByUserIDAndObjectType(h.db, user.ID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserLikeError,
@@ -110,11 +110,11 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	articleIDs := lo.Map(*userLikes, func(like model.UserLike, idx int) uint {
+	articleIDs := lo.Map(*userLikes, func(like model.UserLike, _ int) uint {
 		return like.ObjectID
 	})
 
-	articles, err := s.articleDAO.BatchGetByIDs(s.db, articleIDs, []string{"id", "title", "slug", "published_at", "likes", "user_id"}, []string{"User", "Tags"})
+	articles, err := h.articleDAO.BatchGetByIDs(h.db, articleIDs, []string{"id", "title", "slug", "published_at", "likes", "user_id"}, []string{"User", "Tags"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -124,20 +124,20 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 	}
 
 	if len(articleIDs) != len(*articles) {
-		_, deletedIDs := lo.Difference(articleIDs, lo.Map(*articles, func(article model.Article, idx int) uint {
+		_, deletedIDs := lo.Difference(articleIDs, lo.Map(*articles, func(article model.Article, _ int) uint {
 			return article.ID
 		}))
 
 		logger.Logger.Warn("[List User Like Articles]", zap.Uints("deletedIDs", deletedIDs))
 
-		deleteLikes := lo.Map(deletedIDs, func(id uint, idx int) model.UserLike {
+		deleteLikes := lo.Map(deletedIDs, func(id uint, _ int) model.UserLike {
 			return model.UserLike{
 				ObjectID:   id,
 				ObjectType: model.LikeObjectTypeArticle,
 			}
 		})
 
-		err = s.userLikeDAO.BatchDelete(s.db, &deleteLikes)
+		err = h.userLikeDAO.BatchDelete(h.db, &deleteLikes)
 		if err != nil {
 			logger.Logger.Error("[List User Like Articles]", zap.Error(err))
 			err = nil
@@ -147,7 +147,7 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
+			"articles": lo.Map(*articles, func(article model.Article, _ int) map[string]interface{} {
 				return article.GetLikeInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -155,12 +155,12 @@ func (s *assetService) ListUserLikeArticlesHandler(c *gin.Context) {
 	})
 }
 
-// ListUserLikeCommentsHandler 列出用户喜欢的评论
+// HandleListUserLikeComments 列出用户喜欢的评论
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-11-03 06:47:41
-func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
+func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -173,7 +173,7 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -182,7 +182,7 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(s.db, user.ID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, param.Page, param.PageSize)
+	userLikes, pageInfo, err := h.userLikeDAO.PaginateByUserIDAndObjectType(h.db, user.ID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserLikeError,
@@ -191,11 +191,11 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	commentIDs := lo.Map(*userLikes, func(like model.UserLike, idx int) uint {
+	commentIDs := lo.Map(*userLikes, func(like model.UserLike, _ int) uint {
 		return like.ObjectID
 	})
 
-	comments, err := s.commentDAO.BatchGetByIDs(s.db, commentIDs, []string{"id", "user", "created_at", "content", "likes"}, []string{})
+	comments, err := h.commentDAO.BatchGetByIDs(h.db, commentIDs, []string{"id", "user", "created_at", "content", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -205,20 +205,20 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 	}
 
 	if len(commentIDs) != len(*comments) {
-		_, deletedIDs := lo.Difference(commentIDs, lo.Map(*comments, func(comment model.Comment, idx int) uint {
+		_, deletedIDs := lo.Difference(commentIDs, lo.Map(*comments, func(comment model.Comment, _ int) uint {
 			return comment.ID
 		}))
 
 		logger.Logger.Warn("[List User Like Comments]", zap.Uints("deletedIDs", deletedIDs))
 
-		deleteLikes := lo.Map(deletedIDs, func(id uint, idx int) model.UserLike {
+		deleteLikes := lo.Map(deletedIDs, func(id uint, _ int) model.UserLike {
 			return model.UserLike{
 				ObjectID:   id,
 				ObjectType: model.LikeObjectTypeComment,
 			}
 		})
 
-		err = s.userLikeDAO.BatchDelete(s.db, &deleteLikes)
+		err = h.userLikeDAO.BatchDelete(h.db, &deleteLikes)
 		if err != nil {
 			logger.Logger.Error("[List User Like Comments]", zap.Error(err))
 			err = nil
@@ -228,7 +228,7 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"comments": lo.Map(*comments, func(comment model.Comment, index int) map[string]interface{} {
+			"comments": lo.Map(*comments, func(comment model.Comment, _ int) map[string]interface{} {
 				return comment.GetLikeInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -236,12 +236,12 @@ func (s *assetService) ListUserLikeCommentsHandler(c *gin.Context) {
 	})
 }
 
-// ListUserLikeTagsHandler 列出用户喜欢的标签
+// HandleListUserLikeTags 列出用户喜欢的标签
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-11-03 06:47:43
-func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
+func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -254,7 +254,7 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -263,7 +263,7 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 		return
 	}
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(s.db, user.ID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, param.Page, param.PageSize)
+	userLikes, pageInfo, err := h.userLikeDAO.PaginateByUserIDAndObjectType(h.db, user.ID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserLikeError,
@@ -272,11 +272,11 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 		return
 	}
 
-	tagIDs := lo.Map(*userLikes, func(like model.UserLike, idx int) uint {
+	tagIDs := lo.Map(*userLikes, func(like model.UserLike, _ int) uint {
 		return like.ObjectID
 	})
 
-	tags, err := s.tagDAO.BatchGetByIDs(s.db, tagIDs, []string{"id", "created_at", "name", "slug", "likes"}, []string{})
+	tags, err := h.tagDAO.BatchGetByIDs(h.db, tagIDs, []string{"id", "created_at", "name", "slug", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -286,20 +286,20 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 	}
 
 	if len(tagIDs) != len(*tags) {
-		_, deletedIDs := lo.Difference(tagIDs, lo.Map(*tags, func(tag model.Tag, idx int) uint {
+		_, deletedIDs := lo.Difference(tagIDs, lo.Map(*tags, func(tag model.Tag, _ int) uint {
 			return tag.ID
 		}))
 
 		logger.Logger.Warn("[List User Like Tags]", zap.Uints("deletedIDs", deletedIDs))
 
-		deleteLikes := lo.Map(deletedIDs, func(id uint, idx int) model.UserLike {
+		deleteLikes := lo.Map(deletedIDs, func(id uint, _ int) model.UserLike {
 			return model.UserLike{
 				ObjectID:   id,
 				ObjectType: model.LikeObjectTypeTag,
 			}
 		})
 
-		err = s.userLikeDAO.BatchDelete(s.db, &deleteLikes)
+		err = h.userLikeDAO.BatchDelete(h.db, &deleteLikes)
 		if err != nil {
 			logger.Logger.Error("[List User Like Tags]", zap.Error(err))
 			err = nil
@@ -309,7 +309,7 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
+			"tags": lo.Map(*tags, func(tag model.Tag, _ int) map[string]interface{} {
 				return tag.GetLikeInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -317,7 +317,13 @@ func (s *assetService) ListUserLikeTagsHandler(c *gin.Context) {
 	})
 }
 
-func (s *assetService) CreateBucketHandler(c *gin.Context) {
+// HandleCreateBucket 创建桶
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:02
+func (h *assetHandler) HandleCreateBucket(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -338,12 +344,12 @@ func (s *assetService) CreateBucketHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		imageBucketExist, imageBucketErr = s.imageObjDAO.CreateBucket(userID)
+		imageBucketExist, imageBucketErr = h.imageObjDAO.CreateBucket(userID)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailBucketExist, thumbnailBucketErr = s.thumbnailObjDAO.CreateBucket(userID)
+		thumbnailBucketExist, thumbnailBucketErr = h.thumbnailObjDAO.CreateBucket(userID)
 	}()
 
 	wg.Wait()
@@ -378,7 +384,13 @@ func (s *assetService) CreateBucketHandler(c *gin.Context) {
 	})
 }
 
-func (s *assetService) ListImagesHandler(c *gin.Context) {
+// HandleListImages 列出图片
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:02
+func (h *assetHandler) HandleListImages(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -391,7 +403,7 @@ func (s *assetService) ListImagesHandler(c *gin.Context) {
 		return
 	}
 
-	objectInfos, err := s.imageObjDAO.ListObjects(userID)
+	objectInfos, err := h.imageObjDAO.ListObjects(userID)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeListImagesError,
@@ -408,7 +420,13 @@ func (s *assetService) ListImagesHandler(c *gin.Context) {
 	})
 }
 
-func (s *assetService) UploadImageHandler(c *gin.Context) {
+// HandleUploadImage 上传图片
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:02
+func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -507,12 +525,12 @@ func (s *assetService) UploadImageHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		imageErr = s.imageObjDAO.UploadObject(userID, file.Filename, file.Size, rawImageReader)
+		imageErr = h.imageObjDAO.UploadObject(userID, file.Filename, file.Size, rawImageReader)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailErr = s.thumbnailObjDAO.UploadObject(userID, file.Filename, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
+		thumbnailErr = h.thumbnailObjDAO.UploadObject(userID, file.Filename, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
 	}()
 
 	wg.Wait()
@@ -539,7 +557,13 @@ func (s *assetService) UploadImageHandler(c *gin.Context) {
 	})
 }
 
-func (s *assetService) GetImageHandler(c *gin.Context) {
+// HandleGetImage 获取图片
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:02
+func (h *assetHandler) HandleGetImage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
@@ -559,9 +583,9 @@ func (s *assetService) GetImageHandler(c *gin.Context) {
 	)
 	switch param.Quality {
 	case "raw":
-		objectInfo, err = s.imageObjDAO.DownloadObject(userID, uri.ObjectName, c.Writer)
+		objectInfo, err = h.imageObjDAO.DownloadObject(userID, uri.ObjectName, c.Writer)
 	case "thumb":
-		objectInfo, err = s.thumbnailObjDAO.DownloadObject(userID, uri.ObjectName, c.Writer)
+		objectInfo, err = h.thumbnailObjDAO.DownloadObject(userID, uri.ObjectName, c.Writer)
 	default:
 		panic(fmt.Sprintf("Invalid image quality: %s", param.Quality))
 	}
@@ -585,7 +609,13 @@ func (s *assetService) GetImageHandler(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (s *assetService) DeleteImageHandler(c *gin.Context) {
+// HandleDeleteImage 删除图片
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:02
+func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
@@ -605,12 +635,12 @@ func (s *assetService) DeleteImageHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		imageErr = s.imageObjDAO.DeleteObject(userID, uri.ObjectName)
+		imageErr = h.imageObjDAO.DeleteObject(userID, uri.ObjectName)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailErr = s.thumbnailObjDAO.DeleteObject(userID, uri.ObjectName)
+		thumbnailErr = h.thumbnailObjDAO.DeleteObject(userID, uri.ObjectName)
 	}()
 
 	wg.Wait()
@@ -637,7 +667,13 @@ func (s *assetService) DeleteImageHandler(c *gin.Context) {
 	})
 }
 
-func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
+// HandleGetUserViewArticle 获取用户浏览的文章
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:35
+func (h *assetHandler) HandleGetUserViewArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -651,7 +687,7 @@ func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -660,7 +696,7 @@ func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, param.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, param.ArticleSlug, user.ID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -669,7 +705,7 @@ func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(s.db, userID, article.ID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{})
+	userView, err := h.userViewDAO.GetLatestViewByUserIDAndArticleID(h.db, userID, article.ID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserViewError,
@@ -686,12 +722,13 @@ func (s *assetService) GetUserViewArticleHandler(c *gin.Context) {
 	})
 }
 
-// ListUserViewArticlesHandler 列出用户浏览的文章
+// HandleListUserViewArticles 列出用户浏览的文章
 //
+//	@receiver s *assetHandler
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-11-03 06:45:42
-func (s *assetService) ListUserViewArticlesHandler(c *gin.Context) {
+//	@update 2025-01-04 15:46:35
+func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -705,7 +742,7 @@ func (s *assetService) ListUserViewArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(s.db, userID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, pageParam.Page, pageParam.PageSize)
+	userViews, pageInfo, err := h.userViewDAO.PaginateByUserID(h.db, userID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, pageParam.Page, pageParam.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserViewError,
@@ -717,7 +754,7 @@ func (s *assetService) ListUserViewArticlesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"userViews": lo.Map(*userViews, func(userView model.UserView, idx int) map[string]interface{} {
+			"userViews": lo.Map(*userViews, func(userView model.UserView, _ int) map[string]interface{} {
 				return userView.GetDetailedInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -725,7 +762,13 @@ func (s *assetService) ListUserViewArticlesHandler(c *gin.Context) {
 	})
 }
 
-func (s *assetService) DeleteUserViewHandler(c *gin.Context) {
+// HandleDeleteUserView 删除用户浏览的文章
+//
+//	@receiver s *assetHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:46:35
+func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ViewURI)
@@ -738,7 +781,7 @@ func (s *assetService) DeleteUserViewHandler(c *gin.Context) {
 		return
 	}
 
-	_, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -747,7 +790,7 @@ func (s *assetService) DeleteUserViewHandler(c *gin.Context) {
 		return
 	}
 
-	userView, err := s.userViewDAO.GetByID(s.db, uri.ViewID, []string{"id", "user_id"}, []string{})
+	userView, err := h.userViewDAO.GetByID(h.db, uri.ViewID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserViewError,
@@ -764,7 +807,7 @@ func (s *assetService) DeleteUserViewHandler(c *gin.Context) {
 		return
 	}
 
-	err = s.userViewDAO.Delete(s.db, userView)
+	err = h.userViewDAO.Delete(h.db, userView)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteUserViewError,

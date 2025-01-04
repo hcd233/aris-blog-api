@@ -11,19 +11,19 @@ import (
 )
 
 func initAIRouter(r *gin.RouterGroup) {
-	aiService := handler.NewAIService()
+	aiService := handler.NewAIHandler()
 	aiRouter := r.Group("/ai", middleware.JwtMiddleware())
 	{
 		aiPromptRouter := aiRouter.Group("/prompt", middleware.LimitUserPermissionMiddleware(model.PermissionAdmin))
 		{
 			taskNameRouter := aiPromptRouter.Group("/:taskName", middleware.ValidateURIMiddleware(&protocol.TaskURI{}))
 			{
-				taskNameRouter.GET("", middleware.ValidateParamMiddleware(&protocol.PageParam{}), aiService.ListPromptHandler)
-				taskNameRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreatePromptBody{}), aiService.CreatePromptHandler)
-				taskNameRouter.GET("latest", aiService.GetLatestPromptHandler)
+				taskNameRouter.GET("", middleware.ValidateParamMiddleware(&protocol.PageParam{}), aiService.HandleListPrompt)
+				taskNameRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreatePromptBody{}), aiService.HandleCreatePrompt)
+				taskNameRouter.GET("latest", aiService.HandleGetLatestPrompt)
 				promptVersionRouter := taskNameRouter.Group("v:version", middleware.ValidateURIMiddleware(&protocol.PromptVersionURI{}))
 				{
-					promptVersionRouter.GET("", aiService.GetPromptHandler)
+					promptVersionRouter.GET("", aiService.HandleGetPrompt)
 				}
 			}
 		}
@@ -35,13 +35,13 @@ func initAIRouter(r *gin.RouterGroup) {
 					"contentCompletion",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateContentCompletionBody{}),
 					middleware.RedisLockMiddleware("contentCompletion", "userID", 30*time.Second),
-					aiService.GenerateContentCompletionHandler,
+					aiService.HandleGenerateContentCompletion,
 				)
 				creatorToolRouter.POST(
 					"articleSummary",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleSummaryBody{}),
 					middleware.RedisLockMiddleware("articleSummary", "userID", 30*time.Second),
-					aiService.GenerateArticleSummaryHandler,
+					aiService.HandleGenerateArticleSummary,
 				)
 				// creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
 
@@ -52,12 +52,12 @@ func initAIRouter(r *gin.RouterGroup) {
 					"articleQA",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleQABody{}),
 					middleware.RedisLockMiddleware("articleQA", "userID", 30*time.Second),
-					aiService.GenerateArticleQAHandler,
+					aiService.HandleGenerateArticleQA,
 				)
 				// readerToolRouter.POST(
 				// 	"termExplaination",
 				// 	middleware.ValidateBodyMiddleware(&protocol.GenerateTermExplainationBody{}),
-				// 	aiService.GenerateTermExplainationHandler,
+				// 	aiService.HandleGenerateTermExplaination,
 				// )
 			}
 

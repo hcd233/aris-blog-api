@@ -8,16 +8,16 @@ import (
 )
 
 func initUserRouter(r *gin.RouterGroup) {
-	userService := handler.NewUserService()
+	userHandler := handler.NewUserHandler()
 
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
-		userRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), userService.QueryUserHandler)
-		userRouter.GET("me", userService.GetMyInfoHandler)
+		userRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), userHandler.HandleQueryUser)
+		userRouter.GET("me", userHandler.HandleGetMyInfo)
 		userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 		{
-			userNameRouter.GET("", userService.GetUserInfoHandler)
-			userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userService.UpdateInfoHandler)
+			userNameRouter.GET("", userHandler.HandleGetUserInfo)
+			userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userHandler.HandleUpdateInfo)
 
 			initUserArticleRouter(userNameRouter)
 			initUserCategoryRouter(userNameRouter)

@@ -23,23 +23,23 @@ import (
 	"gorm.io/gorm"
 )
 
-// AIService AI服务
+// AIHandler AI服务
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:45:29
-type AIService interface {
-	GetPromptHandler(c *gin.Context)
-	GetLatestPromptHandler(c *gin.Context)
-	ListPromptHandler(c *gin.Context)
-	CreatePromptHandler(c *gin.Context)
-	GenerateContentCompletionHandler(c *gin.Context)
-	GenerateArticleSummaryHandler(c *gin.Context)
-	GenerateArticleTranslationHandler(c *gin.Context)
-	GenerateArticleQAHandler(c *gin.Context)
-	GenerateTermExplainationHandler(c *gin.Context)
+type AIHandler interface {
+	HandleGetPrompt(c *gin.Context)
+	HandleGetLatestPrompt(c *gin.Context)
+	HandleListPrompt(c *gin.Context)
+	HandleCreatePrompt(c *gin.Context)
+	HandleGenerateContentCompletion(c *gin.Context)
+	HandleGenerateArticleSummary(c *gin.Context)
+	HandleGenerateArticleTranslation(c *gin.Context)
+	HandleGenerateArticleQA(c *gin.Context)
+	HandleGenerateTermExplaination(c *gin.Context)
 }
 
-type aiService struct {
+type aiHandler struct {
 	db                *gorm.DB
 	userDAO           *dao.UserDAO
 	articleDAO        *dao.ArticleDAO
@@ -48,13 +48,13 @@ type aiService struct {
 	openAI            *openai.Client
 }
 
-// NewAIService 创建AI服务
+// NewAIHandler 创建AI服务
 //
 //	@return AIService
 //	@author centonhuang
 //	@update 2024-12-08 16:45:37
-func NewAIService() AIService {
-	return &aiService{
+func NewAIHandler() AIHandler {
+	return &aiHandler{
 		db:                database.GetDBInstance(),
 		userDAO:           dao.GetUserDAO(),
 		articleDAO:        dao.GetArticleDAO(),
@@ -64,10 +64,10 @@ func NewAIService() AIService {
 	}
 }
 
-func (s *aiService) GetPromptHandler(c *gin.Context) {
+func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.PromptVersionURI)
 
-	prompt, err := s.promptDAO.GetPromptByTaskAndVersion(s.db, model.Task(uri.TaskName), uri.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
+	prompt, err := h.promptDAO.GetPromptByTaskAndVersion(h.db, model.Task(uri.TaskName), uri.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -83,10 +83,10 @@ func (s *aiService) GetPromptHandler(c *gin.Context) {
 	})
 }
 
-func (s *aiService) GetLatestPromptHandler(c *gin.Context) {
+func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TaskURI)
 
-	prompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
+	prompt, err := h.promptDAO.GetLatestPromptByTask(h.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -101,11 +101,11 @@ func (s *aiService) GetLatestPromptHandler(c *gin.Context) {
 	})
 }
 
-func (s *aiService) ListPromptHandler(c *gin.Context) {
+func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.TaskURI)
 
-	prompts, pageInfo, err := s.promptDAO.PaginateByTask(s.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version"}, []string{}, param.Page, param.PageSize)
+	prompts, pageInfo, err := h.promptDAO.PaginateByTask(h.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -124,11 +124,11 @@ func (s *aiService) ListPromptHandler(c *gin.Context) {
 	})
 }
 
-func (s *aiService) CreatePromptHandler(c *gin.Context) {
+func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TaskURI)
 	body := c.MustGet("body").(*protocol.CreatePromptBody)
 
-	contents := lo.Map(body.Templates, func(tmplate protocol.Template, idx int) string {
+	contents := lo.Map(body.Templates, func(tmplate protocol.Template, _ int) string {
 		return tmplate.Content
 	})
 
@@ -144,7 +144,7 @@ func (s *aiService) CreatePromptHandler(c *gin.Context) {
 		return
 	}
 
-	prompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.Task(uri.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
+	prompt, err := h.promptDAO.GetLatestPromptByTask(h.db, model.Task(uri.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -152,7 +152,7 @@ func (s *aiService) CreatePromptHandler(c *gin.Context) {
 		})
 	}
 
-	contents = lo.Map(prompt.Templates, func(tmplate model.Template, idx int) string {
+	contents = lo.Map(prompt.Templates, func(tmplate model.Template, _ int) string {
 		return tmplate.Content
 	})
 
@@ -174,7 +174,7 @@ func (s *aiService) CreatePromptHandler(c *gin.Context) {
 
 	prompt = &model.Prompt{
 		Task: model.Task(uri.TaskName),
-		Templates: lo.Map(body.Templates, func(tmplate protocol.Template, idx int) model.Template {
+		Templates: lo.Map(body.Templates, func(tmplate protocol.Template, _ int) model.Template {
 			return model.Template{
 				Role:    tmplate.Role,
 				Content: tmplate.Content,
@@ -184,7 +184,7 @@ func (s *aiService) CreatePromptHandler(c *gin.Context) {
 		Version:   prompt.Version + 1,
 	}
 
-	if err = s.promptDAO.Create(s.db, prompt); err != nil {
+	if err = h.promptDAO.Create(h.db, prompt); err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeCreatePromptError,
 			Message: err.Error(),
@@ -192,7 +192,7 @@ func (s *aiService) CreatePromptHandler(c *gin.Context) {
 		return
 	}
 
-	prompt = lo.Must1(s.promptDAO.GetLatestPromptByTask(s.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version"}, []string{}))
+	prompt = lo.Must1(h.promptDAO.GetLatestPromptByTask(h.db, model.Task(uri.TaskName), []string{"id", "created_at", "task", "version"}, []string{}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Data: map[string]interface{}{
@@ -201,11 +201,11 @@ func (s *aiService) CreatePromptHandler(c *gin.Context) {
 	})
 }
 
-func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
+func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateContentCompletionBody)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(h.userDAO.GetByID(h.db, userID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeInsufficientQuota,
@@ -214,7 +214,7 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 		return
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
+	latestPrompt, err := h.promptDAO.GetLatestPromptByTask(h.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -223,7 +223,7 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 		return
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
 		return prompt.NewOneTurnPrompt(template.Role, template.Content)
 	})
 
@@ -254,14 +254,14 @@ func (s *aiService) GenerateContentCompletionHandler(c *gin.Context) {
 		return
 	}
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(h.userDAO.Update(h.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }
 
-func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
+func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateArticleSummaryBody)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(h.userDAO.GetByID(h.db, userID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeInsufficientQuota,
@@ -270,7 +270,7 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -279,7 +279,7 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	latestVersion, err := h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -288,7 +288,7 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 		return
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleSummary, []string{"id", "templates"}, []string{})
+	latestPrompt, err := h.promptDAO.GetLatestPromptByTask(h.db, model.TaskArticleSummary, []string{"id", "templates"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -297,7 +297,7 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 		return
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
 		return prompt.NewOneTurnPrompt(template.Role, template.Content)
 	})
 
@@ -328,17 +328,17 @@ func (s *aiService) GenerateArticleSummaryHandler(c *gin.Context) {
 		return
 	}
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(h.userDAO.Update(h.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }
 
-func (s *aiService) GenerateArticleTranslationHandler(c *gin.Context) {
+func (h *aiHandler) HandleGenerateArticleTranslation(_ *gin.Context) {
 }
 
-func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
+func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateArticleQABody)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(h.userDAO.GetByID(h.db, userID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeInsufficientQuota,
@@ -347,7 +347,7 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -356,7 +356,7 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	latestVersion, err := h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -365,7 +365,7 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 		return
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleQA, []string{"id", "templates"}, []string{})
+	latestPrompt, err := h.promptDAO.GetLatestPromptByTask(h.db, model.TaskArticleQA, []string{"id", "templates"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -374,7 +374,7 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 		return
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
 		return prompt.NewOneTurnPrompt(template.Role, template.Content)
 	})
 
@@ -405,14 +405,14 @@ func (s *aiService) GenerateArticleQAHandler(c *gin.Context) {
 		return
 	}
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(h.userDAO.Update(h.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }
 
-func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
+func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateTermExplainationBody)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(h.userDAO.GetByID(h.db, userID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeInsufficientQuota,
@@ -421,7 +421,7 @@ func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, body.ArticleSlug, userID, []string{"id", "title"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -430,7 +430,7 @@ func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	latestVersion, err := h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -439,7 +439,7 @@ func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
 		return
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskTermExplaination, []string{"id", "templates"}, []string{})
+	latestPrompt, err := h.promptDAO.GetLatestPromptByTask(h.db, model.TaskTermExplaination, []string{"id", "templates"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetPromptError,
@@ -448,7 +448,7 @@ func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
 		return
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, idx int) prompt.Prompt {
+	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
 		return prompt.NewOneTurnPrompt(template.Role, template.Content)
 	})
 
@@ -494,5 +494,5 @@ func (s *aiService) GenerateTermExplainationHandler(c *gin.Context) {
 		return
 	}
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(h.userDAO.Update(h.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 }

@@ -16,23 +16,23 @@ import (
 	"gorm.io/gorm"
 )
 
-// ArticleService 文章服务
+// ArticleHandler 文章服务
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-type ArticleService interface {
-	CreateArticleHandler(c *gin.Context)
-	GetArticleInfoHandler(c *gin.Context)
-	UpdateArticleHandler(c *gin.Context)
-	UpdateArticleStatusHandler(c *gin.Context)
-	DeleteArticleHandler(c *gin.Context)
-	ListArticlesHandler(c *gin.Context)
-	ListUserArticlesHandler(c *gin.Context)
-	QueryUserArticleHandler(c *gin.Context)
-	QueryArticleHandler(c *gin.Context)
+type ArticleHandler interface {
+	HandleCreateArticle(c *gin.Context)
+	HandleGetArticleInfo(c *gin.Context)
+	HandleUpdateArticle(c *gin.Context)
+	HandleUpdateArticleStatus(c *gin.Context)
+	HandleDeleteArticle(c *gin.Context)
+	HandleListArticles(c *gin.Context)
+	HandleListUserArticles(c *gin.Context)
+	HandleQueryUserArticle(c *gin.Context)
+	HandleQueryArticle(c *gin.Context)
 }
 
-type articleService struct {
+type articleHandler struct {
 	db                *gorm.DB
 	userDAO           *dao.UserDAO
 	tagDAO            *dao.TagDAO
@@ -42,13 +42,13 @@ type articleService struct {
 	articleDocDAO     *doc_dao.ArticleDocDAO
 }
 
-// NewArticleService 创建文章服务
+// NewArticleHandler 创建文章服务
 //
 //	@return ArticleService
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-func NewArticleService() ArticleService {
-	return &articleService{
+func NewArticleHandler() ArticleHandler {
+	return &articleHandler{
 		db:          database.GetDBInstance(),
 		userDAO:     dao.GetUserDAO(),
 		tagDAO:      dao.GetTagDAO(),
@@ -62,7 +62,7 @@ func NewArticleService() ArticleService {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-21 09:58:14
-func (s *articleService) CreateArticleHandler(c *gin.Context) {
+func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -88,7 +88,7 @@ func (s *articleService) CreateArticleHandler(c *gin.Context) {
 
 	getTagFunc := func(tagSlug string) {
 		defer wg.Done()
-		tag, err := s.tagDAO.GetBySlug(s.db, tagSlug, []string{"id"}, []string{})
+		tag, err := h.tagDAO.GetBySlug(h.db, tagSlug, []string{"id"}, []string{})
 		if err != nil {
 			errChan <- err
 			return
@@ -128,7 +128,7 @@ func (s *articleService) CreateArticleHandler(c *gin.Context) {
 		Versions:   []model.ArticleVersion{},
 	}
 
-	if err := s.articleDAO.Create(s.db, article); err != nil {
+	if err := h.articleDAO.Create(h.db, article); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateArticleError,
 			Message: err.Error(),
@@ -149,10 +149,10 @@ func (s *articleService) CreateArticleHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-16 05:58:52
-func (s *articleService) GetArticleInfoHandler(c *gin.Context) {
+func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -161,7 +161,7 @@ func (s *articleService) GetArticleInfoHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{
 		"id", "slug", "title", "status", "user_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
@@ -187,7 +187,7 @@ func (s *articleService) GetArticleInfoHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-21 08:59:40
-func (s *articleService) UpdateArticleHandler(c *gin.Context) {
+func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 	userName := c.GetString("userName")
@@ -221,7 +221,7 @@ func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	articleDocDAO := doc_dao.GetArticleDocDAO()
 
 	if err != nil {
@@ -232,7 +232,7 @@ func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -241,7 +241,7 @@ func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	if err := s.articleDAO.Update(s.db, article, updateFields); err != nil {
+	if err := h.articleDAO.Update(h.db, article, updateFields); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateArticleError,
 			Message: err.Error(),
@@ -249,7 +249,7 @@ func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article = lo.Must1(s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "title", "slug", "status"}, []string{}))
+	article = lo.Must1(h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "title", "slug", "status"}, []string{}))
 	if article.Status == model.ArticleStatusPublish {
 		article.User = &model.User{}
 		lo.Must0(articleDocDAO.UpdateDocument(document.TransformArticleToDocument(article, &model.ArticleVersion{})))
@@ -268,7 +268,7 @@ func (s *articleService) UpdateArticleHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-17 09:28:54
-func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
+func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
@@ -283,7 +283,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 
 	articleDocDAO := doc_dao.GetArticleDocDAO()
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -292,7 +292,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "status", "title", "slug", "user_id", "category_id"}, []string{"User", "Category", "Tags"})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "status", "title", "slug", "user_id", "category_id"}, []string{"User", "Category", "Tags"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -309,7 +309,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"content"}, []string{})
+	latestVersion, err := h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"content"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -319,7 +319,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 	}
 
 	if body.Status == model.ArticleStatusPublish {
-		if err := s.articleDAO.Update(s.db, article, map[string]interface{}{"status": body.Status, "published_at": time.Now()}); err != nil {
+		if err := h.articleDAO.Update(h.db, article, map[string]interface{}{"status": body.Status, "published_at": time.Now()}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeUpdateArticleError,
 				Message: err.Error(),
@@ -328,7 +328,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 		}
 		lo.Must0(articleDocDAO.AddDocument(document.TransformArticleToDocument(article, latestVersion)))
 	} else if body.Status == model.ArticleStatusDraft {
-		if err := s.articleDAO.Update(s.db, article, map[string]interface{}{"status": body.Status, "published_at": nil}); err != nil {
+		if err := h.articleDAO.Update(h.db, article, map[string]interface{}{"status": body.Status, "published_at": nil}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeUpdateArticleError,
 				Message: err.Error(),
@@ -351,7 +351,7 @@ func (s *articleService) UpdateArticleStatusHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-22 04:32:37
-func (s *articleService) DeleteArticleHandler(c *gin.Context) {
+func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
@@ -365,7 +365,7 @@ func (s *articleService) DeleteArticleHandler(c *gin.Context) {
 
 	articleDocDAO := doc_dao.GetArticleDocDAO()
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -374,7 +374,7 @@ func (s *articleService) DeleteArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "slug"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "slug"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -389,7 +389,7 @@ func (s *articleService) DeleteArticleHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		deleteArticleErr = s.articleDAO.Delete(s.db, article)
+		deleteArticleErr = h.articleDAO.Delete(h.db, article)
 	}()
 
 	go func() {
@@ -423,11 +423,11 @@ func (s *articleService) DeleteArticleHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-21 08:59:40
-func (s *articleService) ListArticlesHandler(c *gin.Context) {
+func (h *articleHandler) HandleListArticles(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	articles, pageInfo, err := s.articleDAO.PaginateByPublished(
-		s.db,
+	articles, pageInfo, err := h.articleDAO.PaginateByPublished(
+		h.db,
 		[]string{"id", "title", "slug", "status", "published_at", "views", "likes", "user_id"},
 		[]string{"User", "Comments", "Tags"},
 		param.Page, param.PageSize,
@@ -443,7 +443,7 @@ func (s *articleService) ListArticlesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
+			"articles": lo.Map(*articles, func(article model.Article, _ int) map[string]interface{} {
 				return article.GetDetailedInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -456,11 +456,11 @@ func (s *articleService) ListArticlesHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-21 08:59:40
-func (s *articleService) ListUserArticlesHandler(c *gin.Context) {
+func (h *articleHandler) HandleListUserArticles(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -469,7 +469,7 @@ func (s *articleService) ListUserArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	articles, pageInfo, err := s.articleDAO.PaginateByUserID(s.db, user.ID, []string{"id", "title", "slug"}, []string{}, param.Page, param.PageSize)
+	articles, pageInfo, err := h.articleDAO.PaginateByUserID(h.db, user.ID, []string{"id", "title", "slug"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -481,7 +481,7 @@ func (s *articleService) ListUserArticlesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
+			"articles": lo.Map(*articles, func(article model.Article, _ int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -494,11 +494,11 @@ func (s *articleService) ListUserArticlesHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-23 12:13:21
-func (s *articleService) QueryUserArticleHandler(c *gin.Context) {
+func (h *articleHandler) HandleQueryUserArticle(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.QueryParam)
 
-	_, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -507,7 +507,7 @@ func (s *articleService) QueryUserArticleHandler(c *gin.Context) {
 		return
 	}
 
-	articles, queryInfo, err := s.articleDocDAO.QueryDocument(param.Query, append(param.Filter, "author="+uri.UserName), param.Page, param.PageSize)
+	articles, queryInfo, err := h.articleDocDAO.QueryDocument(param.Query, append(param.Filter, "author="+uri.UserName), param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,
@@ -530,10 +530,10 @@ func (s *articleService) QueryUserArticleHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-23 12:13:17
-func (s *articleService) QueryArticleHandler(c *gin.Context) {
+func (h *articleHandler) HandleQueryArticle(c *gin.Context) {
 	params := c.MustGet("param").(*protocol.QueryParam)
 
-	articles, queryInfo, err := s.articleDocDAO.QueryDocument(params.Query, params.Filter, params.Page, params.PageSize)
+	articles, queryInfo, err := h.articleDocDAO.QueryDocument(params.Query, params.Filter, params.Page, params.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryArticleError,

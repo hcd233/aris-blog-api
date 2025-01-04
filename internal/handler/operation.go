@@ -14,18 +14,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// OperationService 用户操作服务
+// OperationHandler 用户操作处理器
 //
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-type OperationService interface {
-	UserLikeArticleHandler(c *gin.Context)
-	UserLikeCommentHandler(c *gin.Context)
-	UserLikeTagHandler(c *gin.Context)
-	LogUserViewArticleHandler(c *gin.Context)
+//	@update 2025-01-04 15:52:48
+type OperationHandler interface {
+	HandleUserLikeArticle(c *gin.Context)
+	HandleUserLikeComment(c *gin.Context)
+	HandleUserLikeTag(c *gin.Context)
+	HandleLogUserViewArticle(c *gin.Context)
 }
 
-type operationService struct {
+type operationHandler struct {
 	db          *gorm.DB
 	userDAO     *dao.UserDAO
 	tagDAO      *dao.TagDAO
@@ -35,13 +35,13 @@ type operationService struct {
 	userViewDAO *dao.UserViewDAO
 }
 
-// NewOperationService 创建用户操作服务
+// NewOperationHandler 创建用户操作处理器
 //
-//	@return OperationService
+//	@return OperationHandler
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-func NewOperationService() OperationService {
-	return &operationService{
+//	@update 2025-01-04 15:52:48
+func NewOperationHandler() OperationHandler {
+	return &operationHandler{
 		db:          database.GetDBInstance(),
 		userDAO:     dao.GetUserDAO(),
 		tagDAO:      dao.GetTagDAO(),
@@ -57,7 +57,7 @@ func NewOperationService() OperationService {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-30 05:52:24
-func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
+func (h *operationHandler) HandleUserLikeArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -71,7 +71,7 @@ func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, body.Author, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, body.Author, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -80,7 +80,7 @@ func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, user.ID, []string{"id", "likes", "status", "user_id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, body.ArticleSlug, user.ID, []string{"id", "likes", "status", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -103,7 +103,7 @@ func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
 		ObjectType: model.LikeObjectTypeArticle,
 	}
 
-	tx := s.db.Begin()
+	tx := h.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -116,9 +116,9 @@ func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
 	}()
 
 	if body.Undo {
-		err = s.transactUndoLikeArticle(tx, article, userLike)
+		err = h.transactUndoLikeArticle(tx, article, userLike)
 	} else {
-		err = s.transactLikeArticle(tx, article, userLike)
+		err = h.transactLikeArticle(tx, article, userLike)
 	}
 
 	if err != nil {
@@ -139,7 +139,7 @@ func (s *operationService) UserLikeArticleHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-30 05:52:08
-func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
+func (h *operationHandler) HandleUserLikeComment(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -153,7 +153,7 @@ func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
 		return
 	}
 
-	comment, err := s.commentDAO.GetByID(s.db, body.CommentID, []string{"id", "likes"}, []string{})
+	comment, err := h.commentDAO.GetByID(h.db, body.CommentID, []string{"id", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -168,7 +168,7 @@ func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
 		ObjectType: model.LikeObjectTypeComment,
 	}
 
-	tx := s.db.Begin()
+	tx := h.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -181,9 +181,9 @@ func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
 	}()
 
 	if body.Undo {
-		err = s.transactUndoLikeComment(tx, comment, userLike)
+		err = h.transactUndoLikeComment(tx, comment, userLike)
 	} else {
-		err = s.transactLikeComment(tx, comment, userLike)
+		err = h.transactLikeComment(tx, comment, userLike)
 	}
 
 	if err != nil {
@@ -204,7 +204,7 @@ func (s *operationService) UserLikeCommentHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-29 07:10:45
-func (s *operationService) UserLikeTagHandler(c *gin.Context) {
+func (h *operationHandler) HandleUserLikeTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -218,7 +218,7 @@ func (s *operationService) UserLikeTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag, err := s.tagDAO.GetBySlug(s.db, body.TagSlug, []string{"id", "likes"}, []string{})
+	tag, err := h.tagDAO.GetBySlug(h.db, body.TagSlug, []string{"id", "likes"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -233,7 +233,7 @@ func (s *operationService) UserLikeTagHandler(c *gin.Context) {
 		ObjectType: model.LikeObjectTypeTag,
 	}
 
-	tx := s.db.Begin()
+	tx := h.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
@@ -246,9 +246,9 @@ func (s *operationService) UserLikeTagHandler(c *gin.Context) {
 	}()
 
 	if body.Undo {
-		err = s.transactUndoLikeTag(tx, tag, userLike)
+		err = h.transactUndoLikeTag(tx, tag, userLike)
 	} else {
-		err = s.transactLikeTag(tx, tag, userLike)
+		err = h.transactLikeTag(tx, tag, userLike)
 	}
 
 	if err != nil {
@@ -269,7 +269,7 @@ func (s *operationService) UserLikeTagHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-11-03 06:45:42
-func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
+func (h *operationHandler) HandleLogUserViewArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -283,7 +283,7 @@ func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, body.Author, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, body.Author, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -292,7 +292,7 @@ func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, body.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, body.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -309,7 +309,7 @@ func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
 		return
 	}
 
-	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(s.db, userID, article.ID, []string{"id", "created_at", "progress"}, []string{})
+	userView, err := h.userViewDAO.GetLatestViewByUserIDAndArticleID(h.db, userID, article.ID, []string{"id", "created_at", "progress"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserViewError,
@@ -333,7 +333,7 @@ func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
 			Progress:  body.Progress,
 		}
 
-		if err = s.userViewDAO.Create(s.db, userView); err != nil {
+		if err = h.userViewDAO.Create(h.db, userView); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeLogUserViewError,
 				Message: err.Error(),
@@ -350,7 +350,7 @@ func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
 			return
 		}
 
-		if err = s.userViewDAO.Update(s.db, userView, map[string]interface{}{"progress": body.Progress, "last_viewed_at": time.Now()}); err != nil {
+		if err = h.userViewDAO.Update(h.db, userView, map[string]interface{}{"progress": body.Progress, "last_viewed_at": time.Now()}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeUpdateUserViewError,
 				Message: err.Error(),
@@ -364,7 +364,7 @@ func (s *operationService) LogUserViewArticleHandler(c *gin.Context) {
 	})
 }
 
-func (s *operationService) transactLikeArticle(tx *gorm.DB, article *model.Article, userLike *model.UserLike) (err error) {
+func (h *operationHandler) transactLikeArticle(tx *gorm.DB, article *model.Article, userLike *model.UserLike) (err error) {
 	articleDAO, userLikeDAO := dao.GetArticleDAO(), dao.GetUserLikeDAO()
 	if err = userLikeDAO.Create(tx, userLike); err != nil {
 		err = fmt.Errorf("transaction create user like failed: %v", err)
@@ -378,8 +378,8 @@ func (s *operationService) transactLikeArticle(tx *gorm.DB, article *model.Artic
 	return
 }
 
-func (s *operationService) transactUndoLikeArticle(tx *gorm.DB, article *model.Article, userLike *model.UserLike) (err error) {
-	userLikeWithID, err := s.userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
+func (h *operationHandler) transactUndoLikeArticle(tx *gorm.DB, article *model.Article, userLike *model.UserLike) (err error) {
+	userLikeWithID, err := h.userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
 	if err != nil {
 		err = fmt.Errorf("transaction get user like failed: %v", err)
 		return
@@ -387,12 +387,12 @@ func (s *operationService) transactUndoLikeArticle(tx *gorm.DB, article *model.A
 
 	userLike.ID = userLikeWithID.ID
 
-	if err = s.userLikeDAO.Delete(tx, userLike); err != nil {
+	if err = h.userLikeDAO.Delete(tx, userLike); err != nil {
 		err = fmt.Errorf("transaction delete user like failed: %v", err)
 		return
 	}
 
-	if err = s.articleDAO.Update(tx, article, map[string]interface{}{"likes": article.Likes - 1}); err != nil {
+	if err = h.articleDAO.Update(tx, article, map[string]interface{}{"likes": article.Likes - 1}); err != nil {
 		err = fmt.Errorf("transaction update comment likes failed: %v", err)
 		return
 	}
@@ -400,21 +400,21 @@ func (s *operationService) transactUndoLikeArticle(tx *gorm.DB, article *model.A
 	return
 }
 
-func (s *operationService) transactLikeComment(tx *gorm.DB, comment *model.Comment, userLike *model.UserLike) (err error) {
-	if err = s.userLikeDAO.Create(tx, userLike); err != nil {
+func (h *operationHandler) transactLikeComment(tx *gorm.DB, comment *model.Comment, userLike *model.UserLike) (err error) {
+	if err = h.userLikeDAO.Create(tx, userLike); err != nil {
 		err = fmt.Errorf("transaction create user like failed: %v", err)
 		return
 	}
 
-	if err = s.commentDAO.Update(tx, comment, map[string]interface{}{"likes": comment.Likes + 1}); err != nil {
+	if err = h.commentDAO.Update(tx, comment, map[string]interface{}{"likes": comment.Likes + 1}); err != nil {
 		err = fmt.Errorf("transaction update comment likes failed: %v", err)
 		return
 	}
 	return
 }
 
-func (s *operationService) transactUndoLikeComment(tx *gorm.DB, comment *model.Comment, userLike *model.UserLike) (err error) {
-	userLikeWithID, err := s.userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
+func (h *operationHandler) transactUndoLikeComment(tx *gorm.DB, comment *model.Comment, userLike *model.UserLike) (err error) {
+	userLikeWithID, err := h.userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
 	if err != nil {
 		err = fmt.Errorf("transaction get user like failed: %v", err)
 		return
@@ -422,12 +422,12 @@ func (s *operationService) transactUndoLikeComment(tx *gorm.DB, comment *model.C
 
 	userLike.ID = userLikeWithID.ID
 
-	if err = s.userLikeDAO.Delete(tx, userLike); err != nil {
+	if err = h.userLikeDAO.Delete(tx, userLike); err != nil {
 		err = fmt.Errorf("transaction delete user like failed: %v", err)
 		return
 	}
 
-	if err = s.commentDAO.Update(tx, comment, map[string]interface{}{"likes": comment.Likes - 1}); err != nil {
+	if err = h.commentDAO.Update(tx, comment, map[string]interface{}{"likes": comment.Likes - 1}); err != nil {
 		err = fmt.Errorf("transaction update comment likes failed: %v", err)
 		return
 	}
@@ -435,21 +435,21 @@ func (s *operationService) transactUndoLikeComment(tx *gorm.DB, comment *model.C
 	return
 }
 
-func (s *operationService) transactLikeTag(tx *gorm.DB, tag *model.Tag, userLike *model.UserLike) (err error) {
-	if err = s.userLikeDAO.Create(tx, userLike); err != nil {
+func (h *operationHandler) transactLikeTag(tx *gorm.DB, tag *model.Tag, userLike *model.UserLike) (err error) {
+	if err = h.userLikeDAO.Create(tx, userLike); err != nil {
 		err = fmt.Errorf("transaction create user like failed: %v", err)
 		return
 	}
 
-	if err = s.tagDAO.Update(tx, tag, map[string]interface{}{"likes": tag.Likes + 1}); err != nil {
+	if err = h.tagDAO.Update(tx, tag, map[string]interface{}{"likes": tag.Likes + 1}); err != nil {
 		err = fmt.Errorf("transaction update tag likes failed: %v", err)
 		return
 	}
 	return
 }
 
-func (s *operationService) transactUndoLikeTag(tx *gorm.DB, tag *model.Tag, userLike *model.UserLike) (err error) {
-	userLikeWithID, err := s.userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
+func (h *operationHandler) transactUndoLikeTag(tx *gorm.DB, tag *model.Tag, userLike *model.UserLike) (err error) {
+	userLikeWithID, err := h.userLikeDAO.GetByUserIDAndObject(tx, userLike.UserID, userLike.ObjectID, userLike.ObjectType, []string{"id"}, []string{})
 	if err != nil {
 		err = fmt.Errorf("transaction get user like failed: %v", err)
 		return
@@ -457,12 +457,12 @@ func (s *operationService) transactUndoLikeTag(tx *gorm.DB, tag *model.Tag, user
 
 	userLike.ID = userLikeWithID.ID
 
-	if err = s.userLikeDAO.Delete(tx, userLike); err != nil {
+	if err = h.userLikeDAO.Delete(tx, userLike); err != nil {
 		err = fmt.Errorf("transaction delete user like failed: %v", err)
 		return
 	}
 
-	if err = s.tagDAO.Update(tx, tag, map[string]interface{}{"likes": tag.Likes - 1}); err != nil {
+	if err = h.tagDAO.Update(tx, tag, map[string]interface{}{"likes": tag.Likes - 1}); err != nil {
 		err = fmt.Errorf("transaction update tag likes failed: %v", err)
 		return
 	}

@@ -5,26 +5,26 @@ import (
 	"github.com/hcd233/Aris-blog/internal/protocol"
 )
 
-// PingService 健康检查服务
+// PingHandler 健康检查处理器
 //
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-type PingService interface {
-	PingHandler(c *gin.Context)
+//	@update 2025-01-04 15:52:48
+type PingHandler interface {
+	HandlePing(c *gin.Context)
 }
 
-type pingService struct{}
+type pingHandler struct{}
 
-// NewPingService 创建健康检查服务
+// NewPingHandler 创建健康检查处理器
 //
-//	@return PingService
+//	@return PingHandler
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-func NewPingService() PingService {
-	return &pingService{}
+//	@update 2025-01-04 15:52:48
+func NewPingHandler() PingHandler {
+	return &pingHandler{}
 }
 
-func (s *pingService) PingHandler(c *gin.Context) {
+func (h *pingHandler) HandlePing(c *gin.Context) {
 	c.JSON(200, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Welcome to Aris Blog API!",

@@ -12,32 +12,32 @@ import (
 	"gorm.io/gorm"
 )
 
-// CommentService 评论服务
+// CommentHandler 评论处理器
 //
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-type CommentService interface {
-	CreateArticleCommentHandler(c *gin.Context)
-	GetCommentInfoHandler(c *gin.Context)
-	DeleteCommentHandler(c *gin.Context)
-	ListArticleCommentsHandler(c *gin.Context)
-	ListChildrenCommentsHandler(c *gin.Context)
+//	@update 2025-01-04 15:52:48
+type CommentHandler interface {
+	HandleCreateArticleComment(c *gin.Context)
+	HandleGetCommentInfo(c *gin.Context)
+	HandleDeleteComment(c *gin.Context)
+	HandleListArticleComments(c *gin.Context)
+	HandleListChildrenComments(c *gin.Context)
 }
 
-type commentService struct {
+type commentHandler struct {
 	db         *gorm.DB
 	userDAO    *dao.UserDAO
 	articleDAO *dao.ArticleDAO
 	commentDAO *dao.CommentDAO
 }
 
-// NewCommentService 创建评论服务
+// NewCommentHandler 创建评论处理器
 //
-//	@return CommentService
+//	@return CommentHandler
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-func NewCommentService() CommentService {
-	return &commentService{
+func NewCommentHandler() CommentHandler {
+	return &commentHandler{
 		db:         database.GetDBInstance(),
 		userDAO:    dao.GetUserDAO(),
 		articleDAO: dao.GetArticleDAO(),
@@ -50,12 +50,12 @@ func NewCommentService() CommentService {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-24 04:29:47
-func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
+func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.CreateArticleCommentBody)
 
-	author, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	author, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -64,7 +64,7 @@ func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, author.ID, []string{"id", "status"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, author.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -83,7 +83,7 @@ func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
 
 	var parent *model.Comment
 	if body.ReplyTo != 0 {
-		parent, err = s.commentDAO.GetByID(s.db, body.ReplyTo, []string{"id", "article_id"}, []string{})
+		parent, err = h.commentDAO.GetByID(h.db, body.ReplyTo, []string{"id", "article_id"}, []string{})
 		if err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeGetCommentError,
@@ -108,7 +108,7 @@ func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
 		Content:   body.Content,
 	}
 
-	if err := s.commentDAO.Create(s.db, comment); err != nil {
+	if err := h.commentDAO.Create(h.db, comment); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCommentError,
 			Message: err.Error(),
@@ -116,7 +116,7 @@ func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
 		return
 	}
 
-	comment = lo.Must1(s.commentDAO.GetByID(s.db, comment.ID, []string{"id", "created_at", "content", "parent_id", "user_id"}, []string{"User", "Parent"}))
+	comment = lo.Must1(h.commentDAO.GetByID(h.db, comment.ID, []string{"id", "created_at", "content", "parent_id", "user_id"}, []string{"User", "Parent"}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
@@ -131,10 +131,10 @@ func (s *commentService) CreateArticleCommentHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-24 05:58:29
-func (s *commentService) GetCommentInfoHandler(c *gin.Context) {
+func (h *commentHandler) HandleGetCommentInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CommentURI)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -143,7 +143,7 @@ func (s *commentService) GetCommentInfoHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -152,7 +152,7 @@ func (s *commentService) GetCommentInfoHandler(c *gin.Context) {
 		return
 	}
 
-	comment, err := s.commentDAO.GetByArticleIDAndID(s.db, article.ID, uri.CommentID, []string{"id", "created_at", "content", "user_id", "parent_id", "article_id"}, []string{"User", "Parent", "Article"})
+	comment, err := h.commentDAO.GetByArticleIDAndID(h.db, article.ID, uri.CommentID, []string{"id", "created_at", "content", "user_id", "parent_id", "article_id"}, []string{"User", "Parent", "Article"})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -174,11 +174,11 @@ func (s *commentService) GetCommentInfoHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-24 07:05:09
-func (s *commentService) DeleteCommentHandler(c *gin.Context) {
+func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.CommentURI)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -187,7 +187,7 @@ func (s *commentService) DeleteCommentHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -196,7 +196,7 @@ func (s *commentService) DeleteCommentHandler(c *gin.Context) {
 		return
 	}
 
-	comment, err := s.commentDAO.GetByArticleIDAndID(s.db, article.ID, uri.CommentID, []string{"id", "user_id"}, []string{})
+	comment, err := h.commentDAO.GetByArticleIDAndID(h.db, article.ID, uri.CommentID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -213,7 +213,7 @@ func (s *commentService) DeleteCommentHandler(c *gin.Context) {
 		return
 	}
 
-	if err := s.commentDAO.DeleteReclusiveByID(s.db, comment.ID, []string{"id"}, []string{}); err != nil {
+	if err := h.commentDAO.DeleteReclusiveByID(h.db, comment.ID, []string{"id"}, []string{}); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteCommentError,
 			Message: err.Error(),
@@ -231,12 +231,12 @@ func (s *commentService) DeleteCommentHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-23 05:59:57
-func (s *commentService) ListArticleCommentsHandler(c *gin.Context) {
+func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -245,7 +245,7 @@ func (s *commentService) ListArticleCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -262,7 +262,7 @@ func (s *commentService) ListArticleCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	comments, pageInfo, err := s.commentDAO.PaginateRootsByArticleID(s.db, article.ID, []string{"id", "content", "created_at", "likes", "user_id"}, []string{"User"}, param.Page, param.PageSize)
+	comments, pageInfo, err := h.commentDAO.PaginateRootsByArticleID(h.db, article.ID, []string{"id", "content", "created_at", "likes", "user_id"}, []string{"User"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -274,7 +274,7 @@ func (s *commentService) ListArticleCommentsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} {
+			"comments": lo.Map(*comments, func(comment model.Comment, _ int) map[string]interface{} {
 				return comment.GetDetailedInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -287,11 +287,11 @@ func (s *commentService) ListArticleCommentsHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-24 06:55:45
-func (s *commentService) ListChildrenCommentsHandler(c *gin.Context) {
+func (h *commentHandler) HandleListChildrenComments(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CommentURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -300,7 +300,7 @@ func (s *commentService) ListChildrenCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -309,7 +309,7 @@ func (s *commentService) ListChildrenCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	parentComment, err := s.commentDAO.GetByID(s.db, uri.CommentID, []string{"id", "article_id"}, []string{})
+	parentComment, err := h.commentDAO.GetByID(h.db, uri.CommentID, []string{"id", "article_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -326,7 +326,7 @@ func (s *commentService) ListChildrenCommentsHandler(c *gin.Context) {
 		return
 	}
 
-	comments, pageInfo, err := s.commentDAO.PaginateChildren(s.db, parentComment, []string{"id", "content", "created_at", "likes", "user_id"}, []string{"User"}, param.Page, param.PageSize)
+	comments, pageInfo, err := h.commentDAO.PaginateChildren(h.db, parentComment, []string{"id", "content", "created_at", "likes", "user_id"}, []string{"User"}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetCommentError,
@@ -338,7 +338,7 @@ func (s *commentService) ListChildrenCommentsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"comments": lo.Map(*comments, func(comment model.Comment, idx int) map[string]interface{} {
+			"comments": lo.Map(*comments, func(comment model.Comment, _ int) map[string]interface{} {
 				return comment.GetDetailedInfo()
 			}),
 			"pageInfo": pageInfo,

@@ -16,18 +16,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// ArticleVersionService 文章版本服务
+// ArticleVersionHandler 文章版本服务
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:59:54
-type ArticleVersionService interface {
-	CreateArticleVersionHandler(c *gin.Context)
-	GetArticleVersionInfoHandler(c *gin.Context)
-	GetLatestArticleVersionInfoHandler(c *gin.Context)
-	ListArticleVersionsHandler(c *gin.Context)
+type ArticleVersionHandler interface {
+	HandleCreateArticleVersion(c *gin.Context)
+	HandleGetArticleVersionInfo(c *gin.Context)
+	HandleGetLatestArticleVersionInfo(c *gin.Context)
+	HandleListArticleVersions(c *gin.Context)
 }
 
-type articleVersionService struct {
+type articleVersionHandler struct {
 	db                *gorm.DB
 	userDAO           *dao.UserDAO
 	articleDAO        *dao.ArticleDAO
@@ -35,13 +35,13 @@ type articleVersionService struct {
 	articleDocDAO     *doc_dao.ArticleDocDAO
 }
 
-// NewArticleVersionService 创建文章版本服务
+// NewArticleVersionHandler 创建文章版本服务
 //
-//	@return ArticleVersionService
+//	@return ArticleVersionHandler
 //	@author centonhuang
 //	@update 2024-12-08 16:59:54
-func NewArticleVersionService() ArticleVersionService {
-	return &articleVersionService{
+func NewArticleVersionHandler() ArticleVersionHandler {
+	return &articleVersionHandler{
 		db:                database.GetDBInstance(),
 		userDAO:           dao.GetUserDAO(),
 		articleDAO:        dao.GetArticleDAO(),
@@ -49,12 +49,12 @@ func NewArticleVersionService() ArticleVersionService {
 	}
 }
 
-// CreateArticleVersionHandler 创建文章版本
+// HandleCreateArticleVersion 创建文章版本
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-17 12:44:17
-func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
+func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
@@ -67,7 +67,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -76,7 +76,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -85,7 +85,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 		return
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"version", "content"}, []string{})
+	latestVersion, err := h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"version", "content"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -108,7 +108,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 		Version: latestVersion.Version + 1,
 	}
 
-	if err = s.articleVersionDAO.Create(s.db, articleVersion); err != nil {
+	if err = h.articleVersionDAO.Create(h.db, articleVersion); err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code: protocol.CodeCreateArticleVersionError,
 		})
@@ -116,9 +116,9 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 	}
 
 	if article.Status == model.ArticleStatusPublish {
-		lo.Must0(s.articleDocDAO.UpdateDocument(document.TransformArticleToDocument(&model.Article{ID: article.ID, User: &model.User{}}, articleVersion)))
+		lo.Must0(h.articleDocDAO.UpdateDocument(document.TransformArticleToDocument(&model.Article{ID: article.ID, User: &model.User{}}, articleVersion)))
 
-		if err := s.articleDAO.Update(s.db, article, map[string]interface{}{"published_at": time.Now()}); err != nil {
+		if err := h.articleDAO.Update(h.db, article, map[string]interface{}{"published_at": time.Now()}); err != nil {
 			c.JSON(http.StatusBadRequest, protocol.Response{
 				Code:    protocol.CodeUpdateArticleError,
 				Message: err.Error(),
@@ -127,7 +127,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 		}
 	}
 
-	articleVersion = lo.Must1(s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "created_at", "version"}, []string{}))
+	articleVersion = lo.Must1(h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"id", "created_at", "version"}, []string{}))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
@@ -137,12 +137,7 @@ func (s *articleVersionService) CreateArticleVersionHandler(c *gin.Context) {
 	})
 }
 
-// GetArticleVersionInfoHandler 获取文章版本信息
-//
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-09-16 05:58:52
-func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
+func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleVersionURI)
 
@@ -154,7 +149,7 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -163,7 +158,7 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -172,7 +167,7 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 		return
 	}
 
-	articleVersion, err := s.articleVersionDAO.GetByArticleIDAndVersion(s.db, article.ID, uri.Version, []string{"id", "created_at", "version", "content", "summary"}, []string{})
+	articleVersion, err := h.articleVersionDAO.GetByArticleIDAndVersion(h.db, article.ID, uri.Version, []string{"id", "created_at", "version", "content", "summary"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -189,7 +184,7 @@ func (s *articleVersionService) GetArticleVersionInfoHandler(c *gin.Context) {
 	})
 }
 
-func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Context) {
+func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
@@ -201,7 +196,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -210,7 +205,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -219,7 +214,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 		return
 	}
 
-	articleVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "created_at", "version", "content", "summary"}, []string{})
+	articleVersion, err := h.articleVersionDAO.GetLatestByArticleID(h.db, article.ID, []string{"id", "created_at", "version", "content", "summary"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -236,12 +231,12 @@ func (s *articleVersionService) GetLatestArticleVersionInfoHandler(c *gin.Contex
 	})
 }
 
-// ListArticleVersionsHandler 列出文章版本
+// HandleListArticleVersions 列出文章版本
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-16 10:13:59
-func (s *articleVersionService) ListArticleVersionsHandler(c *gin.Context) {
+func (h *articleVersionHandler) HandleListArticleVersions(c *gin.Context) {
 	userName := c.GetString("userName")
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
@@ -254,7 +249,7 @@ func (s *articleVersionService) ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, userName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, userName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -263,7 +258,7 @@ func (s *articleVersionService) ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := h.articleDAO.GetBySlugAndUserID(h.db, uri.ArticleSlug, user.ID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -272,7 +267,7 @@ func (s *articleVersionService) ListArticleVersionsHandler(c *gin.Context) {
 		return
 	}
 
-	versions, pageInfo, err := s.articleVersionDAO.PaginateByArticleID(s.db, article.ID, []string{"created_at", "version", "content"}, []string{}, param.Page, param.PageSize)
+	versions, pageInfo, err := h.articleVersionDAO.PaginateByArticleID(h.db, article.ID, []string{"created_at", "version", "content"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, protocol.Response{
 			Code:    protocol.CodeGetArticleVersionError,
@@ -284,7 +279,7 @@ func (s *articleVersionService) ListArticleVersionsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articleVersions": lo.Map(*versions, func(article model.ArticleVersion, index int) map[string]interface{} {
+			"articleVersions": lo.Map(*versions, func(article model.ArticleVersion, _ int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
 			"pageInfo": pageInfo,

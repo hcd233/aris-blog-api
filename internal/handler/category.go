@@ -12,34 +12,34 @@ import (
 	"gorm.io/gorm"
 )
 
-// CategoryService 分类服务
+// CategoryHandler 分类服务
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-type CategoryService interface {
-	CreateCategoryHandler(c *gin.Context)
-	GetCategoryInfoHandler(c *gin.Context)
-	UpdateCategoryInfoHandler(c *gin.Context)
-	DeleteCategoryHandler(c *gin.Context)
-	ListRootCategoriesHandler(c *gin.Context)
-	ListChildrenCategoriesHandler(c *gin.Context)
-	ListChildrenArticlesHandler(c *gin.Context)
+type CategoryHandler interface {
+	HandleCreateCategory(c *gin.Context)
+	HandleGetCategoryInfo(c *gin.Context)
+	HandleUpdateCategoryInfo(c *gin.Context)
+	HandleDeleteCategory(c *gin.Context)
+	HandleListRootCategories(c *gin.Context)
+	HandleListChildrenCategories(c *gin.Context)
+	HandleListChildrenArticles(c *gin.Context)
 }
 
-type categoryService struct {
+type categoryHandler struct {
 	db          *gorm.DB
 	userDAO     *dao.UserDAO
 	categoryDAO *dao.CategoryDAO
 	articleDAO  *dao.ArticleDAO
 }
 
-// NewCategoryService 创建分类服务
+// NewCategoryHandler 创建分类处理器
 //
-//	@return CategoryService
+//	@return CategoryHandler
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-func NewCategoryService() CategoryService {
-	return &categoryService{
+//	@update 2024-12-08 16:5CategoryHandler
+func NewCategoryHandler() CategoryHandler {
+	return &categoryHandler{
 		db:          database.GetDBInstance(),
 		userDAO:     dao.GetUserDAO(),
 		categoryDAO: dao.GetCategoryDAO(),
@@ -52,7 +52,7 @@ func NewCategoryService() CategoryService {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-09-28 07:03:28
-func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
+func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
@@ -65,7 +65,7 @@ func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -76,9 +76,9 @@ func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
 
 	var parentCategory *model.Category
 	if body.ParentID == 0 {
-		parentCategory, err = s.categoryDAO.GetRootByUserID(s.db, user.ID, []string{"id"}, []string{})
+		parentCategory, err = h.categoryDAO.GetRootByUserID(h.db, user.ID, []string{"id"}, []string{})
 	} else {
-		parentCategory, err = s.categoryDAO.GetByID(s.db, body.ParentID, []string{"id"}, []string{})
+		parentCategory, err = h.categoryDAO.GetByID(h.db, body.ParentID, []string{"id"}, []string{})
 	}
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
@@ -95,7 +95,7 @@ func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
 		UserID:   user.ID,
 	}
 
-	if err := s.categoryDAO.Create(s.db, category); err != nil {
+	if err := h.categoryDAO.Create(h.db, category); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
 			Message: err.Error(),
@@ -114,7 +114,7 @@ func (s *categoryService) CreateCategoryHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-01 04:58:27
-func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
+func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
@@ -126,7 +126,7 @@ func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	_, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -135,7 +135,7 @@ func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := s.categoryDAO.GetByID(s.db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
+	category, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -157,7 +157,7 @@ func (s *categoryService) GetCategoryInfoHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-23 03:56:26
-func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
+func (h *categoryHandler) HandleListRootCategories(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
@@ -169,7 +169,7 @@ func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -178,7 +178,7 @@ func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	rootCategory, err := s.categoryDAO.GetRootByUserID(s.db, user.ID, []string{"id", "name"}, []string{})
+	rootCategory, err := h.categoryDAO.GetRootByUserID(h.db, user.ID, []string{"id", "name"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -200,7 +200,7 @@ func (s *categoryService) ListRootCategoriesHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-02 03:45:55
-func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
+func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
@@ -213,7 +213,7 @@ func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	_, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -240,7 +240,7 @@ func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := s.categoryDAO.GetByID(s.db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
+	category, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -249,7 +249,7 @@ func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
 		return
 	}
 
-	err = s.categoryDAO.Update(s.db, category, updateFields)
+	err = h.categoryDAO.Update(h.db, category, updateFields)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateCategoryError,
@@ -271,7 +271,7 @@ func (s *categoryService) UpdateCategoryInfoHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-02 04:55:08
-func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
+func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
@@ -283,7 +283,7 @@ func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -292,7 +292,7 @@ func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	category, err := s.categoryDAO.GetByID(s.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
+	category, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -317,7 +317,7 @@ func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
 		return
 	}
 
-	err = s.categoryDAO.DeleteReclusiveByID(s.db, category.ID, []string{"id", "name"}, []string{})
+	err = h.categoryDAO.DeleteReclusiveByID(h.db, category.ID, []string{"id", "name"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeDeleteCategoryError,
@@ -336,7 +336,7 @@ func (s *categoryService) DeleteCategoryHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-01 05:09:47
-func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
+func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -349,7 +349,7 @@ func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id", "name"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id", "name"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -358,7 +358,7 @@ func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	parentCategory, err := s.categoryDAO.GetByID(s.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
+	parentCategory, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -375,7 +375,7 @@ func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
 		return
 	}
 
-	categories, pageInfo, err := s.categoryDAO.PaginateChildren(s.db, parentCategory, []string{"id", "name", "parent_id"}, []string{}, param.Page, param.PageSize)
+	categories, pageInfo, err := h.categoryDAO.PaginateChildren(h.db, parentCategory, []string{"id", "name", "parent_id"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeCreateCategoryError,
@@ -387,7 +387,7 @@ func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"categories": lo.Map(*categories, func(category model.Category, index int) map[string]interface{} {
+			"categories": lo.Map(*categories, func(category model.Category, _ int) map[string]interface{} {
 				return category.GetBasicInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -400,7 +400,7 @@ func (s *categoryService) ListChildrenCategoriesHandler(c *gin.Context) {
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-02 01:38:12
-func (s *categoryService) ListChildrenArticlesHandler(c *gin.Context) {
+func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -413,7 +413,7 @@ func (s *categoryService) ListChildrenArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -422,7 +422,7 @@ func (s *categoryService) ListChildrenArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	parentCategory, err := s.categoryDAO.GetByID(s.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
+	parentCategory, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -439,7 +439,7 @@ func (s *categoryService) ListChildrenArticlesHandler(c *gin.Context) {
 		return
 	}
 
-	articles, pageInfo, err := s.articleDAO.PaginateByCategoryID(s.db, parentCategory.ID, []string{"id", "title", "slug"}, []string{}, param.Page, param.PageSize)
+	articles, pageInfo, err := h.articleDAO.PaginateByCategoryID(h.db, parentCategory.ID, []string{"id", "title", "slug"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetCategoryError,
@@ -451,7 +451,7 @@ func (s *categoryService) ListChildrenArticlesHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"articles": lo.Map(*articles, func(article model.Article, index int) map[string]interface{} {
+			"articles": lo.Map(*articles, func(article model.Article, _ int) map[string]interface{} {
 				return article.GetBasicInfo()
 			}),
 			"pageInfo": pageInfo,

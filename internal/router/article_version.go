@@ -11,21 +11,21 @@ import (
 )
 
 func initArticleVersionRouter(r *gin.RouterGroup) {
-	articleVersionService := handler.NewArticleVersionService()
+	articleVersionHandler := handler.NewArticleVersionHandler()
 
-	r.GET("versions", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleVersionService.ListArticleVersionsHandler)
+	r.GET("versions", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleVersionHandler.HandleListArticleVersions)
 	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware(model.PermissionCreator))
 	{
 		articleVersionRouter.POST(
 			"",
 			middleware.RateLimiterMiddleware(10*time.Second, 1, "createArticleVersion", "userID", protocol.CodeCreateArticleVersionRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
-			articleVersionService.CreateArticleVersionHandler,
+			articleVersionHandler.HandleCreateArticleVersion,
 		)
-		articleVersionRouter.GET("latest", articleVersionService.GetLatestArticleVersionInfoHandler)
+		articleVersionRouter.GET("latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
 		articleVersionNumberRouter := articleVersionRouter.Group("v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}))
 		{
-			articleVersionNumberRouter.GET("", articleVersionService.GetArticleVersionInfoHandler)
+			articleVersionNumberRouter.GET("", articleVersionHandler.HandleGetArticleVersionInfo)
 		}
 	}
 }

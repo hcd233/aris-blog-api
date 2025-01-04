@@ -12,28 +12,28 @@ import (
 	"gorm.io/gorm"
 )
 
-// TokenService 令牌服务
+// TokenHandler 令牌处理器
 //
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-type TokenService interface {
-	RefreshTokenHandler(c *gin.Context)
+//	@update 2025-01-04 15:56:10
+type TokenHandler interface {
+	HandleRefreshToken(c *gin.Context)
 }
 
-type tokenService struct {
+type tokenHandler struct {
 	db                 *gorm.DB
 	userDAO            *dao.UserDAO
 	accessTokenSigner  auth.JwtTokenSigner
 	refreshTokenSigner auth.JwtTokenSigner
 }
 
-// NewTokenService 创建令牌服务
+// NewTokenHandler 创建令牌处理器
 //
-//	@return TokenService
+//	@return TokenHandler
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-func NewTokenService() TokenService {
-	return &tokenService{
+//	@update 2025-01-04 15:56:04
+func NewTokenHandler() TokenHandler {
+	return &tokenHandler{
 		db:                 database.GetDBInstance(),
 		userDAO:            dao.GetUserDAO(),
 		accessTokenSigner:  auth.GetJwtAccessTokenSigner(),
@@ -41,10 +41,16 @@ func NewTokenService() TokenService {
 	}
 }
 
-func (s *tokenService) RefreshTokenHandler(c *gin.Context) {
+// HandleRefreshToken 刷新令牌
+//
+//	@receiver s *tokenHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:56:10
+func (h *tokenHandler) HandleRefreshToken(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.RefreshTokenBody)
 
-	userID, err := s.refreshTokenSigner.DecodeToken(body.RefreshToken)
+	userID, err := h.refreshTokenSigner.DecodeToken(body.RefreshToken)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeTokenVerifyError,
@@ -54,7 +60,7 @@ func (s *tokenService) RefreshTokenHandler(c *gin.Context) {
 		return
 	}
 
-	_, err = s.userDAO.GetByID(s.db, userID, []string{"id"}, []string{})
+	_, err = h.userDAO.GetByID(h.db, userID, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -63,8 +69,8 @@ func (s *tokenService) RefreshTokenHandler(c *gin.Context) {
 		return
 	}
 
-	accessToken := lo.Must1(s.accessTokenSigner.EncodeToken(userID))
-	refreshToken := lo.Must1(s.refreshTokenSigner.EncodeToken(userID))
+	accessToken := lo.Must1(h.accessTokenSigner.EncodeToken(userID))
+	refreshToken := lo.Must1(h.refreshTokenSigner.EncodeToken(userID))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,

@@ -10,22 +10,22 @@ import (
 )
 
 func initArticleCommentRouter(r *gin.RouterGroup) {
-	commentService := handler.NewCommentService()
+	commentHandler := handler.NewCommentHandler()
 
-	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentService.ListArticleCommentsHandler)
+	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListArticleComments)
 	commentRouter := r.Group("/comment")
 	{
 		commentRouter.POST(
 			"",
 			middleware.RateLimiterMiddleware(10*time.Second, 1, "createComment", "userID", protocol.CodeCreateCommentRateLimitError),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}),
-			commentService.CreateArticleCommentHandler,
+			commentHandler.HandleCreateArticleComment,
 		)
 		commentIDRouter := commentRouter.Group(":commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
 		{
-			commentIDRouter.GET("", commentService.GetCommentInfoHandler)
-			commentIDRouter.DELETE("", commentService.DeleteCommentHandler)
-			commentIDRouter.GET("subComments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentService.ListChildrenCommentsHandler)
+			commentIDRouter.GET("", commentHandler.HandleGetCommentInfo)
+			commentIDRouter.DELETE("", commentHandler.HandleDeleteComment)
+			commentIDRouter.GET("subComments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListChildrenComments)
 		}
 	}
 }
