@@ -15,18 +15,18 @@ import (
 	"gorm.io/gorm"
 )
 
-// UserService 用户服务
+// UserHandler 用户处理器
 //
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-type UserService interface {
-	GetMyInfoHandler(c *gin.Context)
-	GetUserInfoHandler(c *gin.Context)
-	UpdateInfoHandler(c *gin.Context)
-	QueryUserHandler(c *gin.Context)
+//	@update 2025-01-04 15:56:20
+type UserHandler interface {
+	HandleGetMyInfo(c *gin.Context)
+	HandleGetUserInfo(c *gin.Context)
+	HandleUpdateInfo(c *gin.Context)
+	HandleQueryUser(c *gin.Context)
 }
 
-type userService struct {
+type userHandler struct {
 	db            *gorm.DB
 	userDAO       *dao.UserDAO
 	tagDAO        *dao.TagDAO
@@ -36,13 +36,13 @@ type userService struct {
 	articleDocDAO *doc_dao.ArticleDocDAO
 }
 
-// NewUserService 创建用户服务
+// NewUserHandler 创建用户处理器
 //
-//	@return UserService
+//	@return UserHandler
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-func NewUserService() UserService {
-	return &userService{
+func NewUserHandler() UserHandler {
+	return &userHandler{
 		db:            database.GetDBInstance(),
 		userDAO:       dao.GetUserDAO(),
 		tagDAO:        dao.GetTagDAO(),
@@ -53,10 +53,10 @@ func NewUserService() UserService {
 	}
 }
 
-func (s *userService) GetMyInfoHandler(c *gin.Context) {
+func (h *userHandler) HandleGetMyInfo(c *gin.Context) {
 	userID := c.GetUint("userID")
 
-	user, err := s.userDAO.GetByID(s.db, userID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	user, err := h.userDAO.GetByID(h.db, userID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -77,11 +77,11 @@ func (s *userService) GetMyInfoHandler(c *gin.Context) {
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-09-16 05:58:52
-func (s *userService) GetUserInfoHandler(c *gin.Context) {
+//	@update 2025-01-04 15:56:30
+func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -102,8 +102,8 @@ func (s *userService) GetUserInfoHandler(c *gin.Context) {
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-09-18 01:54:05
-func (s *userService) UpdateInfoHandler(c *gin.Context) {
+//	@update 2025-01-04 15:56:40
+func (h *userHandler) HandleUpdateInfo(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -117,7 +117,7 @@ func (s *userService) UpdateInfoHandler(c *gin.Context) {
 		return
 	}
 
-	user, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUserNotFoundError,
@@ -126,10 +126,10 @@ func (s *userService) UpdateInfoHandler(c *gin.Context) {
 		return
 	}
 
-	lo.Must0(s.userDAO.Update(s.db, &model.User{ID: userID}, map[string]interface{}{
+	lo.Must0(h.userDAO.Update(h.db, &model.User{ID: userID}, map[string]interface{}{
 		"name": body.UserName,
 	}))
-	user = lo.Must1(s.userDAO.GetByID(s.db, userID, []string{"id", "name", "avatar"}, []string{}))
+	user = lo.Must1(h.userDAO.GetByID(h.db, userID, []string{"id", "name", "avatar"}, []string{}))
 
 	var wg sync.WaitGroup
 	var listTagErr, listArticleErr, updateTagDocErr, updateArticleDocErr, updateUserDocErr error
@@ -140,11 +140,11 @@ func (s *userService) UpdateInfoHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		createdTags, _, listTagErr = s.tagDAO.PaginateByUserID(s.db, userID, []string{"id"}, []string{}, 2, -1)
+		createdTags, _, listTagErr = h.tagDAO.PaginateByUserID(h.db, userID, []string{"id"}, []string{}, 2, -1)
 	}()
 	go func() {
 		defer wg.Done()
-		createdArticles, _, listArticleErr = s.articleDAO.PaginateByUserID(s.db, userID, []string{"id"}, []string{}, 2, -1)
+		createdArticles, _, listArticleErr = h.articleDAO.PaginateByUserID(h.db, userID, []string{"id"}, []string{}, 2, -1)
 	}()
 
 	wg.Wait()
@@ -168,19 +168,19 @@ func (s *userService) UpdateInfoHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		updateTagDocErr = s.tagDocDAO.BatchUpdateDocuments(lo.Map(*createdTags, func(tag model.Tag, idx int) *document.TagDocument {
+		updateTagDocErr = h.tagDocDAO.BatchUpdateDocuments(lo.Map(*createdTags, func(tag model.Tag, _ int) *document.TagDocument {
 			return &document.TagDocument{ID: tag.ID, Creator: user.Name}
 		}))
 	}()
 	go func() {
 		defer wg.Done()
-		updateArticleDocErr = s.articleDocDAO.BatchUpdateDocuments(lo.Map(*createdArticles, func(article model.Article, idx int) *document.ArticleDocument {
+		updateArticleDocErr = h.articleDocDAO.BatchUpdateDocuments(lo.Map(*createdArticles, func(article model.Article, _ int) *document.ArticleDocument {
 			return &document.ArticleDocument{ID: article.ID, Author: user.Name}
 		}))
 	}()
 	go func() {
 		defer wg.Done()
-		updateUserDocErr = s.userDocDAO.UpdateDocument(document.TransformUserToDocument(user))
+		updateUserDocErr = h.userDocDAO.UpdateDocument(document.TransformUserToDocument(user))
 	}()
 
 	wg.Wait()
@@ -219,8 +219,8 @@ func (s *userService) UpdateInfoHandler(c *gin.Context) {
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-09-16 05:58:52
-func (s *userService) QueryUserHandler(c *gin.Context) {
+//	@update 2025-01-04 15:56:50
+func (h *userHandler) HandleQueryUser(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
 	docDAO := doc_dao.GetUserDocDAO()

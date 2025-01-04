@@ -15,35 +15,35 @@ import (
 	"gorm.io/gorm"
 )
 
-// TagService 标签服务
+// TagHandler 标签处理器
 //
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-type TagService interface {
-	CreateTagHandler(c *gin.Context)
-	GetTagInfoHandler(c *gin.Context)
-	UpdateTagHandler(c *gin.Context)
-	DeleteTagHandler(c *gin.Context)
-	ListTagsHandler(c *gin.Context)
-	ListUserTagsHandler(c *gin.Context)
-	QueryTagHandler(c *gin.Context)
-	QueryUserTagHandler(c *gin.Context)
+//	@update 2025-01-04 15:52:48
+type TagHandler interface {
+	HandleCreateTag(c *gin.Context)
+	HandleGetTagInfo(c *gin.Context)
+	HandleUpdateTag(c *gin.Context)
+	HandleDeleteTag(c *gin.Context)
+	HandleListTags(c *gin.Context)
+	HandleListUserTags(c *gin.Context)
+	HandleQueryTag(c *gin.Context)
+	HandleQueryUserTag(c *gin.Context)
 }
 
-type tagService struct {
+type tagHandler struct {
 	db        *gorm.DB
 	userDAO   *dao.UserDAO
 	tagDAO    *dao.TagDAO
 	tagDocDAO *doc_dao.TagDocDAO
 }
 
-// NewTagService 创建标签服务
+// NewTagHandler 创建标签处理器
 //
-//	@return TagService
+//	@return TagHandler
 //	@author centonhuang
-//	@update 2024-12-08 16:59:38
-func NewTagService() TagService {
-	return &tagService{
+//	@update 2025-01-04 15:52:48
+func NewTagHandler() TagHandler {
+	return &tagHandler{
 		db:        database.GetDBInstance(),
 		userDAO:   dao.GetUserDAO(),
 		tagDAO:    dao.GetTagDAO(),
@@ -51,7 +51,7 @@ func NewTagService() TagService {
 	}
 }
 
-func (s *tagService) CreateTagHandler(c *gin.Context) {
+func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
 	body := c.MustGet("body").(*protocol.CreateTagBody)
@@ -70,12 +70,12 @@ func (s *tagService) CreateTagHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		createTagErr = s.tagDAO.Create(s.db, tag)
+		createTagErr = h.tagDAO.Create(h.db, tag)
 	}()
 
 	go func() {
 		defer wg.Done()
-		createDocErr = s.tagDocDAO.AddDocument(document.TransformTagToDocument(tag))
+		createDocErr = h.tagDocDAO.AddDocument(document.TransformTagToDocument(tag))
 	}()
 
 	wg.Wait()
@@ -108,11 +108,11 @@ func (s *tagService) CreateTagHandler(c *gin.Context) {
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-10-01 04:58:01
-func (s *tagService) GetTagInfoHandler(c *gin.Context) {
+//	@update 2025-01-04 15:52:48
+func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "description", "created_by"}, []string{"User"})
+	tag, err := h.tagDAO.GetBySlug(h.db, uri.TagSlug, []string{"id", "name", "slug", "description", "created_by"}, []string{"User"})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -129,12 +129,18 @@ func (s *tagService) GetTagInfoHandler(c *gin.Context) {
 	})
 }
 
-func (s *tagService) UpdateTagHandler(c *gin.Context) {
+// HandleUpdateTag 更新标签
+//
+//	@receiver s *tagHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:55:16
+func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
-	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "created_by"}, []string{})
+	tag, err := h.tagDAO.GetBySlug(h.db, uri.TagSlug, []string{"id", "created_by"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -170,7 +176,7 @@ func (s *tagService) UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	if err := s.tagDAO.Update(s.db, tag, updateFields); err != nil {
+	if err := h.tagDAO.Update(h.db, tag, updateFields); err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
 			Message: err.Error(),
@@ -178,10 +184,10 @@ func (s *tagService) UpdateTagHandler(c *gin.Context) {
 		return
 	}
 
-	tag = lo.Must1(s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "description", "created_by"}, []string{"User"}))
+	tag = lo.Must1(h.tagDAO.GetBySlug(h.db, uri.TagSlug, []string{"id", "name", "slug", "description", "created_by"}, []string{"User"}))
 
 	// 同步到搜索引擎
-	err = s.tagDocDAO.UpdateDocument(document.TransformTagToDocument(tag))
+	err = h.tagDocDAO.UpdateDocument(document.TransformTagToDocument(tag))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeUpdateTagError,
@@ -198,12 +204,17 @@ func (s *tagService) UpdateTagHandler(c *gin.Context) {
 	})
 }
 
-// DeleteTagHandler 删除标签
-func (s *tagService) DeleteTagHandler(c *gin.Context) {
+// HandleDeleteTag 删除标签
+//
+//	@receiver s *tagHandler
+//	@param c *gin.Context
+//	@author centonhuang
+//	@update 2025-01-04 15:55:24
+func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	tag, err := s.tagDAO.GetBySlug(s.db, uri.TagSlug, []string{"id", "name", "slug", "created_by"}, []string{})
+	tag, err := h.tagDAO.GetBySlug(h.db, uri.TagSlug, []string{"id", "name", "slug", "created_by"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetTagError,
@@ -226,12 +237,12 @@ func (s *tagService) DeleteTagHandler(c *gin.Context) {
 
 	go func() {
 		defer wg.Done()
-		deleteTagErr = s.tagDAO.Delete(s.db, tag)
+		deleteTagErr = h.tagDAO.Delete(h.db, tag)
 	}()
 
 	go func() {
 		defer wg.Done()
-		deleteDocErr = s.tagDocDAO.DeleteDocument(tag.ID)
+		deleteDocErr = h.tagDocDAO.DeleteDocument(tag.ID)
 	}()
 
 	wg.Wait()
@@ -257,15 +268,15 @@ func (s *tagService) DeleteTagHandler(c *gin.Context) {
 	})
 }
 
-// ListTagsHandler 标签列表
+// HandleListTags 标签列表
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-09-22 02:41:01
-func (s *tagService) ListTagsHandler(c *gin.Context) {
+//	@update 2025-01-04 15:55:31
+func (h *tagHandler) HandleListTags(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	tags, pageInfo, err := s.tagDAO.Paginate(s.db, []string{"id", "slug", "name"}, []string{}, param.Page, param.PageSize)
+	tags, pageInfo, err := h.tagDAO.Paginate(h.db, []string{"id", "slug", "name"}, []string{}, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetArticleError,
@@ -277,7 +288,7 @@ func (s *tagService) ListTagsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
+			"tags": lo.Map(*tags, func(tag model.Tag, _ int) map[string]interface{} {
 				return tag.GetBasicInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -285,12 +296,12 @@ func (s *tagService) ListTagsHandler(c *gin.Context) {
 	})
 }
 
-// ListUserTagsHandler 列出用户标签
+// HandleListUserTags 列出用户标签
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-09-22 02:41:01
-func (s *tagService) ListUserTagsHandler(c *gin.Context) {
+//	@update 2025-01-04 15:55:38
+func (h *tagHandler) HandleListUserTags(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -319,7 +330,7 @@ func (s *tagService) ListUserTagsHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, protocol.Response{
 		Code: protocol.CodeOk,
 		Data: map[string]interface{}{
-			"tags": lo.Map(*tags, func(tag model.Tag, index int) map[string]interface{} {
+			"tags": lo.Map(*tags, func(tag model.Tag, _ int) map[string]interface{} {
 				return tag.GetBasicInfo()
 			}),
 			"pageInfo": pageInfo,
@@ -327,15 +338,15 @@ func (s *tagService) ListUserTagsHandler(c *gin.Context) {
 	})
 }
 
-// QueryTagHandler 搜索标签
+// HandleQueryTag 搜索标签
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-10-23 12:35:21
-func (s *tagService) QueryTagHandler(c *gin.Context) {
+//	@update 2025-01-04 15:55:45
+func (h *tagHandler) HandleQueryTag(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
-	tags, queryInfo, err := s.tagDocDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
+	tags, queryInfo, err := h.tagDocDAO.QueryDocument(param.Query, param.Filter, param.Page, param.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,
@@ -353,16 +364,16 @@ func (s *tagService) QueryTagHandler(c *gin.Context) {
 	})
 }
 
-// QueryUserTagHandler 搜索用户标签
+// HandleQueryUserTag 搜索用户标签
 //
 //	@param c *gin.Context
 //	@author centonhuang
-//	@update 2024-10-23 12:35:31
-func (s *tagService) QueryUserTagHandler(c *gin.Context) {
+//	@update 2025-01-04 15:55:52
+func (h *tagHandler) HandleQueryUserTag(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	params := c.MustGet("param").(*protocol.QueryParam)
 
-	_, err := s.userDAO.GetByName(s.db, uri.UserName, []string{"id"}, []string{})
+	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -371,7 +382,7 @@ func (s *tagService) QueryUserTagHandler(c *gin.Context) {
 		return
 	}
 
-	tags, queryInfo, err := s.tagDocDAO.QueryDocument(params.Query, append(params.Filter, "creator="+uri.UserName), params.Page, params.PageSize)
+	tags, queryInfo, err := h.tagDocDAO.QueryDocument(params.Query, append(params.Filter, "creator="+uri.UserName), params.Page, params.PageSize)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryTagError,

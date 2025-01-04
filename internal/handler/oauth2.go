@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -32,16 +31,16 @@ const (
 
 var githubUserScopes = []string{"user:email", "repo", "read:org"}
 
-// Oauth2Service Oauth2服务
+// Oauth2Handler Oauth2处理器
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-type Oauth2Service interface {
-	LoginHandler(c *gin.Context)
-	CallbackHandler(c *gin.Context)
+type Oauth2Handler interface {
+	HandleLogin(c *gin.Context)
+	HandleCallback(c *gin.Context)
 }
 
-type githubOauth2Service struct {
+type githubOauth2Handler struct {
 	oauth2Config       *oauth2.Config
 	db                 *gorm.DB
 	userDAO            *dao.UserDAO
@@ -50,13 +49,13 @@ type githubOauth2Service struct {
 	refreshTokenSigner auth.JwtTokenSigner
 }
 
-// NewGithubOauth2Service 创建Github Oauth2服务
+// NewGithubOauth2Handler 创建Github Oauth2处理器
 //
-//	@return Oauth2Service
+//	@return Oauth2Handler
 //	@author centonhuang
 //	@update 2024-12-08 16:59:38
-func NewGithubOauth2Service() Oauth2Service {
-	return &githubOauth2Service{
+func NewGithubOauth2Handler() Oauth2Handler {
+	return &githubOauth2Handler{
 		db:         database.GetDBInstance(),
 		userDAO:    dao.GetUserDAO(),
 		userDocDAO: doc_dao.GetUserDocDAO(),
@@ -73,8 +72,8 @@ func NewGithubOauth2Service() Oauth2Service {
 	}
 }
 
-func (s *githubOauth2Service) LoginHandler(c *gin.Context) {
-	url := s.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
+func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
+	url := h.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
 	c.JSON(200, protocol.Response{
 		Code:    protocol.CodeOk,
 		Message: "Redirect to Github login page",
@@ -84,7 +83,7 @@ func (s *githubOauth2Service) LoginHandler(c *gin.Context) {
 	})
 }
 
-func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
+func (h *githubOauth2Handler) HandleCallback(c *gin.Context) {
 	params := protocol.GithubCallbackParam{}
 
 	if err := c.BindQuery(&params); err != nil {
@@ -102,7 +101,7 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 		return
 	}
 
-	token, err := s.oauth2Config.Exchange(c, params.Code)
+	token, err := h.oauth2Config.Exchange(c, params.Code)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code: protocol.CodeTokenError,
@@ -110,7 +109,7 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 		return
 	}
 
-	data, err := s.getGithubUserInfo(token)
+	data, err := h.getGithubUserInfo(token)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeGetUserError,
@@ -122,7 +121,7 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
 	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
 
-	user, err := s.userDAO.GetByEmail(s.db, email, []string{"id", "name", "avatar"}, []string{})
+	user, err := h.userDAO.GetByEmail(h.db, email, []string{"id", "name", "avatar"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusBadRequest, protocol.Response{
 			Code:    protocol.CodeQueryUserError,
@@ -132,14 +131,14 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 	}
 
 	if user.ID != 0 {
-		lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{
+		lo.Must0(h.userDAO.Update(h.db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}))
-		lo.Must0(s.userDocDAO.UpdateDocument(document.TransformUserToDocument(user)))
+		lo.Must0(h.userDocDAO.UpdateDocument(document.TransformUserToDocument(user)))
 	} else {
 		// 新用户，保存信息
 		if validateErr := util.ValidateUserName(userName); validateErr != nil {
-			userName = fmt.Sprintf("ArisUser" + strconv.FormatInt(time.Now().Unix(), 10))
+			userName = "ArisUser" + strconv.FormatInt(time.Now().Unix(), 10)
 		}
 		defaultCategory := &model.Category{Name: userName}
 
@@ -153,19 +152,19 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 		}
 
 		// 插入用户信息
-		lo.Must0(s.userDAO.Create(s.db, user))
+		lo.Must0(h.userDAO.Create(h.db, user))
 		// 插入用户到搜索引擎
-		lo.Must0(s.userDocDAO.AddDocument(document.TransformUserToDocument(user)))
+		lo.Must0(h.userDocDAO.AddDocument(document.TransformUserToDocument(user)))
 	}
 
 	if user.GithubBindID == "" {
-		s.userDAO.Update(s.db, user, map[string]interface{}{
+		h.userDAO.Update(h.db, user, map[string]interface{}{
 			"github_bind_id": githubID,
 		})
 	}
 
-	accessToken := lo.Must(s.accessTokenSigner.EncodeToken(user.ID))
-	refreshToken := lo.Must(s.refreshTokenSigner.EncodeToken(user.ID))
+	accessToken := lo.Must(h.accessTokenSigner.EncodeToken(user.ID))
+	refreshToken := lo.Must(h.refreshTokenSigner.EncodeToken(user.ID))
 
 	c.JSON(http.StatusOK, protocol.Response{
 		Code:    protocol.CodeOk,
@@ -177,8 +176,8 @@ func (s *githubOauth2Service) CallbackHandler(c *gin.Context) {
 	})
 }
 
-func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
-	client := s.oauth2Config.Client(context.Background(), token)
+func (h *githubOauth2Handler) getGithubUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
+	client := h.oauth2Config.Client(context.Background(), token)
 
 	// 获取用户基本信息
 	resp, err := client.Get(githubUserURL)

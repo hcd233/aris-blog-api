@@ -10,7 +10,7 @@ import (
 )
 
 func initUserOperationRouter(r *gin.RouterGroup) {
-	operationService := handler.NewOperationService()
+	operationHandler := handler.NewOperationHandler()
 
 	operationRouter := r.Group("/operation")
 	{
@@ -20,19 +20,19 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 				"article",
 				middleware.RateLimiterMiddleware(10*time.Second, 2, "likeArticle", "userID", protocol.CodeLikeArticleRateLimitError),
 				middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}),
-				operationService.UserLikeArticleHandler,
+				operationHandler.HandleUserLikeArticle,
 			)
 			userLikeRouter.POST(
 				"comment",
 				middleware.RateLimiterMiddleware(2*time.Second, 2, "likeComment", "userID", protocol.CodeLikeCommentRateLimitError),
 				middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}),
-				operationService.UserLikeCommentHandler,
+				operationHandler.HandleUserLikeComment,
 			)
 			userLikeRouter.POST(
 				"tag",
 				middleware.RateLimiterMiddleware(10*time.Second, 2, "likeTag", "userID", protocol.CodeLikeTagRateLimitError),
 				middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}),
-				operationService.UserLikeTagHandler,
+				operationHandler.HandleUserLikeTag,
 			)
 		}
 		viewRouter := operationRouter.Group("/view")
@@ -41,7 +41,7 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 				"article",
 				middleware.RateLimiterMiddleware(10*time.Second, 2, "logUserViewArticle", "userID", protocol.CodeLogUserViewRateLimitError),
 				middleware.ValidateBodyMiddleware(&protocol.LogUserViewArticleBody{}),
-				operationService.LogUserViewArticleHandler,
+				operationHandler.HandleLogUserViewArticle,
 			)
 		}
 	}

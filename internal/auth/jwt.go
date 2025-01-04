@@ -20,6 +20,10 @@ type Claims struct {
 	UserID uint `json:"user_id"`
 }
 
+// JwtTokenSigner JWT token 生成器
+//
+//	@author centonhuang
+//	@update 2025-01-04 16:01:15
 type JwtTokenSigner interface {
 	EncodeToken(userID uint) (token string, err error)
 	DecodeToken(tokenString string) (userID uint, err error)

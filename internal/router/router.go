@@ -7,13 +7,14 @@ import (
 )
 
 // RegisterRouter 注册路由
-//	@param r *gin.Engine 
-//	@author centonhuang 
-//	@update 2025-01-04 15:32:40 
+//
+//	@param r *gin.Engine
+//	@author centonhuang
+//	@update 2025-01-04 15:32:40
 func RegisterRouter(r *gin.Engine) {
-	pingService := handler.NewPingService()
+	pingService := handler.NewPingHandler()
 
-	r.GET("", pingService.PingHandler)
+	r.GET("", pingService.HandlePing)
 
 	v1Router := r.Group("/v1")
 	{

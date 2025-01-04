@@ -9,20 +9,20 @@ import (
 )
 
 func initUserCategoryRouter(r *gin.RouterGroup) {
-	categoryService := handler.NewCategoryService()
+	categoryHandler := handler.NewCategoryHandler()
 
-	r.GET("rootCategory", middleware.LimitUserPermissionMiddleware(model.PermissionCreator), categoryService.ListRootCategoriesHandler)
+	r.GET("rootCategory", middleware.LimitUserPermissionMiddleware(model.PermissionCreator), categoryHandler.HandleListRootCategories)
 	categoryRouter := r.Group("/category", middleware.LimitUserPermissionMiddleware(model.PermissionCreator))
 	{
-		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), categoryService.CreateCategoryHandler)
+		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), categoryHandler.HandleCreateCategory)
 	}
 
 	categoryIDRouter := categoryRouter.Group(":categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
 	{
-		categoryIDRouter.GET("", categoryService.GetCategoryInfoHandler)
-		categoryIDRouter.DELETE("", categoryService.DeleteCategoryHandler)
-		categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryService.UpdateCategoryInfoHandler)
-		categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryService.ListChildrenCategoriesHandler)
-		categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryService.ListChildrenArticlesHandler)
+		categoryIDRouter.GET("", categoryHandler.HandleGetCategoryInfo)
+		categoryIDRouter.DELETE("", categoryHandler.HandleDeleteCategory)
+		categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryHandler.HandleUpdateCategoryInfo)
+		categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenCategories)
+		categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenArticles)
 	}
 }
