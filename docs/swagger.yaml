@@ -7,15 +7,51 @@ definitions:
       refreshToken:
         type: string
     type: object
+  protocol.GetTagInfoResponse:
+    properties:
+      tag:
+        $ref: '#/definitions/protocol.Tag'
+    type: object
+  protocol.HTTPResponse:
+    properties:
+      data: {}
+      error:
+        type: string
+    type: object
   protocol.LoginResponse:
     properties:
       redirectURL:
         type: string
     type: object
+  protocol.Tag:
+    properties:
+      createdAt:
+        type: string
+      description:
+        type: string
+      likes:
+        type: integer
+      name:
+        type: string
+      slug:
+        type: string
+      tagID:
+        type: integer
+      updatedAt:
+        type: string
+      userID:
+        type: integer
+    type: object
 host: 9.134.115.68:8170
 info:
-  contact: {}
+  contact:
+    email: support@swagger.io
+    name: API Support
+    url: http://www.swagger.io/support
   description: Aris-blog API
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
   title: Aris-blog
   version: "1.0"
 paths:
@@ -68,4 +104,51 @@ paths:
       summary: 处理Github OAuth2登录
       tags:
       - oauth2
+  /v1/tag/{tagSlug}:
+    get:
+      consumes:
+      - application/json
+      description: 根据标签slug获取标签详细信息
+      parameters:
+      - description: 标签slug
+        in: path
+        name: tagSlug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.GetTagInfoResponse'
+                error:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - BearerAuth: []
+      summary: 获取标签信息
+      tags:
+      - tag
+securityDefinitions:
+  BearerAuth:
+    description: Type "Bearer" followed by a space and JWT token
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"
