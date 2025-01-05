@@ -14,7 +14,7 @@ func initAIRouter(r *gin.RouterGroup) {
 	aiService := handler.NewAIHandler()
 	aiRouter := r.Group("/ai", middleware.JwtMiddleware())
 	{
-		aiPromptRouter := aiRouter.Group("/prompt", middleware.LimitUserPermissionMiddleware(model.PermissionAdmin))
+		aiPromptRouter := aiRouter.Group("/prompt", middleware.LimitUserPermissionMiddleware("promptService", model.PermissionAdmin))
 		{
 			taskNameRouter := aiPromptRouter.Group("/:taskName", middleware.ValidateURIMiddleware(&protocol.TaskURI{}))
 			{

@@ -2,28 +2,30 @@ package middleware
 
 import (
 	"fmt"
-	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/cache"
+	"github.com/hcd233/Aris-blog/internal/util"
 	"github.com/samber/lo"
 	"github.com/ulule/limiter/v3"
 	mgin "github.com/ulule/limiter/v3/drivers/middleware/gin"
 	redis_store "github.com/ulule/limiter/v3/drivers/store/redis"
+	"go.uber.org/zap"
 )
 
 // RateLimiterMiddleware 限频中间件
 //
+//	@param serviceName string
+//	@param key string
 //	@param period time.Duration
 //	@param limit int64
-//	@param key string
-//	@param errCode protocol.ResponseCode
 //	@return gin.HandlerFunc
 //	@author centonhuang
-//	@update 2024-10-22 05:01:51
-func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string, errorCode protocol.ResponseCode) gin.HandlerFunc {
+//	@update 2025-01-05 15:06:44
+func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit int64) gin.HandlerFunc {
 	// 创建限频规则
 	rate := limiter.Rate{
 		Period: period,
@@ -31,9 +33,9 @@ func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string
 	}
 
 	redis := cache.GetRedisClient()
-	// 使用内存存储限频数据
+	// 使用Redis存储限频数据
 	store := lo.Must1(redis_store.NewStoreWithOptions(redis, limiter.StoreOptions{
-		Prefix: prefix,
+		Prefix: serviceName,
 	}))
 
 	// 创建限频实例
@@ -42,10 +44,11 @@ func RateLimiterMiddleware(period time.Duration, limit int64, prefix, key string
 	// 创建中间件
 	middleware := mgin.NewMiddleware(instance,
 		mgin.WithLimitReachedHandler(func(c *gin.Context) {
-			c.JSON(http.StatusTooManyRequests, protocol.Response{
-				Code: errorCode,
-			})
-			c.Abort()
+			logger.Logger.Error("[RateLimiterMiddleware] limit reached",
+				zap.String("prefix", serviceName),
+				zap.String("key", key),
+				zap.Any("value", c.MustGet(key)))
+			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
 		}),
 		mgin.WithKeyGetter(func(c *gin.Context) string {
 			return c.MustGet("limiter").(string)

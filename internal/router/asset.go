@@ -23,7 +23,6 @@ func initUserAssetRouter(r *gin.RouterGroup) {
 		}
 		viewRouter := assetRouter.Group("/view")
 		{
-			viewRouter.GET("article", middleware.ValidateParamMiddleware(&protocol.ArticleParam{}), assetHandler.HandleGetUserViewArticle)
 			viewRouter.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), assetHandler.HandleListUserViewArticles)
 			viewRouter.DELETE(":viewID", middleware.ValidateURIMiddleware(&protocol.ViewURI{}), assetHandler.HandleDeleteUserView)
 		}
@@ -31,27 +30,27 @@ func initUserAssetRouter(r *gin.RouterGroup) {
 		{
 			objectRouter.POST(
 				"bucket",
-				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator),
 				assetHandler.HandleCreateBucket,
 			)
 
 			objectRouter.GET(
 				"images",
-				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator),
 				assetHandler.HandleListImages,
 			)
 			imageRouter := objectRouter.Group("/image")
 			{
 				imageRouter.POST(
 					"",
-					middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
-					middleware.RateLimiterMiddleware(10*time.Second, 1, "uploadImage", "userID", protocol.CodeUploadImageRateLimitError),
+					middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator),
+					middleware.RateLimiterMiddleware("uploadImage", "userID", 10*time.Second, 1),
 					assetHandler.HandleUploadImage,
 				)
 				imageIDRouter := imageRouter.Group("/:objectName", middleware.ValidateURIMiddleware(&protocol.ObjectURI{}))
 				{
 					imageIDRouter.GET("", middleware.ValidateParamMiddleware(&protocol.ImageParam{}), assetHandler.HandleGetImage)
-					imageIDRouter.DELETE("", middleware.LimitUserPermissionMiddleware(model.PermissionCreator), assetHandler.HandleDeleteImage)
+					imageIDRouter.DELETE("", middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator), assetHandler.HandleDeleteImage)
 				}
 			}
 		}

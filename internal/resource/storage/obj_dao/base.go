@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -11,7 +12,7 @@ import (
 )
 
 type ObjDAO interface {
-	ComposeBucketName(userID uint) (bucketName string)
+	composeBucketName(userID uint) (bucketName string)
 	CreateBucket(userID uint) (exist bool, err error)
 	ListObjects(userID uint) (objectInfos []ObjectInfo, err error)
 	UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error)
@@ -22,14 +23,23 @@ type ObjDAO interface {
 type ObjectType string
 
 const (
-	ObjectTypeImage     ObjectType = "image"
+
+	// ObjectTypeImage ObjectType
+	//	@update 2025-01-05 17:36:01
+	ObjectTypeImage ObjectType = "image"
+
+	// ObjectTypeThumbnail ObjectType
+	//	@update 2025-01-05 17:36:05
 	ObjectTypeThumbnail ObjectType = "thumbnail"
 
-	CreateBucketTimeout   = 5 * time.Second
-	ListObjectsTimeout    = 5 * time.Second
-	UploadObjectTimeout   = 20 * time.Second
-	DownloadObjectTimeout = 20 * time.Second
-	DeleteObjectTimeout   = 5 * time.Second
+	createBucketTimeout   = 5 * time.Second
+	listObjectsTimeout    = 5 * time.Second
+	uploadObjectTimeout   = 20 * time.Second
+	downloadObjectTimeout = 20 * time.Second
+	deleteObjectTimeout   = 5 * time.Second
+	presignObjectTimeout  = 5 * time.Second
+
+	presignObjectExpire = 5 * time.Minute
 )
 
 type BaseMinioObjDAO struct {
@@ -46,14 +56,22 @@ type ObjectInfo struct {
 	ETag         string    `json:"etag"`
 }
 
-func (dao *BaseMinioObjDAO) ComposeBucketName(userID uint) string {
+func (dao *BaseMinioObjDAO) composeBucketName(userID uint) string {
 	return fmt.Sprintf("user-%d-%s", userID, dao.ObjectType)
 }
 
+// CreateBucket 创建桶
+//
+//	@receiver dao *BaseMinioObjDAO
+//	@param userID uint
+//	@return exist bool
+//	@return err error
+//	@author centonhuang
+//	@update 2025-01-05 17:37:41
 func (dao *BaseMinioObjDAO) CreateBucket(userID uint) (exist bool, err error) {
-	bucketName := dao.ComposeBucketName(userID)
+	bucketName := dao.composeBucketName(userID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), CreateBucketTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), createBucketTimeout)
 	defer cancel()
 
 	exist, err = dao.client.BucketExists(ctx, bucketName)
@@ -66,10 +84,18 @@ func (dao *BaseMinioObjDAO) CreateBucket(userID uint) (exist bool, err error) {
 	return
 }
 
+// ListObjects 列出桶中的对象
+//
+//	@receiver dao *BaseMinioObjDAO
+//	@param userID uint
+//	@return objectInfos []ObjectInfo
+//	@return err error
+//	@author centonhuang
+//	@update 2025-01-05 17:37:45
 func (dao *BaseMinioObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, err error) {
-	bucketName := dao.ComposeBucketName(userID)
+	bucketName := dao.composeBucketName(userID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), ListObjectsTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), listObjectsTimeout)
 	defer cancel()
 
 	objectCh := dao.client.ListObjects(ctx, bucketName, minio.ListObjectsOptions{})
@@ -91,20 +117,40 @@ func (dao *BaseMinioObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, 
 	return
 }
 
+// UploadObject 上传对象
+//
+//	@receiver dao *BaseMinioObjDAO
+//	@param userID uint
+//	@param objectName string
+//	@param size int64
+//	@param reader io.Reader
+//	@return err error
+//	@author centonhuang
+//	@update 2025-01-05 17:37:50
 func (dao *BaseMinioObjDAO) UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error) {
-	bucketName := dao.ComposeBucketName(userID)
+	bucketName := dao.composeBucketName(userID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), UploadObjectTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), uploadObjectTimeout)
 	defer cancel()
 
 	_, err = dao.client.PutObject(ctx, bucketName, objectName, reader, size, minio.PutObjectOptions{})
 	return
 }
 
+// DownloadObject 下载对象
+//
+//	@receiver dao *BaseMinioObjDAO
+//	@param userID uint
+//	@param objectName string
+//	@param writer io.Writer
+//	@return objectInfo *ObjectInfo
+//	@return err error
+//	@author centonhuang
+//	@update 2025-01-05 17:37:57
 func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
-	bucketName := dao.ComposeBucketName(userID)
+	bucketName := dao.composeBucketName(userID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), DownloadObjectTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), downloadObjectTimeout)
 	defer cancel()
 
 	object, err := dao.client.GetObject(ctx, bucketName, objectName, minio.GetObjectOptions{})
@@ -129,10 +175,38 @@ func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string, write
 	return
 }
 
-func (dao *BaseMinioObjDAO) DeleteObject(userID uint, objectName string) (err error) {
-	bucketName := dao.ComposeBucketName(userID)
+// PresignObject 生成对象的预签名URL
+//
+//	@receiver dao *BaseMinioObjDAO
+//	@param userID uint
+//	@param objectName string
+//	@param writer io.Writer
+//	@return url *url.URL
+//	@return err error
+//	@author centonhuang
+//	@update 2025-01-05 17:38:03
+func (dao *BaseMinioObjDAO) PresignObject(userID uint, objectName string) (url *url.URL, err error) {
+	bucketName := dao.composeBucketName(userID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), DeleteObjectTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), presignObjectExpire)
+	defer cancel()
+
+	url, err = dao.client.PresignedGetObject(ctx, bucketName, objectName, presignObjectExpire, nil)
+	return
+}
+
+// DeleteObject 删除对象
+//
+//	@receiver dao *BaseMinioObjDAO
+//	@param userID uint
+//	@param objectName string
+//	@return err error
+//	@author centonhuang
+//	@update 2025-01-05 17:38:09
+func (dao *BaseMinioObjDAO) DeleteObject(userID uint, objectName string) (err error) {
+	bucketName := dao.composeBucketName(userID)
+
+	ctx, cancel := context.WithTimeout(context.Background(), deleteObjectTimeout)
 	defer cancel()
 
 	err = dao.client.RemoveObject(ctx, bucketName, objectName, minio.RemoveObjectOptions{})

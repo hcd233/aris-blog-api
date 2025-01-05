@@ -18,19 +18,19 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 		{
 			userLikeRouter.POST(
 				"article",
-				middleware.RateLimiterMiddleware(10*time.Second, 2, "likeArticle", "userID", protocol.CodeLikeArticleRateLimitError),
+				middleware.RateLimiterMiddleware("likeArticle", "userID", 10*time.Second, 2),
 				middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}),
 				operationHandler.HandleUserLikeArticle,
 			)
 			userLikeRouter.POST(
 				"comment",
-				middleware.RateLimiterMiddleware(2*time.Second, 2, "likeComment", "userID", protocol.CodeLikeCommentRateLimitError),
+				middleware.RateLimiterMiddleware("likeComment", "userID", 2*time.Second, 2),
 				middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}),
 				operationHandler.HandleUserLikeComment,
 			)
 			userLikeRouter.POST(
 				"tag",
-				middleware.RateLimiterMiddleware(10*time.Second, 2, "likeTag", "userID", protocol.CodeLikeTagRateLimitError),
+				middleware.RateLimiterMiddleware("likeTag", "userID", 10*time.Second, 2),
 				middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}),
 				operationHandler.HandleUserLikeTag,
 			)
@@ -39,7 +39,7 @@ func initUserOperationRouter(r *gin.RouterGroup) {
 		{
 			viewRouter.POST(
 				"article",
-				middleware.RateLimiterMiddleware(10*time.Second, 2, "logUserViewArticle", "userID", protocol.CodeLogUserViewRateLimitError),
+				middleware.RateLimiterMiddleware("logUserViewArticle", "userID", 10*time.Second, 2),
 				middleware.ValidateBodyMiddleware(&protocol.LogUserViewArticleBody{}),
 				operationHandler.HandleLogUserViewArticle,
 			)

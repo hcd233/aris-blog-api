@@ -36,7 +36,6 @@ func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fie
 		sql = sql.Preload(preload)
 	}
 	err = sql.Where(&model.Comment{ParentID: comment.ID}).Limit(limit).Offset(offset).Find(&children).Error
-
 	if err != nil {
 		return
 	}
@@ -90,7 +89,6 @@ func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fie
 		sql = sql.Preload(preload)
 	}
 	err = sql.Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Limit(limit).Offset(offset).Find(&comments).Error
-
 	if err != nil {
 		return
 	}

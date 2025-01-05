@@ -26,7 +26,7 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), articleHandler.HandleQueryUserArticle)
 		articleRouter.POST(
 			"",
-			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
 			articleHandler.HandleCreateArticle,
 		)
@@ -37,18 +37,18 @@ func initUserArticleRouter(r *gin.RouterGroup) {
 		articleSlugRouter.GET("", articleHandler.HandleGetArticleInfo)
 		articleSlugRouter.PUT(
 			"",
-			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}),
 			articleHandler.HandleUpdateArticle,
 		)
 		articleSlugRouter.DELETE(
 			"",
-			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 			articleHandler.HandleDeleteArticle,
 		)
 		articleSlugRouter.PUT(
 			"status",
-			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}),
 			articleHandler.HandleUpdateArticleStatus,
 		)

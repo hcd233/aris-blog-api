@@ -4,7 +4,7 @@
 package model
 
 import (
-	"database/sql"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -81,17 +81,17 @@ var (
 //	@update 2024-06-22 09:36:22
 type User struct {
 	gorm.Model
-	ID           uint         `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
-	Name         string       `json:"name" gorm:"column:name;unique;not null;comment:用户名"`
-	Email        string       `json:"email" gorm:"column:email;unique;not null;comment:邮箱"`
-	Avatar       string       `json:"avatar" gorm:"column:avatar;not null;comment:头像"`
-	Permission   Permission   `json:"permission" gorm:"column:permission;not null;default:'reader';comment:权限"`
-	LastLogin    sql.NullTime `json:"last_login" gorm:"column:last_login;comment:最后登录时间"`
-	GithubBindID string       `json:"-" gorm:"unique;comment:Github绑定ID"`
-	LLMQuota     Quota        `json:"llm_quota" gorm:"column:llm_quota;not null;default:0;comment:LLM配额"`
-	Articles     []Article    `json:"articles" gorm:"foreignKey:UserID"`
-	Categories   []Category   `json:"categories" gorm:"foreignKey:UserID"`
-	Tags         []Tag        `json:"tags" gorm:"foreignKey:CreatedBy"`
+	ID           uint       `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`
+	Name         string     `json:"name" gorm:"column:name;unique;not null;comment:用户名"`
+	Email        string     `json:"email" gorm:"column:email;unique;not null;comment:邮箱"`
+	Avatar       string     `json:"avatar" gorm:"column:avatar;not null;comment:头像"`
+	Permission   Permission `json:"permission" gorm:"column:permission;not null;default:'reader';comment:权限"`
+	LastLogin    time.Time  `json:"last_login" gorm:"column:last_login;comment:最后登录时间"`
+	GithubBindID string     `json:"-" gorm:"unique;comment:Github绑定ID"`
+	LLMQuota     Quota      `json:"llm_quota" gorm:"column:llm_quota;not null;default:0;comment:LLM配额"`
+	Articles     []Article  `json:"articles" gorm:"foreignKey:UserID"`
+	Categories   []Category `json:"categories" gorm:"foreignKey:UserID"`
+	Tags         []Tag      `json:"tags" gorm:"foreignKey:UserID"`
 }
 
 // GetBasicInfo 获取用户基本信息
