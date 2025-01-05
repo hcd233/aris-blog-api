@@ -7,7 +7,13 @@ import (
 )
 
 var (
-	ImageObjDAOSingleton     *BaseMinioObjDAO
+
+	// ImageObjDAOSingleton 图片对象DAO单例
+	//	@update 2025-01-05 22:45:54
+	ImageObjDAOSingleton *BaseMinioObjDAO
+
+	// ThumbnailObjDAOSingleton 缩略图对象DAO单例
+	//	@update 2025-01-05 22:45:54
 	ThumbnailObjDAOSingleton *BaseMinioObjDAO
 
 	imageObjOnce     sync.Once
