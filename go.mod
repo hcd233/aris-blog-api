@@ -1,8 +1,6 @@
 module github.com/hcd233/Aris-blog
 
-go 1.22.0
-
-toolchain go1.22.5
+go 1.22.7
 
 require (
 	github.com/disintegration/imaging v1.6.2
