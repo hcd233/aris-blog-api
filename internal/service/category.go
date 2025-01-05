@@ -88,6 +88,12 @@ func (s *categoryService) CreateCategory(req *protocol.CreateCategoryRequest) (r
 	}
 
 	if err := s.categoryDAO.Create(s.db, category); err != nil {
+		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			logger.Logger.Error("[CategoryService] duplicated category",
+				zap.String("name", category.Name),
+				zap.Uint("parentID", category.ParentID))
+			return nil, protocol.ErrDataExists
+		}
 		logger.Logger.Error("[CategoryService] failed to create category",
 			zap.String("name", category.Name),
 			zap.Uint("parentID", category.ParentID),

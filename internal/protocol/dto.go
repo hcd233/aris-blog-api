@@ -296,7 +296,7 @@ type QueryUserTagResponse struct {
 type Category struct {
 	CategoryID uint   `json:"categoryID"`
 	Name       string `json:"name"`
-	ParentID   uint   `json:"parentID"`
+	ParentID   uint   `json:"parentID,omitempty"`
 	CreatedAt  string `json:"createdAt"`
 	UpdatedAt  string `json:"updatedAt"`
 }
