@@ -7,8 +7,8 @@ import (
 
 // PromptDAO 提示词DAO
 //
-//	@author centonhuang
-//	@update 2024-10-23 05:22:38
+//	author centonhuang
+//	update 2024-10-23 05:22:38
 type PromptDAO struct {
 	baseDAO[model.Prompt]
 }

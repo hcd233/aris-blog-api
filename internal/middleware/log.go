@@ -9,10 +9,10 @@ import (
 
 // LogMiddleware 日志中间件
 //
-//	@param logger *zap.Logger
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2025-01-05 21:21:46
+//	param logger *zap.Logger
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2025-01-05 21:21:46
 func LogMiddleware(logger *zap.Logger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()

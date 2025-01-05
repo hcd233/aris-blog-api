@@ -1,6 +1,6 @@
 // Package cache Redis缓存模块
 //
-//	@update 2024-12-09 15:56:25
+//	update 2024-12-09 15:56:25
 package cache
 
 import (
@@ -20,17 +20,17 @@ const redisDB = 0
 
 // GetRedisClient 获取Redis客户端
 //
-//	@return *redis.Client
-//	@author centonhuang
-//	@update 2024-12-09 15:56:40
+//	return *redis.Client
+//	author centonhuang
+//	update 2024-12-09 15:56:40
 func GetRedisClient() *redis.Client {
 	return rdb
 }
 
 // InitCache 初始化Redis客户端
 //
-//	@author centonhuang
-//	@update 2024-12-09 15:56:36
+//	author centonhuang
+//	update 2024-12-09 15:56:36
 func InitCache() {
 	rdb = redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%s:%s", config.RedisHost, config.RedisPort),

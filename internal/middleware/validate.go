@@ -10,10 +10,10 @@ import (
 
 // ValidateURIMiddleware 验证URI中间件
 //
-//	@param uri interface{}
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2024-09-21 07:47:53
+//	param uri interface{}
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2024-09-21 07:47:53
 func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindUri(uri); err != nil {
@@ -29,10 +29,10 @@ func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
 
 // ValidateParamMiddleware 验证参数中间件
 //
-//	@param param interface{}
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2024-09-21 07:48:40
+//	param param interface{}
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2024-09-21 07:48:40
 func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindQuery(param); err != nil {
@@ -48,10 +48,10 @@ func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
 
 // ValidateBodyMiddleware 验证请求体中间件
 //
-//	@param body interface{}
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2024-09-21 08:48:25
+//	param body interface{}
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2024-09-21 08:48:25
 func ValidateBodyMiddleware(body interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindJSON(body); err != nil {

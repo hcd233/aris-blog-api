@@ -1,6 +1,6 @@
 // Package handler handler层
 //
-//	@update 2024-12-08 16:59:38
+//	update 2024-12-08 16:59:38
 package handler
 
 import (
@@ -12,8 +12,8 @@ import (
 
 // AIHandler AI服务
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:45:29
+//	author centonhuang
+//	update 2024-12-08 16:45:29
 type AIHandler interface {
 	HandleGetPrompt(c *gin.Context)
 	HandleGetLatestPrompt(c *gin.Context)
@@ -32,9 +32,9 @@ type aiHandler struct {
 
 // NewAIHandler 创建AI服务
 //
-//	@return AIService
-//	@author centonhuang
-//	@update 2024-12-08 16:45:37
+//	return AIService
+//	author centonhuang
+//	update 2024-12-08 16:45:37
 func NewAIHandler() AIHandler {
 	return &aiHandler{
 		svc: service.NewAIService(),

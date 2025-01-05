@@ -1,6 +1,6 @@
 // Package storage Minio对象存储模块
 //
-//	@update 2024-12-09 15:58:58
+//	update 2024-12-09 15:58:58
 package storage
 
 import (
@@ -18,8 +18,8 @@ var minioClient *minio.Client
 
 // InitObjectStorage 初始化对象存储
 //
-//	@author centonhuang
-//	@update 2024-12-09 15:59:06
+//	author centonhuang
+//	update 2024-12-09 15:59:06
 func InitObjectStorage() {
 	minioClient = lo.Must1(minio.New(config.MinioEndpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioAccessID, config.MinioAccessKey, ""),

@@ -9,9 +9,9 @@ import (
 
 // CORSMiddleware 跨域中间件
 //
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2024-09-16 04:07:30
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2024-09-16 04:07:30
 func CORSMiddleware() gin.HandlerFunc {
 	return cors.New(cors.Config{
 		AllowOrigins:     []string{"http://9.134.115.68:3000"},

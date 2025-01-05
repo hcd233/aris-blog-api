@@ -13,8 +13,8 @@ import (
 
 // AssetHandler 资产服务
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:59:38
+//	author centonhuang
+//	update 2024-12-08 16:59:38
 type AssetHandler interface {
 	HandleListUserLikeArticles(c *gin.Context)
 	HandleListUserLikeComments(c *gin.Context)
@@ -34,9 +34,9 @@ type assetHandler struct {
 
 // NewAssetHandler 创建资产处理器
 //
-//	@return AssetHandler
-//	@author centonhuang
-//	@update 2024-12-08 17:02:21
+//	return AssetHandler
+//	author centonhuang
+//	update 2024-12-08 17:02:21
 func NewAssetHandler() AssetHandler {
 	return &assetHandler{
 		svc: service.NewAssetService(),
@@ -45,9 +45,9 @@ func NewAssetHandler() AssetHandler {
 
 // HandleListUserLikeArticles 列出用户喜欢的文章
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-11-03 06:45:42
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-11-03 06:45:42
 func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 	userID := c.GetUint("userID")
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -64,9 +64,9 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 
 // HandleListUserLikeComments 列出用户喜欢的评论
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-11-03 06:47:41
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-11-03 06:47:41
 func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 	userID := c.GetUint("userID")
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -83,9 +83,9 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 
 // HandleListUserLikeTags 列出用户喜欢的标签
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-11-03 06:47:43
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-11-03 06:47:43
 func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 	userID := c.GetUint("userID")
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -102,10 +102,10 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 
 // HandleCreateBucket 创建桶
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:02
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleCreateBucket(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -120,10 +120,10 @@ func (h *assetHandler) HandleCreateBucket(c *gin.Context) {
 
 // HandleListImages 列出图片
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:02
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleListImages(c *gin.Context) {
 	userID := c.GetUint("userID")
 
@@ -138,10 +138,10 @@ func (h *assetHandler) HandleListImages(c *gin.Context) {
 
 // HandleUploadImage 上传图片
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:02
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	file, err := c.FormFile("file")
@@ -178,10 +178,10 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 
 // HandleGetImage 获取图片
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:02
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleGetImage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
@@ -204,10 +204,10 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 
 // HandleDeleteImage 删除图片
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:02
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
@@ -224,10 +224,10 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 
 // HandleListUserViewArticles 列出用户浏览的文章
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:35
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 	userID := c.GetUint("userID")
 	pageParam := c.MustGet("param").(*protocol.PageParam)
@@ -244,10 +244,10 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 
 // HandleDeleteUserView 删除用户浏览的文章
 //
-//	@receiver s *assetHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:46:35
+//	receiver s *assetHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ViewURI)

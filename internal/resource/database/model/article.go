@@ -8,25 +8,25 @@ import (
 
 // ArticleStatus 文章状态
 //
-//	@author centonhuang
-//	@update 2024-09-21 06:53:10
+//	author centonhuang
+//	update 2024-09-21 06:53:10
 type ArticleStatus string
 
 const (
 
 	// ArticleStatusDraft ArticleStatus 文稿状态
-	//	@update 2024-09-21 06:52:56
+	//	update 2024-09-21 06:52:56
 	ArticleStatusDraft ArticleStatus = "draft"
 
 	// ArticleStatusPublish ArticleStatus 发布状态
-	//	@update 2024-09-21 06:53:04
+	//	update 2024-09-21 06:53:04
 	ArticleStatusPublish ArticleStatus = "publish"
 )
 
 // Article 文章数据库模型
 //
-//	@author centonhuang
-//	@update 2024-09-21 06:46:05
+//	author centonhuang
+//	update 2024-09-21 06:46:05
 type Article struct {
 	gorm.Model
 	ID          uint             `json:"id" gorm:"column:id;primary_key;auto_increment;comment:文章ID"`

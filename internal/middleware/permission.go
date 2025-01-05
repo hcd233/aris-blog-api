@@ -11,11 +11,11 @@ import (
 
 // LimitUserPermissionMiddleware 限制用户权限中间件
 //
-//	@param serviceName string
-//	@param requiredPermission model.Permission
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2025-01-05 15:07:08
+//	param serviceName string
+//	param requiredPermission model.Permission
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2025-01-05 15:07:08
 func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.Permission) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userID := c.MustGet("userID").(uint)

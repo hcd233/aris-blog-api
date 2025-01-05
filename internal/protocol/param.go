@@ -2,8 +2,8 @@ package protocol
 
 // GithubCallbackParam Github回调请求参数
 //
-//	@author centonhuang
-//	@update 2024-09-18 03:14:09
+//	author centonhuang
+//	update 2024-09-18 03:14:09
 type GithubCallbackParam struct {
 	Code  string `form:"code" binding:"required"`
 	State string `form:"state" binding:"required"`
@@ -11,8 +11,8 @@ type GithubCallbackParam struct {
 
 // PageParam 列表参数
 //
-//	@author centonhuang
-//	@update 2024-09-21 09:00:57
+//	author centonhuang
+//	update 2024-09-21 09:00:57
 type PageParam struct {
 	Page     int `form:"page" binding:"required,gte=1"`
 	PageSize int `form:"pageSize" binding:"min=1,max=50"`
@@ -20,8 +20,8 @@ type PageParam struct {
 
 // QueryParam 查询参数
 //
-//	@author centonhuang
-//	@update 2024-09-18 02:56:39
+//	author centonhuang
+//	update 2024-09-18 02:56:39
 type QueryParam struct {
 	PageParam
 	Query  string   `form:"query" binding:"required,min=2"`
@@ -30,8 +30,8 @@ type QueryParam struct {
 
 // ArticleParam 文章参数
 //
-//	@author centonhuang
-//	@update 2024-09-21 09:59:55
+//	author centonhuang
+//	update 2024-09-21 09:59:55
 type ArticleParam struct {
 	ArticleSlug string `form:"articleSlug" binding:"required"`
 	Author      string `form:"author" binding:"required"`
@@ -39,8 +39,8 @@ type ArticleParam struct {
 
 // ImageParam 图片参数
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:42:00
+//	author centonhuang
+//	update 2024-12-08 16:42:00
 type ImageParam struct {
 	Quality string `form:"quality" binding:"required,oneof=raw thumb"`
 }

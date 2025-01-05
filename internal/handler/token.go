@@ -9,8 +9,8 @@ import (
 
 // TokenHandler 令牌处理器
 //
-//	@author centonhuang
-//	@update 2025-01-04 15:56:10
+//	author centonhuang
+//	update 2025-01-04 15:56:10
 type TokenHandler interface {
 	HandleRefreshToken(c *gin.Context)
 }
@@ -21,9 +21,9 @@ type tokenHandler struct {
 
 // NewTokenHandler 创建令牌处理器
 //
-//	@return TokenHandler
-//	@author centonhuang
-//	@update 2025-01-04 15:56:04
+//	return TokenHandler
+//	author centonhuang
+//	update 2025-01-04 15:56:04
 func NewTokenHandler() TokenHandler {
 	return &tokenHandler{
 		svc: service.NewTokenService(),
@@ -32,10 +32,10 @@ func NewTokenHandler() TokenHandler {
 
 // HandleRefreshToken 刷新令牌
 //
-//	@receiver s *tokenHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:56:10
+//	receiver s *tokenHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:56:10
 func (h *tokenHandler) HandleRefreshToken(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.RefreshTokenBody)
 

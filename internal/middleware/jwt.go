@@ -1,6 +1,6 @@
 // Package middleware 中间件
 //
-//	@update 2024-06-22 11:05:33
+//	update 2024-06-22 11:05:33
 package middleware
 
 import (
@@ -20,9 +20,9 @@ import (
 
 // JwtMiddleware JWT 中间件
 //
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2024-09-16 05:35:57
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2024-09-16 05:35:57
 func JwtMiddleware() gin.HandlerFunc {
 	db := database.GetDBInstance()
 	dao := dao.GetUserDAO()

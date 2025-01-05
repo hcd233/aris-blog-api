@@ -7,8 +7,8 @@ import (
 
 // UserViewDAO 用户浏览数据访问对象
 //
-//	@author centonhuang
-//	@update 2024-10-30 03:49:48
+//	author centonhuang
+//	update 2024-10-30 03:49:48
 type UserViewDAO struct {
 	baseDAO[model.UserView]
 }
@@ -31,7 +31,6 @@ func (dao *UserViewDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, prelo
 		sql = sql.Preload(preload)
 	}
 	err = sql.Where(model.UserView{UserID: userID}).Limit(limit).Offset(offset).Find(&userViews).Error
-
 	if err != nil {
 		return
 	}

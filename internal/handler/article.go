@@ -9,8 +9,8 @@ import (
 
 // ArticleHandler 文章处理器
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type ArticleHandler interface {
 	HandleCreateArticle(c *gin.Context)
 	HandleGetArticleInfo(c *gin.Context)
@@ -29,9 +29,9 @@ type articleHandler struct {
 
 // NewArticleHandler 创建文章处理器
 //
-//	@return ArticleHandler
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	return ArticleHandler
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func NewArticleHandler() ArticleHandler {
 	return &articleHandler{
 		svc: service.NewArticleService(),
@@ -40,10 +40,10 @@ func NewArticleHandler() ArticleHandler {
 
 // HandleCreateArticle 创建文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
 	userName := c.GetString("userName")
@@ -67,10 +67,10 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 
 // HandleGetArticleInfo 获取文章信息
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
@@ -86,10 +86,10 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 
 // HandleUpdateArticle 更新文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
@@ -111,10 +111,10 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 
 // HandleUpdateArticleStatus 更新文章状态
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
@@ -134,10 +134,10 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 
 // HandleDeleteArticle 删除文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
@@ -155,10 +155,10 @@ func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 
 // HandleListArticles 列出文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleListArticles(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -173,10 +173,10 @@ func (h *articleHandler) HandleListArticles(c *gin.Context) {
 
 // HandleListUserArticles 列出用户文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleListUserArticles(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -193,10 +193,10 @@ func (h *articleHandler) HandleListUserArticles(c *gin.Context) {
 
 // HandleQueryArticle 查询文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleQueryArticle(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
@@ -211,10 +211,10 @@ func (h *articleHandler) HandleQueryArticle(c *gin.Context) {
 
 // HandleQueryUserArticle 查询用户文章
 //
-//	@receiver h *articleHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleQueryUserArticle(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.QueryParam)

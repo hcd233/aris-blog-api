@@ -9,8 +9,8 @@ import (
 
 // TagHandler 标签处理器
 //
-//	@author centonhuang
-//	@update 2025-01-04 15:52:48
+//	author centonhuang
+//	update 2025-01-04 15:52:48
 type TagHandler interface {
 	HandleCreateTag(c *gin.Context)
 	HandleGetTagInfo(c *gin.Context)
@@ -28,9 +28,9 @@ type tagHandler struct {
 
 // NewTagHandler 创建标签处理器
 //
-//	@return TagHandler
-//	@author centonhuang
-//	@update 2025-01-04 15:52:48
+//	return TagHandler
+//	author centonhuang
+//	update 2025-01-04 15:52:48
 func NewTagHandler() TagHandler {
 	return &tagHandler{
 		svc: service.NewTagService(),
@@ -55,9 +55,9 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 
 // GetTagInfoHandler 获取标签信息
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:52:48
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:52:48
 func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
@@ -72,10 +72,10 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 
 // HandleUpdateTag 更新标签
 //
-//	@receiver s *tagHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:55:16
+//	receiver s *tagHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:55:16
 func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
@@ -96,10 +96,10 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 
 // HandleDeleteTag 删除标签
 //
-//	@receiver s *tagHandler
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:55:24
+//	receiver s *tagHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:55:24
 func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
@@ -116,9 +116,9 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 
 // HandleListTags 标签列表
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:55:31
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:55:31
 func (h *tagHandler) HandleListTags(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -133,9 +133,9 @@ func (h *tagHandler) HandleListTags(c *gin.Context) {
 
 // HandleListUserTags 列出用户标签
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:55:38
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:55:38
 func (h *tagHandler) HandleListUserTags(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	param := c.MustGet("param").(*protocol.PageParam)
@@ -152,9 +152,9 @@ func (h *tagHandler) HandleListUserTags(c *gin.Context) {
 
 // HandleQueryTag 搜索标签
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:55:45
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:55:45
 func (h *tagHandler) HandleQueryTag(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
@@ -169,9 +169,9 @@ func (h *tagHandler) HandleQueryTag(c *gin.Context) {
 
 // HandleQueryUserTag 搜索用户标签
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:55:52
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:55:52
 func (h *tagHandler) HandleQueryUserTag(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	params := c.MustGet("param").(*protocol.QueryParam)

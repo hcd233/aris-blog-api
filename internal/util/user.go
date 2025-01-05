@@ -9,7 +9,7 @@ const (
 	minNameLen = 2
 	maxNameLen = 20
 
-	specialChars = "!@#$%^&*()_+|~-=`{}[]:\";'<>?,./"
+	specialChars = "!#$%^&*()_+|~-=`{}[]:\";'<>?,./"
 )
 
 var specialNameblackList = []string{
@@ -18,10 +18,10 @@ var specialNameblackList = []string{
 
 // ValidateUserName 验证用户名
 //
-//	@param userName string
-//	@return err error
-//	@author centonhuang
-//	@update 2024-12-09 17:22:52
+//	param userName string
+//	return err error
+//	author centonhuang
+//	update 2024-12-09 17:22:52
 func ValidateUserName(userName string) (err error) {
 	validateFuncs := []func(string) error{
 		validateUserNameLength,

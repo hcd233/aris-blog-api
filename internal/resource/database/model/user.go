@@ -1,6 +1,6 @@
 // Package model defines the database schema for the model.
 //
-//	@update 2024-06-22 09:33:43
+//	update 2024-06-22 09:33:43
 package model
 
 import (
@@ -11,56 +11,56 @@ import (
 
 type (
 	// Permission string 权限
-	//	@update 2024-09-21 01:34:29
+	//	update 2024-09-21 01:34:29
 	Permission string
 
 	// PermissionLevel int8 权限等级
-	//	@update 2024-09-21 01:34:29
+	//	update 2024-09-21 01:34:29
 	PermissionLevel int8
 
 	// Quota int8 配额
-	//	@update 2024-12-09 16:13:24
+	//	update 2024-12-09 16:13:24
 	Quota int8
 
 	// Platform string 平台
-	//	@update 2024-09-21 01:34:12
+	//	update 2024-09-21 01:34:12
 	Platform string
 )
 
 const (
 
 	// PlatformGithub github user
-	//	@update 2024-06-22 10:05:13
+	//	update 2024-06-22 10:05:13
 	PlatformGithub Platform = "github"
 
 	// PermissionReader general permission
-	//	@update 2024-06-22 10:05:15
+	//	update 2024-06-22 10:05:15
 	PermissionReader Permission = "reader"
 
 	// PermissionCreator creator permission
-	//	@update 2024-06-22 10:05:17
+	//	update 2024-06-22 10:05:17
 	PermissionCreator Permission = "creator"
 
 	// PermissionAdmin admin permission
-	//	@update 2024-06-22 10:05:17
+	//	update 2024-06-22 10:05:17
 	PermissionAdmin Permission = "admin"
 
 	// QuotaReader Quota 读者配额
-	//	@update 2024-12-09 16:13:06
+	//	update 2024-12-09 16:13:06
 	QuotaReader Quota = 5
 
 	// QuotaCreator Quota 创作者配额
-	//	@update 2024-12-09 16:13:23
+	//	update 2024-12-09 16:13:23
 	QuotaCreator Quota = 30
 
 	// QuotaAdmin Quota 管理员配额
-	//	@update 2024-12-09 16:13:24
+	//	update 2024-12-09 16:13:24
 	QuotaAdmin Quota = 120
 )
 
 // PermissionLevelMapping 权限等级映射
 //
-//	@update 2024-09-21 01:34:29
+//	update 2024-09-21 01:34:29
 var (
 	PermissionLevelMapping = map[Permission]int8{
 		PermissionReader:  1,
@@ -77,8 +77,8 @@ var (
 
 // User 用户数据库模型
 //
-//	@author centonhuang
-//	@update 2024-06-22 09:36:22
+//	author centonhuang
+//	update 2024-06-22 09:36:22
 type User struct {
 	gorm.Model
 	ID           uint       `json:"id" gorm:"column:id;primary_key;auto_increment;comment:用户ID"`

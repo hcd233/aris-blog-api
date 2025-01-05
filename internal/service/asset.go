@@ -27,8 +27,8 @@ import (
 
 // AssetService 资产服务
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:57:43
+//	author centonhuang
+//	update 2025-01-05 17:57:43
 type AssetService interface {
 	ListUserLikeArticles(req *protocol.ListUserLikeArticlesRequest) (rsp *protocol.ListUserLikeArticlesResponse, err error)
 	ListUserLikeComments(req *protocol.ListUserLikeCommentsRequest) (rsp *protocol.ListUserLikeCommentsResponse, err error)
@@ -56,9 +56,9 @@ type assetService struct {
 
 // NewAssetService 创建资产服务
 //
-//	@return AssetService
-//	@author centonhuang
-//	@update 2025-01-05 16:41:39
+//	return AssetService
+//	author centonhuang
+//	update 2025-01-05 16:41:39
 func NewAssetService() AssetService {
 	return &assetService{
 		db:              database.GetDBInstance(),
@@ -75,12 +75,12 @@ func NewAssetService() AssetService {
 
 // ListUserLikeArticles 列出用户喜欢的文章
 //
-//	@receiver s *assetService
-//	@param req *protocol.ListUserLikeArticlesRequest
-//	@return rsp *protocol.ListUserLikeArticlesResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 16:47:40
+//	receiver s *assetService
+//	param req *protocol.ListUserLikeArticlesRequest
+//	return rsp *protocol.ListUserLikeArticlesResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 16:47:40
 func (s *assetService) ListUserLikeArticles(req *protocol.ListUserLikeArticlesRequest) (rsp *protocol.ListUserLikeArticlesResponse, err error) {
 	rsp = &protocol.ListUserLikeArticlesResponse{}
 
@@ -278,12 +278,12 @@ func (s *assetService) ListUserLikeTags(req *protocol.ListUserLikeTagsRequest) (
 
 // CreateBucket 创建桶
 //
-//	@receiver s *assetService
-//	@param req *protocol.CreateBucketRequest
-//	@return rsp *protocol.CreateBucketResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:04:22
+//	receiver s *assetService
+//	param req *protocol.CreateBucketRequest
+//	return rsp *protocol.CreateBucketResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:04:22
 func (s *assetService) CreateBucket(req *protocol.CreateBucketRequest) (rsp *protocol.CreateBucketResponse, err error) {
 	rsp = &protocol.CreateBucketResponse{}
 
@@ -326,12 +326,12 @@ func (s *assetService) CreateBucket(req *protocol.CreateBucketRequest) (rsp *pro
 
 // ListImages 列出图片
 //
-//	@receiver s *assetService
-//	@param req *protocol.ListImagesRequest
-//	@return rsp *protocol.ListImagesResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:15:38
+//	receiver s *assetService
+//	param req *protocol.ListImagesRequest
+//	return rsp *protocol.ListImagesResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:15:38
 func (s *assetService) ListImages(req *protocol.ListImagesRequest) (rsp *protocol.ListImagesResponse, err error) {
 	rsp = &protocol.ListImagesResponse{}
 
@@ -354,12 +354,12 @@ func (s *assetService) ListImages(req *protocol.ListImagesRequest) (rsp *protoco
 
 // UploadImage 上传图片
 //
-//	@receiver s *assetService
-//	@param req *protocol.UploadImageRequest
-//	@return rsp *protocol.UploadImageResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:20:31
+//	receiver s *assetService
+//	param req *protocol.UploadImageRequest
+//	return rsp *protocol.UploadImageResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:20:31
 func (s *assetService) UploadImage(req *protocol.UploadImageRequest) (rsp *protocol.UploadImageResponse, err error) {
 	if !util.IsValidImageFormat(req.FileName) {
 		logger.Logger.Error("[AssetService] invalid image format", zap.String("fileName", req.FileName))
@@ -446,12 +446,12 @@ func (s *assetService) UploadImage(req *protocol.UploadImageRequest) (rsp *proto
 
 // GetImage 获取图片
 //
-//	@receiver s *assetService
-//	@param req *protocol.GetImageRequest
-//	@return rsp *protocol.GetImageResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:49:39
+//	receiver s *assetService
+//	param req *protocol.GetImageRequest
+//	return rsp *protocol.GetImageResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:49:39
 func (s *assetService) GetImage(req *protocol.GetImageRequest) (rsp *protocol.GetImageResponse, err error) {
 	rsp = &protocol.GetImageResponse{}
 	var presignedURL *url.URL
@@ -477,12 +477,12 @@ func (s *assetService) GetImage(req *protocol.GetImageRequest) (rsp *protocol.Ge
 
 // DeleteImage 删除图片
 //
-//	@receiver s *assetService
-//	@param req *protocol.DeleteImageRequest
-//	@return rsp *protocol.DeleteImageResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:49:33
+//	receiver s *assetService
+//	param req *protocol.DeleteImageRequest
+//	return rsp *protocol.DeleteImageResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:49:33
 func (s *assetService) DeleteImage(req *protocol.DeleteImageRequest) (rsp *protocol.DeleteImageResponse, err error) {
 	rsp = &protocol.DeleteImageResponse{}
 	var wg sync.WaitGroup

@@ -9,8 +9,8 @@ import (
 
 // CategoryHandler 分类服务
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:59:38
+//	author centonhuang
+//	update 2024-12-08 16:59:38
 type CategoryHandler interface {
 	HandleCreateCategory(c *gin.Context)
 	HandleGetCategoryInfo(c *gin.Context)
@@ -27,9 +27,9 @@ type categoryHandler struct {
 
 // NewCategoryHandler 创建分类处理器
 //
-//	@return CategoryHandler
-//	@author centonhuang
-//	@update 2024-12-08 16:5CategoryHandler
+//	return CategoryHandler
+//	author centonhuang
+//	update 2024-12-08 16:5CategoryHandler
 func NewCategoryHandler() CategoryHandler {
 	return &categoryHandler{
 		svc: service.NewCategoryService(),
@@ -38,9 +38,9 @@ func NewCategoryHandler() CategoryHandler {
 
 // CreateCategoryHandler 创建分类
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-09-28 07:03:28
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-09-28 07:03:28
 func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -60,9 +60,9 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 
 // GetCategoryInfoHandler 获取分类信息
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-10-01 04:58:27
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-10-01 04:58:27
 func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
@@ -80,9 +80,9 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 
 // HandleGetRootCategories 获取根分类信息
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-10-23 03:56:26
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-10-23 03:56:26
 func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -99,9 +99,9 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 
 // HandleUpdateCategoryInfo 更新分类信息
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-10-02 03:45:55
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-10-02 03:45:55
 func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
@@ -122,9 +122,9 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 
 // HandleDeleteCategory 删除分类
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-10-02 04:55:08
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-10-02 04:55:08
 func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
@@ -142,9 +142,9 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 
 // HandleListChildrenCategories 列出子分类
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-10-01 05:09:47
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-10-01 05:09:47
 func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
@@ -164,9 +164,9 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 
 // HandleListChildrenArticles 列出子文章
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2024-10-02 01:38:12
+//	param c *gin.Context
+//	author centonhuang
+//	update 2024-10-02 01:38:12
 func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)

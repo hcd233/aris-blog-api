@@ -4,24 +4,24 @@ import "github.com/hcd233/Aris-blog/internal/resource/database/model"
 
 // RefreshTokenBody 刷新token请求体
 //
-//	@Author centonhuang
-//	@Update 2024-11-09 02:56:39
+//	Author centonhuang
+//	Update 2024-11-09 02:56:39
 type RefreshTokenBody struct {
 	RefreshToken string `json:"refreshToken" binding:"required"`
 }
 
 // UpdateUserBody 更新用户请求体
 //
-//	@author centonhuang
-//	@update 2024-09-18 02:39:31
+//	author centonhuang
+//	update 2024-09-18 02:39:31
 type UpdateUserBody struct {
 	UserName string `json:"userName" binding:"required"`
 }
 
 // CreateArticleBody 创建文章请求体
 //
-//	@author centonhuang
-//	@update 2024-09-21 09:59:55
+//	author centonhuang
+//	update 2024-09-21 09:59:55
 type CreateArticleBody struct {
 	Title      string   `json:"title" binding:"required"`
 	Slug       string   `json:"slug"`
@@ -31,8 +31,8 @@ type CreateArticleBody struct {
 
 // UpdateArticleBody 更新文章请求体
 //
-//	@author centonhuang
-//	@update 2024-09-22 03:56:09
+//	author centonhuang
+//	update 2024-09-22 03:56:09
 type UpdateArticleBody struct {
 	Title      string `json:"title" binding:"omitempty"`
 	Slug       string `json:"slug" binding:"omitempty"`
@@ -41,8 +41,8 @@ type UpdateArticleBody struct {
 
 // UpdateTagBody 更新标签请求体
 //
-//	@author centonhuang
-//	@update 2024-09-22 03:20:00
+//	author centonhuang
+//	update 2024-09-22 03:20:00
 type UpdateTagBody struct {
 	Name        string `json:"name" binding:"required"`
 	Slug        string `json:"slug" binding:"required"`
@@ -51,8 +51,8 @@ type UpdateTagBody struct {
 
 // CreateTagBody 创建标签请求体
 //
-//	@author centonhuang
-//	@update 2024-09-22 03:20:00
+//	author centonhuang
+//	update 2024-09-22 03:20:00
 type CreateTagBody struct {
 	Name        string `json:"name" binding:"required"`
 	Slug        string `json:"slug" binding:"required"`
@@ -61,8 +61,8 @@ type CreateTagBody struct {
 
 // CreateCategoryBody 创建分类请求体
 //
-//	@author centonhuang
-//	@update 2024-09-28 07:02:11
+//	author centonhuang
+//	update 2024-09-28 07:02:11
 type CreateCategoryBody struct {
 	ParentID uint   `json:"parentID" binding:"omitempty"`
 	Name     string `json:"name" binding:"required"`
@@ -70,8 +70,8 @@ type CreateCategoryBody struct {
 
 // UpdateCategoryBody 更新分类请求体
 //
-//	@author centonhuang
-//	@update 2024-10-02 03:46:26
+//	author centonhuang
+//	update 2024-10-02 03:46:26
 type UpdateCategoryBody struct {
 	Name     string `json:"name" binding:"omitempty"`
 	ParentID uint   `json:"parentID" binding:"omitempty"`
@@ -79,24 +79,24 @@ type UpdateCategoryBody struct {
 
 // CreateArticleVersionBody 创建文章版本请求体
 //
-//	@author centonhuang
-//	@update 2024-10-17 12:43:32
+//	author centonhuang
+//	update 2024-10-17 12:43:32
 type CreateArticleVersionBody struct {
 	Content string `json:"content" binding:"required,min=100,max=20000"`
 }
 
 // UpdateArticleStatusBody 更新文章状态请求体
 //
-//	@author centonhuang
-//	@update 2024-10-17 09:28:07
+//	author centonhuang
+//	update 2024-10-17 09:28:07
 type UpdateArticleStatusBody struct {
 	Status model.ArticleStatus `json:"status" binding:"required,oneof=draft publish"`
 }
 
 // CreateArticleCommentBody 创建文章评论请求体
 //
-//	@author centonhuang
-//	@update 2024-10-24 04:29:01
+//	author centonhuang
+//	update 2024-10-24 04:29:01
 type CreateArticleCommentBody struct {
 	ReplyTo uint   `json:"replyTo" binding:"omitempty"`
 	Content string `json:"content" binding:"required,min=1,max=300"`
@@ -104,16 +104,16 @@ type CreateArticleCommentBody struct {
 
 // LikeBody 点赞请求体
 //
-//	@author centonhuang
-//	@update 2024-10-29 06:49:35
+//	author centonhuang
+//	update 2024-10-29 06:49:35
 type LikeBody struct {
 	Undo bool `json:"undo" binding:"omitempty"`
 }
 
 // LikeArticleBody 点赞文章请求体
 //
-//	@author centonhuang
-//	@update 2024-10-29 06:49:41
+//	author centonhuang
+//	update 2024-10-29 06:49:41
 type LikeArticleBody struct {
 	LikeBody
 	Author      string `json:"author" binding:"required"`
@@ -122,8 +122,8 @@ type LikeArticleBody struct {
 
 // LikeCommentBody 点赞评论请求体
 //
-//	@author centonhuang
-//	@update 2024-10-29 06:59:21
+//	author centonhuang
+//	update 2024-10-29 06:59:21
 type LikeCommentBody struct {
 	LikeBody
 	CommentID uint `json:"commentID" binding:"required"`
@@ -131,8 +131,8 @@ type LikeCommentBody struct {
 
 // LikeTagBody 点赞标签请求体
 //
-//	@author centonhuang
-//	@update 2024-10-29 06:50:42
+//	author centonhuang
+//	update 2024-10-29 06:50:42
 type LikeTagBody struct {
 	LikeBody
 	TagSlug string `json:"tagSlug" binding:"required"`
@@ -140,8 +140,8 @@ type LikeTagBody struct {
 
 // LogUserViewArticleBody 记录文章浏览请求体
 //
-//	@author centonhuang
-//	@update 2024-11-09 07:34:14
+//	author centonhuang
+//	update 2024-11-09 07:34:14
 type LogUserViewArticleBody struct {
 	Author      string `json:"author" binding:"required"`
 	ArticleSlug string `json:"articleSlug" binding:"required"`
@@ -150,8 +150,8 @@ type LogUserViewArticleBody struct {
 
 // Template 提示词模板
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:39:28
+//	author centonhuang
+//	update 2024-12-08 16:39:28
 type Template struct {
 	Role    string `json:"role" binding:"required"`
 	Content string `json:"content" binding:"required"`
@@ -159,24 +159,24 @@ type Template struct {
 
 // CreatePromptBody 创建提示词请求体
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:39:23
+//	author centonhuang
+//	update 2024-12-08 16:39:23
 type CreatePromptBody struct {
 	Templates []Template `json:"templates" binding:"required,min=1,dive"`
 }
 
 // AIAPPRequestBody AI应用请求体
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:39:20
+//	author centonhuang
+//	update 2024-12-08 16:39:20
 type AIAPPRequestBody struct {
 	Temperature float64 `json:"temperature" binding:"omitempty,min=0,max=1"`
 }
 
 // GenerateContentCompletionBody 生成内容补全请求体
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:38:59
+//	author centonhuang
+//	update 2024-12-08 16:38:59
 type GenerateContentCompletionBody struct {
 	AIAPPRequestBody
 	Context     string `json:"context" binding:"required"`
@@ -186,8 +186,8 @@ type GenerateContentCompletionBody struct {
 
 // GenerateArticleSummaryBody 生成文章摘要请求体
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:39:09
+//	author centonhuang
+//	update 2024-12-08 16:39:09
 type GenerateArticleSummaryBody struct {
 	AIAPPRequestBody
 	ArticleSlug string `json:"articleSlug" binding:"required"`
@@ -196,8 +196,8 @@ type GenerateArticleSummaryBody struct {
 
 // GenerateArticleQABody 生成文章问答请求体
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:38:59
+//	author centonhuang
+//	update 2024-12-08 16:38:59
 type GenerateArticleQABody struct {
 	AIAPPRequestBody
 	ArticleSlug string `json:"articleSlug" binding:"required"`
@@ -206,8 +206,8 @@ type GenerateArticleQABody struct {
 
 // GenerateTermExplainationBody 生成术语解释请求体
 //
-//	@author centonhuang
-//	@update 2024-12-08 16:38:59
+//	author centonhuang
+//	update 2024-12-08 16:38:59
 type GenerateTermExplainationBody struct {
 	AIAPPRequestBody
 	ArticleSlug string `json:"context" binding:"required"`

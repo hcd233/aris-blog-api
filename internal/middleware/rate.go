@@ -18,13 +18,13 @@ import (
 
 // RateLimiterMiddleware 限频中间件
 //
-//	@param serviceName string
-//	@param key string
-//	@param period time.Duration
-//	@param limit int64
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2025-01-05 15:06:44
+//	param serviceName string
+//	param key string
+//	param period time.Duration
+//	param limit int64
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2025-01-05 15:06:44
 func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit int64) gin.HandlerFunc {
 	// 创建限频规则
 	rate := limiter.Rate{

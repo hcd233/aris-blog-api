@@ -8,8 +8,8 @@ import (
 
 // TokenPreprocessor 基于token的预处理器
 //
-//	@author centonhuang
-//	@update 2024-12-08 15:20:59
+//	author centonhuang
+//	update 2024-12-08 15:20:59
 type TokenPreprocessor struct {
 	Preprocessor[string, *document.TextDocument]
 	chunkSize               uint
@@ -21,10 +21,10 @@ type TokenPreprocessor struct {
 
 // NewTokenPreprocessor 创建新的TokenPreprocessor
 //
-//	@param chunkSize token块大小
-//	@param chunkOverlap token块重叠大小
-//	@return *TokenPreprocessor
-//	@return error
+//	param chunkSize token块大小
+//	param chunkOverlap token块重叠大小
+//	return *TokenPreprocessor
+//	return error
 func NewTokenPreprocessor(chunkSize, chunkOverlap uint, allowedSpecialTokens, disallowedSpecialTokens []string) *TokenPreprocessor {
 	tokenizer := lo.Must1(tiktoken.GetEncoding("cl100k_base"))
 
@@ -39,10 +39,10 @@ func NewTokenPreprocessor(chunkSize, chunkOverlap uint, allowedSpecialTokens, di
 
 // Process 处理文本
 //
-//	@receiver p *TokenPreprocessor
-//	@param source string
-//	@return []document.TextDocument
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param source string
+//	return []document.TextDocument
+//	return error
 func (p *TokenPreprocessor) Process(source string) ([]*document.TextDocument, error) {
 	tokenIDs := p.tokenizer.Encode(source, p.allowedSpecialTokens, p.disallowedSpecialTokens)
 	var chunks []*document.TextDocument
@@ -71,10 +71,10 @@ func (p *TokenPreprocessor) Process(source string) ([]*document.TextDocument, er
 
 // BatchProcess 批量处理文本
 //
-//	@receiver p *TokenPreprocessor
-//	@param sources []string
-//	@return []documentT
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param sources []string
+//	return []documentT
+//	return error
 func (p *TokenPreprocessor) BatchProcess(sources []string) ([]*document.TextDocument, error) {
 	var allChunks []*document.TextDocument
 
@@ -91,10 +91,10 @@ func (p *TokenPreprocessor) BatchProcess(sources []string) ([]*document.TextDocu
 
 // ProcessDocument 处理文档
 //
-//	@receiver p *TokenPreprocessor
-//	@param rawDocument *document.TextDocument
-//	@return []documentT
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param rawDocument *document.TextDocument
+//	return []documentT
+//	return error
 func (p *TokenPreprocessor) ProcessDocument(rawDocument *document.TextDocument) ([]*document.TextDocument, error) {
 	chunks, err := p.Process(rawDocument.Content)
 	if err != nil {
@@ -117,10 +117,10 @@ func (p *TokenPreprocessor) ProcessDocument(rawDocument *document.TextDocument) 
 
 // BatchProcessDocument 批量处理文档
 //
-//	@receiver p *TokenPreprocessor
-//	@param rawDocuments []*document.TextDocument
-//	@return []documentT
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param rawDocuments []*document.TextDocument
+//	return []documentT
+//	return error
 func (p *TokenPreprocessor) BatchProcessDocument(rawDocuments []*document.TextDocument) ([]*document.TextDocument, error) {
 	var allChunks []*document.TextDocument
 

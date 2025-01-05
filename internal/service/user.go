@@ -15,8 +15,8 @@ import (
 
 // UserService 用户服务
 //
-//	@author centonhuang
-//	@update 2025-01-04 21:04:00
+//	author centonhuang
+//	update 2025-01-04 21:04:00
 type UserService interface {
 	GetCurUserInfo(req *protocol.GetCurUserInfoRequest) (rsp *protocol.GetCurUserInfoResponse, err error)
 	GetUserInfo(req *protocol.GetUserInfoRequest) (rsp *protocol.GetUserInfoResponse, err error)
@@ -33,9 +33,9 @@ type userService struct {
 
 // NewUserService 创建用户服务
 //
-//	@return UserService
-//	@author centonhuang
-//	@update 2025-01-04 21:03:45
+//	return UserService
+//	author centonhuang
+//	update 2025-01-04 21:03:45
 func NewUserService() UserService {
 	return &userService{
 		db:         database.GetDBInstance(),
@@ -47,12 +47,12 @@ func NewUserService() UserService {
 
 // GetCurUserInfo 获取当前用户信息
 //
-//	@receiver s *userService
-//	@param req *protocol.GetCurUserInfoRequest
-//	@return rsp *protocol.GetCurUserInfoResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-04 21:04:03
+//	receiver s *userService
+//	param req *protocol.GetCurUserInfoRequest
+//	return rsp *protocol.GetCurUserInfoResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-04 21:04:03
 func (s *userService) GetCurUserInfo(req *protocol.GetCurUserInfoRequest) (rsp *protocol.GetCurUserInfoResponse, err error) {
 	rsp = &protocol.GetCurUserInfoResponse{}
 
@@ -92,12 +92,12 @@ func (s *userService) GetCurUserInfo(req *protocol.GetCurUserInfoRequest) (rsp *
 
 // GetUserInfo 获取用户信息
 //
-//	@receiver s *userService
-//	@param req *protocol.GetUserInfoRequest
-//	@return *protocol.GetUserInfoResponse
-//	@return error
-//	@author centonhuang
-//	@update 2025-01-04 21:09:04
+//	receiver s *userService
+//	param req *protocol.GetUserInfoRequest
+//	return *protocol.GetUserInfoResponse
+//	return error
+//	author centonhuang
+//	update 2025-01-04 21:09:04
 func (s *userService) GetUserInfo(req *protocol.GetUserInfoRequest) (rsp *protocol.GetUserInfoResponse, err error) {
 	rsp = &protocol.GetUserInfoResponse{}
 

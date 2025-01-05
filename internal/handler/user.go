@@ -9,8 +9,8 @@ import (
 
 // UserHandler 用户处理器
 //
-//	@author centonhuang
-//	@update 2025-01-04 15:56:20
+//	author centonhuang
+//	update 2025-01-04 15:56:20
 type UserHandler interface {
 	HandleGetCurUserInfo(c *gin.Context)
 	HandleGetUserInfo(c *gin.Context)
@@ -24,9 +24,9 @@ type userHandler struct {
 
 // NewUserHandler 创建用户处理器
 //
-//	@return UserHandler
-//	@author centonhuang
-//	@update 2024-12-08 16:59:38
+//	return UserHandler
+//	author centonhuang
+//	update 2024-12-08 16:59:38
 func NewUserHandler() UserHandler {
 	return &userHandler{
 		svc: service.NewUserService(),
@@ -47,9 +47,9 @@ func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
 
 // GetUserInfoHandler 用户信息
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:56:30
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:56:30
 func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
@@ -64,9 +64,9 @@ func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
 
 // UpdateInfoHandler 更新用户信息
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:56:40
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:56:40
 func (h *userHandler) HandleUpdateInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
@@ -85,9 +85,9 @@ func (h *userHandler) HandleUpdateInfo(c *gin.Context) {
 
 // QueryUserHandler 查询用户
 //
-//	@param c *gin.Context
-//	@author centonhuang
-//	@update 2025-01-04 15:56:50
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:56:50
 func (h *userHandler) HandleQueryUser(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.QueryParam)
 
