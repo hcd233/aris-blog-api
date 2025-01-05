@@ -11,59 +11,59 @@ import (
 var (
 
 	// ReadTimeout time Gin读取超时时间
-	//	@update 2024-06-22 08:59:40
+	//	update 2024-06-22 08:59:40
 	ReadTimeout time.Duration
 
 	// WriteTimeout time Gin写入超时时间
-	//	@update 2024-06-22 08:59:37
+	//	update 2024-06-22 08:59:37
 	WriteTimeout time.Duration
 
 	// MaxHeaderBytes int Gin最大头部字节数
-	//	@update 2024-06-22 08:59:34
+	//	update 2024-06-22 08:59:34
 	MaxHeaderBytes int
 
 	// LogLevel string 日志级别
-	//	@update 2024-06-22 08:59:29
+	//	update 2024-06-22 08:59:29
 	LogLevel string
 
 	// LogDirPath string 日志目录路径
-	//	@update 2024-06-22 08:59:26
+	//	update 2024-06-22 08:59:26
 	LogDirPath string
 
 	// Oauth2GithubClientID string Github OAuth2 Client ID
-	//	@update 2024-06-22 08:59:22
+	//	update 2024-06-22 08:59:22
 	Oauth2GithubClientID string
 
 	// Oauth2GithubClientSecret string Github OAuth2 Client Secret
-	//	@update 2024-06-22 08:59:17
+	//	update 2024-06-22 08:59:17
 	Oauth2GithubClientSecret string
 
 	// Oauth2StateString string Github OAuth2 State String
-	//	@update 2024-06-22 08:59:11
+	//	update 2024-06-22 08:59:11
 	Oauth2StateString string
 
 	// Oauth2GithubRedirectURL string Github OAuth2 Redirect URL
-	//	@update 2024-06-22 08:59:07
+	//	update 2024-06-22 08:59:07
 	Oauth2GithubRedirectURL string
 
 	// MysqlUser string Mysql用户名
-	//	@update 2024-06-22 09:00:30
+	//	update 2024-06-22 09:00:30
 	MysqlUser string
 
 	// MysqlPassword string Mysql密码
-	//	@update 2024-06-22 09:00:45
+	//	update 2024-06-22 09:00:45
 	MysqlPassword string
 
 	// MysqlHost string Mysql主机
-	//	@update 2024-06-22 09:01:02
+	//	update 2024-06-22 09:01:02
 	MysqlHost string
 
 	// MysqlPort string Mysql端口
-	//	@update 2024-06-22 09:01:18
+	//	update 2024-06-22 09:01:18
 	MysqlPort string
 
 	// MysqlDatabase string Mysql数据库
-	//	@update 2024-06-22 09:01:34
+	//	update 2024-06-22 09:01:34
 	MysqlDatabase string
 
 	// RedisHost string Redis主机
@@ -94,19 +94,19 @@ var (
 	OpenAIBaseURL string
 
 	// JwtAccessTokenExpired time.Duration Access Jwt Token过期时间
-	//	@update 2024-06-22 11:09:19
+	//	update 2024-06-22 11:09:19
 	JwtAccessTokenExpired time.Duration
 
 	// JwtAccessTokenSecret string Jwt Access Token密钥
-	//	@update 2024-06-22 11:15:55
+	//	update 2024-06-22 11:15:55
 	JwtAccessTokenSecret string
 
 	// JwtRefreshTokenExpired time.Duration Refresh Jwt Token过期时间
-	//	@update 2024-06-22 11:09:19
+	//	update 2024-06-22 11:09:19
 	JwtRefreshTokenExpired time.Duration
 
 	// JwtRefreshTokenSecret string Jwt Refresh Token密钥
-	//	@update 2024-06-22 11:15:55
+	//	update 2024-06-22 11:15:55
 	JwtRefreshTokenSecret string
 )
 

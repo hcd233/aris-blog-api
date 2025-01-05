@@ -17,8 +17,8 @@ import (
 
 // ArticleService 文章服务
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type ArticleService interface {
 	CreateArticle(req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error)
 	GetArticleInfo(req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error)
@@ -42,9 +42,9 @@ type articleService struct {
 
 // NewArticleService 创建文章服务
 //
-//	@return ArticleService
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	return ArticleService
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func NewArticleService() ArticleService {
 	return &articleService{
 		db:                database.GetDBInstance(),
@@ -58,12 +58,12 @@ func NewArticleService() ArticleService {
 
 // CreateArticle 创建文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.CreateArticleRequest
-//	@return rsp *protocol.CreateArticleResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.CreateArticleRequest
+//	return rsp *protocol.CreateArticleResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error) {
 	rsp = &protocol.CreateArticleResponse{}
 
@@ -150,12 +150,12 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 
 // GetArticleInfo 获取文章信息
 //
-//	@receiver s *articleService
-//	@param req *protocol.GetArticleInfoRequest
-//	@return rsp *protocol.GetArticleInfoResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.GetArticleInfoRequest
+//	return rsp *protocol.GetArticleInfoResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error) {
 	rsp = &protocol.GetArticleInfoResponse{}
 
@@ -208,12 +208,12 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 
 // UpdateArticle 更新文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.UpdateArticleRequest
-//	@return rsp *protocol.UpdateArticleResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.UpdateArticleRequest
+//	return rsp *protocol.UpdateArticleResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error) {
 	rsp = &protocol.UpdateArticleResponse{}
 
@@ -282,12 +282,12 @@ func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp 
 
 // UpdateArticleStatus 更新文章状态
 //
-//	@receiver s *articleService
-//	@param req *protocol.UpdateArticleStatusRequest
-//	@return rsp *protocol.UpdateArticleStatusResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.UpdateArticleStatusRequest
+//	return rsp *protocol.UpdateArticleStatusResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
 	rsp = &protocol.UpdateArticleStatusResponse{}
 
@@ -359,12 +359,12 @@ func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRe
 
 // DeleteArticle 删除文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.DeleteArticleRequest
-//	@return rsp *protocol.DeleteArticleResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.DeleteArticleRequest
+//	return rsp *protocol.DeleteArticleResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
 	rsp = &protocol.DeleteArticleResponse{}
 
@@ -412,12 +412,12 @@ func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp 
 
 // ListArticles 列出文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.ListArticlesRequest
-//	@return rsp *protocol.ListArticlesResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.ListArticlesRequest
+//	return rsp *protocol.ListArticlesResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
 	rsp = &protocol.ListArticlesResponse{}
 
@@ -464,12 +464,12 @@ func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *p
 
 // ListUserArticles 列出用户文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.ListUserArticlesRequest
-//	@return rsp *protocol.ListUserArticlesResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.ListUserArticlesRequest
+//	return rsp *protocol.ListUserArticlesResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) ListUserArticles(req *protocol.ListUserArticlesRequest) (rsp *protocol.ListUserArticlesResponse, err error) {
 	rsp = &protocol.ListUserArticlesResponse{}
 
@@ -525,12 +525,12 @@ func (s *articleService) ListUserArticles(req *protocol.ListUserArticlesRequest)
 
 // QueryArticle 查询文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.QueryArticleRequest
-//	@return rsp *protocol.QueryArticleResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.QueryArticleRequest
+//	return rsp *protocol.QueryArticleResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) QueryArticle(*protocol.QueryArticleRequest) (*protocol.QueryArticleResponse, error) {
 	// TODO: 合并
 	return nil, protocol.ErrInternalError
@@ -538,12 +538,12 @@ func (s *articleService) QueryArticle(*protocol.QueryArticleRequest) (*protocol.
 
 // QueryUserArticle 查询用户文章
 //
-//	@receiver s *articleService
-//	@param req *protocol.QueryUserArticleRequest
-//	@return rsp *protocol.QueryUserArticleResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	receiver s *articleService
+//	param req *protocol.QueryUserArticleRequest
+//	return rsp *protocol.QueryUserArticleResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (s *articleService) QueryUserArticle(*protocol.QueryUserArticleRequest) (*protocol.QueryUserArticleResponse, error) {
 	// TODO: 合并
 	return nil, protocol.ErrInternalError

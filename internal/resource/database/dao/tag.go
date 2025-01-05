@@ -11,20 +11,20 @@ import (
 
 // TagDAO 标签DAO
 //
-//	@author centonhuang
-//	@update 2024-10-17 02:30:24
+//	author centonhuang
+//	update 2024-10-17 02:30:24
 type TagDAO struct {
 	baseDAO[model.Tag]
 }
 
 // Delete 删除标签
 //
-//	@receiver dao *TagDAO
-//	@param db *gorm.DB
-//	@param tag *model.Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-17 06:58:14
+//	receiver dao *TagDAO
+//	param db *gorm.DB
+//	param tag *model.Tag
+//	return err error
+//	author centonhuang
+//	update 2024-10-17 06:58:14
 func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 	UUID := uuid.New().String()
 	err = db.Model(tag).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", tag.Name, UUID), "slug": fmt.Sprintf("%s-%s", tag.Slug, UUID), "deleted_at": time.Now()}).Error
@@ -33,15 +33,15 @@ func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 
 // GetBySlug 通过slug获取标签
 //
-//	@receiver dao *TagDAO
-//	@param db *gorm.DB
-//	@param slug string
-//	@param userID uint
-//	@param fields []string
-//	@return tag *model.Tag
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-23 12:53:25
+//	receiver dao *TagDAO
+//	param db *gorm.DB
+//	param slug string
+//	param userID uint
+//	param fields []string
+//	return tag *model.Tag
+//	return err error
+//	author centonhuang
+//	update 2024-10-23 12:53:25
 func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields, preloads []string) (tag *model.Tag, err error) {
 	sql := db.Select(fields)
 	for _, preload := range preloads {
@@ -53,17 +53,17 @@ func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields, preloads []string
 
 // PaginateByUserID 通过用户ID获取标签
 //
-//	@receiver dao *TagDAO
-//	@param db *gorm.DB
-//	@param userID uint
-//	@param fields []string
-//	@param page int
-//	@param pageSize int
-//	@return tags *[]model.Tag
-//	@return pageInfo *PageInfo
-//	@return err error
-//	@author centonhuang
-//	@update 2024-11-01 07:10:06
+//	receiver dao *TagDAO
+//	param db *gorm.DB
+//	param userID uint
+//	param fields []string
+//	param page int
+//	param pageSize int
+//	return tags *[]model.Tag
+//	return pageInfo *PageInfo
+//	return err error
+//	author centonhuang
+//	update 2024-11-01 07:10:06
 func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, page, pageSize int) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 

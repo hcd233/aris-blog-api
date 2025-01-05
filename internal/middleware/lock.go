@@ -16,12 +16,12 @@ import (
 
 // RedisLockMiddleware Redis锁中间件
 //
-//	@param serviceName string
-//	@param key string
-//	@param expire time.Duration
-//	@return gin.HandlerFunc
-//	@author centonhuang
-//	@update 2025-01-05 15:06:51
+//	param serviceName string
+//	param key string
+//	param expire time.Duration
+//	return gin.HandlerFunc
+//	author centonhuang
+//	update 2025-01-05 15:06:51
 func RedisLockMiddleware(serviceName, key string, expire time.Duration) gin.HandlerFunc {
 	redis := cache.GetRedisClient()
 

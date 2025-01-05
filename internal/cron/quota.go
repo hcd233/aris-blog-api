@@ -34,8 +34,8 @@ func NewQuotaCron() Cron {
 
 func (c *QuotaCron) Start() {
 	// debug set 10 seconds
-	// c.cron.AddFunc("@every 10s", c.deliverQuotas)
-	c.cron.AddFunc("@daily", c.deliverQuotas)
+	// c.cron.AddFunc("every 10s", c.deliverQuotas)
+	c.cron.AddFunc("daily", c.deliverQuotas)
 	c.cron.Start()
 }
 

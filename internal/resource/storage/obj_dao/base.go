@@ -14,8 +14,8 @@ import (
 
 // ObjDAO 对象存储DAO接口
 //
-//	@author centonhuang
-//	@update 2025-01-05 22:45:30
+//	author centonhuang
+//	update 2025-01-05 22:45:30
 type ObjDAO interface {
 	composeBucketName(userID uint) (bucketName string)
 	CreateBucket(userID uint) (exist bool, err error)
@@ -27,18 +27,18 @@ type ObjDAO interface {
 
 // ObjectType 对象类型
 //
-//	@author centonhuang
-//	@update 2025-01-05 22:45:37
+//	author centonhuang
+//	update 2025-01-05 22:45:37
 type ObjectType string
 
 const (
 
 	// ObjectTypeImage ObjectType
-	//	@update 2025-01-05 17:36:01
+	//	update 2025-01-05 17:36:01
 	ObjectTypeImage ObjectType = "image"
 
 	// ObjectTypeThumbnail ObjectType
-	//	@update 2025-01-05 17:36:05
+	//	update 2025-01-05 17:36:05
 	ObjectTypeThumbnail ObjectType = "thumbnail"
 
 	createBucketTimeout   = 5 * time.Second
@@ -53,8 +53,8 @@ const (
 
 // BaseMinioObjDAO 基础Minio对象存储DAO
 //
-//	@author centonhuang
-//	@update 2025-01-05 22:45:43
+//	author centonhuang
+//	update 2025-01-05 22:45:43
 type BaseMinioObjDAO struct {
 	ObjectType ObjectType
 	client     *minio.Client
@@ -62,8 +62,8 @@ type BaseMinioObjDAO struct {
 
 // ObjectInfo 对象信息
 //
-//	@author centonhuang
-//	@update 2025-01-05 22:45:48
+//	author centonhuang
+//	update 2025-01-05 22:45:48
 type ObjectInfo struct {
 	ObjectName   string    `json:"objectName"`
 	ContentType  string    `json:"contentType"`
@@ -79,12 +79,12 @@ func (dao *BaseMinioObjDAO) composeBucketName(userID uint) string {
 
 // CreateBucket 创建桶
 //
-//	@receiver dao *BaseMinioObjDAO
-//	@param userID uint
-//	@return exist bool
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:37:41
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	return exist bool
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:37:41
 func (dao *BaseMinioObjDAO) CreateBucket(userID uint) (exist bool, err error) {
 	bucketName := dao.composeBucketName(userID)
 
@@ -109,12 +109,12 @@ func (dao *BaseMinioObjDAO) CreateBucket(userID uint) (exist bool, err error) {
 
 // ListObjects 列出桶中的对象
 //
-//	@receiver dao *BaseMinioObjDAO
-//	@param userID uint
-//	@return objectInfos []ObjectInfo
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:37:45
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	return objectInfos []ObjectInfo
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:37:45
 func (dao *BaseMinioObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, err error) {
 	bucketName := dao.composeBucketName(userID)
 
@@ -142,14 +142,14 @@ func (dao *BaseMinioObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, 
 
 // UploadObject 上传对象
 //
-//	@receiver dao *BaseMinioObjDAO
-//	@param userID uint
-//	@param objectName string
-//	@param size int64
-//	@param reader io.Reader
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:37:50
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	param objectName string
+//	param size int64
+//	param reader io.Reader
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:37:50
 func (dao *BaseMinioObjDAO) UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error) {
 	bucketName := dao.composeBucketName(userID)
 
@@ -162,14 +162,14 @@ func (dao *BaseMinioObjDAO) UploadObject(userID uint, objectName string, size in
 
 // DownloadObject 下载对象
 //
-//	@receiver dao *BaseMinioObjDAO
-//	@param userID uint
-//	@param objectName string
-//	@param writer io.Writer
-//	@return objectInfo *ObjectInfo
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:37:57
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	param objectName string
+//	param writer io.Writer
+//	return objectInfo *ObjectInfo
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:37:57
 func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
 	bucketName := dao.composeBucketName(userID)
 
@@ -200,14 +200,14 @@ func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string, write
 
 // PresignObject 生成对象的预签名URL
 //
-//	@receiver dao *BaseMinioObjDAO
-//	@param userID uint
-//	@param objectName string
-//	@param writer io.Writer
-//	@return url *url.URL
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:38:03
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	param objectName string
+//	param writer io.Writer
+//	return url *url.URL
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:38:03
 func (dao *BaseMinioObjDAO) PresignObject(userID uint, objectName string) (presignedURL *url.URL, err error) {
 	bucketName := dao.composeBucketName(userID)
 
@@ -220,12 +220,12 @@ func (dao *BaseMinioObjDAO) PresignObject(userID uint, objectName string) (presi
 
 // DeleteObject 删除对象
 //
-//	@receiver dao *BaseMinioObjDAO
-//	@param userID uint
-//	@param objectName string
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 17:38:09
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	param objectName string
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 17:38:09
 func (dao *BaseMinioObjDAO) DeleteObject(userID uint, objectName string) (err error) {
 	bucketName := dao.composeBucketName(userID)
 

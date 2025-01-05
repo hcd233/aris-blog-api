@@ -11,20 +11,20 @@ import (
 
 // CategoryDAO 类别DAO
 //
-//	@author centonhuang
-//	@update 2024-10-17 02:30:24
+//	author centonhuang
+//	update 2024-10-17 02:30:24
 type CategoryDAO struct {
 	baseDAO[model.Category]
 }
 
 // Delete 删除类别
 //
-//	@receiver dao *CategoryDAO
-//	@param db *gorm.DB
-//	@param category *model.Category
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-17 02:59:11
+//	receiver dao *CategoryDAO
+//	param db *gorm.DB
+//	param category *model.Category
+//	return err error
+//	author centonhuang
+//	update 2024-10-17 02:59:11
 func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error) {
 	UUID := uuid.New().String()
 	err = db.Model(category).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", category.Name, UUID), "deleted_at": time.Now()}).Error
@@ -33,17 +33,17 @@ func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error
 
 // PaginateChildren 获取子类别
 //
-//	@receiver dao *CategoryDAO
-//	@param db *gorm.DB
-//	@param category *model.Category
-//	@param fields []string
-//	@param page int
-//	@param pageSize int
-//	@return children *[]model.Category
-//	@return pageInfo *PageInfo
-//	@return err error
-//	@author centonhuang
-//	@update 2024-11-01 07:09:50
+//	receiver dao *CategoryDAO
+//	param db *gorm.DB
+//	param category *model.Category
+//	param fields []string
+//	param page int
+//	param pageSize int
+//	return children *[]model.Category
+//	return pageInfo *PageInfo
+//	return err error
+//	author centonhuang
+//	update 2024-11-01 07:09:50
 func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields, preloads []string, page, pageSize int) (children *[]model.Category, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 
@@ -52,7 +52,6 @@ func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, 
 		sql = sql.Preload(preload)
 	}
 	err = sql.Where(&model.Category{ParentID: category.ID}).Limit(limit).Offset(offset).Find(&children).Error
-
 	if err != nil {
 		return
 	}
@@ -68,13 +67,13 @@ func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, 
 
 // GetParent 获取父类别
 //
-//	@receiver dao *CategoryDAO
-//	@param db *gorm.DB
-//	@param category *model.Category
-//	@return parent *model.Category
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-17 03:04:41
+//	receiver dao *CategoryDAO
+//	param db *gorm.DB
+//	param category *model.Category
+//	return parent *model.Category
+//	return err error
+//	author centonhuang
+//	update 2024-10-17 03:04:41
 func (dao *CategoryDAO) GetParent(db *gorm.DB, category *model.Category, fields, preloads []string) (parent *model.Category, err error) {
 	sql := db.Select(fields)
 	for _, preload := range preloads {
@@ -86,14 +85,14 @@ func (dao *CategoryDAO) GetParent(db *gorm.DB, category *model.Category, fields,
 
 // GetRootByUserID 获取根类别
 //
-//	@receiver dao *CategoryDAO
-//	@param db *gorm.DB
-//	@param userID uint
-//	@param fields []string
-//	@return category *model.Category
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-17 03:15:59
+//	receiver dao *CategoryDAO
+//	param db *gorm.DB
+//	param userID uint
+//	param fields []string
+//	return category *model.Category
+//	return err error
+//	author centonhuang
+//	update 2024-10-17 03:15:59
 func (dao *CategoryDAO) GetRootByUserID(db *gorm.DB, userID uint, fields, preloads []string) (category *model.Category, err error) {
 	sql := db.Select(fields)
 	for _, preload := range preloads {
@@ -105,12 +104,12 @@ func (dao *CategoryDAO) GetRootByUserID(db *gorm.DB, userID uint, fields, preloa
 
 // DeleteReclusiveByID 递归删除类别
 //
-//	@receiver dao *CategoryDAO
-//	@param db *gorm.DB
-//	@param id uint
-//	@return err error
-//	@author centonhuang
-//	@update 2024-10-17 03:36:05
+//	receiver dao *CategoryDAO
+//	param db *gorm.DB
+//	param id uint
+//	return err error
+//	author centonhuang
+//	update 2024-10-17 03:36:05
 func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint, fields, preloads []string) (err error) {
 	categories, err := dao.reclusiveFindChildrenIDsByID(db, id, fields, preloads)
 	if err != nil {

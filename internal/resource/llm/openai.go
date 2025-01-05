@@ -1,6 +1,6 @@
 // Package llm OpenAI客户端模块
 //
-//	@update 2024-12-09 16:00:18
+//	update 2024-12-09 16:00:18
 package llm
 
 import (
@@ -14,8 +14,8 @@ var client *openai.Client
 
 // InitOpenAIClient 初始化OpenAI客户端
 //
-//	@author centonhuang
-//	@update 2024-12-09 16:00:26
+//	author centonhuang
+//	update 2024-12-09 16:00:26
 func InitOpenAIClient() {
 	clientConfig := openai.DefaultConfig(config.OpenAIAPIKey)
 	clientConfig.BaseURL = config.OpenAIBaseURL
@@ -26,9 +26,9 @@ func InitOpenAIClient() {
 
 // GetOpenAIClient 获取OpenAI客户端
 //
-//	@return *openai.Client
-//	@author centonhuang
-//	@update 2024-12-09 16:00:31
+//	return *openai.Client
+//	author centonhuang
+//	update 2024-12-09 16:00:31
 func GetOpenAIClient() *openai.Client {
 	return client
 }

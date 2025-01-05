@@ -22,8 +22,8 @@ import (
 
 // AIService AI服务
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:57:43
+//	author centonhuang
+//	update 2025-01-05 17:57:43
 type AIService interface {
 	GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error)
 	GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error)
@@ -38,9 +38,9 @@ type AIService interface {
 
 // NewAIService 创建AI服务
 //
-//	@return AIService
-//	@author centonhuang
-//	@update 2025-01-05 17:57:43
+//	return AIService
+//	author centonhuang
+//	update 2025-01-05 17:57:43
 func NewAIService() AIService {
 	return &aiService{
 		db:                database.GetDBInstance(),
@@ -63,12 +63,12 @@ type aiService struct {
 
 // GetPrompt 获取提示词
 //
-//	@receiver s *aiService
-//	@param req *protocol.GetPromptRequest
-//	@return rsp *protocol.GetPromptResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:02:44
+//	receiver s *aiService
+//	param req *protocol.GetPromptRequest
+//	return rsp *protocol.GetPromptResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:02:44
 func (s *aiService) GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error) {
 	rsp = &protocol.GetPromptResponse{}
 	prompt, err := s.promptDAO.GetPromptByTaskAndVersion(s.db, model.Task(req.TaskName), req.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
@@ -100,12 +100,12 @@ func (s *aiService) GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.Get
 
 // GetLatestPrompt 获取最新提示词
 //
-//	@receiver s *aiService
-//	@param req *protocol.GetLatestPromptRequest
-//	@return rsp *protocol.GetLatestPromptResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:02:55
+//	receiver s *aiService
+//	param req *protocol.GetLatestPromptRequest
+//	return rsp *protocol.GetLatestPromptResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:02:55
 func (s *aiService) GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error) {
 	rsp = &protocol.GetLatestPromptResponse{}
 
@@ -138,12 +138,12 @@ func (s *aiService) GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *
 
 // ListPrompt 列出提示词
 //
-//	@receiver s *aiService
-//	@param req *protocol.ListPromptRequest
-//	@return rsp *protocol.ListPromptResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:02:55
+//	receiver s *aiService
+//	param req *protocol.ListPromptRequest
+//	return rsp *protocol.ListPromptResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:02:55
 func (s *aiService) ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error) {
 	rsp = &protocol.ListPromptResponse{}
 
@@ -184,12 +184,12 @@ func (s *aiService) ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.L
 
 // CreatePrompt 创建提示词
 //
-//	@receiver s *aiService
-//	@param req *protocol.CreatePromptRequest
-//	@return rsp *protocol.CreatePromptResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:03:07
+//	receiver s *aiService
+//	param req *protocol.CreatePromptRequest
+//	return rsp *protocol.CreatePromptResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:03:07
 func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error) {
 	contents := lo.Map(req.Templates, func(tmplate protocol.Template, _ int) string {
 		return tmplate.Content
@@ -246,12 +246,12 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 
 // GenerateContentCompletion 生成内容补全
 //
-//	@receiver s *aiService
-//	@param req *protocol.GenerateContentCompletionRequest
-//	@return rsp *protocol.GenerateContentCompletionResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:03:15
+//	receiver s *aiService
+//	param req *protocol.GenerateContentCompletionRequest
+//	return rsp *protocol.GenerateContentCompletionResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:03:15
 func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
 	rsp = &protocol.GenerateContentCompletionResponse{}
 
@@ -300,12 +300,12 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 
 // GenerateArticleSummary 生成文章总结
 //
-//	@receiver s *aiService
-//	@param req *protocol.GenerateArticleSummaryRequest
-//	@return rsp *protocol.GenerateArticleSummaryResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:03:21
+//	receiver s *aiService
+//	param req *protocol.GenerateArticleSummaryRequest
+//	return rsp *protocol.GenerateArticleSummaryResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:03:21
 func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
 	rsp = &protocol.GenerateArticleSummaryResponse{}
 
@@ -366,12 +366,12 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 
 // GenerateArticleTranslation 生成文章翻译
 //
-//	@receiver s *aiService
-//	@param req *protocol.GenerateArticleTranslationRequest
-//	@return rsp *protocol.GenerateArticleTranslationResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:03:27
+//	receiver s *aiService
+//	param req *protocol.GenerateArticleTranslationRequest
+//	return rsp *protocol.GenerateArticleTranslationResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:03:27
 func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error) {
 	// TODO: 实现
 	return nil, protocol.ErrInternalError
@@ -379,12 +379,12 @@ func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTransl
 
 // GenerateArticleQA 生成文章问答
 //
-//	@receiver s *aiService
-//	@param req *protocol.GenerateArticleQARequest
-//	@return rsp *protocol.GenerateArticleQAResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:03:44
+//	receiver s *aiService
+//	param req *protocol.GenerateArticleQARequest
+//	return rsp *protocol.GenerateArticleQAResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:03:44
 func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
 	rsp = &protocol.GenerateArticleQAResponse{}
 	user := lo.Must1(s.userDAO.GetByID(s.db, req.CurUserID, []string{"id", "llm_quota"}, []string{}))
@@ -444,12 +444,12 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 
 // GenerateTermExplaination 生成术语解释
 //
-//	@receiver s *aiService
-//	@param req *protocol.GenerateTermExplainationRequest
-//	@return rsp *protocol.GenerateTermExplainationResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 18:03:48
+//	receiver s *aiService
+//	param req *protocol.GenerateTermExplainationRequest
+//	return rsp *protocol.GenerateTermExplainationResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 18:03:48
 func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
 	rsp = &protocol.GenerateTermExplainationResponse{}
 

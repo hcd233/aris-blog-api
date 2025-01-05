@@ -20,8 +20,8 @@ const (
 
 // MarkdownPreprocessor markdown预处理器
 //
-//	@author centonhuang
-//	@update 2024-12-08 14:54:54
+//	author centonhuang
+//	update 2024-12-08 14:54:54
 type MarkdownPreprocessor struct {
 	Preprocessor[string, *document.TextDocument]
 	chunkSize               uint
@@ -34,12 +34,12 @@ type MarkdownPreprocessor struct {
 
 // NewMarkdownPreprocessor 创建markdown预处理器
 //
-//	@param chunkSize uint 块大小
-//	@param chunkOverlap uint 块重叠
-//	@param minHeaderLevel uint 最小标题等级（1-6），0表示使用默认值
-//	@return *MarkdownPreprocessor
-//	@author centonhuang
-//	@update 2024-12-08 14:57:33
+//	param chunkSize uint 块大小
+//	param chunkOverlap uint 块重叠
+//	param minHeaderLevel uint 最小标题等级（1-6），0表示使用默认值
+//	return *MarkdownPreprocessor
+//	author centonhuang
+//	update 2024-12-08 14:57:33
 func NewMarkdownPreprocessor(chunkSize, chunkOverlap uint, allowedSpecialTokens, disallowedSpecialTokens []string) *MarkdownPreprocessor {
 	if chunkSize == 0 {
 		chunkSize = defaultChunkSize
@@ -61,12 +61,12 @@ func NewMarkdownPreprocessor(chunkSize, chunkOverlap uint, allowedSpecialTokens,
 
 // Process 处理markdown文档
 //
-//	@receiver p *MarkdownPreprocessor
-//	@param source string
-//	@return documents []*document.TextDocument
-//	@return err error
-//	@author centonhuang
-//	@update 2024-12-08 15:02:45
+//	receiver p *MarkdownPreprocessor
+//	param source string
+//	return documents []*document.TextDocument
+//	return err error
+//	author centonhuang
+//	update 2024-12-08 15:02:45
 func (p *MarkdownPreprocessor) Process(source string) (documents []*document.TextDocument, err error) {
 	md := goldmark.New()
 	reader := text.NewReader([]byte(source))
@@ -178,10 +178,10 @@ func (p *MarkdownPreprocessor) Process(source string) (documents []*document.Tex
 
 // BatchProcess 批量处理文本
 //
-//	@receiver p *TokenPreprocessor
-//	@param sources []string
-//	@return []documentT
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param sources []string
+//	return []documentT
+//	return error
 func (p *MarkdownPreprocessor) BatchProcess(sources []string) ([]*document.TextDocument, error) {
 	var allChunks []*document.TextDocument
 
@@ -198,10 +198,10 @@ func (p *MarkdownPreprocessor) BatchProcess(sources []string) ([]*document.TextD
 
 // ProcessDocument 处理文档
 //
-//	@receiver p *TokenPreprocessor
-//	@param rawDocument *document.TextDocument
-//	@return []documentT
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param rawDocument *document.TextDocument
+//	return []documentT
+//	return error
 func (p *MarkdownPreprocessor) ProcessDocument(rawDocument *document.TextDocument) ([]*document.TextDocument, error) {
 	chunks, err := p.Process(rawDocument.Content)
 	if err != nil {
@@ -224,10 +224,10 @@ func (p *MarkdownPreprocessor) ProcessDocument(rawDocument *document.TextDocumen
 
 // BatchProcessDocument 批量处理文档
 //
-//	@receiver p *TokenPreprocessor
-//	@param rawDocuments []*document.TextDocument
-//	@return []documentT
-//	@return error
+//	receiver p *TokenPreprocessor
+//	param rawDocuments []*document.TextDocument
+//	return []documentT
+//	return error
 func (p *MarkdownPreprocessor) BatchProcessDocument(rawDocuments []*document.TextDocument) ([]*document.TextDocument, error) {
 	var allChunks []*document.TextDocument
 

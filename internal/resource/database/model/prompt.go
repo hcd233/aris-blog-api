@@ -6,14 +6,14 @@ import (
 
 // Task 任务类型
 //
-//	@author centonhuang
-//	@update 2024-12-09 16:13:30
+//	author centonhuang
+//	update 2024-12-09 16:13:30
 type Task string
 
 // Template 提示词模板
 //
-//	@author centonhuang
-//	@update 2024-12-09 16:13:30
+//	author centonhuang
+//	update 2024-12-09 16:13:30
 type Template struct {
 	Role    string `json:"role"`
 	Content string `json:"content"`
@@ -22,30 +22,30 @@ type Template struct {
 const (
 
 	// TaskContentCompletion Task 内容补全
-	//	@update 2024-12-09 16:13:42
+	//	update 2024-12-09 16:13:42
 	TaskContentCompletion Task = "contentCompletion"
 
 	// TaskArticleSummary Task 文章摘要
-	//	@update 2024-12-09 16:13:42
+	//	update 2024-12-09 16:13:42
 	TaskArticleSummary Task = "articleSummary"
 
 	// TaskArticleTranslation Task 文章翻译
-	//	@update 2024-12-09 16:13:42
+	//	update 2024-12-09 16:13:42
 	TaskArticleTranslation Task = "articleTranslation"
 
 	// TaskArticleQA Task 文章问答
-	//	@update 2024-12-09 16:13:42
+	//	update 2024-12-09 16:13:42
 	TaskArticleQA Task = "articleQA"
 
 	// TaskTermExplaination Task 术语解释
-	//	@update 2024-12-09 16:13:42
+	//	update 2024-12-09 16:13:42
 	TaskTermExplaination Task = "termExplaination"
 )
 
 // Prompt 提示词
 //
-//	@author centonhuang
-//	@update 2024-12-09 16:13:42
+//	author centonhuang
+//	update 2024-12-09 16:13:42
 type Prompt struct {
 	gorm.Model
 	ID        uint       `json:"id" gorm:"column:id;primary_key;auto_increment;comment:'提示词ID'"`

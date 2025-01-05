@@ -1,6 +1,6 @@
 // Package auth 鉴权
 //
-//	@update 2024-06-22 11:05:33
+//	update 2024-06-22 11:05:33
 package auth
 
 import (
@@ -12,8 +12,8 @@ import (
 
 // Claims 鉴权结构体
 //
-//	@author centonhuang
-//	@update 2024-06-22 11:07:06
+//	author centonhuang
+//	update 2024-06-22 11:07:06
 type Claims struct {
 	jwt.RegisteredClaims
 
@@ -22,8 +22,8 @@ type Claims struct {
 
 // JwtTokenSigner JWT token 生成器
 //
-//	@author centonhuang
-//	@update 2025-01-04 16:01:15
+//	author centonhuang
+//	update 2025-01-04 16:01:15
 type JwtTokenSigner interface {
 	EncodeToken(userID uint) (token string, err error)
 	DecodeToken(tokenString string) (userID uint, err error)
@@ -36,11 +36,11 @@ type jwtTokenSigner struct {
 
 // EncodeToken 生成JWT token
 //
-//	@param userID uint
-//	@return token string
-//	@return err error
-//	@author centonhuang
-//	@update 2024-09-21 02:57:11
+//	param userID uint
+//	return token string
+//	return err error
+//	author centonhuang
+//	update 2024-09-21 02:57:11
 func (s *jwtTokenSigner) EncodeToken(userID uint) (token string, err error) {
 	claims := Claims{
 		UserID: userID,
@@ -55,11 +55,11 @@ func (s *jwtTokenSigner) EncodeToken(userID uint) (token string, err error) {
 
 // DecodeToken 解析JWT token
 //
-//	@param tokenString string
-//	@return userID uint
-//	@return err error
-//	@author centonhuang
-//	@update 2024-06-22 11:25:00
+//	param tokenString string
+//	return userID uint
+//	return err error
+//	author centonhuang
+//	update 2024-06-22 11:25:00
 func (s *jwtTokenSigner) DecodeToken(tokenString string) (userID uint, err error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {

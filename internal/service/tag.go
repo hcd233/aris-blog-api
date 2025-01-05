@@ -16,8 +16,8 @@ import (
 
 // TagService 标签服务
 //
-//	@author centonhuang
-//	@update 2025-01-04 17:16:27
+//	author centonhuang
+//	update 2025-01-04 17:16:27
 type TagService interface {
 	CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error)
 	GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error)
@@ -37,9 +37,9 @@ type tagService struct {
 
 // NewTagService 创建标签服务
 //
-//	@return TagService
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	return TagService
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 func NewTagService() TagService {
 	return &tagService{
 		db:      database.GetDBInstance(),
@@ -50,12 +50,12 @@ func NewTagService() TagService {
 
 // CreateTag 创建标签
 //
-//	@receiver s *tagService
-//	@param req *protocol.CreateTagRequest
-//	@return rsp *protocol.CreateTagResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:33
+//	receiver s *tagService
+//	param req *protocol.CreateTagRequest
+//	return rsp *protocol.CreateTagResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:33
 func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error) {
 	rsp = &protocol.CreateTagResponse{}
 	tag := &model.Tag{
@@ -77,12 +77,12 @@ func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.Cr
 
 // GetTagInfo 获取标签信息
 //
-//	@receiver s *tagService
-//	@param req *protocol.GetTagInfoRequest
-//	@return rsp *protocol.GetTagInfoResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:46
+//	receiver s *tagService
+//	param req *protocol.GetTagInfoRequest
+//	return rsp *protocol.GetTagInfoResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:46
 func (s *tagService) GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error) {
 	rsp = &protocol.GetTagInfoResponse{}
 
@@ -114,12 +114,12 @@ func (s *tagService) GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.
 
 // UpdateTag 更新标签
 //
-//	@receiver s *tagService
-//	@param req *protocol.UpdateTagRequest
-//	@return rsp *protocol.UpdateTagResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:46
+//	receiver s *tagService
+//	param req *protocol.UpdateTagRequest
+//	return rsp *protocol.UpdateTagResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:46
 func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error) {
 	rsp = &protocol.UpdateTagResponse{}
 
@@ -174,12 +174,12 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 
 // DeleteTag
 //
-//	@receiver s *tagService
-//	@param req *protocol.DeleteTagRequest
-//	@return rsp *protocol.DeleteTagResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:48
+//	receiver s *tagService
+//	param req *protocol.DeleteTagRequest
+//	return rsp *protocol.DeleteTagResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:48
 func (s *tagService) DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error) {
 	rsp = &protocol.DeleteTagResponse{}
 
@@ -210,12 +210,12 @@ func (s *tagService) DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.De
 
 // ListTags
 //
-//	@receiver s *tagService
-//	@param req *protocol.ListTagsRequest
-//	@return rsp *protocol.ListTagsResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:50
+//	receiver s *tagService
+//	param req *protocol.ListTagsRequest
+//	return rsp *protocol.ListTagsResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:50
 func (s *tagService) ListTags(req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error) {
 	rsp = &protocol.ListTagsResponse{}
 
@@ -252,12 +252,12 @@ func (s *tagService) ListTags(req *protocol.ListTagsRequest) (rsp *protocol.List
 
 // ListUserTags 列出用户标签
 //
-//	@receiver s *tagService
-//	@param req *protocol.ListUserTagsRequest
-//	@return rsp *protocol.ListUserTagsResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 12:37:54
+//	receiver s *tagService
+//	param req *protocol.ListUserTagsRequest
+//	return rsp *protocol.ListUserTagsResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 12:37:54
 func (s *tagService) ListUserTags(*protocol.ListUserTagsRequest) (*protocol.ListUserTagsResponse, error) {
 	// TODO: 和合并标签合并
 	return nil, protocol.ErrNoImplement
@@ -265,12 +265,12 @@ func (s *tagService) ListUserTags(*protocol.ListUserTagsRequest) (*protocol.List
 
 // QueryTag
 //
-//	@receiver s *tagService
-//	@param req *protocol.QueryTagRequest
-//	@return rsp *protocol.QueryTagResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:53
+//	receiver s *tagService
+//	param req *protocol.QueryTagRequest
+//	return rsp *protocol.QueryTagResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:53
 func (s *tagService) QueryTag(*protocol.QueryTagRequest) (*protocol.QueryTagResponse, error) {
 	// TODO: 和合并标签合并
 	return nil, protocol.ErrNoImplement
@@ -278,12 +278,12 @@ func (s *tagService) QueryTag(*protocol.QueryTagRequest) (*protocol.QueryTagResp
 
 // QueryUserTag
 //
-//	@receiver s *tagService
-//	@param req *protocol.QueryUserTagRequest
-//	@return rsp *protocol.QueryUserTagResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 11:52:55
+//	receiver s *tagService
+//	param req *protocol.QueryUserTagRequest
+//	return rsp *protocol.QueryUserTagResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 11:52:55
 func (s *tagService) QueryUserTag(*protocol.QueryUserTagRequest) (*protocol.QueryUserTagResponse, error) {
 	// TODO: 和合并标签合并
 	return nil, protocol.ErrInternalError

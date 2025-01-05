@@ -31,8 +31,8 @@ var githubUserScopes = []string{"user:email", "repo", "read:org"}
 
 // Oauth2Service OAuth2服务
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:43:22
+//	author centonhuang
+//	update 2025-01-05 13:43:22
 type Oauth2Service interface {
 	Login(req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error)
 	Callback(req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error)
@@ -48,9 +48,9 @@ type githubOauth2Service struct {
 
 // NewGithubOauth2Service 创建OAuth2服务
 //
-//	@return Oauth2Service
-//	@author centonhuang
-//	@update 2025-01-05 13:43:24
+//	return Oauth2Service
+//	author centonhuang
+//	update 2025-01-05 13:43:24
 func NewGithubOauth2Service() Oauth2Service {
 	return &githubOauth2Service{
 		db:      database.GetDBInstance(),
@@ -69,11 +69,11 @@ func NewGithubOauth2Service() Oauth2Service {
 
 // Login 登录
 //
-//	@receiver s *oauth2Service
-//	@return rsp *protocol.LoginResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	receiver s *oauth2Service
+//	return rsp *protocol.LoginResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 func (s *githubOauth2Service) Login(*protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
 	rsp = &protocol.LoginResponse{}
 
@@ -87,12 +87,12 @@ func (s *githubOauth2Service) Login(*protocol.LoginRequest) (rsp *protocol.Login
 
 // Callback 回调
 //
-//	@receiver s *oauth2Service
-//	@param req *protocol.CallbackRequest
-//	@return rsp *protocol.CallbackResponse
-//	@return err error
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	receiver s *oauth2Service
+//	param req *protocol.CallbackRequest
+//	return rsp *protocol.CallbackResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
 	rsp = &protocol.CallbackResponse{}
 
@@ -197,12 +197,12 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 
 // getGithubUserInfo 获取Github用户信息
 //
-//	@receiver s *oauth2Service
-//	@param token *oauth2.Token
-//	@return map[string]interface{}
-//	@return error
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	receiver s *oauth2Service
+//	param token *oauth2.Token
+//	return map[string]interface{}
+//	return error
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
 	client := s.oauth2Config.Client(context.Background(), token)
 

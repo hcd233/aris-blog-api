@@ -1,6 +1,6 @@
 // Package cron 定时任务模块
 //
-//	@update 2024-12-09 15:55:25
+//	update 2024-12-09 15:55:25
 package cron
 
 import (
@@ -12,8 +12,8 @@ import (
 
 // InitCronJobs 初始化定时任务
 //
-//	@author centonhuang
-//	@update 2024-12-09 15:55:20
+//	author centonhuang
+//	update 2024-12-09 15:55:20
 func InitCronJobs() {
 	quotaCron := NewQuotaCron()
 	quotaCron.Start()

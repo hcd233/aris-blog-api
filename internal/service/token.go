@@ -1,6 +1,6 @@
 // Package service 业务逻辑
 //
-//	@update 2025-01-04 21:13:05
+//	update 2025-01-04 21:13:05
 package service
 
 import (
@@ -15,8 +15,8 @@ import (
 
 // TokenService 令牌服务
 //
-//	@author centonhuang
-//	@update 2025-01-04 17:16:27
+//	author centonhuang
+//	update 2025-01-04 17:16:27
 type TokenService interface {
 	RefreshToken(req *protocol.RefreshTokenRequest) (rsp *protocol.RefreshTokenResponse, err error)
 }
@@ -30,9 +30,9 @@ type tokenService struct {
 
 // NewTokenService 创建令牌服务
 //
-//	@return TokenService
-//	@author centonhuang
-//	@update 2025-01-04 17:18:59
+//	return TokenService
+//	author centonhuang
+//	update 2025-01-04 17:18:59
 func NewTokenService() TokenService {
 	return &tokenService{
 		db:                 database.GetDBInstance(),

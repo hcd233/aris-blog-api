@@ -8,8 +8,8 @@ import (
 
 // Relation 关系
 //
-//	@author centonhuang
-//	@update 2024-12-07 14:23:01
+//	author centonhuang
+//	update 2024-12-07 14:23:01
 type Relation struct {
 	TextDocument
 	Source Document
@@ -18,10 +18,10 @@ type Relation struct {
 
 // Map 转换为map
 //
-//	@receiver r *Relation
-//	@return map
-//	@author centonhuang
-//	@update 2024-12-07 14:38:45
+//	receiver r *Relation
+//	return map
+//	author centonhuang
+//	update 2024-12-07 14:38:45
 func (r *Relation) Map() map[string]interface{} {
 	return lo.Assign(map[string]interface{}{
 		"source": r.Source.Map(),
@@ -31,10 +31,10 @@ func (r *Relation) Map() map[string]interface{} {
 
 // String 转换为字符串
 //
-//	@receiver r *Relation
-//	@return string
-//	@author centonhuang
-//	@update 2024-12-07 14:39:15
+//	receiver r *Relation
+//	return string
+//	author centonhuang
+//	update 2024-12-07 14:39:15
 func (r *Relation) String() string {
 	str := r.TextDocument.String()
 	str += fmt.Sprintf("\t<source>\n\t%s\n\t</source>\n", r.Source.String())
@@ -44,8 +44,8 @@ func (r *Relation) String() string {
 
 // GraphDocument 图谱文档
 //
-//	@author centonhuang
-//	@update 2024-12-07 14:23:07
+//	author centonhuang
+//	update 2024-12-07 14:23:07
 type GraphDocument struct {
 	Name      string
 	Relations []Relation
@@ -53,10 +53,10 @@ type GraphDocument struct {
 
 // Map 转换为map
 //
-//	@receiver gd *GraphDocument
-//	@return map
-//	@author centonhuang
-//	@update 2024-12-07 14:30:44
+//	receiver gd *GraphDocument
+//	return map
+//	author centonhuang
+//	update 2024-12-07 14:30:44
 func (gd *GraphDocument) Map() map[string]interface{} {
 	return map[string]interface{}{
 		"name": gd.Name,

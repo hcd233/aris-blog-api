@@ -22,11 +22,11 @@ const (
 
 // SendHTTPResponse 发送HTTP响应
 //
-//	@param c *gin.Context
-//	@param data interface{}
-//	@param err error
-//	@author centonhuang
-//	@update 2025-01-04 17:34:06
+//	param c *gin.Context
+//	param data interface{}
+//	param err error
+//	author centonhuang
+//	update 2025-01-04 17:34:06
 func SendHTTPResponse(c *gin.Context, data interface{}, err error) {
 	switch err {
 	case protocol.ErrDataNotExists: // 404
@@ -74,12 +74,12 @@ func SendHTTPResponse(c *gin.Context, data interface{}, err error) {
 
 // SendStreamEventResponses 发送流式事件响应
 //
-//	@param c *gin.Context
-//	@param streamChan <-chan string
-//	@param errChan <-chan error
-//	@return err error
-//	@author centonhuang
-//	@update 2024-12-09 17:18:12
+//	param c *gin.Context
+//	param streamChan <-chan string
+//	param errChan <-chan error
+//	return err error
+//	author centonhuang
+//	update 2024-12-09 17:18:12
 func SendStreamEventResponses(c *gin.Context, streamChan <-chan string, errChan <-chan error) (err error) {
 	c.Header("Content-Type", "text/event-stream")
 	c.Header("Cache-Control", "no-cache")

@@ -4,8 +4,8 @@ import "gorm.io/gorm"
 
 // Comment 评论
 //
-//	@author centonhuang
-//	@update 2024-09-21 06:45:57
+//	author centonhuang
+//	update 2024-09-21 06:45:57
 type Comment struct {
 	gorm.Model
 	ID        uint      `json:"id" gorm:"column:id;primary_key;auto_increment;comment:'评论ID'"`

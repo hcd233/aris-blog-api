@@ -8,8 +8,8 @@ import (
 
 // PageInfo 分页信息
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:26:07
+//	author centonhuang
+//	update 2025-01-05 12:26:07
 type PageInfo struct {
 	Page     int   `json:"page"`
 	PageSize int   `json:"pageSize"`
@@ -18,8 +18,8 @@ type PageInfo struct {
 
 // QueryInfo 查询信息
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:32:25
+//	author centonhuang
+//	update 2025-01-05 12:32:25
 type QueryInfo struct {
 	PageInfo
 	Query  string   `json:"query"`
@@ -28,24 +28,24 @@ type QueryInfo struct {
 
 // PingResponse 健康检查响应
 //
-//	@author centonhuang
-//	@update 2025-01-04 20:47:11
+//	author centonhuang
+//	update 2025-01-04 20:47:11
 type PingResponse struct {
 	Status string `json:"status"`
 }
 
 // RefreshTokenRequest 刷新令牌请求
 //
-//	@author centonhuang
-//	@update 2025-01-04 17:16:09
+//	author centonhuang
+//	update 2025-01-04 17:16:09
 type RefreshTokenRequest struct {
 	RefreshToken string `json:"refreshToken"`
 }
 
 // RefreshTokenResponse 刷新令牌响应
 //
-//	@author centonhuang
-//	@update 2025-01-04 17:16:12
+//	author centonhuang
+//	update 2025-01-04 17:16:12
 type RefreshTokenResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
@@ -53,8 +53,8 @@ type RefreshTokenResponse struct {
 
 // User 用户
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:37:01
+//	author centonhuang
+//	update 2025-01-05 11:37:01
 type User struct {
 	UserID    uint   `json:"userID"`
 	Name      string `json:"name"`
@@ -66,8 +66,8 @@ type User struct {
 
 // CurUser 当前用户
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:37:32
+//	author centonhuang
+//	update 2025-01-05 11:37:32
 type CurUser struct {
 	User
 	Permission string `json:"permission"`
@@ -75,40 +75,40 @@ type CurUser struct {
 
 // GetCurUserInfoRequest 获取当前用户信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-04 21:00:54
+//	author centonhuang
+//	update 2025-01-04 21:00:54
 type GetCurUserInfoRequest struct {
 	CurUserID uint `json:"curUserID"`
 }
 
 // GetCurUserInfoResponse 获取当前用户信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-04 21:00:59
+//	author centonhuang
+//	update 2025-01-04 21:00:59
 type GetCurUserInfoResponse struct {
 	User *CurUser `json:"user"`
 }
 
 // GetUserInfoRequest 获取用户信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-04 21:19:41
+//	author centonhuang
+//	update 2025-01-04 21:19:41
 type GetUserInfoRequest struct {
 	UserName string `json:"userName"`
 }
 
 // GetUserInfoResponse 获取用户信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-04 21:19:44
+//	author centonhuang
+//	update 2025-01-04 21:19:44
 type GetUserInfoResponse struct {
 	User *User `json:"user"`
 }
 
 // UpdateUserInfoRequest 更新用户信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-04 21:19:47
+//	author centonhuang
+//	update 2025-01-04 21:19:47
 type UpdateUserInfoRequest struct {
 	CurUserName     string `json:"curUserName"`
 	UserName        string `json:"userName"`
@@ -117,22 +117,22 @@ type UpdateUserInfoRequest struct {
 
 // UpdateUserInfoResponse 更新用户信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:35:18
+//	author centonhuang
+//	update 2025-01-05 11:35:18
 type UpdateUserInfoResponse struct{}
 
 // QueryUserRequest 查询用户请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:35:17
+//	author centonhuang
+//	update 2025-01-05 11:35:17
 type QueryUserRequest struct {
 	QueryParam *QueryParam
 }
 
 // QueryUserResponse 查询用户响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:35:23
+//	author centonhuang
+//	update 2025-01-05 11:35:23
 type QueryUserResponse struct {
 	Users     []*User     `json:"users"`
 	QueryInfo *QueryParam `json:"queryInfo"`
@@ -140,8 +140,8 @@ type QueryUserResponse struct {
 
 // Tag 标签
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:05:42
+//	author centonhuang
+//	update 2025-01-05 12:05:42
 type Tag struct {
 	TagID       uint   `json:"tagID"`
 	Name        string `json:"name"`
@@ -155,8 +155,8 @@ type Tag struct {
 
 // CreateTagRequest 创建标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type CreateTagRequest struct {
 	CurUserID   uint   `json:"curUserID"`
 	Name        string `json:"name"`
@@ -166,30 +166,30 @@ type CreateTagRequest struct {
 
 // CreateTagResponse 创建标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type CreateTagResponse struct{}
 
 // GetTagInfoRequest 获取标签信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:03:33
+//	author centonhuang
+//	update 2025-01-05 12:03:33
 type GetTagInfoRequest struct {
 	TagSlug string `json:"tagSlug"`
 }
 
 // GetTagInfoResponse 获取标签信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type GetTagInfoResponse struct {
 	Tag *Tag `json:"tag"`
 }
 
 // UpdateTagRequest 更新标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:07:42
+//	author centonhuang
+//	update 2025-01-05 12:07:42
 type UpdateTagRequest struct {
 	CurUserID   uint   `json:"curUserID"`
 	TagSlug     string `json:"tagSlug"`
@@ -200,14 +200,14 @@ type UpdateTagRequest struct {
 
 // UpdateTagResponse 更新标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:07:42
+//	author centonhuang
+//	update 2025-01-05 12:07:42
 type UpdateTagResponse struct{}
 
 // DeleteTagRequest 删除标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type DeleteTagRequest struct {
 	CurUserID uint   `json:"curUserID"`
 	TagName   string `json:"tagName"`
@@ -215,22 +215,22 @@ type DeleteTagRequest struct {
 
 // DeleteTagResponse 删除标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type DeleteTagResponse struct{}
 
 // ListTagsRequest 列出标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type ListTagsRequest struct {
 	PageParam *PageParam
 }
 
 // ListTagsResponse 列出标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 11:48:36
+//	author centonhuang
+//	update 2025-01-05 11:48:36
 type ListTagsResponse struct {
 	Tags     []*Tag    `json:"tags"`
 	PageInfo *PageInfo `json:"pageInfo"`
@@ -238,8 +238,8 @@ type ListTagsResponse struct {
 
 // ListUserTagsRequest 列出用户标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:35
+//	author centonhuang
+//	update 2025-01-05 13:23:35
 type ListUserTagsRequest struct {
 	UserName  string
 	PageParam *PageParam
@@ -247,8 +247,8 @@ type ListUserTagsRequest struct {
 
 // ListUserTagsResponse 列出用户标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:37
+//	author centonhuang
+//	update 2025-01-05 13:23:37
 type ListUserTagsResponse struct {
 	Tags     []*Tag    `json:"tags"`
 	PageInfo *PageInfo `json:"pageInfo"`
@@ -256,16 +256,16 @@ type ListUserTagsResponse struct {
 
 // QueryTagRequest 查询标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:37:54
+//	author centonhuang
+//	update 2025-01-05 12:37:54
 type QueryTagRequest struct {
 	QueryParam *QueryParam
 }
 
 // QueryTagResponse 查询标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:37:54
+//	author centonhuang
+//	update 2025-01-05 12:37:54
 type QueryTagResponse struct {
 	Tags      []*Tag      `json:"tags"`
 	QueryInfo *QueryParam `json:"queryInfo"`
@@ -273,8 +273,8 @@ type QueryTagResponse struct {
 
 // QueryUserTagRequest 查询用户标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:37:54
+//	author centonhuang
+//	update 2025-01-05 12:37:54
 type QueryUserTagRequest struct {
 	UserName   string
 	QueryParam *QueryParam
@@ -282,8 +282,8 @@ type QueryUserTagRequest struct {
 
 // QueryUserTagResponse 查询用户标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 12:37:54
+//	author centonhuang
+//	update 2025-01-05 12:37:54
 type QueryUserTagResponse struct {
 	Tags      []*Tag      `json:"tags"`
 	QueryInfo *QueryParam `json:"queryInfo"`
@@ -291,8 +291,8 @@ type QueryUserTagResponse struct {
 
 // Category 分类
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:22:49
+//	author centonhuang
+//	update 2025-01-05 13:22:49
 type Category struct {
 	CategoryID uint   `json:"categoryID"`
 	Name       string `json:"name"`
@@ -303,8 +303,8 @@ type Category struct {
 
 // Article 文章
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type Article struct {
 	ArticleID   uint     `json:"articleID"`
 	Title       string   `json:"title"`
@@ -322,8 +322,8 @@ type Article struct {
 
 // CreateCategoryRequest 创建分类请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:22:59
+//	author centonhuang
+//	update 2025-01-05 13:22:59
 type CreateCategoryRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -333,16 +333,16 @@ type CreateCategoryRequest struct {
 
 // CreateCategoryResponse 创建分类响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:01
+//	author centonhuang
+//	update 2025-01-05 13:23:01
 type CreateCategoryResponse struct {
 	Category *Category `json:"category"`
 }
 
 // GetCategoryInfoRequest 获取分类信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:03
+//	author centonhuang
+//	update 2025-01-05 13:23:03
 type GetCategoryInfoRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -351,16 +351,16 @@ type GetCategoryInfoRequest struct {
 
 // GetCategoryInfoResponse 获取分类信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:06
+//	author centonhuang
+//	update 2025-01-05 13:23:06
 type GetCategoryInfoResponse struct {
 	Category *Category `json:"category"`
 }
 
 // GetRootCategoryRequest 获取根分类请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:08
+//	author centonhuang
+//	update 2025-01-05 13:23:08
 type GetRootCategoryRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -368,16 +368,16 @@ type GetRootCategoryRequest struct {
 
 // GetRootCategoryResponse 获取根分类响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:13
+//	author centonhuang
+//	update 2025-01-05 13:23:13
 type GetRootCategoryResponse struct {
 	Category *Category `json:"category"`
 }
 
 // UpdateCategoryRequest 更新分类请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:14
+//	author centonhuang
+//	update 2025-01-05 13:23:14
 type UpdateCategoryRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -388,16 +388,16 @@ type UpdateCategoryRequest struct {
 
 // UpdateCategoryResponse 更新分类响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:16
+//	author centonhuang
+//	update 2025-01-05 13:23:16
 type UpdateCategoryResponse struct {
 	Category *Category `json:"category"`
 }
 
 // DeleteCategoryRequest 删除分类请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:18
+//	author centonhuang
+//	update 2025-01-05 13:23:18
 type DeleteCategoryRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -406,14 +406,14 @@ type DeleteCategoryRequest struct {
 
 // DeleteCategoryResponse 删除分类响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:20
+//	author centonhuang
+//	update 2025-01-05 13:23:20
 type DeleteCategoryResponse struct{}
 
 // ListChildrenCategoriesRequest 列出子分类请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:21
+//	author centonhuang
+//	update 2025-01-05 13:23:21
 type ListChildrenCategoriesRequest struct {
 	CurUserName string     `json:"curUserName"`
 	UserName    string     `json:"userName"`
@@ -423,8 +423,8 @@ type ListChildrenCategoriesRequest struct {
 
 // ListChildrenCategoriesResponse 列出子分类响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:23
+//	author centonhuang
+//	update 2025-01-05 13:23:23
 type ListChildrenCategoriesResponse struct {
 	Categories []*Category `json:"categories"`
 	PageInfo   *PageInfo   `json:"pageInfo"`
@@ -432,8 +432,8 @@ type ListChildrenCategoriesResponse struct {
 
 // ListChildrenArticlesRequest 列出子文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:25
+//	author centonhuang
+//	update 2025-01-05 13:23:25
 type ListChildrenArticlesRequest struct {
 	CurUserName string     `json:"curUserName"`
 	UserName    string     `json:"userName"`
@@ -443,8 +443,8 @@ type ListChildrenArticlesRequest struct {
 
 // ListChildrenArticlesResponse 列出子文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 13:23:26
+//	author centonhuang
+//	update 2025-01-05 13:23:26
 type ListChildrenArticlesResponse struct {
 	Articles []*Article `json:"articles"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -452,22 +452,22 @@ type ListChildrenArticlesResponse struct {
 
 // LoginRequest OAuth2登录请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 type LoginRequest struct{}
 
 // LoginResponse OAuth2登录响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 type LoginResponse struct {
 	RedirectURL string `json:"redirectURL"`
 }
 
 // CallbackRequest OAuth2回调请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 type CallbackRequest struct {
 	Code  string `json:"code"`
 	State string `json:"state"`
@@ -475,8 +475,8 @@ type CallbackRequest struct {
 
 // CallbackResponse OAuth2回调响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 14:23:26
+//	author centonhuang
+//	update 2025-01-05 14:23:26
 type CallbackResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
@@ -484,8 +484,8 @@ type CallbackResponse struct {
 
 // CreateArticleRequest 创建文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type CreateArticleRequest struct {
 	CurUserName string   `json:"curUserName"`
 	UserName    string   `json:"userName"`
@@ -498,14 +498,14 @@ type CreateArticleRequest struct {
 
 // CreateArticleResponse 创建文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type CreateArticleResponse struct{}
 
 // GetArticleInfoRequest 获取文章信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type GetArticleInfoRequest struct {
 	UserName    string `json:"userName"`
 	ArticleSlug string `json:"articleSlug"`
@@ -513,16 +513,16 @@ type GetArticleInfoRequest struct {
 
 // GetArticleInfoResponse 获取文章信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type GetArticleInfoResponse struct {
 	Article *Article `json:"article"`
 }
 
 // UpdateArticleRequest 更新文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type UpdateArticleRequest struct {
 	CurUserName       string `json:"curUserName"`
 	UserName          string `json:"userName"`
@@ -534,14 +534,14 @@ type UpdateArticleRequest struct {
 
 // UpdateArticleResponse 更新文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type UpdateArticleResponse struct{}
 
 // UpdateArticleStatusRequest 更新文章状态请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type UpdateArticleStatusRequest struct {
 	CurUserName string              `json:"curUserName"`
 	UserName    string              `json:"userName"`
@@ -551,14 +551,14 @@ type UpdateArticleStatusRequest struct {
 
 // UpdateArticleStatusResponse 更新文章状态响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type UpdateArticleStatusResponse struct{}
 
 // DeleteArticleRequest 删除文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type DeleteArticleRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -567,22 +567,22 @@ type DeleteArticleRequest struct {
 
 // DeleteArticleResponse 删除文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type DeleteArticleResponse struct{}
 
 // ListArticlesRequest 列出文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type ListArticlesRequest struct {
 	PageParam *PageParam `json:"pageParam"`
 }
 
 // ListArticlesResponse 列出文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type ListArticlesResponse struct {
 	Articles []*Article `json:"articles"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -590,8 +590,8 @@ type ListArticlesResponse struct {
 
 // ListUserArticlesRequest 列出用户文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type ListUserArticlesRequest struct {
 	UserName  string     `json:"userName"`
 	PageParam *PageParam `json:"pageParam"`
@@ -599,8 +599,8 @@ type ListUserArticlesRequest struct {
 
 // ListUserArticlesResponse 列出用户文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type ListUserArticlesResponse struct {
 	Articles []*Article `json:"articles"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -608,24 +608,24 @@ type ListUserArticlesResponse struct {
 
 // QueryArticleRequest 查询文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type QueryArticleRequest struct {
 	QueryParam *QueryParam `json:"queryParam"`
 }
 
 // QueryArticleResponse 查询文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type QueryArticleResponse struct {
 	QueryInfo *QueryParam `json:"queryInfo"`
 }
 
 // QueryUserArticleRequest 查询用户文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type QueryUserArticleRequest struct {
 	UserName   string      `json:"userName"`
 	QueryParam *QueryParam `json:"queryParam"`
@@ -633,8 +633,8 @@ type QueryUserArticleRequest struct {
 
 // QueryUserArticleResponse 查询用户文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 15:23:26
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 type QueryUserArticleResponse struct {
 	QueryInfo *QueryParam `json:"queryInfo"`
 }
@@ -651,8 +651,8 @@ type ArticleVersion struct {
 
 // CreateArticleVersionRequest 创建文章版本请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type CreateArticleVersionRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -662,14 +662,14 @@ type CreateArticleVersionRequest struct {
 
 // CreateArticleVersionResponse 创建文章版本响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type CreateArticleVersionResponse struct{}
 
 // GetArticleVersionInfoRequest 获取文章版本信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type GetArticleVersionInfoRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -679,16 +679,16 @@ type GetArticleVersionInfoRequest struct {
 
 // GetArticleVersionInfoResponse 获取文章版本信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type GetArticleVersionInfoResponse struct {
 	Version *ArticleVersion `json:"version"`
 }
 
 // GetLatestArticleVersionInfoRequest 获取最新文章版本信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type GetLatestArticleVersionInfoRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -697,16 +697,16 @@ type GetLatestArticleVersionInfoRequest struct {
 
 // GetLatestArticleVersionInfoResponse 获取最新文章版本信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type GetLatestArticleVersionInfoResponse struct {
 	Version *ArticleVersion `json:"version"`
 }
 
 // ListArticleVersionsRequest 列出文章版本请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type ListArticleVersionsRequest struct {
 	CurUserName string     `json:"curUserName"`
 	UserName    string     `json:"userName"`
@@ -716,8 +716,8 @@ type ListArticleVersionsRequest struct {
 
 // ListArticleVersionsResponse 列出文章版本响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type ListArticleVersionsResponse struct {
 	Versions []*ArticleVersion `json:"versions"`
 	PageInfo *PageInfo         `json:"pageInfo"`
@@ -725,8 +725,8 @@ type ListArticleVersionsResponse struct {
 
 // LikeArticleRequest 点赞文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:42:48
+//	author centonhuang
+//	update 2025-01-05 16:42:48
 type LikeArticleRequest struct {
 	CurUserID   uint   `json:"curUserID"`
 	Author      string `json:"author"`
@@ -736,14 +736,14 @@ type LikeArticleRequest struct {
 
 // LikeArticleResponse 点赞文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:09
+//	author centonhuang
+//	update 2025-01-05 16:43:09
 type LikeArticleResponse struct{}
 
 // LikeCommentRequest 点赞评论请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:20
+//	author centonhuang
+//	update 2025-01-05 16:43:20
 type LikeCommentRequest struct {
 	CurUserID uint `json:"curUserID"`
 	CommentID uint `json:"commentID"`
@@ -752,14 +752,14 @@ type LikeCommentRequest struct {
 
 // LikeCommentResponse 点赞评论响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:21
+//	author centonhuang
+//	update 2025-01-05 16:43:21
 type LikeCommentResponse struct{}
 
 // LikeTagRequest 点赞标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:23
+//	author centonhuang
+//	update 2025-01-05 16:43:23
 type LikeTagRequest struct {
 	CurUserID uint   `json:"curUserID"`
 	TagSlug   string `json:"tagSlug"`
@@ -768,14 +768,14 @@ type LikeTagRequest struct {
 
 // LikeTagResponse 点赞标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:25
+//	author centonhuang
+//	update 2025-01-05 16:43:25
 type LikeTagResponse struct{}
 
 // LogArticleViewRequest 记录文章浏览请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:26
+//	author centonhuang
+//	update 2025-01-05 16:43:26
 type LogArticleViewRequest struct {
 	CurUserID   uint   `json:"curUserID"`
 	Author      string `json:"author"`
@@ -785,14 +785,14 @@ type LogArticleViewRequest struct {
 
 // LogArticleViewResponse 记录文章浏览响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:28
+//	author centonhuang
+//	update 2025-01-05 16:43:28
 type LogArticleViewResponse struct{}
 
 // Comment 评论
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:29
+//	author centonhuang
+//	update 2025-01-05 16:43:29
 type Comment struct {
 	CommentID uint   `json:"commentID"`
 	Content   string `json:"content"`
@@ -804,8 +804,8 @@ type Comment struct {
 
 // CreateArticleCommentRequest 创建文章评论请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:31
+//	author centonhuang
+//	update 2025-01-05 16:43:31
 type CreateArticleCommentRequest struct {
 	CurUserID   uint   `json:"curUserID"`
 	Author      string `json:"author"`
@@ -816,16 +816,16 @@ type CreateArticleCommentRequest struct {
 
 // CreateArticleCommentResponse 创建文章评论响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:33
+//	author centonhuang
+//	update 2025-01-05 16:43:33
 type CreateArticleCommentResponse struct {
 	Comment *Comment `json:"comment"`
 }
 
 // GetCommentInfoRequest 获取评论信息请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:34
+//	author centonhuang
+//	update 2025-01-05 16:43:34
 type GetCommentInfoRequest struct {
 	UserName    string `json:"userName"`
 	ArticleSlug string `json:"articleSlug"`
@@ -834,16 +834,16 @@ type GetCommentInfoRequest struct {
 
 // GetCommentInfoResponse 获取评论信息响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:36
+//	author centonhuang
+//	update 2025-01-05 16:43:36
 type GetCommentInfoResponse struct {
 	Comment *Comment `json:"comment"`
 }
 
 // DeleteCommentRequest 删除评论请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:38
+//	author centonhuang
+//	update 2025-01-05 16:43:38
 type DeleteCommentRequest struct {
 	CurUserName string `json:"curUserName"`
 	UserName    string `json:"userName"`
@@ -853,14 +853,14 @@ type DeleteCommentRequest struct {
 
 // DeleteCommentResponse 删除评论响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:39
+//	author centonhuang
+//	update 2025-01-05 16:43:39
 type DeleteCommentResponse struct{}
 
 // ListArticleCommentsRequest 列出文章评论请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:41
+//	author centonhuang
+//	update 2025-01-05 16:43:41
 type ListArticleCommentsRequest struct {
 	CurUserName string     `json:"curUserName"`
 	UserName    string     `json:"userName"`
@@ -870,8 +870,8 @@ type ListArticleCommentsRequest struct {
 
 // ListArticleCommentsResponse 列出文章评论响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:43
+//	author centonhuang
+//	update 2025-01-05 16:43:43
 type ListArticleCommentsResponse struct {
 	Comments []*Comment `json:"comments"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -879,8 +879,8 @@ type ListArticleCommentsResponse struct {
 
 // ListChildrenCommentsRequest 列出子评论请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:44
+//	author centonhuang
+//	update 2025-01-05 16:43:44
 type ListChildrenCommentsRequest struct {
 	UserName    string     `json:"userName"`
 	ArticleSlug string     `json:"articleSlug"`
@@ -890,8 +890,8 @@ type ListChildrenCommentsRequest struct {
 
 // ListChildrenCommentsResponse 列出子评论响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:46
+//	author centonhuang
+//	update 2025-01-05 16:43:46
 type ListChildrenCommentsResponse struct {
 	Comments []*Comment `json:"comments"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -899,8 +899,8 @@ type ListChildrenCommentsResponse struct {
 
 // ListUserLikeArticlesRequest 列出用户喜欢的文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:48
+//	author centonhuang
+//	update 2025-01-05 16:43:48
 type ListUserLikeArticlesRequest struct {
 	CurUserID uint       `json:"curUserID"`
 	PageParam *PageParam `json:"pageParam"`
@@ -908,8 +908,8 @@ type ListUserLikeArticlesRequest struct {
 
 // ListUserLikeArticlesResponse 列出用户喜欢的文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:50
+//	author centonhuang
+//	update 2025-01-05 16:43:50
 type ListUserLikeArticlesResponse struct {
 	Articles []*Article `json:"articles"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -917,8 +917,8 @@ type ListUserLikeArticlesResponse struct {
 
 // ListUserLikeCommentsRequest 列出用户喜欢的评论请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:52
+//	author centonhuang
+//	update 2025-01-05 16:43:52
 type ListUserLikeCommentsRequest struct {
 	CurUserID uint       `json:"curUserID"`
 	PageParam *PageParam `json:"pageParam"`
@@ -926,8 +926,8 @@ type ListUserLikeCommentsRequest struct {
 
 // ListUserLikeCommentsResponse 列出用户喜欢的评论响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:54
+//	author centonhuang
+//	update 2025-01-05 16:43:54
 type ListUserLikeCommentsResponse struct {
 	Comments []*Comment `json:"comments"`
 	PageInfo *PageInfo  `json:"pageInfo"`
@@ -935,8 +935,8 @@ type ListUserLikeCommentsResponse struct {
 
 // ListUserLikeTagsRequest 列出用户喜欢的标签请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:56
+//	author centonhuang
+//	update 2025-01-05 16:43:56
 type ListUserLikeTagsRequest struct {
 	CurUserID uint       `json:"curUserID"`
 	PageParam *PageParam `json:"pageParam"`
@@ -944,8 +944,8 @@ type ListUserLikeTagsRequest struct {
 
 // ListUserLikeTagsResponse 列出用户喜欢的标签响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 16:43:58
+//	author centonhuang
+//	update 2025-01-05 16:43:58
 type ListUserLikeTagsResponse struct {
 	Tags     []*Tag    `json:"tags"`
 	PageInfo *PageInfo `json:"pageInfo"`
@@ -953,22 +953,22 @@ type ListUserLikeTagsResponse struct {
 
 // CreateBucketRequest 创建桶请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:19
+//	author centonhuang
+//	update 2025-01-05 17:03:19
 type CreateBucketRequest struct {
 	CurUserID uint `json:"curUserID"`
 }
 
 // CreateBucketResponse 创建桶响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:21
+//	author centonhuang
+//	update 2025-01-05 17:03:21
 type CreateBucketResponse struct{}
 
 // Image 图片
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:17:53
+//	author centonhuang
+//	update 2025-01-05 17:17:53
 type Image struct {
 	Name      string `json:"name"`
 	Size      int64  `json:"size"`
@@ -977,24 +977,24 @@ type Image struct {
 
 // ListImagesRequest 列出图片请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:22
+//	author centonhuang
+//	update 2025-01-05 17:03:22
 type ListImagesRequest struct {
 	CurUserID uint `json:"curUserID"`
 }
 
 // ListImagesResponse 列出图片响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:24
+//	author centonhuang
+//	update 2025-01-05 17:03:24
 type ListImagesResponse struct {
 	Images []*Image `json:"images"`
 }
 
 // UploadImageRequest 上传图片请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:25
+//	author centonhuang
+//	update 2025-01-05 17:03:25
 type UploadImageRequest struct {
 	CurUserID   uint   `json:"curUserID"`
 	FileName    string `json:"fileName"`
@@ -1005,14 +1005,14 @@ type UploadImageRequest struct {
 
 // UploadImageResponse 上传图片响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:27
+//	author centonhuang
+//	update 2025-01-05 17:03:27
 type UploadImageResponse struct{}
 
 // GetImageRequest 获取图片请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:28
+//	author centonhuang
+//	update 2025-01-05 17:03:28
 type GetImageRequest struct {
 	CurUserID uint   `json:"curUserID"`
 	ImageName string `json:"imageName"`
@@ -1021,16 +1021,16 @@ type GetImageRequest struct {
 
 // GetImageResponse 获取图片响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:30
+//	author centonhuang
+//	update 2025-01-05 17:03:30
 type GetImageResponse struct {
 	PresignedURL string `json:"presignedURL"`
 }
 
 // DeleteImageRequest 删除图片请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:31
+//	author centonhuang
+//	update 2025-01-05 17:03:31
 type DeleteImageRequest struct {
 	CurUserID uint   `json:"curUserID"`
 	ImageName string `json:"imageName"`
@@ -1038,14 +1038,14 @@ type DeleteImageRequest struct {
 
 // DeleteImageResponse 删除图片响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:33
+//	author centonhuang
+//	update 2025-01-05 17:03:33
 type DeleteImageResponse struct{}
 
 // UserView 用户浏览
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:53:09
+//	author centonhuang
+//	update 2025-01-05 17:53:09
 type UserView struct {
 	ID           uint   `json:"id"`
 	Progress     int8   `json:"progress"`
@@ -1056,8 +1056,8 @@ type UserView struct {
 
 // ListUserViewArticlesRequest 列出用户浏览的文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:38
+//	author centonhuang
+//	update 2025-01-05 17:03:38
 type ListUserViewArticlesRequest struct {
 	CurUserID uint       `json:"curUserID"`
 	PageParam *PageParam `json:"pageParam"`
@@ -1065,8 +1065,8 @@ type ListUserViewArticlesRequest struct {
 
 // ListUserViewArticlesResponse 列出用户浏览的文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:40
+//	author centonhuang
+//	update 2025-01-05 17:03:40
 type ListUserViewArticlesResponse struct {
 	UserViews []*UserView `json:"userViews"`
 	PageInfo  *PageInfo   `json:"pageInfo"`
@@ -1074,8 +1074,8 @@ type ListUserViewArticlesResponse struct {
 
 // DeleteUserViewRequest 删除用户浏览的文章请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:41
+//	author centonhuang
+//	update 2025-01-05 17:03:41
 type DeleteUserViewRequest struct {
 	CurUserID uint `json:"curUserID"`
 	ViewID    uint `json:"viewID"`
@@ -1083,14 +1083,14 @@ type DeleteUserViewRequest struct {
 
 // DeleteUserViewResponse 删除用户浏览的文章响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 17:03:43
+//	author centonhuang
+//	update 2025-01-05 17:03:43
 type DeleteUserViewResponse struct{}
 
 // Prompt 提示词
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:07:58
+//	author centonhuang
+//	update 2025-01-05 18:07:58
 type Prompt struct {
 	ID        uint       `json:"id"`
 	CreatedAt string     `json:"createdAt"`
@@ -1102,8 +1102,8 @@ type Prompt struct {
 
 // GetPromptRequest 获取提示词请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:01:30
+//	author centonhuang
+//	update 2025-01-05 18:01:30
 type GetPromptRequest struct {
 	TaskName string `json:"taskName"`
 	Version  uint   `json:"version"`
@@ -1111,32 +1111,32 @@ type GetPromptRequest struct {
 
 // GetPromptResponse 获取提示词响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:01:30
+//	author centonhuang
+//	update 2025-01-05 18:01:30
 type GetPromptResponse struct {
 	Prompt *Prompt `json:"prompt"`
 }
 
 // GetLatestPromptRequest 获取最新提示词请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:10:46
+//	author centonhuang
+//	update 2025-01-05 18:10:46
 type GetLatestPromptRequest struct {
 	TaskName string `json:"taskName"`
 }
 
 // GetLatestPromptResponse 获取最新提示词响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:10:51
+//	author centonhuang
+//	update 2025-01-05 18:10:51
 type GetLatestPromptResponse struct {
 	Prompt *Prompt `json:"prompt"`
 }
 
 // ListPromptRequest 列出提示词请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:13:20
+//	author centonhuang
+//	update 2025-01-05 18:13:20
 type ListPromptRequest struct {
 	TaskName  string     `json:"taskName"`
 	PageParam *PageParam `json:"pageParam"`
@@ -1144,8 +1144,8 @@ type ListPromptRequest struct {
 
 // ListPromptResponse 列出提示词响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:13:22
+//	author centonhuang
+//	update 2025-01-05 18:13:22
 type ListPromptResponse struct {
 	Prompts  []*Prompt `json:"prompts"`
 	PageInfo *PageInfo `json:"pageInfo"`
@@ -1153,8 +1153,8 @@ type ListPromptResponse struct {
 
 // CreatePromptRequest 创建提示词请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:16:13
+//	author centonhuang
+//	update 2025-01-05 18:16:13
 type CreatePromptRequest struct {
 	TaskName  string     `json:"taskName"`
 	Templates []Template `json:"templates"`
@@ -1162,14 +1162,14 @@ type CreatePromptRequest struct {
 
 // CreatePromptResponse 创建提示词响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:16:13
+//	author centonhuang
+//	update 2025-01-05 18:16:13
 type CreatePromptResponse struct{}
 
 // GenerateContentCompletionRequest 生成内容完成请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateContentCompletionRequest struct {
 	CurUserID   uint    `json:"curUserID"`
 	Context     string  `json:"context"`
@@ -1180,8 +1180,8 @@ type GenerateContentCompletionRequest struct {
 
 // GenerateContentCompletionResponse 生成内容完成响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateContentCompletionResponse struct {
 	TokenChan <-chan string
 	ErrChan   <-chan error
@@ -1189,8 +1189,8 @@ type GenerateContentCompletionResponse struct {
 
 // GenerateArticleSummaryRequest 生成文章总结请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateArticleSummaryRequest struct {
 	CurUserID   uint    `json:"curUserID"`
 	ArticleSlug string  `json:"articleSlug"`
@@ -1200,8 +1200,8 @@ type GenerateArticleSummaryRequest struct {
 
 // GenerateArticleSummaryResponse 生成文章总结响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateArticleSummaryResponse struct {
 	TokenChan <-chan string
 	ErrChan   <-chan error
@@ -1209,20 +1209,20 @@ type GenerateArticleSummaryResponse struct {
 
 // GenerateArticleTranslationRequest 生成文章翻译请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 20:36:40
+//	author centonhuang
+//	update 2025-01-05 20:36:40
 type GenerateArticleTranslationRequest struct{}
 
 // GenerateArticleTranslationResponse 生成文章翻译响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 20:36:43
+//	author centonhuang
+//	update 2025-01-05 20:36:43
 type GenerateArticleTranslationResponse struct{}
 
 // GenerateArticleQARequest 生成文章问答请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateArticleQARequest struct {
 	CurUserID   uint    `json:"curUserID"`
 	ArticleSlug string  `json:"articleSlug"`
@@ -1232,8 +1232,8 @@ type GenerateArticleQARequest struct {
 
 // GenerateArticleQAResponse 生成文章问答响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateArticleQAResponse struct {
 	TokenChan <-chan string
 	ErrChan   <-chan error
@@ -1241,8 +1241,8 @@ type GenerateArticleQAResponse struct {
 
 // GenerateTermExplainationRequest 生成术语解释请求
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateTermExplainationRequest struct {
 	CurUserID   uint    `json:"curUserID"`
 	ArticleSlug string  `json:"articleSlug"`
@@ -1253,8 +1253,8 @@ type GenerateTermExplainationRequest struct {
 
 // GenerateTermExplainationResponse 生成术语解释响应
 //
-//	@author centonhuang
-//	@update 2025-01-05 18:41:32
+//	author centonhuang
+//	update 2025-01-05 18:41:32
 type GenerateTermExplainationResponse struct {
 	TokenChan <-chan string
 	ErrChan   <-chan error
