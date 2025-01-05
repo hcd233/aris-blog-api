@@ -1,15 +1,10 @@
 package handler
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/database"
-	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
-	"github.com/samber/lo"
-	"gorm.io/gorm"
+	"github.com/hcd233/Aris-blog/internal/service"
+	"github.com/hcd233/Aris-blog/internal/util"
 )
 
 // CategoryHandler 分类服务
@@ -27,10 +22,7 @@ type CategoryHandler interface {
 }
 
 type categoryHandler struct {
-	db          *gorm.DB
-	userDAO     *dao.UserDAO
-	categoryDAO *dao.CategoryDAO
-	articleDAO  *dao.ArticleDAO
+	svc service.CategoryService
 }
 
 // NewCategoryHandler 创建分类处理器
@@ -40,10 +32,7 @@ type categoryHandler struct {
 //	@update 2024-12-08 16:5CategoryHandler
 func NewCategoryHandler() CategoryHandler {
 	return &categoryHandler{
-		db:          database.GetDBInstance(),
-		userDAO:     dao.GetUserDAO(),
-		categoryDAO: dao.GetCategoryDAO(),
-		articleDAO:  dao.GetArticleDAO(),
+		svc: service.NewCategoryService(),
 	}
 }
 
@@ -57,56 +46,16 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to create other user's category",
-		})
-		return
+	req := &protocol.CreateCategoryRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
+		Name:        body.Name,
+		ParentID:    body.ParentID,
 	}
 
-	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.CreateCategory(req)
 
-	var parentCategory *model.Category
-	if body.ParentID == 0 {
-		parentCategory, err = h.categoryDAO.GetRootByUserID(h.db, user.ID, []string{"id"}, []string{})
-	} else {
-		parentCategory, err = h.categoryDAO.GetByID(h.db, body.ParentID, []string{"id"}, []string{})
-	}
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-	body.ParentID = parentCategory.ID
-
-	category := &model.Category{
-		Name:     body.Name,
-		ParentID: body.ParentID,
-		UserID:   user.ID,
-	}
-
-	if err := h.categoryDAO.Create(h.db, category); err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeCreateCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: category.GetBasicInfo(),
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }
 
 // GetCategoryInfoHandler 获取分类信息
@@ -118,41 +67,18 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's category",
-		})
-		return
+	req := &protocol.GetCategoryInfoRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
+		CategoryID:  uri.CategoryID,
 	}
 
-	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.GetCategoryInfo(req)
 
-	category, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"category": category.GetBasicInfo(),
-		},
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }
 
-// ListRootCategoriesHandler 获取根分类信息
+// HandleListRootCategories 获取根分类信息
 //
 //	@param c *gin.Context
 //	@author centonhuang
@@ -161,41 +87,17 @@ func (h *categoryHandler) HandleListRootCategories(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's root category",
-		})
-		return
+	req := &protocol.GetRootCategoryRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
 	}
 
-	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.GetRootCategory(req)
 
-	rootCategory, err := h.categoryDAO.GetRootByUserID(h.db, user.ID, []string{"id", "name"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"category": rootCategory.GetBasicInfo(),
-		},
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }
 
-// UpdateCategoryInfoHandler 更新分类信息
+// HandleUpdateCategoryInfo 更新分类信息
 //
 //	@param c *gin.Context
 //	@author centonhuang
@@ -205,68 +107,20 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to update other user's category",
-		})
-		return
+	req := &protocol.UpdateCategoryRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
+		CategoryID:  uri.CategoryID,
+		Name:        body.Name,
+		ParentID:    body.ParentID,
 	}
 
-	_, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.UpdateCategory(req)
 
-	updateFields := make(map[string]interface{})
-
-	if body.Name != "" {
-		updateFields["name"] = body.Name
-	}
-
-	if body.ParentID != 0 {
-		updateFields["parent_id"] = body.ParentID
-	}
-
-	if len(updateFields) == 0 {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeUpdateCategoryError,
-			Message: "No fields to update",
-		})
-		return
-	}
-
-	category, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	err = h.categoryDAO.Update(h.db, category, updateFields)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeUpdateCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"category": category.GetBasicInfo(),
-		},
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }
 
-// DeleteCategoryHandler 删除分类
+// HandleDeleteCategory 删除分类
 //
 //	@param c *gin.Context
 //	@author centonhuang
@@ -275,63 +129,18 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to delete other user's category",
-		})
-		return
+	req := &protocol.DeleteCategoryRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
+		CategoryID:  uri.CategoryID,
 	}
 
-	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.DeleteCategory(req)
 
-	category, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	if user.ID != category.UserID {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to delete other user's category",
-		})
-		return
-	}
-
-	if category.ParentID == 0 {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeDeleteCategoryError,
-			Message: "Root category can not be deleted",
-		})
-		return
-	}
-
-	err = h.categoryDAO.DeleteReclusiveByID(h.db, category.ID, []string{"id", "name"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeDeleteCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }
 
-// ListChildrenCategoriesHandler 列出子分类
+// HandleListChildrenCategories 列出子分类
 //
 //	@param c *gin.Context
 //	@author centonhuang
@@ -341,61 +150,19 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's category",
-		})
-		return
+	req := &protocol.ListChildrenCategoriesRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
+		CategoryID:  uri.CategoryID,
+		PageParam:   param,
 	}
 
-	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id", "name"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.ListChildrenCategories(req)
 
-	parentCategory, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	if user.ID != parentCategory.UserID {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's category",
-		})
-		return
-	}
-
-	categories, pageInfo, err := h.categoryDAO.PaginateChildren(h.db, parentCategory, []string{"id", "name", "parent_id"}, []string{}, param.Page, param.PageSize)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeCreateCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"categories": lo.Map(*categories, func(category model.Category, _ int) map[string]interface{} {
-				return category.GetBasicInfo()
-			}),
-			"pageInfo": pageInfo,
-		},
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }
 
-// ListChildrenArticlesHandler 列出子文章
+// HandleListChildrenArticles 列出子文章
 //
 //	@param c *gin.Context
 //	@author centonhuang
@@ -405,56 +172,14 @@ func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	if userName != uri.UserName {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's category",
-		})
-		return
+	req := &protocol.ListChildrenArticlesRequest{
+		CurUserName: userName,
+		UserName:    uri.UserName,
+		CategoryID:  uri.CategoryID,
+		PageParam:   param,
 	}
 
-	user, err := h.userDAO.GetByName(h.db, uri.UserName, []string{"id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetUserError,
-			Message: err.Error(),
-		})
-		return
-	}
+	rsp, err := h.svc.ListChildrenArticles(req)
 
-	parentCategory, err := h.categoryDAO.GetByID(h.db, uri.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	if user.ID != parentCategory.UserID {
-		c.JSON(http.StatusForbidden, protocol.Response{
-			Code:    protocol.CodeNotPermissionError,
-			Message: "You have no permission to get other user's category",
-		})
-		return
-	}
-
-	articles, pageInfo, err := h.articleDAO.PaginateByCategoryID(h.db, parentCategory.ID, []string{"id", "title", "slug"}, []string{}, param.Page, param.PageSize)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, protocol.Response{
-			Code:    protocol.CodeGetCategoryError,
-			Message: err.Error(),
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, protocol.Response{
-		Code: protocol.CodeOk,
-		Data: map[string]interface{}{
-			"articles": lo.Map(*articles, func(article model.Article, _ int) map[string]interface{} {
-				return article.GetBasicInfo()
-			}),
-			"pageInfo": pageInfo,
-		},
-	})
+	util.SendHTTPResponse(c, rsp, err)
 }

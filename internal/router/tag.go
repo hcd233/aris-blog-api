@@ -17,7 +17,7 @@ func initTagRouter(r *gin.RouterGroup) {
 		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagHandler.HandleQueryTag)
 		tagRouter.POST(
 			"",
-			middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+			middleware.LimitUserPermissionMiddleware("createTag", model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}),
 			tagHandler.HandleCreateTag,
 		)
@@ -26,13 +26,13 @@ func initTagRouter(r *gin.RouterGroup) {
 			tagSlugRouter.GET("", tagHandler.HandleGetTagInfo)
 			tagSlugRouter.PUT(
 				"",
-				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				middleware.LimitUserPermissionMiddleware("updateTag", model.PermissionCreator),
 				middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}),
 				tagHandler.HandleUpdateTag,
 			)
 			tagSlugRouter.DELETE(
 				"",
-				middleware.LimitUserPermissionMiddleware(model.PermissionCreator),
+				middleware.LimitUserPermissionMiddleware("deleteTag", model.PermissionCreator),
 				tagHandler.HandleDeleteTag,
 			)
 		}

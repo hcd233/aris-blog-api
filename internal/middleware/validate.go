@@ -1,10 +1,11 @@
 package middleware
 
 import (
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/Aris-blog/internal/util"
+	"go.uber.org/zap"
 )
 
 // ValidateURIMiddleware 验证URI中间件
@@ -16,10 +17,8 @@ import (
 func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindUri(uri); err != nil {
-			c.JSON(http.StatusBadRequest, protocol.Response{
-				Code:    protocol.CodeURIError,
-				Message: err.Error(),
-			})
+			logger.Logger.Info("[ValidateURIMiddleware] failed to bind uri", zap.Error(err))
+			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
 			c.Abort()
 			return
 		}
@@ -37,10 +36,8 @@ func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
 func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindQuery(param); err != nil {
-			c.JSON(http.StatusBadRequest, protocol.Response{
-				Code:    protocol.CodeURIError,
-				Message: err.Error(),
-			})
+			logger.Logger.Info("[ValidateParamMiddleware] failed to bind param", zap.Error(err))
+			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
 			c.Abort()
 			return
 		}
@@ -58,10 +55,8 @@ func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
 func ValidateBodyMiddleware(body interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindJSON(body); err != nil {
-			c.JSON(http.StatusBadRequest, protocol.Response{
-				Code:    protocol.CodeBodyError,
-				Message: err.Error(),
-			})
+			logger.Logger.Info("[ValidateBodyMiddleware] failed to bind body", zap.Error(err))
+			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
 			c.Abort()
 			return
 		}

@@ -1,27 +1,32 @@
 package middleware
 
 import (
-	"fmt"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/Aris-blog/internal/logger"
 	"github.com/hcd233/Aris-blog/internal/protocol"
 	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/Aris-blog/internal/util"
+	"go.uber.org/zap"
 )
 
 // LimitUserPermissionMiddleware 限制用户权限中间件
-// @param body interface{}
-// @return gin.HandlerFunc
-// @author centonhuang
-// @update 2024-09-21 08:48:25
-func LimitUserPermissionMiddleware(requiredPermission model.Permission) gin.HandlerFunc {
+//
+//	@param serviceName string
+//	@param requiredPermission model.Permission
+//	@return gin.HandlerFunc
+//	@author centonhuang
+//	@update 2025-01-05 15:07:08
+func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.Permission) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		userID := c.MustGet("userID").(uint)
 		permission := c.MustGet("permission").(model.Permission)
 		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
-			c.JSON(http.StatusForbidden, protocol.Response{
-				Code:    protocol.CodeNotPermissionError,
-				Message: fmt.Sprintf("Permission denied, required permission: %s, your permission: %s", requiredPermission, permission),
-			})
+			logger.Logger.Info("[LimitUserPermissionMiddleware] permission denied",
+				zap.Uint("userID", userID),
+				zap.String("serviceName", serviceName),
+				zap.String("requiredPermission", string(requiredPermission)),
+				zap.String("permission", string(permission)))
+			util.SendHTTPResponse(c, nil, protocol.ErrNoPermission)
 			c.Abort()
 			return
 		}

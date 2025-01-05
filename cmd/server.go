@@ -14,7 +14,6 @@ import (
 	"github.com/hcd233/Aris-blog/internal/resource/cache"
 	"github.com/hcd233/Aris-blog/internal/resource/database"
 	"github.com/hcd233/Aris-blog/internal/resource/llm"
-	"github.com/hcd233/Aris-blog/internal/resource/search"
 	"github.com/hcd233/Aris-blog/internal/resource/storage"
 	"github.com/hcd233/Aris-blog/internal/router"
 	"github.com/samber/lo"
@@ -31,22 +30,20 @@ var startServerCmd = &cobra.Command{
 	Use:   "start",
 	Short: "启动API服务器",
 	Long:  `启动并运行API服务器，监听指定的主机和端口`,
-	Run: func(cmd *cobra.Command, args []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		database.InitDatabase()
 		cache.InitCache()
-		search.InitSearchEngine()
 		storage.InitObjectStorage()
 		llm.InitOpenAIClient()
 		cron.InitCronJobs()
 
 		r := gin.New()
 		r.Use(
-			ginzap.Ginzap(logger.Logger, time.RFC3339, true),
+			ginzap.Ginzap(logger.Logger, time.DateTime, false),
 			ginzap.RecoveryWithZap(logger.Logger, true),
 			middleware.CORSMiddleware(),
-			middleware.TranslateMiddleware(),
 			gin.Recovery(),
 		)
 

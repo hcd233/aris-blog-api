@@ -1,21 +1,20 @@
 package protocol
 
-// Response 标准响应体
+// HTTPResponse 标准响应体
 //
 //	@author centonhuang
 //	@update 2024-09-16 03:41:34
-type Response struct {
-	Message string                 `json:"message"`
-	Code    ResponseCode           `json:"code"`
-	Data    map[string]interface{} `json:"data"`
+type HTTPResponse struct {
+	Data  interface{} `json:"data"`
+	Error string      `json:"error,omitempty"`
 }
 
-// AIStreamResponse AI流响应
+// SSEResponse SSE响应
 //
 //	@author centonhuang
 //	@update 2024-12-08 16:42:20
-type AIStreamResponse struct {
+type SSEResponse struct {
 	Delta string `json:"delta"`
 	Stop  bool   `json:"stop"`
-	Error string `json:"error"`
+	Error string `json:"error,omitempty"`
 }

@@ -10,14 +10,14 @@ import (
 
 func initTokenRouter(r *gin.RouterGroup) {
 	tokenHandler := handler.NewTokenHandler()
-	tokenRouter := r.Group("/token")
+
+	tokenRouter := r.Group("/token", middleware.JwtMiddleware())
 	{
 		tokenRouter.POST(
 			"refresh",
-			middleware.RateLimiterMiddleware(config.JwtAccessTokenExpired/4, 2, "refreshToken", "userID", protocol.CodeRefreshTokenRateLimitError),
+			middleware.RateLimiterMiddleware("refreshToken", "userID", config.JwtAccessTokenExpired/4, 2),
 			middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}),
 			tokenHandler.HandleRefreshToken,
 		)
 	}
 }
-
