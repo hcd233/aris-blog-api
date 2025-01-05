@@ -16,7 +16,7 @@ type CategoryHandler interface {
 	HandleGetCategoryInfo(c *gin.Context)
 	HandleUpdateCategoryInfo(c *gin.Context)
 	HandleDeleteCategory(c *gin.Context)
-	HandleListRootCategories(c *gin.Context)
+	HandleGetRootCategories(c *gin.Context)
 	HandleListChildrenCategories(c *gin.Context)
 	HandleListChildrenArticles(c *gin.Context)
 }
@@ -78,12 +78,12 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleListRootCategories 获取根分类信息
+// HandleGetRootCategories 获取根分类信息
 //
 //	@param c *gin.Context
 //	@author centonhuang
 //	@update 2024-10-23 03:56:26
-func (h *categoryHandler) HandleListRootCategories(c *gin.Context) {
+func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.UserURI)
 

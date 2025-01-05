@@ -260,7 +260,7 @@ func (s *tagService) ListTags(req *protocol.ListTagsRequest) (rsp *protocol.List
 //	@update 2025-01-05 12:37:54
 func (s *tagService) ListUserTags(*protocol.ListUserTagsRequest) (*protocol.ListUserTagsResponse, error) {
 	// TODO: 和合并标签合并
-	return nil, protocol.ErrInternalError
+	return nil, protocol.ErrNoImplement
 }
 
 // QueryTag
@@ -273,7 +273,7 @@ func (s *tagService) ListUserTags(*protocol.ListUserTagsRequest) (*protocol.List
 //	@update 2025-01-05 11:52:53
 func (s *tagService) QueryTag(*protocol.QueryTagRequest) (*protocol.QueryTagResponse, error) {
 	// TODO: 和合并标签合并
-	return nil, protocol.ErrInternalError
+	return nil, protocol.ErrNoImplement
 }
 
 // QueryUserTag

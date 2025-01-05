@@ -46,4 +46,9 @@ var (
 	//
 	//	@update 2025-01-05 18:41:32
 	ErrInsufficientQuota = errors.New("InsufficientQuota")
+
+	// ErrNoImplement 未实现错误
+	//
+	//	@update 2025-01-05 18:41:32
+	ErrNoImplement = errors.New("NoImplement")
 )

@@ -61,6 +61,10 @@ func SendHTTPResponse(c *gin.Context, data interface{}, err error) {
 		c.JSON(http.StatusInternalServerError, protocol.HTTPResponse{
 			Error: err.Error(),
 		})
+	case protocol.ErrNoImplement: // 501
+		c.JSON(http.StatusNotImplemented, protocol.HTTPResponse{
+			Error: err.Error(),
+		})
 	case nil:
 		c.JSON(http.StatusOK, protocol.HTTPResponse{
 			Data: data,
