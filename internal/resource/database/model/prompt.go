@@ -54,34 +54,3 @@ type Prompt struct {
 	Variables []string   `json:"variables" gorm:"column:variables;type:json;not null;serializer:json;comment:'提示词变量'"`
 	Version   uint       `json:"version" gorm:"column:version;uniqueIndex:idx_task_version;not null;comment:'版本'"`
 }
-
-// GetBasicInfo 获取提示词基本信息
-//
-//	@receiver p *Prompt
-//	@return map[string]interface{}
-//	@author centonhuang
-//	@update 2024-12-09 16:13:42
-func (p *Prompt) GetBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":        p.ID,
-		"createdAt": p.CreatedAt,
-		"task":      p.Task,
-		"version":   p.Version,
-	}
-}
-
-// GetDetailedInfo 获取提示词详细信息
-//
-//	@receiver p *Prompt
-//	@return map[string]interface{}
-//	@author centonhuang
-//	@update 2024-12-09 16:13:42
-func (p *Prompt) GetDetailedInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":        p.ID,
-		"task":      p.Task,
-		"templates": p.Templates,
-		"variables": p.Variables,
-		"version":   p.Version,
-	}
-}

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"net/http"
-	"time"
 
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
@@ -41,10 +40,9 @@ var startServerCmd = &cobra.Command{
 
 		r := gin.New()
 		r.Use(
-			ginzap.Ginzap(logger.Logger, time.DateTime, false),
+			middleware.LogMiddleware(logger.Logger),
 			ginzap.RecoveryWithZap(logger.Logger, true),
 			middleware.CORSMiddleware(),
-			gin.Recovery(),
 		)
 
 		router.RegisterRouter(r)

@@ -173,7 +173,7 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 		"id", "slug", "title", "status", "user_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
-	}, []string{"User", "Comments", "Tags"})
+	}, []string{"Comments", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleService] article not found",
@@ -193,7 +193,7 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 		Title:       article.Title,
 		Slug:        article.Slug,
 		Status:      string(article.Status),
-		Author:      article.User.Name,
+		UserID:      article.UserID,
 		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 		PublishedAt: article.PublishedAt.Format(time.DateTime),
@@ -423,8 +423,12 @@ func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *p
 
 	articles, pageInfo, err := s.articleDAO.PaginateByPublished(
 		s.db,
-		[]string{"id", "title", "slug", "status", "published_at", "views", "likes", "user_id"},
-		[]string{"User", "Comments", "Tags"},
+		[]string{
+			"id", "slug", "title", "status", "user_id",
+			"created_at", "updated_at", "published_at",
+			"likes", "views",
+		},
+		[]string{"Comments", "Tags"},
 		req.PageParam.Page, req.PageParam.PageSize,
 	)
 	if err != nil {
@@ -438,13 +442,13 @@ func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *p
 			Title:       article.Title,
 			Slug:        article.Slug,
 			Status:      string(article.Status),
-			Author:      article.User.Name,
+			UserID:      article.UserID,
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
 			Likes:       article.Likes,
 			Views:       article.Views,
-			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Name }),
+			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
 			Comments:    len(article.Comments),
 		}
 	})
@@ -479,7 +483,14 @@ func (s *articleService) ListUserArticles(req *protocol.ListUserArticlesRequest)
 		return nil, protocol.ErrInternalError
 	}
 
-	articles, pageInfo, err := s.articleDAO.PaginateByUserID(s.db, user.ID, []string{"id", "title", "slug"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	articles, pageInfo, err := s.articleDAO.PaginateByUserID(s.db, user.ID,
+		[]string{
+			"id", "slug", "title", "status", "user_id",
+			"created_at", "updated_at", "published_at",
+			"likes", "views",
+		},
+		[]string{"Comments", "Tags"},
+		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Logger.Error("[ArticleService] failed to paginate user articles",
 			zap.Uint("userID", user.ID),
@@ -489,11 +500,17 @@ func (s *articleService) ListUserArticles(req *protocol.ListUserArticlesRequest)
 
 	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *protocol.Article {
 		return &protocol.Article{
-			ArticleID: article.ID,
-			Title:     article.Title,
-			Slug:      article.Slug,
-			CreatedAt: article.CreatedAt.Format(time.DateTime),
-			UpdatedAt: article.UpdatedAt.Format(time.DateTime),
+			ArticleID:   article.ID,
+			Title:       article.Title,
+			Slug:        article.Slug,
+			UserID:      article.UserID,
+			CreatedAt:   article.CreatedAt.Format(time.DateTime),
+			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
+			PublishedAt: article.PublishedAt.Format(time.DateTime),
+			Likes:       article.Likes,
+			Views:       article.Views,
+			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
+			Comments:    len(article.Comments),
 		}
 	})
 

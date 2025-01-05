@@ -4,6 +4,7 @@
 package database
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -14,6 +15,7 @@ import (
 	"github.com/samber/lo"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 // DB undefined mysql数据库连接
@@ -44,6 +46,10 @@ func InitDatabase() {
 		&gorm.Config{
 			DryRun:         false, // 只生成SQL不运行
 			TranslateError: true,
+			Logger: &GormLoggerAdapter{
+				ZapLogger: logger.Logger,
+				LogLevel:  4, // Info级别
+			},
 		}))
 
 	sqlDB := lo.Must(db.DB())
@@ -53,4 +59,89 @@ func InitDatabase() {
 	sqlDB.SetConnMaxLifetime(5 * time.Hour)
 
 	logger.Logger.Info("[Database] Connected to MySQL database", zap.String("host", config.MysqlHost), zap.String("port", config.MysqlPort), zap.String("database", config.MysqlDatabase))
+}
+
+// GormLoggerAdapter 实现gorm的logger接口,使用zap输出SQL日志
+//
+//	@author centonhuang
+//	@update 2025-01-05 21:10:18
+type GormLoggerAdapter struct {
+	ZapLogger *zap.Logger
+	LogLevel  int
+}
+
+// LogMode 设置日志级别
+//
+//	@receiver l *GormLogger
+//	@param level gormlogger.LogLevel
+//	@return gormlogger.Interface
+//	@author centonhuang
+//	@update 2025-01-05 21:10:15
+func (l *GormLoggerAdapter) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
+	newLogger := *l
+	newLogger.LogLevel = int(level)
+	return &newLogger
+}
+
+// Info 打印info级别的日志
+//
+//	@receiver l *GormLogger
+//	@param _ context.Context
+//	@param msg string
+//	@param data ...interface{}
+//	@author centonhuang
+//	@update 2025-01-05 21:11:07
+func (l *GormLoggerAdapter) Info(_ context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Info(fmt.Sprintf(msg, data...))
+}
+
+// Warn 打印warn级别的日志
+//
+//	@receiver l *GormLogger
+//	@param _ context.Context
+//	@param msg string
+//	@param data ...interface{}
+//	@author centonhuang
+//	@update 2025-01-05 21:11:08
+func (l *GormLoggerAdapter) Warn(_ context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Warn(fmt.Sprintf(msg, data...))
+}
+
+// Error 打印error级别的日志
+//
+//	@receiver l *GormLogger
+//	@param _ context.Context
+//	@param msg string
+//	@param data ...interface{}
+//	@author centonhuang
+//	@update 2025-01-05 21:11:10
+func (l *GormLoggerAdapter) Error(_ context.Context, msg string, data ...interface{}) {
+	l.ZapLogger.Error(fmt.Sprintf(msg, data...))
+}
+
+// Trace 打印trace级别的日志
+//
+//	@receiver l *GormLogger
+//	@param _ context.Context
+//	@param begin time.Time
+//	@param fc func() (string, int64)
+//	@param err error
+//	@author centonhuang
+//	@update 2025-01-05 21:11:11
+func (l *GormLoggerAdapter) Trace(_ context.Context, begin time.Time, fc func() (string, int64), err error) {
+	elapsed := time.Since(begin)
+	sql, rows := fc()
+
+	fields := []zap.Field{
+		zap.String("sql", sql),
+		zap.Int64("rows", rows),
+		zap.String("elapsed", elapsed.String()),
+	}
+	if err != nil {
+		fields = append(fields, zap.Error(err))
+		l.ZapLogger.Error("[SQL]", fields...)
+		return
+	}
+
+	l.ZapLogger.Info("[SQL]", fields...)
 }

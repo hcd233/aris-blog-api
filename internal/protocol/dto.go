@@ -310,7 +310,7 @@ type Article struct {
 	Title       string   `json:"title"`
 	Slug        string   `json:"slug"`
 	Status      string   `json:"status"`
-	Author      string   `json:"author"`
+	UserID      uint     `json:"userID"`
 	CreatedAt   string   `json:"createdAt"`
 	UpdatedAt   string   `json:"updatedAt"`
 	PublishedAt string   `json:"publishedAt"`
