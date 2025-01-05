@@ -93,35 +93,3 @@ type User struct {
 	Categories   []Category `json:"categories" gorm:"foreignKey:UserID"`
 	Tags         []Tag      `json:"tags" gorm:"foreignKey:UserID"`
 }
-
-// GetBasicInfo 获取用户基本信息
-//
-//	@receiver u *User
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-18 03:47:14
-func (u *User) GetBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":     u.ID,
-		"name":   u.Name,
-		"avatar": u.Avatar,
-	}
-}
-
-// GetDetailedInfo 获取用户详细信息
-//
-//	@receiver u *User
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-18 03:50:04
-func (u *User) GetDetailedInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":         u.ID,
-		"name":       u.Name,
-		"email":      u.Email,
-		"avatar":     u.Avatar,
-		"createdAt":  u.CreatedAt,
-		"lastLogin":  u.LastLogin,
-		"permission": u.Permission,
-	}
-}

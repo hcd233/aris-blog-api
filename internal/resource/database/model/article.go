@@ -3,7 +3,6 @@ package model
 import (
 	"time"
 
-	"github.com/samber/lo"
 	"gorm.io/gorm"
 )
 
@@ -44,92 +43,4 @@ type Article struct {
 	Tags        []Tag            `json:"tags" gorm:"many2many:article_tags;"`
 	Comments    []Comment        `json:"comments" gorm:"foreignKey:ArticleID"`
 	Versions    []ArticleVersion `json:"versions" gorm:"foreignKey:ArticleID"`
-}
-
-// GetBasicInfo 获取文章基本信息
-//
-//	@receiver a *Article
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-21 09:35:50
-func (a *Article) GetBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":     a.ID,
-		"title":  a.Title,
-		"slug":   a.Slug,
-		"status": a.Status,
-	}
-}
-
-// GetLikeInfo 获取文章点赞信息
-//
-//	@receiver a *Article
-//	@return map
-//	@author centonhuang
-//	@update 2024-11-03 07:34:08
-func (a *Article) GetLikeInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":          a.ID,
-		"title":       a.Title,
-		"slug":        a.Slug,
-		"publishedAt": a.PublishedAt,
-		"author":      a.User.GetBasicInfo(),
-		"tags":        lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
-		"likes":       a.Likes,
-	}
-}
-
-// GetViewInfo 获取文章浏览信息
-//
-//	@receiver a *Article
-//	@return map
-//	@author centonhuang
-//	@update 2024-11-03 07:34:08
-func (a *Article) GetViewInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":          a.ID,
-		"title":       a.Title,
-		"slug":        a.Slug,
-		"publishedAt": a.PublishedAt,
-		"author":      a.User.GetBasicInfo(),
-		"tags":        lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() }),
-		"views":       a.Views,
-	}
-}
-
-// GetDetailedInfo 获取文章详细信息
-//
-//	@receiver a *Article
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-21 09:21:50
-func (a *Article) GetDetailedInfo() map[string]interface{} {
-	infoMap := map[string]interface{}{
-		"id":          a.ID,
-		"title":       a.Title,
-		"slug":        a.Slug,
-		"user":        a.User.GetBasicInfo(),
-		"status":      a.Status,
-		"publishedAt": a.PublishedAt,
-		"views":       a.Views,
-		"likes":       a.Likes,
-	}
-
-	if a.Comments != nil {
-		infoMap["comments"] = len(a.Comments)
-	}
-
-	if a.Versions != nil {
-		infoMap["versions"] = lo.Map(a.Versions, func(version ArticleVersion, idx int) map[string]interface{} { return version.GetBasicInfo() })
-	}
-
-	if a.Category != nil {
-		infoMap["category"] = a.Category.GetBasicInfo()
-	}
-
-	if a.Tags != nil {
-		infoMap["tags"] = lo.Map(a.Tags, func(tag Tag, idx int) map[string]interface{} { return tag.GetBasicInfo() })
-	}
-
-	return infoMap
 }

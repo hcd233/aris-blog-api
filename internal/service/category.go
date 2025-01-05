@@ -421,7 +421,12 @@ func (s *categoryService) ListChildrenArticles(req *protocol.ListChildrenArticle
 	}
 
 	articles, pageInfo, err := s.articleDAO.PaginateByCategoryID(s.db, parentCategory.ID,
-		[]string{"id", "title", "slug", "created_at", "updated_at"}, []string{"User", "Tags", "Comments"},
+		[]string{
+			"id", "slug", "title", "status", "user_id",
+			"created_at", "updated_at", "published_at",
+			"likes", "views",
+		},
+		[]string{"Tags", "Comments"},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Logger.Error("[CategoryService] failed to paginate children articles",
@@ -436,7 +441,7 @@ func (s *categoryService) ListChildrenArticles(req *protocol.ListChildrenArticle
 			Title:       article.Title,
 			Slug:        article.Slug,
 			Status:      string(article.Status),
-			Author:      article.User.Name,
+			UserID:      article.UserID,
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),

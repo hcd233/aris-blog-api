@@ -19,33 +19,3 @@ type UserView struct {
 	LastViewedAt time.Time `json:"last_viewed_at" gorm:"not null;comment:最后浏览时间"`
 	Progress     int8      `json:"progress" gorm:"not null;comment:浏览进度"`
 }
-
-// GetBasicInfo 获取用户浏览基本信息
-//
-//	@receiver uv *UserView
-//	@return map
-//	@author centonhuang
-//	@update 2024-12-09 16:11:07
-func (uv *UserView) GetBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":           uv.ID,
-		"progress":     uv.Progress,
-		"lastViewedAt": uv.LastViewedAt,
-	}
-}
-
-// GetDetailedInfo 获取用户浏览详细信息
-//
-//	@receiver uv *UserView
-//	@return map
-//	@author centonhuang
-//	@update 2024-12-09 16:11:11
-func (uv *UserView) GetDetailedInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":           uv.ID,
-		"viewer":       uv.User.GetBasicInfo(),
-		"article":      uv.Article.GetViewInfo(),
-		"progress":     uv.Progress,
-		"lastViewedAt": uv.LastViewedAt,
-	}
-}

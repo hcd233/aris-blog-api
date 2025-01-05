@@ -100,7 +100,7 @@ func (s *assetService) ListUserLikeArticles(req *protocol.ListUserLikeArticlesRe
 			"created_at", "updated_at", "published_at",
 			"likes", "views",
 		},
-		[]string{"User", "Comments", "Tags"},
+		[]string{"Comments", "Tags"},
 	)
 	if err != nil {
 		logger.Logger.Error("[AssetService] failed to get articles", zap.Uints("articleIDs", articleIDs), zap.Error(err))
@@ -134,7 +134,7 @@ func (s *assetService) ListUserLikeArticles(req *protocol.ListUserLikeArticlesRe
 			Title:       article.Title,
 			Slug:        article.Slug,
 			Status:      string(article.Status),
-			Author:      article.User.Name,
+			UserID:      article.UserID,
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),

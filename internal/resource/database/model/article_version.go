@@ -18,32 +18,3 @@ type ArticleVersion struct {
 	Summary     string   `json:"summary" gorm:"column:summary;type:LONGTEXT null;comment:版本摘要"`
 }
 
-// GetBasicInfo 获取文章基本信息
-//
-//	@receiver a *Article
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-21 09:35:50
-func (av *ArticleVersion) GetBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":        av.ID,
-		"createdAt": av.CreatedAt,
-		"version":   av.Version,
-	}
-}
-
-// GetDetailedInfo 获取文章详细信息
-//
-//	@receiver a *Article
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-21 09:21:50
-func (av *ArticleVersion) GetDetailedInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":        av.ID,
-		"createdAt": av.CreatedAt,
-		"version":   av.Version,
-		"content":   av.Content,
-		"summary":   av.Summary,
-	}
-}

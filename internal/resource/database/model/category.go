@@ -19,17 +19,3 @@ type Category struct {
 	Children []Category `json:"children" gorm:"foreignKey:ParentID"`
 	Articles []Article  `json:"articles" gorm:"foreignKey:CategoryID"`
 }
-
-// GetBasicInfo 获取基本信息
-//
-//	@receiver c * Category
-//	@return map
-//	@author centonhuang
-//	@update 2024-09-28 07:09:27
-func (c *Category) GetBasicInfo() map[string]interface{} {
-	return map[string]interface{}{
-		"id":       c.ID,
-		"name":     c.Name,
-		"parentID": c.ParentID,
-	}
-}
