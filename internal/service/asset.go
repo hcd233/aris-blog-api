@@ -227,7 +227,9 @@ func (s *assetService) ListUserLikeTags(req *protocol.ListUserLikeTagsRequest) (
 		return like.ObjectID
 	})
 
-	tags, err := s.tagDAO.BatchGetByIDs(s.db, tagIDs, []string{"id", "created_at", "name", "slug", "likes"}, []string{})
+	tags, err := s.tagDAO.BatchGetByIDs(s.db, tagIDs,
+		[]string{"id", "slug", "name", "description", "user_id", "created_at", "updated_at", "likes"},
+		[]string{})
 	if err != nil {
 		logger.Logger.Error("[AssetService] failed to get tags", zap.Uints("tagIDs", tagIDs), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -468,6 +470,8 @@ func (s *assetService) GetImage(req *protocol.GetImageRequest) (rsp *protocol.Ge
 	}
 
 	rsp.PresignedURL = presignedURL.String()
+	logger.Logger.Info("[AssetService] presigned URL", zap.Uint("userID", req.CurUserID), zap.String("imageName", req.ImageName), zap.String("quality", req.Quality), zap.String("url", rsp.PresignedURL))
+
 	return rsp, nil
 }
 
