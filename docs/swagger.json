@@ -1,0 +1,108 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "Aris-blog API",
+        "title": "Aris-blog",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "9.134.115.68:8170",
+    "basePath": "/",
+    "paths": {
+        "/v1/oauth2/github/callback": {
+            "get": {
+                "description": "处理Github OAuth2回调请求,验证code和state",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth2"
+                ],
+                "summary": "处理Github OAuth2回调",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "授权码",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "状态码",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CallbackResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CallbackResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/oauth2/github/login": {
+            "get": {
+                "description": "处理Github OAuth2登录请求,返回重定向URL",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "oauth2"
+                ],
+                "summary": "处理Github OAuth2登录",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.LoginResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.LoginResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "protocol.CallbackResponse": {
+            "type": "object",
+            "properties": {
+                "accessToken": {
+                    "type": "string"
+                },
+                "refreshToken": {
+                    "type": "string"
+                }
+            }
+        },
+        "protocol.LoginResponse": {
+            "type": "object",
+            "properties": {
+                "redirectURL": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}

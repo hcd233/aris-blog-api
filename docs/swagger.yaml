@@ -1,0 +1,71 @@
+basePath: /
+definitions:
+  protocol.CallbackResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
+        type: string
+    type: object
+  protocol.LoginResponse:
+    properties:
+      redirectURL:
+        type: string
+    type: object
+host: 9.134.115.68:8170
+info:
+  contact: {}
+  description: Aris-blog API
+  title: Aris-blog
+  version: "1.0"
+paths:
+  /v1/oauth2/github/callback:
+    get:
+      consumes:
+      - application/json
+      description: 处理Github OAuth2回调请求,验证code和state
+      parameters:
+      - description: 授权码
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: 状态码
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.CallbackResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/protocol.CallbackResponse'
+      summary: 处理Github OAuth2回调
+      tags:
+      - oauth2
+  /v1/oauth2/github/login:
+    get:
+      consumes:
+      - application/json
+      description: 处理Github OAuth2登录请求,返回重定向URL
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.LoginResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/protocol.LoginResponse'
+      summary: 处理Github OAuth2登录
+      tags:
+      - oauth2
+swagger: "2.0"
