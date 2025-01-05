@@ -5,7 +5,6 @@ package storage
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/hcd233/Aris-blog/internal/config"
 	"github.com/hcd233/Aris-blog/internal/logger"
@@ -22,14 +21,14 @@ var minioClient *minio.Client
 //	@author centonhuang
 //	@update 2024-12-09 15:59:06
 func InitObjectStorage() {
-	minioClient = lo.Must1(minio.New(fmt.Sprintf("%s:%s", config.MinioHost, config.MinioPort), &minio.Options{
+	minioClient = lo.Must1(minio.New(config.MinioEndpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioAccessID, config.MinioAccessKey, ""),
-		Secure: false,
+		Secure: config.MinioTLS,
 	}))
 
 	_ = lo.Must1(minioClient.ListBuckets(context.Background()))
 
-	logger.Logger.Info("[Object Storage] Connected to Minio database", zap.String("host", config.MinioHost), zap.String("port", config.MinioPort))
+	logger.Logger.Info("[Object Storage] Connected to Minio database", zap.String("endpoint", config.MinioEndpoint))
 }
 
 // GetObjectStorage 获取对象存储客户端

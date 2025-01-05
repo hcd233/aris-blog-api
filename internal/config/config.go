@@ -75,23 +75,11 @@ var (
 	// RedisPassword string Redis密码
 	RedisPassword string
 
-	// MeilisearchHost string Meilisearch主机
-	//	@update 2024-09-18 12:09:25
-	MeilisearchHost string
+	// MinioEndpoint string Minio Endpoint
+	MinioEndpoint string
 
-	// MeilisearchPort string Meilisearch端口
-	//	@update 2024-09-18 12:13:17
-	MeilisearchPort string
-
-	// MeilisearchMasterKey string Meilisearch API Key
-	//	@update 2024-09-18 12:13:29
-	MeilisearchMasterKey string
-
-	// MinioHost string Minio主机
-	MinioHost string
-
-	// MinioPort string Minio端口
-	MinioPort string
+	// MinioTLS bool Minio TLS
+	MinioTLS bool
 
 	// MinioAccessID string Minio Access ID
 	MinioAccessID string
@@ -161,12 +149,8 @@ func initEnvironment() {
 	RedisPort = config.GetString("redis.port")
 	RedisPassword = config.GetString("redis.password")
 
-	MeilisearchHost = config.GetString("meilisearch.host")
-	MeilisearchPort = config.GetString("meilisearch.port")
-	MeilisearchMasterKey = config.GetString("meilisearch.master.key")
-
-	MinioHost = config.GetString("minio.host")
-	MinioPort = config.GetString("minio.port")
+	MinioEndpoint = config.GetString("minio.endpoint")
+	MinioTLS = config.GetBool("minio.tls")
 	MinioAccessID = config.GetString("minio.access.id")
 	MinioAccessKey = config.GetString("minio.access.key")
 
