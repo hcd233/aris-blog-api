@@ -1,3 +1,4 @@
+// Package objdao 对象存储DAO
 package objdao
 
 import (
@@ -11,6 +12,10 @@ import (
 	"github.com/samber/lo"
 )
 
+// ObjDAO 对象存储DAO接口
+//
+//	@author centonhuang
+//	@update 2025-01-05 22:45:30
 type ObjDAO interface {
 	composeBucketName(userID uint) (bucketName string)
 	CreateBucket(userID uint) (exist bool, err error)
@@ -20,6 +25,10 @@ type ObjDAO interface {
 	DeleteObject(userID uint, objectName string) (err error)
 }
 
+// ObjectType 对象类型
+//
+//	@author centonhuang
+//	@update 2025-01-05 22:45:37
 type ObjectType string
 
 const (
@@ -42,11 +51,19 @@ const (
 	presignObjectExpire = 5 * time.Minute
 )
 
+// BaseMinioObjDAO 基础Minio对象存储DAO
+//
+//	@author centonhuang
+//	@update 2025-01-05 22:45:43
 type BaseMinioObjDAO struct {
 	ObjectType ObjectType
 	client     *minio.Client
 }
 
+// ObjectInfo 对象信息
+//
+//	@author centonhuang
+//	@update 2025-01-05 22:45:48
 type ObjectInfo struct {
 	ObjectName   string    `json:"objectName"`
 	ContentType  string    `json:"contentType"`
@@ -81,6 +98,12 @@ func (dao *BaseMinioObjDAO) CreateBucket(userID uint) (exist bool, err error) {
 	}
 
 	err = dao.client.MakeBucket(ctx, bucketName, minio.MakeBucketOptions{})
+	if err != nil {
+		return
+	}
+
+	// 确保不设置任何允许公共访问的策略
+	// 这里我们不需要设置任何策略，因为默认情况下，桶和对象是私有的
 	return
 }
 
@@ -185,13 +208,13 @@ func (dao *BaseMinioObjDAO) DownloadObject(userID uint, objectName string, write
 //	@return err error
 //	@author centonhuang
 //	@update 2025-01-05 17:38:03
-func (dao *BaseMinioObjDAO) PresignObject(userID uint, objectName string) (url *url.URL, err error) {
+func (dao *BaseMinioObjDAO) PresignObject(userID uint, objectName string) (presignedURL *url.URL, err error) {
 	bucketName := dao.composeBucketName(userID)
 
-	ctx, cancel := context.WithTimeout(context.Background(), presignObjectExpire)
+	ctx, cancel := context.WithTimeout(context.Background(), presignObjectTimeout)
 	defer cancel()
 
-	url, err = dao.client.PresignedGetObject(ctx, bucketName, objectName, presignObjectExpire, nil)
+	presignedURL, err = dao.client.PresignedGetObject(ctx, bucketName, objectName, presignObjectExpire, nil)
 	return
 }
 
