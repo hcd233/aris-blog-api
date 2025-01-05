@@ -3,17 +3,22 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
+	_ "github.com/hcd233/Aris-blog/docs"
 	"github.com/hcd233/Aris-blog/internal/handler"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // RegisterRouter 注册路由
 //
-//	@param r *gin.Engine
-//	@author centonhuang
-//	@update 2025-01-04 15:32:40
+//	param r *gin.Engine
+//	author centonhuang
+//	update 2025-01-04 15:32:40
 func RegisterRouter(r *gin.Engine) {
-	pingService := handler.NewPingHandler()
+	// swagger
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	pingService := handler.NewPingHandler()
 	r.GET("", pingService.HandlePing)
 
 	v1Router := r.Group("/v1")
