@@ -3,7 +3,7 @@ package objdao
 import (
 	"sync"
 
-	"github.com/hcd233/Aris-blog/internal/resource/storage"
+	"github.com/hcd233/aris-blog-api/internal/resource/storage"
 )
 
 var (

@@ -3,7 +3,7 @@ package prompt_test
 import (
 	"testing"
 
-	"github.com/hcd233/Aris-blog/internal/ai/prompt"
+	"github.com/hcd233/aris-blog-api/internal/ai/prompt"
 	"github.com/samber/lo"
 	"github.com/stretchr/testify/assert"
 )

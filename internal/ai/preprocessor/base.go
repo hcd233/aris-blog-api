@@ -3,7 +3,7 @@
 //	update 2024-12-08 14:49:58
 package preprocessor
 
-import "github.com/hcd233/Aris-blog/internal/ai/document"
+import "github.com/hcd233/aris-blog-api/internal/ai/document"
 
 // Preprocessor 预处理器
 //

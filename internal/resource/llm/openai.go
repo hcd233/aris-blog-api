@@ -4,8 +4,8 @@
 package llm
 
 import (
-	"github.com/hcd233/Aris-blog/internal/config"
-	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	openai "github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 )

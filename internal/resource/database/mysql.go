@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/hcd233/Aris-blog/internal/config"
-	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	"go.uber.org/zap"
 
 	"github.com/samber/lo"

@@ -1,6 +1,6 @@
 package chatmodel
 
-import "github.com/hcd233/Aris-blog/internal/ai/message"
+import "github.com/hcd233/aris-blog-api/internal/ai/message"
 
 type Invokeable interface {
 	Invoke(messages []message.Message) (sequence string, err error)

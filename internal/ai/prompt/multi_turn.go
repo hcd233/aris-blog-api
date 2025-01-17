@@ -3,7 +3,7 @@ package prompt
 import (
 	"fmt"
 
-	"github.com/hcd233/Aris-blog/internal/ai/message"
+	"github.com/hcd233/aris-blog-api/internal/ai/message"
 )
 
 type MultiTurnPrompt struct {

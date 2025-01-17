@@ -3,10 +3,10 @@ package cron
 import (
 	"fmt"
 
-	"github.com/hcd233/Aris-blog/internal/logger"
-	"github.com/hcd233/Aris-blog/internal/resource/database"
-	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/aris-blog-api/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/resource/database"
+	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
+	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	"github.com/robfig/cron/v3"
 	"go.uber.org/zap"
 	"gorm.io/gorm"

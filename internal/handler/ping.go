@@ -2,8 +2,8 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/util"
+	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // PingHandler 健康检查处理器

@@ -1,7 +1,7 @@
 package prompt
 
 import (
-	"github.com/hcd233/Aris-blog/internal/ai/message"
+	"github.com/hcd233/aris-blog-api/internal/ai/message"
 )
 
 type Prompt interface {

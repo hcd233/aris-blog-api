@@ -1,6 +1,6 @@
 package auth
 
-import "github.com/hcd233/Aris-blog/internal/config"
+import "github.com/hcd233/aris-blog-api/internal/config"
 
 var (
 	jwtAccessTokenSvc  *jwtTokenSigner

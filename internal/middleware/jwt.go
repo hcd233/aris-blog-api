@@ -8,12 +8,12 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-blog/internal/auth"
-	"github.com/hcd233/Aris-blog/internal/logger"
-	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/database"
-	"github.com/hcd233/Aris-blog/internal/resource/database/dao"
-	"github.com/hcd233/Aris-blog/internal/util"
+	"github.com/hcd233/aris-blog-api/internal/auth"
+	"github.com/hcd233/aris-blog-api/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/resource/database"
+	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
+	"github.com/hcd233/aris-blog-api/internal/util"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )

@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/spf13/cobra"
 )
 

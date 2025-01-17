@@ -3,7 +3,7 @@ package dao
 import (
 	"fmt"
 
-	"github.com/hcd233/Aris-blog/internal/resource/database/model"
+	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	"gorm.io/gorm"
 )
 

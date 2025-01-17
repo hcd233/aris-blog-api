@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"strings"
 
-	"github.com/hcd233/Aris-blog/internal/ai/document"
+	"github.com/hcd233/aris-blog-api/internal/ai/document"
 	"github.com/pkoukk/tiktoken-go"
 	"github.com/samber/lo"
 	"github.com/yuin/goldmark"
