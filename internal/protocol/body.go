@@ -1,6 +1,6 @@
 package protocol
 
-import "github.com/hcd233/Aris-blog/internal/resource/database/model"
+import "github.com/hcd233/aris-blog-api/internal/resource/database/model"
 
 // RefreshTokenBody 刷新token请求体
 //

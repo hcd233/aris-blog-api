@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/hcd233/Aris-blog/internal/ai/message"
-	"github.com/hcd233/Aris-blog/internal/resource/llm"
+	"github.com/hcd233/aris-blog-api/internal/ai/message"
+	"github.com/hcd233/aris-blog-api/internal/resource/llm"
 	"github.com/samber/lo"
 	openai "github.com/sashabaranov/go-openai"
 )

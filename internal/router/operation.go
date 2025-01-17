@@ -4,9 +4,9 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hcd233/Aris-blog/internal/handler"
-	"github.com/hcd233/Aris-blog/internal/middleware"
-	"github.com/hcd233/Aris-blog/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/handler"
+	"github.com/hcd233/aris-blog-api/internal/middleware"
+	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
 
 func initUserOperationRouter(r *gin.RouterGroup) {

@@ -6,7 +6,7 @@ package cron
 import (
 	"fmt"
 
-	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	"go.uber.org/zap"
 )
 

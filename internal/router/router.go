@@ -3,8 +3,8 @@ package router
 
 import (
 	"github.com/gin-gonic/gin"
-	_ "github.com/hcd233/Aris-blog/docs"
-	"github.com/hcd233/Aris-blog/internal/handler"
+	_ "github.com/hcd233/aris-blog-api/docs"
+	"github.com/hcd233/aris-blog-api/internal/handler"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )

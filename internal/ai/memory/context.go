@@ -1,6 +1,6 @@
 package memory
 
-import "github.com/hcd233/Aris-blog/internal/ai/message"
+import "github.com/hcd233/aris-blog-api/internal/ai/message"
 
 type ContextMemory struct {
 	messages []message.Message

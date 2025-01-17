@@ -1,4 +1,4 @@
-module github.com/hcd233/Aris-blog
+module github.com/hcd233/aris-blog-api
 
 go 1.22.7
 

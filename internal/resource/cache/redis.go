@@ -7,8 +7,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hcd233/Aris-blog/internal/config"
-	"github.com/hcd233/Aris-blog/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/redis/go-redis/v9"
 	"github.com/samber/lo"
 	"go.uber.org/zap"

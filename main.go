@@ -4,8 +4,8 @@
 package main
 
 import (
-	"github.com/hcd233/Aris-blog/cmd"
-	_ "github.com/hcd233/Aris-blog/docs"
+	"github.com/hcd233/aris-blog-api/cmd"
+	_ "github.com/hcd233/aris-blog-api/docs"
 )
 
 // @title           Aris-blog

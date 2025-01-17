@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/hcd233/Aris-blog/internal/ai/document"
+	"github.com/hcd233/aris-blog-api/internal/ai/document"
 	"github.com/stretchr/testify/assert"
 )
 

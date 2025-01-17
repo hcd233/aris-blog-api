@@ -7,10 +7,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/hcd233/Aris-blog/internal/logger"
-	"github.com/hcd233/Aris-blog/internal/protocol"
-	"github.com/hcd233/Aris-blog/internal/resource/cache"
-	"github.com/hcd233/Aris-blog/internal/util"
+	"github.com/hcd233/aris-blog-api/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/resource/cache"
+	"github.com/hcd233/aris-blog-api/internal/util"
 	"go.uber.org/zap"
 )
 

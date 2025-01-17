@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hcd233/Aris-blog/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/config"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
