@@ -51,6 +51,27 @@ func (dao *ArticleDAO) GetByIDAndStatus(db *gorm.DB, articleID uint, status mode
 	return
 }
 
+// GetByIDAndUserID 通过ID和用户ID获取文章
+//
+//	receiver dao *ArticleDAO
+//	param db *gorm.DB
+//	param articleID uint
+//	param userID uint
+//	param fields []string
+//	param preloads []string
+//	return article *model.Article
+//	return err error
+//	author centonhuang
+//	update 2025-01-18 17:00:00
+func (dao *ArticleDAO) GetByIDAndUserID(db *gorm.DB, articleID uint, userID uint, fields, preloads []string) (article *model.Article, err error) {
+	sql := db.Select(fields)
+	for _, preload := range preloads {
+		sql = sql.Preload(preload)
+	}
+	err = sql.Where(&model.Article{ID: articleID, UserID: userID}).First(&article).Error
+	return
+}
+
 // PaginateByUserID 通过用户ID获取文章列表
 //
 //	receiver dao *ArticleDAO

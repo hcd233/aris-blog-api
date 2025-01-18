@@ -78,7 +78,7 @@ type CurUser struct {
 //	author centonhuang
 //	update 2025-01-04 21:00:54
 type GetCurUserInfoRequest struct {
-	CurUserID uint `json:"curUserID"`
+	UserID uint `json:"curUserID"`
 }
 
 // GetCurUserInfoResponse 获取当前用户信息响应
@@ -867,9 +867,9 @@ type ListArticleCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:44
 type ListChildrenCommentsRequest struct {
-	UserID      uint       `json:"userID"`
-	CommentID   uint       `json:"commentID"`
-	PageParam   *PageParam `json:"pageParam"`
+	UserID    uint       `json:"userID"`
+	CommentID uint       `json:"commentID"`
+	PageParam *PageParam `json:"pageParam"`
 }
 
 // ListChildrenCommentsResponse 列出子评论响应
