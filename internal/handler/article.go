@@ -37,24 +37,33 @@ func NewArticleHandler() ArticleHandler {
 
 // HandleCreateArticle 创建文章
 //
+//	@Summary 创建文章
+//	@Description 创建文章
+//	@Tags article
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.CreateArticleBody	true	"创建文章请求"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteTagResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/article [post]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.UserURI)
 	body := c.MustGet("body").(*protocol.CreateArticleBody)
 
 	req := &protocol.CreateArticleRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		UserID:      userID,
-		Title:       body.Title,
-		Slug:        body.Slug,
-		CategoryID:  body.CategoryID,
-		Tags:        body.Tags,
+		UserID:     userID,
+		Title:      body.Title,
+		Slug:       body.Slug,
+		CategoryID: body.CategoryID,
+		Tags:       body.Tags,
 	}
 
 	rsp, err := h.svc.CreateArticle(req)
@@ -64,16 +73,30 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 
 // HandleGetArticleInfo 获取文章信息
 //
+//	@Summary 获取文章信息
+//	@Description 获取文章信息
+//	@Tags article
+//	@Accept json
+//	@Produce json
+//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.GetArticleInfoResponse "获取文章信息响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID} [get]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	req := &protocol.GetArticleInfoRequest{
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
 	}
 
 	rsp, err := h.svc.GetArticleInfo(req)
@@ -83,19 +106,31 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 
 // HandleUpdateArticle 更新文章
 //
+//	@Summary 更新文章
+//	@Description 更新文章
+//	@Tags article
+//	@Accept json
+//	@Produce json
+//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.UpdateArticleResponse "更新文章响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID} [put]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
-	userName := c.GetString("userName")
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 
 	req := &protocol.UpdateArticleRequest{
-		CurUserName:       userName,
-		UserName:          uri.UserName,
-		ArticleSlug:       uri.ArticleSlug,
+		UserID:            userID,
+		ArticleID:         uri.ArticleID,
 		UpdatedTitle:      body.Title,
 		UpdatedSlug:       body.Slug,
 		UpdatedCategoryID: body.CategoryID,
@@ -108,20 +143,32 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 
 // HandleUpdateArticleStatus 更新文章状态
 //
+//	@Summary 更新文章状态
+//	@Description 更新文章状态
+//	@Tags article
+//	@Accept json
+//	@Produce json
+//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.UpdateArticleStatusResponse "更新文章状态响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID}/status [put]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
-	userName := c.GetString("userName")
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
 
 	req := &protocol.UpdateArticleStatusRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
-		Status:      body.Status,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
+		Status:    body.Status,
 	}
 
 	rsp, err := h.svc.UpdateArticleStatus(req)
@@ -131,18 +178,30 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 
 // HandleDeleteArticle 删除文章
 //
+//	@Summary 删除文章
+//	@Description 删除文章
+//	@Tags article
+//	@Accept json
+//	@Produce json
+//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.DeleteArticleResponse "删除文章响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID} [delete]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
-	userName := c.GetString("userName")
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	req := &protocol.DeleteArticleRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
 	}
 
 	rsp, err := h.svc.DeleteArticle(req)
@@ -152,6 +211,19 @@ func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 
 // HandleListArticles 列出文章
 //
+//	@Summary 列出文章
+//	@Description 列出文章
+//	@Tags article
+//	@Accept json
+//	@Produce json
+//	@Param param query protocol.PageParam true "分页参数"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.ListArticlesResponse "列出文章响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/articles [get]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
