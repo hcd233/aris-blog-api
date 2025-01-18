@@ -131,7 +131,7 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 	}
 
 	if tag.UserID != req.UserID {
-		logger.Logger.Info("[TagService] no permission to update tag",
+		logger.Logger.Error("[TagService] no permission to update tag",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
@@ -189,7 +189,7 @@ func (s *tagService) DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.De
 	}
 
 	if tag.UserID != req.UserID {
-		logger.Logger.Info("[TagService] no permission to delete tag",
+		logger.Logger.Error("[TagService] no permission to delete tag",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission

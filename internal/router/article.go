@@ -20,7 +20,7 @@ func initArticleRouter(r *gin.RouterGroup) {
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
 			articleHandler.HandleCreateArticle,
 		)
-		articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}))
+		articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
 		{
 			articleSlugRouter.GET("", articleHandler.HandleGetArticleInfo)
 			articleSlugRouter.PUT(
