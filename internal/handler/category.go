@@ -38,6 +38,18 @@ func NewCategoryHandler() CategoryHandler {
 
 // CreateCategoryHandler 创建分类
 //
+//	@Summary		创建分类
+//	@Description	创建分类
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.CreateCategoryBody	true	"创建分类请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateCategoryResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-09-28 07:03:28
@@ -56,8 +68,20 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// GetCategoryInfoHandler 获取分类信息
+// HandleGetCategoryInfo 获取分类信息
 //
+//	@Summary		获取分类信息
+//	@Description	根据分类ID获取分类详细信息
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Param			categoryID	path		uint	true	"分类ID"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetCategoryInfoResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category/{categoryID} [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-01 04:58:27
@@ -77,6 +101,17 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 
 // HandleGetRootCategories 获取根分类信息
 //
+//	@Summary		获取根分类信息
+//	@Description	获取根分类信息
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetRootCategoryResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category/root [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-23 03:56:26
@@ -93,6 +128,19 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 
 // HandleUpdateCategoryInfo 更新分类信息
 //
+//	@Summary		更新分类信息
+//	@Description	更新分类信息
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
+//	@Param			body	body		protocol.UpdateCategoryBody	true	"更新分类请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateCategoryResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category/{categoryID} [put]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-02 03:45:55
@@ -113,6 +161,18 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 
 // HandleDeleteCategory 删除分类
 //
+//	@Summary		删除分类
+//	@Description	删除分类
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteCategoryResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category/{categoryID} [delete]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-02 04:55:08
@@ -130,6 +190,19 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 
 // HandleListChildrenCategories 列出子分类
 //
+//	@Summary		列出子分类
+//	@Description	列出子分类
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
+//	@Param			param	query		protocol.PageParam	    true	"分页参数"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenCategoriesResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category/{categoryID}/subCategories [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-01 05:09:47
@@ -151,6 +224,19 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 
 // HandleListChildrenArticles 列出子文章
 //
+//	@Summary		列出子文章
+//	@Description	列出子文章
+//	@Tags			category
+//	@Accept			json
+//	@Produce		json
+//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
+//	@Param			param	query		protocol.PageParam	    true	"分页参数"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenArticlesResponse,error=nil}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/category/{categoryID}/subArticles [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-02 01:38:12
