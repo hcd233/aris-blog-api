@@ -34,11 +34,10 @@ func LogMiddleware(logger *zap.Logger) gin.HandlerFunc {
 		}
 
 		if len(c.Errors) > 0 {
-			for _, e := range c.Errors.Errors() {
-				logger.Error(e, fields...)
-			}
+			fields = append([]zap.Field{zap.String("errors", c.Errors.String())}, fields...)
+			logger.Error("[GIN] error", fields...)
 		} else {
-			logger.Info(path, fields...)
+			logger.Info("[GIN] info", fields...)
 		}
 	}
 }

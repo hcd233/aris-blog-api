@@ -92,7 +92,7 @@ func (l *GormLoggerAdapter) LogMode(level gormlogger.LogLevel) gormlogger.Interf
 //	author centonhuang
 //	update 2025-01-05 21:11:07
 func (l *GormLoggerAdapter) Info(_ context.Context, msg string, data ...interface{}) {
-	l.ZapLogger.Info(fmt.Sprintf(msg, data...))
+	l.ZapLogger.Info("[GORM] info", zap.String("msg", fmt.Sprintf(msg, data...)))
 }
 
 // Warn 打印warn级别的日志
@@ -104,7 +104,7 @@ func (l *GormLoggerAdapter) Info(_ context.Context, msg string, data ...interfac
 //	author centonhuang
 //	update 2025-01-05 21:11:08
 func (l *GormLoggerAdapter) Warn(_ context.Context, msg string, data ...interface{}) {
-	l.ZapLogger.Warn(fmt.Sprintf(msg, data...))
+	l.ZapLogger.Warn("[GORM] warn", zap.String("msg", fmt.Sprintf(msg, data...)))
 }
 
 // Error 打印error级别的日志
@@ -116,7 +116,7 @@ func (l *GormLoggerAdapter) Warn(_ context.Context, msg string, data ...interfac
 //	author centonhuang
 //	update 2025-01-05 21:11:10
 func (l *GormLoggerAdapter) Error(_ context.Context, msg string, data ...interface{}) {
-	l.ZapLogger.Error(fmt.Sprintf(msg, data...))
+	l.ZapLogger.Error("[GORM] error", zap.String("msg", fmt.Sprintf(msg, data...)))
 }
 
 // Trace 打印trace级别的日志
@@ -139,9 +139,9 @@ func (l *GormLoggerAdapter) Trace(_ context.Context, begin time.Time, fc func() 
 	}
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		l.ZapLogger.Error("[SQL]", fields...)
+		l.ZapLogger.Error("[GORM] trace", fields...)
 		return
 	}
 
-	l.ZapLogger.Info("[SQL]", fields...)
+	l.ZapLogger.Debug("[GORM] trace", fields...)
 }
