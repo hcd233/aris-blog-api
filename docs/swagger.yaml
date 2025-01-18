@@ -76,6 +76,9 @@ definitions:
     - slug
     type: object
   protocol.CreateTagResponse:
+    properties:
+      tag:
+        $ref: '#/definitions/protocol.Tag'
     type: object
   protocol.CurUser:
     properties:
@@ -1123,11 +1126,10 @@ paths:
       - application/json
       description: 根据标签slug获取标签详细信息
       parameters:
-      - description: 标签slug
-        in: path
-        name: tagSlug
+      - in: path
+        name: tagID
         required: true
-        type: string
+        type: integer
       produces:
       - application/json
       responses:
@@ -1196,11 +1198,10 @@ paths:
       - application/json
       description: 更新标签
       parameters:
-      - description: 标签slug
-        in: path
-        name: tagSlug
+      - in: path
+        name: tagID
         required: true
-        type: string
+        type: integer
       - description: 更新标签请求体
         in: body
         name: body

@@ -157,7 +157,7 @@ type Tag struct {
 //	author centonhuang
 //	update 2025-01-05 11:48:36
 type CreateTagRequest struct {
-	CurUserID   uint   `json:"curUserID"`
+	UserID      uint   `json:"userID"`
 	Name        string `json:"name"`
 	Slug        string `json:"slug"`
 	Description string `json:"description"`
@@ -167,14 +167,16 @@ type CreateTagRequest struct {
 //
 //	author centonhuang
 //	update 2025-01-05 11:48:36
-type CreateTagResponse struct{}
+type CreateTagResponse struct {
+	Tag *Tag `json:"tag"`
+}
 
 // GetTagInfoRequest 获取标签信息请求
 //
 //	author centonhuang
 //	update 2025-01-05 12:03:33
 type GetTagInfoRequest struct {
-	TagSlug string `json:"tagSlug"`
+	TagID uint `json:"tagID"`
 }
 
 // GetTagInfoResponse 获取标签信息响应
@@ -190,8 +192,8 @@ type GetTagInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 12:07:42
 type UpdateTagRequest struct {
-	CurUserID   uint   `json:"curUserID"`
-	TagSlug     string `json:"tagSlug"`
+	UserID      uint   `json:"userID"`
+	TagID       uint   `json:"tagID"`
 	Name        string `json:"name"`
 	Slug        string `json:"slug"`
 	Description string `json:"description"`
@@ -208,8 +210,8 @@ type UpdateTagResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 11:48:36
 type DeleteTagRequest struct {
-	CurUserID uint   `json:"curUserID"`
-	TagName   string `json:"tagName"`
+	UserID    uint   `json:"userID"`
+	TagID     uint   `json:"tagID"`
 }
 
 // DeleteTagResponse 删除标签响应

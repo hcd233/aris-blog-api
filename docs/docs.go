@@ -1453,9 +1453,8 @@ const docTemplate = `{
                 "summary": "获取标签信息",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "标签slug",
-                        "name": "tagSlug",
+                        "type": "integer",
+                        "name": "tagID",
                         "in": "path",
                         "required": true
                     }
@@ -1587,9 +1586,8 @@ const docTemplate = `{
                 "summary": "更新标签",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "标签slug",
-                        "name": "tagSlug",
+                        "type": "integer",
+                        "name": "tagID",
                         "in": "path",
                         "required": true
                     },
@@ -2582,7 +2580,12 @@ const docTemplate = `{
             }
         },
         "protocol.CreateTagResponse": {
-            "type": "object"
+            "type": "object",
+            "properties": {
+                "tag": {
+                    "$ref": "#/definitions/protocol.Tag"
+                }
+            }
         },
         "protocol.CurUser": {
             "type": "object",

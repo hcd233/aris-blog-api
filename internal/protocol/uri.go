@@ -22,7 +22,7 @@ type ArticleSlugURI struct {
 //	author centonhuang
 //	update 2024-10-29 07:43:35
 type TagURI struct {
-	TagSlug string `uri:"tagSlug" binding:"required"`
+	TagID uint `uri:"tagID" binding:"required"`
 }
 
 // CategoryURI 分类路径参数

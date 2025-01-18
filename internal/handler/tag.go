@@ -57,7 +57,7 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.CreateTagBody)
 
 	req := protocol.CreateTagRequest{
-		CurUserID:   userID,
+		UserID:      userID,
 		Name:        body.Name,
 		Slug:        body.Slug,
 		Description: body.Description,
@@ -75,7 +75,7 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	@Tags			tag
 //	@Accept			json
 //	@Produce		json
-//	@Param			tagSlug	path		string	true	"标签slug"
+//	@Param			path	path	protocol.TagURI	true	"标签ID"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetTagInfoResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -90,7 +90,7 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
 	req := &protocol.GetTagInfoRequest{
-		TagSlug: uri.TagSlug,
+		TagID: uri.TagID,
 	}
 
 	rsp, err := h.svc.GetTagInfo(req)
@@ -105,8 +105,8 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	@Tags			tag
 //	@Accept			json
 //	@Produce		json
-//	@Param			tagSlug	path		string	true	"标签slug"
-//	@Param			body	body		protocol.UpdateTagBody	true	"更新标签请求体"
+//	@Param			path	path	protocol.TagURI         true	"标签ID"
+//	@Param			body	body	protocol.UpdateTagBody	true	"更新标签请求体"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateTagResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -124,8 +124,8 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
 	req := &protocol.UpdateTagRequest{
-		CurUserID:   userID,
-		TagSlug:     uri.TagSlug,
+		UserID:      userID,
+		TagID:       uri.TagID,
 		Name:        body.Name,
 		Slug:        body.Slug,
 		Description: body.Description,
@@ -159,8 +159,8 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
 	req := &protocol.DeleteTagRequest{
-		CurUserID: userID,
-		TagName:   uri.TagSlug,
+		UserID: userID,
+		TagID:  uri.TagID,
 	}
 
 	rsp, err := h.svc.DeleteTag(req)
