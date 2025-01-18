@@ -24,9 +24,9 @@ type UpdateUserBody struct {
 //	update 2024-09-21 09:59:55
 type CreateArticleBody struct {
 	Title      string   `json:"title" binding:"required"`
-	Slug       string   `json:"slug"`
-	Tags       []string `json:"tags"`
-	CategoryID uint     `json:"categoryID" binding:"omitempty"`
+	Slug       string   `json:"slug" binding:"required"`
+	Tags       []string `json:"tags" binding:"required"`
+	CategoryID uint     `json:"categoryID" binding:"required"`
 }
 
 // UpdateArticleBody 更新文章请求体

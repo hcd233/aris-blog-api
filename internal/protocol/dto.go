@@ -210,8 +210,8 @@ type UpdateTagResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 11:48:36
 type DeleteTagRequest struct {
-	UserID    uint   `json:"userID"`
-	TagID     uint   `json:"tagID"`
+	UserID uint `json:"userID"`
+	TagID  uint `json:"tagID"`
 }
 
 // DeleteTagResponse 删除标签响应
@@ -481,28 +481,28 @@ type CallbackResponse struct {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type CreateArticleRequest struct {
-	CurUserName string   `json:"curUserName"`
-	UserName    string   `json:"userName"`
-	UserID      uint     `json:"userID"`
-	Title       string   `json:"title"`
-	Slug        string   `json:"slug"`
-	CategoryID  uint     `json:"categoryID"`
-	Tags        []string `json:"tags"`
+	UserID     uint     `json:"userID"`
+	Title      string   `json:"title"`
+	Slug       string   `json:"slug"`
+	CategoryID uint     `json:"categoryID"`
+	Tags       []string `json:"tags"`
 }
 
 // CreateArticleResponse 创建文章响应
 //
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-type CreateArticleResponse struct{}
+type CreateArticleResponse struct {
+	Article *Article `json:"article"`
+}
 
 // GetArticleInfoRequest 获取文章信息请求
 //
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type GetArticleInfoRequest struct {
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
+	UserID      uint   `json:"userID"`
+	ArticleID   uint   `json:"articleID"`
 }
 
 // GetArticleInfoResponse 获取文章信息响应
@@ -518,9 +518,8 @@ type GetArticleInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type UpdateArticleRequest struct {
-	CurUserName       string `json:"curUserName"`
-	UserName          string `json:"userName"`
-	ArticleSlug       string `json:"articleSlug"`
+	UserID            uint   `json:"userID"`
+	ArticleID         uint   `json:"articleID"`
 	UpdatedTitle      string `json:"title"`
 	UpdatedSlug       string `json:"slug"`
 	UpdatedCategoryID uint   `json:"categoryID"`
@@ -537,10 +536,9 @@ type UpdateArticleResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type UpdateArticleStatusRequest struct {
-	CurUserName string              `json:"curUserName"`
-	UserName    string              `json:"userName"`
-	ArticleSlug string              `json:"articleSlug"`
-	Status      model.ArticleStatus `json:"status"`
+	UserID    uint                `json:"userID"`
+	ArticleID uint                `json:"articleID"`
+	Status    model.ArticleStatus `json:"status"`
 }
 
 // UpdateArticleStatusResponse 更新文章状态响应
@@ -554,9 +552,8 @@ type UpdateArticleStatusResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type DeleteArticleRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
+	UserID      uint   `json:"userID"`
+	ArticleID   uint   `json:"articleID"`
 }
 
 // DeleteArticleResponse 删除文章响应

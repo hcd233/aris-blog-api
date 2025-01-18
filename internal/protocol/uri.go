@@ -13,8 +13,7 @@ type UserURI struct {
 //	author centonhuang
 //	update 2024-09-21 06:13:15
 type ArticleSlugURI struct {
-	UserURI
-	ArticleSlug string `uri:"articleSlug" binding:"required"`
+	ArticleID uint `uri:"articleID" binding:"required"`
 }
 
 // TagURI 标签路径参数
