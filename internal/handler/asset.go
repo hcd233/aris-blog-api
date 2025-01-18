@@ -19,7 +19,6 @@ type AssetHandler interface {
 	HandleListUserLikeArticles(c *gin.Context)
 	HandleListUserLikeComments(c *gin.Context)
 	HandleListUserLikeTags(c *gin.Context)
-	HandleCreateBucket(c *gin.Context)
 	HandleListImages(c *gin.Context)
 	HandleUploadImage(c *gin.Context)
 	HandleGetImage(c *gin.Context)
@@ -45,6 +44,19 @@ func NewAssetHandler() AssetHandler {
 
 // HandleListUserLikeArticles 列出用户喜欢的文章
 //
+//	@Summary		列出用户喜欢的文章
+//	@Description	列出用户喜欢的文章
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.ListUserLikeArticlesRequest	true	"列出用户喜欢的文章请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserLikeArticlesResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/like/article [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-11-03 06:45:42
@@ -53,7 +65,7 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeArticlesRequest{
-		CurUserID: userID,
+		UserID:    userID,
 		PageParam: param,
 	}
 
@@ -64,6 +76,19 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 
 // HandleListUserLikeComments 列出用户喜欢的评论
 //
+//	@Summary		列出用户喜欢的评论
+//	@Description	列出用户喜欢的评论
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.ListUserLikeCommentsRequest	true	"列出用户喜欢的评论请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserLikeCommentsResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/like/comment [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-11-03 06:47:41
@@ -72,7 +97,7 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeCommentsRequest{
-		CurUserID: userID,
+		UserID:    userID,
 		PageParam: param,
 	}
 
@@ -83,6 +108,19 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 
 // HandleListUserLikeTags 列出用户喜欢的标签
 //
+//	@Summary		列出用户喜欢的标签
+//	@Description	列出用户喜欢的标签
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.ListUserLikeTagsRequest	true	"列出用户喜欢的标签请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserLikeTagsResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/like/tag [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-11-03 06:47:43
@@ -91,7 +129,7 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeTagsRequest{
-		CurUserID: userID,
+		UserID:    userID,
 		PageParam: param,
 	}
 
@@ -100,27 +138,21 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleCreateBucket 创建桶
-//
-//	receiver s *assetHandler
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-04 15:46:02
-func (h *assetHandler) HandleCreateBucket(c *gin.Context) {
-	userID := c.GetUint("userID")
-
-	req := &protocol.CreateBucketRequest{
-		CurUserID: userID,
-	}
-
-	rsp, err := h.svc.CreateBucket(req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
 // HandleListImages 列出图片
 //
-//	receiver s *assetHandler
+//	@Summary		列出图片
+//	@Description	列出图片
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.ListImagesRequest	true	"列出图片请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListImagesResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/object/images [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:02
@@ -128,7 +160,7 @@ func (h *assetHandler) HandleListImages(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	req := &protocol.ListImagesRequest{
-		CurUserID: userID,
+		UserID: userID,
 	}
 
 	rsp, err := h.svc.ListImages(req)
@@ -138,7 +170,19 @@ func (h *assetHandler) HandleListImages(c *gin.Context) {
 
 // HandleUploadImage 上传图片
 //
-//	receiver s *assetHandler
+//	@Summary		上传图片
+//	@Description	上传图片
+//	@Tags			asset
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			file	formData	file	true	"图片文件"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UploadImageResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/object/image [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:02
@@ -164,7 +208,7 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 	defer reader.Close()
 
 	req := &protocol.UploadImageRequest{
-		CurUserID:   userID,
+		UserID:      userID,
 		FileName:    fileName,
 		Size:        size,
 		ContentType: contentType,
@@ -178,7 +222,19 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 
 // HandleGetImage 获取图片
 //
-//	receiver s *assetHandler
+//	@Summary		获取图片
+//	@Description	获取图片
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.GetImageRequest	true	"获取图片请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetImageResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/object/image/{objectName} [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:02
@@ -188,7 +244,7 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.ImageParam)
 
 	req := &protocol.GetImageRequest{
-		CurUserID: userID,
+		UserID:    userID,
 		ImageName: uri.ObjectName,
 		Quality:   param.Quality,
 	}
@@ -204,7 +260,19 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 
 // HandleDeleteImage 删除图片
 //
-//	receiver s *assetHandler
+//	@Summary		删除图片
+//	@Description	删除图片
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.DeleteImageRequest	true	"删除图片请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteImageResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/object/image/{objectName} [delete]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:02
@@ -213,7 +281,7 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ObjectURI)
 
 	req := &protocol.DeleteImageRequest{
-		CurUserID: userID,
+		UserID:    userID,
 		ImageName: uri.ObjectName,
 	}
 
@@ -224,7 +292,19 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 
 // HandleListUserViewArticles 列出用户浏览的文章
 //
-//	receiver s *assetHandler
+//	@Summary		列出用户浏览的文章
+//	@Description	列出用户浏览的文章
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.ListUserViewArticlesRequest	true	"列出用户浏览的文章请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserViewArticlesResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/view/articles [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -233,7 +313,7 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 	pageParam := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListUserViewArticlesRequest{
-		CurUserID: userID,
+		UserID:    userID,
 		PageParam: pageParam,
 	}
 
@@ -244,7 +324,19 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 
 // HandleDeleteUserView 删除用户浏览的文章
 //
-//	receiver s *assetHandler
+//	@Summary		删除用户浏览的文章
+//	@Description	删除用户浏览的文章
+//	@Tags			asset
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.DeleteUserViewRequest	true	"删除用户浏览的文章请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteUserViewResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/asset/view/articles/{viewID} [delete]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -253,8 +345,8 @@ func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.ViewURI)
 
 	req := &protocol.DeleteUserViewRequest{
-		CurUserID: userID,
-		ViewID:    uri.ViewID,
+		UserID: userID,
+		ViewID: uri.ViewID,
 	}
 
 	rsp, err := h.svc.DeleteUserView(req)

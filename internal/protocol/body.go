@@ -189,7 +189,7 @@ type GenerateContentCompletionBody struct {
 //	update 2024-12-08 16:39:09
 type GenerateArticleSummaryBody struct {
 	AIAPPRequestBody
-	ArticleSlug string `json:"articleSlug" binding:"required"`
+	ArticleID   uint   `json:"articleID" binding:"required"`
 	Instruction string `json:"instruction" binding:"required"`
 }
 
@@ -199,8 +199,8 @@ type GenerateArticleSummaryBody struct {
 //	update 2024-12-08 16:38:59
 type GenerateArticleQABody struct {
 	AIAPPRequestBody
-	ArticleSlug string `json:"articleSlug" binding:"required"`
-	Question    string `json:"question" binding:"required"`
+	ArticleID uint   `json:"articleID" binding:"required"`
+	Question  string `json:"question" binding:"required"`
 }
 
 // GenerateTermExplainationBody 生成术语解释请求体
@@ -209,7 +209,7 @@ type GenerateArticleQABody struct {
 //	update 2024-12-08 16:38:59
 type GenerateTermExplainationBody struct {
 	AIAPPRequestBody
-	ArticleSlug string `json:"context" binding:"required"`
-	Term        string `json:"term" binding:"required"`
-	Position    uint   `json:"position" binding:"required"`
+	ArticleID uint   `json:"articleID" binding:"required"`
+	Term      string `json:"term" binding:"required"`
+	Position  uint   `json:"position" binding:"required"`
 }

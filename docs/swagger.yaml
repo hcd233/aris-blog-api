@@ -144,6 +144,18 @@ definitions:
       category:
         $ref: '#/definitions/protocol.Category'
     type: object
+  protocol.CreatePromptBody:
+    properties:
+      templates:
+        items:
+          $ref: '#/definitions/protocol.Template'
+        minItems: 1
+        type: array
+    required:
+    - templates
+    type: object
+  protocol.CreatePromptResponse:
+    type: object
   protocol.CreateTagBody:
     properties:
       description:
@@ -184,7 +196,86 @@ definitions:
     type: object
   protocol.DeleteCommentResponse:
     type: object
+  protocol.DeleteImageRequest:
+    properties:
+      imageName:
+        type: string
+      userID:
+        type: integer
+    type: object
+  protocol.DeleteImageResponse:
+    type: object
   protocol.DeleteTagResponse:
+    type: object
+  protocol.DeleteUserViewRequest:
+    properties:
+      userID:
+        type: integer
+      viewID:
+        type: integer
+    type: object
+  protocol.DeleteUserViewResponse:
+    type: object
+  protocol.GenerateArticleQABody:
+    properties:
+      articleID:
+        type: integer
+      question:
+        type: string
+      temperature:
+        maximum: 1
+        minimum: 0
+        type: number
+    required:
+    - articleID
+    - question
+    type: object
+  protocol.GenerateArticleSummaryBody:
+    properties:
+      articleID:
+        type: integer
+      instruction:
+        type: string
+      temperature:
+        maximum: 1
+        minimum: 0
+        type: number
+    required:
+    - articleID
+    - instruction
+    type: object
+  protocol.GenerateContentCompletionBody:
+    properties:
+      context:
+        type: string
+      instruction:
+        type: string
+      reference:
+        type: string
+      temperature:
+        maximum: 1
+        minimum: 0
+        type: number
+    required:
+    - context
+    - instruction
+    type: object
+  protocol.GenerateTermExplainationBody:
+    properties:
+      articleID:
+        type: integer
+      position:
+        type: integer
+      temperature:
+        maximum: 1
+        minimum: 0
+        type: number
+      term:
+        type: string
+    required:
+    - articleID
+    - position
+    - term
     type: object
   protocol.GetArticleInfoResponse:
     properties:
@@ -205,6 +296,20 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/protocol.CurUser'
+    type: object
+  protocol.GetImageRequest:
+    properties:
+      imageName:
+        type: string
+      quality:
+        type: string
+      userID:
+        type: integer
+    type: object
+  protocol.GetImageResponse:
+    properties:
+      presignedURL:
+        type: string
     type: object
   protocol.GetLatestArticleVersionInfoResponse:
     properties:
@@ -231,6 +336,15 @@ definitions:
       data: {}
       error:
         type: string
+    type: object
+  protocol.Image:
+    properties:
+      createdAt:
+        type: string
+      name:
+        type: string
+      size:
+        type: integer
     type: object
   protocol.LikeArticleBody:
     properties:
@@ -308,6 +422,27 @@ definitions:
       pageInfo:
         $ref: '#/definitions/protocol.PageInfo'
     type: object
+  protocol.ListImagesRequest:
+    properties:
+      userID:
+        type: integer
+    type: object
+  protocol.ListImagesResponse:
+    properties:
+      images:
+        items:
+          $ref: '#/definitions/protocol.Image'
+        type: array
+    type: object
+  protocol.ListPromptResponse:
+    properties:
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+      prompts:
+        items:
+          $ref: '#/definitions/protocol.Prompt'
+        type: array
+    type: object
   protocol.ListTagsResponse:
     properties:
       pageInfo:
@@ -315,6 +450,70 @@ definitions:
       tags:
         items:
           $ref: '#/definitions/protocol.Tag'
+        type: array
+    type: object
+  protocol.ListUserLikeArticlesRequest:
+    properties:
+      pageParam:
+        $ref: '#/definitions/protocol.PageParam'
+      userID:
+        type: integer
+    type: object
+  protocol.ListUserLikeArticlesResponse:
+    properties:
+      articles:
+        items:
+          $ref: '#/definitions/protocol.Article'
+        type: array
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+    type: object
+  protocol.ListUserLikeCommentsRequest:
+    properties:
+      pageParam:
+        $ref: '#/definitions/protocol.PageParam'
+      userID:
+        type: integer
+    type: object
+  protocol.ListUserLikeCommentsResponse:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/protocol.Comment'
+        type: array
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+    type: object
+  protocol.ListUserLikeTagsRequest:
+    properties:
+      pageParam:
+        $ref: '#/definitions/protocol.PageParam'
+      userID:
+        type: integer
+    type: object
+  protocol.ListUserLikeTagsResponse:
+    properties:
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+      tags:
+        items:
+          $ref: '#/definitions/protocol.Tag'
+        type: array
+    type: object
+  protocol.ListUserViewArticlesRequest:
+    properties:
+      pageParam:
+        $ref: '#/definitions/protocol.PageParam'
+      userID:
+        type: integer
+    type: object
+  protocol.ListUserViewArticlesResponse:
+    properties:
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+      userViews:
+        items:
+          $ref: '#/definitions/protocol.UserView'
         type: array
     type: object
   protocol.LogArticleViewResponse:
@@ -344,10 +543,41 @@ definitions:
       total:
         type: integer
     type: object
+  protocol.PageParam:
+    properties:
+      page:
+        minimum: 1
+        type: integer
+      pageSize:
+        maximum: 50
+        minimum: 1
+        type: integer
+    required:
+    - page
+    type: object
   protocol.PingResponse:
     properties:
       status:
         type: string
+    type: object
+  protocol.Prompt:
+    properties:
+      createdAt:
+        type: string
+      id:
+        type: integer
+      task:
+        type: string
+      templates:
+        items:
+          $ref: '#/definitions/protocol.Template'
+        type: array
+      variables:
+        items:
+          type: string
+        type: array
+      version:
+        type: integer
     type: object
   protocol.RefreshTokenBody:
     properties:
@@ -362,6 +592,15 @@ definitions:
         type: string
       refreshToken:
         type: string
+    type: object
+  protocol.SSEResponse:
+    properties:
+      delta:
+        type: string
+      error:
+        type: string
+      stop:
+        type: boolean
     type: object
   protocol.Tag:
     properties:
@@ -381,6 +620,16 @@ definitions:
         type: string
       userID:
         type: integer
+    type: object
+  protocol.Template:
+    properties:
+      content:
+        type: string
+      role:
+        type: string
+    required:
+    - content
+    - role
     type: object
   protocol.UpdateArticleResponse:
     type: object
@@ -421,6 +670,8 @@ definitions:
     type: object
   protocol.UpdateUserInfoResponse:
     type: object
+  protocol.UploadImageResponse:
+    type: object
   protocol.User:
     properties:
       avatar:
@@ -433,6 +684,19 @@ definitions:
         type: string
       name:
         type: string
+      userID:
+        type: integer
+    type: object
+  protocol.UserView:
+    properties:
+      articleID:
+        type: integer
+      id:
+        type: integer
+      lastViewedAt:
+        type: string
+      progress:
+        type: integer
       userID:
         type: integer
     type: object
@@ -449,6 +713,596 @@ info:
   title: Aris-blog
   version: "1.0"
 paths:
+  /v1/ai/article-qa:
+    post:
+      consumes:
+      - application/json
+      description: 生成文章问答
+      parameters:
+      - description: 生成文章问答请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.GenerateArticleQABody'
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.SSEResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 生成文章问答
+      tags:
+      - ai
+  /v1/ai/article-summary:
+    post:
+      consumes:
+      - application/json
+      description: 生成文章摘要
+      parameters:
+      - description: 生成文章摘要请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.GenerateArticleSummaryBody'
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.SSEResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 生成文章摘要
+      tags:
+      - ai
+  /v1/ai/article-translation:
+    post:
+      consumes:
+      - application/json
+      description: 生成文章翻译
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.SSEResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 生成文章翻译
+      tags:
+      - ai
+  /v1/ai/content-completion:
+    post:
+      consumes:
+      - application/json
+      description: 生成内容补全
+      parameters:
+      - description: 生成内容补全请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.GenerateContentCompletionBody'
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.SSEResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 生成内容补全
+      tags:
+      - ai
+  /v1/ai/prompt:
+    get:
+      consumes:
+      - application/json
+      description: 获取Prompt列表
+      parameters:
+      - enum:
+        - contentCompletion
+        - articleSummary
+        - articleTranslation
+        - articleQA
+        - termExplaination
+        in: path
+        name: taskName
+        required: true
+        type: string
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListPromptResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取Prompt列表
+      tags:
+      - ai
+    post:
+      consumes:
+      - application/json
+      description: 创建Prompt
+      parameters:
+      - enum:
+        - contentCompletion
+        - articleSummary
+        - articleTranslation
+        - articleQA
+        - termExplaination
+        in: path
+        name: taskName
+        required: true
+        type: string
+      - description: 创建Prompt请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CreatePromptBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.CreatePromptResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 创建Prompt
+      tags:
+      - ai
+  /v1/ai/prompt/{taskName}/{version}:
+    get:
+      consumes:
+      - application/json
+      description: 获取Prompt
+      parameters:
+      - enum:
+        - contentCompletion
+        - articleSummary
+        - articleTranslation
+        - articleQA
+        - termExplaination
+        in: path
+        name: taskName
+        required: true
+        type: string
+      - in: path
+        minimum: 1
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.DeleteUserViewResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取Prompt
+      tags:
+      - ai
+  /v1/ai/term-explaination:
+    post:
+      consumes:
+      - application/json
+      description: 生成术语解释
+      parameters:
+      - description: 生成术语解释请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.GenerateTermExplainationBody'
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/protocol.SSEResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 生成术语解释
+      tags:
+      - ai
   /v1/article:
     post:
       consumes:
@@ -951,6 +1805,679 @@ paths:
       summary: 列出文章
       tags:
       - article
+  /v1/asset/like/article:
+    get:
+      consumes:
+      - application/json
+      description: 列出用户喜欢的文章
+      parameters:
+      - description: 列出用户喜欢的文章请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.ListUserLikeArticlesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListUserLikeArticlesResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出用户喜欢的文章
+      tags:
+      - asset
+  /v1/asset/like/comment:
+    get:
+      consumes:
+      - application/json
+      description: 列出用户喜欢的评论
+      parameters:
+      - description: 列出用户喜欢的评论请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.ListUserLikeCommentsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListUserLikeCommentsResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出用户喜欢的评论
+      tags:
+      - asset
+  /v1/asset/like/tag:
+    get:
+      consumes:
+      - application/json
+      description: 列出用户喜欢的标签
+      parameters:
+      - description: 列出用户喜欢的标签请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.ListUserLikeTagsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListUserLikeTagsResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出用户喜欢的标签
+      tags:
+      - asset
+  /v1/asset/object/image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: 上传图片
+      parameters:
+      - description: 图片文件
+        in: formData
+        name: file
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.UploadImageResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 上传图片
+      tags:
+      - asset
+  /v1/asset/object/image/{objectName}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除图片
+      parameters:
+      - description: 删除图片请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.DeleteImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.DeleteImageResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 删除图片
+      tags:
+      - asset
+    get:
+      consumes:
+      - application/json
+      description: 获取图片
+      parameters:
+      - description: 获取图片请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.GetImageRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.GetImageResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取图片
+      tags:
+      - asset
+  /v1/asset/object/images:
+    get:
+      consumes:
+      - application/json
+      description: 列出图片
+      parameters:
+      - description: 列出图片请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.ListImagesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListImagesResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出图片
+      tags:
+      - asset
+  /v1/asset/view/articles:
+    get:
+      consumes:
+      - application/json
+      description: 列出用户浏览的文章
+      parameters:
+      - description: 列出用户浏览的文章请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.ListUserViewArticlesRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListUserViewArticlesResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出用户浏览的文章
+      tags:
+      - asset
+  /v1/asset/view/articles/{viewID}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除用户浏览的文章
+      parameters:
+      - description: 删除用户浏览的文章请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.DeleteUserViewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.DeleteUserViewResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 删除用户浏览的文章
+      tags:
+      - asset
   /v1/category:
     post:
       consumes:

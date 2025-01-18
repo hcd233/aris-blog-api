@@ -78,7 +78,7 @@ type CurUser struct {
 //	author centonhuang
 //	update 2025-01-04 21:00:54
 type GetCurUserInfoRequest struct {
-	UserID uint `json:"curUserID"`
+	UserID uint `json:"userID"`
 }
 
 // GetCurUserInfoResponse 获取当前用户信息响应
@@ -733,7 +733,7 @@ type LikeArticleResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:20
 type LikeCommentRequest struct {
-	UserID    uint `json:"curUserID"`
+	UserID    uint `json:"userID"`
 	CommentID uint `json:"commentID"`
 	Undo      bool `json:"undo"`
 }
@@ -765,9 +765,9 @@ type LikeTagResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:26
 type LogArticleViewRequest struct {
-	UserID    uint   `json:"userID"`
-	ArticleID uint   `json:"articleID"`
-	Progress  int8   `json:"progress"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
+	Progress  int8 `json:"progress"`
 }
 
 // LogArticleViewResponse 记录文章浏览响应
@@ -884,7 +884,7 @@ type ListChildrenCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:48
 type ListUserLikeArticlesRequest struct {
-	CurUserID uint       `json:"curUserID"`
+	UserID    uint       `json:"userID"`
 	PageParam *PageParam `json:"pageParam"`
 }
 
@@ -902,7 +902,7 @@ type ListUserLikeArticlesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:52
 type ListUserLikeCommentsRequest struct {
-	CurUserID uint       `json:"curUserID"`
+	UserID    uint       `json:"userID"`
 	PageParam *PageParam `json:"pageParam"`
 }
 
@@ -920,7 +920,7 @@ type ListUserLikeCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:56
 type ListUserLikeTagsRequest struct {
-	CurUserID uint       `json:"curUserID"`
+	UserID    uint       `json:"userID"`
 	PageParam *PageParam `json:"pageParam"`
 }
 
@@ -938,7 +938,7 @@ type ListUserLikeTagsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:19
 type CreateBucketRequest struct {
-	CurUserID uint `json:"curUserID"`
+	UserID uint `json:"userID"`
 }
 
 // CreateBucketResponse 创建桶响应
@@ -962,7 +962,7 @@ type Image struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:22
 type ListImagesRequest struct {
-	CurUserID uint `json:"curUserID"`
+	UserID uint `json:"userID"`
 }
 
 // ListImagesResponse 列出图片响应
@@ -978,7 +978,7 @@ type ListImagesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:25
 type UploadImageRequest struct {
-	CurUserID   uint   `json:"curUserID"`
+	UserID      uint   `json:"userID"`
 	FileName    string `json:"fileName"`
 	Size        int64  `json:"size"`
 	ContentType string `json:"contentType"`
@@ -996,7 +996,7 @@ type UploadImageResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 17:03:28
 type GetImageRequest struct {
-	CurUserID uint   `json:"curUserID"`
+	UserID    uint   `json:"userID"`
 	ImageName string `json:"imageName"`
 	Quality   string `json:"quality"`
 }
@@ -1014,7 +1014,7 @@ type GetImageResponse struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:31
 type DeleteImageRequest struct {
-	CurUserID uint   `json:"curUserID"`
+	UserID    uint   `json:"userID"`
 	ImageName string `json:"imageName"`
 }
 
@@ -1041,7 +1041,7 @@ type UserView struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:38
 type ListUserViewArticlesRequest struct {
-	CurUserID uint       `json:"curUserID"`
+	UserID    uint       `json:"userID"`
 	PageParam *PageParam `json:"pageParam"`
 }
 
@@ -1059,7 +1059,7 @@ type ListUserViewArticlesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:41
 type DeleteUserViewRequest struct {
-	CurUserID uint `json:"curUserID"`
+	UserID    uint `json:"userID"`
 	ViewID    uint `json:"viewID"`
 }
 
@@ -1153,7 +1153,7 @@ type CreatePromptResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 18:41:32
 type GenerateContentCompletionRequest struct {
-	CurUserID   uint    `json:"curUserID"`
+	UserID      uint    `json:"userID"`
 	Context     string  `json:"context"`
 	Instruction string  `json:"instruction"`
 	Reference   string  `json:"reference"`
@@ -1174,8 +1174,8 @@ type GenerateContentCompletionResponse struct {
 //	author centonhuang
 //	update 2025-01-05 18:41:32
 type GenerateArticleSummaryRequest struct {
-	CurUserID   uint    `json:"curUserID"`
-	ArticleSlug string  `json:"articleSlug"`
+	UserID      uint    `json:"userID"`
+	ArticleID   uint    `json:"articleID"`
 	Instruction string  `json:"instruction"`
 	Temperature float64 `json:"temperature"`
 }
@@ -1199,15 +1199,18 @@ type GenerateArticleTranslationRequest struct{}
 //
 //	author centonhuang
 //	update 2025-01-05 20:36:43
-type GenerateArticleTranslationResponse struct{}
+type GenerateArticleTranslationResponse struct {
+	TokenChan <-chan string
+	ErrChan   <-chan error
+}
 
 // GenerateArticleQARequest 生成文章问答请求
 //
 //	author centonhuang
 //	update 2025-01-05 18:41:32
 type GenerateArticleQARequest struct {
-	CurUserID   uint    `json:"curUserID"`
-	ArticleSlug string  `json:"articleSlug"`
+	UserID      uint    `json:"userID"`
+	ArticleID   uint    `json:"articleID"`
 	Question    string  `json:"question"`
 	Temperature float64 `json:"temperature"`
 }
@@ -1226,8 +1229,8 @@ type GenerateArticleQAResponse struct {
 //	author centonhuang
 //	update 2025-01-05 18:41:32
 type GenerateTermExplainationRequest struct {
-	CurUserID   uint    `json:"curUserID"`
-	ArticleSlug string  `json:"articleSlug"`
+	UserID      uint    `json:"userID"`
+	ArticleID   uint    `json:"articleID"`
 	Term        string  `json:"term"`
 	Position    uint    `json:"position"`
 	Temperature float64 `json:"temperature"`
