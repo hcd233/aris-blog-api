@@ -5,7 +5,6 @@ package middleware
 
 import (
 	"errors"
-	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/aris-blog-api/internal/auth"
@@ -36,14 +35,8 @@ func JwtMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		if !strings.HasPrefix(tokenString, "Bearer ") {
-			logger.Logger.Error("[JwtMiddleware] token is not Bearer")
-			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
-			c.Abort()
-			return
-		}
 
-		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString[7:])
+		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
 			logger.Logger.Error("[JwtMiddleware] failed to decode token", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)

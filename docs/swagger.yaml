@@ -7,6 +7,22 @@ definitions:
       refreshToken:
         type: string
     type: object
+  protocol.CreateTagBody:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  protocol.CreateTagResponse:
+    type: object
+  protocol.DeleteTagResponse:
+    type: object
   protocol.GetTagInfoResponse:
     properties:
       tag:
@@ -18,9 +34,41 @@ definitions:
       error:
         type: string
     type: object
+  protocol.ListTagsResponse:
+    properties:
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+      tags:
+        items:
+          $ref: '#/definitions/protocol.Tag'
+        type: array
+    type: object
   protocol.LoginResponse:
     properties:
       redirectURL:
+        type: string
+    type: object
+  protocol.PageInfo:
+    properties:
+      page:
+        type: integer
+      pageSize:
+        type: integer
+      total:
+        type: integer
+    type: object
+  protocol.RefreshTokenBody:
+    properties:
+      refreshToken:
+        type: string
+    required:
+    - refreshToken
+    type: object
+  protocol.RefreshTokenResponse:
+    properties:
+      accessToken:
+        type: string
+      refreshToken:
         type: string
     type: object
   protocol.Tag:
@@ -41,6 +89,20 @@ definitions:
         type: string
       userID:
         type: integer
+    type: object
+  protocol.UpdateTagBody:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+      slug:
+        type: string
+    required:
+    - name
+    - slug
+    type: object
+  protocol.UpdateTagResponse:
     type: object
 host: 9.134.115.68:8170
 info:
@@ -104,7 +166,89 @@ paths:
       summary: 处理Github OAuth2登录
       tags:
       - oauth2
+  /v1/tag:
+    post:
+      consumes:
+      - application/json
+      description: 创建标签
+      parameters:
+      - description: 创建标签请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CreateTagBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.CreateTagResponse'
+                error:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 创建标签
+      tags:
+      - tag
   /v1/tag/{tagSlug}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除标签
+      parameters:
+      - description: 标签slug
+        in: path
+        name: tagSlug
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.DeleteTagResponse'
+                error:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 删除标签
+      tags:
+      - tag
     get:
       consumes:
       - application/json
@@ -141,12 +285,146 @@ paths:
                   type: string
               type: object
       security:
-      - BearerAuth: []
+      - ApiKeyAuth: []
       summary: 获取标签信息
       tags:
       - tag
+    put:
+      consumes:
+      - application/json
+      description: 更新标签
+      parameters:
+      - description: 标签slug
+        in: path
+        name: tagSlug
+        required: true
+        type: string
+      - description: 更新标签请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.UpdateTagBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.UpdateTagResponse'
+                error:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 更新标签
+      tags:
+      - tag
+  /v1/tags:
+    get:
+      consumes:
+      - application/json
+      description: 获取标签列表
+      parameters:
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListTagsResponse'
+                error:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出标签
+      tags:
+      - tag
+  /v1/token/refresh:
+    post:
+      consumes:
+      - application/json
+      description: 刷新令牌
+      parameters:
+      - description: 刷新令牌请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.RefreshTokenBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.RefreshTokenResponse'
+                error:
+                  type: object
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 刷新令牌
+      tags:
+      - token
 securityDefinitions:
-  BearerAuth:
+  ApiKeyAuth:
     in: header
     name: Authorization
     type: apiKey

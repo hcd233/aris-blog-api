@@ -32,6 +32,16 @@ func NewTokenHandler() TokenHandler {
 
 // HandleRefreshToken 刷新令牌
 //
+//	@Summary		刷新令牌
+//	@Description	刷新令牌
+//	@Tags			token
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.RefreshTokenBody	true	"刷新令牌请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.RefreshTokenResponse,error=nil}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/token/refresh [post]
 //	receiver s *tokenHandler
 //	param c *gin.Context
 //	author centonhuang

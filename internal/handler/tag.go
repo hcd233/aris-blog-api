@@ -17,9 +17,6 @@ type TagHandler interface {
 	HandleUpdateTag(c *gin.Context)
 	HandleDeleteTag(c *gin.Context)
 	HandleListTags(c *gin.Context)
-	HandleListUserTags(c *gin.Context)
-	HandleQueryTag(c *gin.Context)
-	HandleQueryUserTag(c *gin.Context)
 }
 
 type tagHandler struct {
@@ -37,6 +34,21 @@ func NewTagHandler() TagHandler {
 	}
 }
 
+// HandleCreateTag 创建标签
+//
+//	@Summary		创建标签
+//	@Description	创建标签
+//	@Tags			tag
+//	@Accept			json
+//	@Produce		json
+//	@Param			body	body		protocol.CreateTagBody	true	"创建标签请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateTagResponse,error=nil}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/tag [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:52:48
 func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.CreateTagBody)
@@ -61,7 +73,7 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	@Accept			json
 //	@Produce		json
 //	@Param			tagSlug	path		string	true	"标签slug"
-//	@Security		BearerAuth
+//	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetTagInfoResponse,error=nil}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagSlug} [get]
@@ -82,6 +94,17 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 
 // HandleUpdateTag 更新标签
 //
+//	@Summary		更新标签
+//	@Description	更新标签
+//	@Tags			tag
+//	@Accept			json
+//	@Produce		json
+//	@Param			tagSlug	path		string	true	"标签slug"
+//	@Param			body	body		protocol.UpdateTagBody	true	"更新标签请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateTagResponse,error=nil}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/tag/{tagSlug} [put]
 //	receiver s *tagHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -106,7 +129,16 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 
 // HandleDeleteTag 删除标签
 //
-//	receiver s *tagHandler
+//	@Summary		删除标签
+//	@Description	删除标签
+//	@Tags			tag
+//	@Accept			json
+//	@Produce		json
+//	@Param			tagSlug	path		string	true	"标签slug"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteTagResponse,error=nil}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/tag/{tagSlug} [delete]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:55:24
@@ -124,8 +156,18 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleListTags 标签列表
+// HandleListTags 列出标签
 //
+//	@Summary		列出标签
+//	@Description	获取标签列表
+//	@Tags			tag
+//	@Accept			json
+//	@Produce		json
+//	@Param			param	query		protocol.PageParam	true	"分页参数"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListTagsResponse,error=nil}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/tags [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:55:31
@@ -137,61 +179,6 @@ func (h *tagHandler) HandleListTags(c *gin.Context) {
 	}
 
 	rsp, err := h.svc.ListTags(&req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
-// HandleListUserTags 列出用户标签
-//
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-04 15:55:38
-func (h *tagHandler) HandleListUserTags(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
-	param := c.MustGet("param").(*protocol.PageParam)
-
-	req := protocol.ListUserTagsRequest{
-		UserName:  uri.UserName,
-		PageParam: param,
-	}
-
-	rsp, err := h.svc.ListUserTags(&req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
-// HandleQueryTag 搜索标签
-//
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-04 15:55:45
-func (h *tagHandler) HandleQueryTag(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.QueryParam)
-
-	req := protocol.QueryTagRequest{
-		QueryParam: param,
-	}
-
-	rsp, err := h.svc.QueryTag(&req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
-// HandleQueryUserTag 搜索用户标签
-//
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-04 15:55:52
-func (h *tagHandler) HandleQueryUserTag(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
-	params := c.MustGet("param").(*protocol.QueryParam)
-
-	req := protocol.QueryUserTagRequest{
-		UserName:   uri.UserName,
-		QueryParam: params,
-	}
-
-	rsp, err := h.svc.QueryUserTag(&req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
