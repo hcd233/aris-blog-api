@@ -161,6 +161,150 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/article/version": {
+            "post": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "创建文章版本",
+                "parameters": [
+                    {
+                        "description": "创建文章版本请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CreateArticleVersionBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建文章版本响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CreateArticleVersionResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/article/version/latest": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "获取最新文章版本信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取最新文章版本信息响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.GetLatestArticleVersionInfoResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/article/version/versions": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "列出文章版本",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "列出文章版本响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.ListArticleVersionsResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/article/version/v{version}": {
+            "get": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "获取文章版本信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取文章版本信息响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.GetArticleVersionInfoResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/article/{articleID}": {
             "get": {
                 "security": [
@@ -3249,6 +3393,29 @@ const docTemplate = `{
                 }
             }
         },
+        "protocol.ArticleVersion": {
+            "type": "object",
+            "properties": {
+                "articleID": {
+                    "type": "integer"
+                },
+                "content": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                },
+                "versionID": {
+                    "type": "integer"
+                }
+            }
+        },
         "protocol.CallbackResponse": {
             "type": "object",
             "properties": {
@@ -3303,6 +3470,27 @@ const docTemplate = `{
                 },
                 "title": {
                     "type": "string"
+                }
+            }
+        },
+        "protocol.CreateArticleVersionBody": {
+            "type": "object",
+            "required": [
+                "content"
+            ],
+            "properties": {
+                "content": {
+                    "type": "string",
+                    "maxLength": 20000,
+                    "minLength": 100
+                }
+            }
+        },
+        "protocol.CreateArticleVersionResponse": {
+            "type": "object",
+            "properties": {
+                "articleVersion": {
+                    "$ref": "#/definitions/protocol.ArticleVersion"
                 }
             }
         },
@@ -3397,6 +3585,14 @@ const docTemplate = `{
                 }
             }
         },
+        "protocol.GetArticleVersionInfoResponse": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "$ref": "#/definitions/protocol.ArticleVersion"
+                }
+            }
+        },
         "protocol.GetCategoryInfoResponse": {
             "type": "object",
             "properties": {
@@ -3410,6 +3606,14 @@ const docTemplate = `{
             "properties": {
                 "user": {
                     "$ref": "#/definitions/protocol.CurUser"
+                }
+            }
+        },
+        "protocol.GetLatestArticleVersionInfoResponse": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "$ref": "#/definitions/protocol.ArticleVersion"
                 }
             }
         },
@@ -3443,6 +3647,20 @@ const docTemplate = `{
                 "data": {},
                 "error": {
                     "type": "string"
+                }
+            }
+        },
+        "protocol.ListArticleVersionsResponse": {
+            "type": "object",
+            "properties": {
+                "pageInfo": {
+                    "$ref": "#/definitions/protocol.PageInfo"
+                },
+                "versions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.ArticleVersion"
+                    }
                 }
             }
         },

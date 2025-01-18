@@ -13,6 +13,7 @@ import (
 func initArticleVersionRouter(r *gin.RouterGroup) {
 	articleVersionHandler := handler.NewArticleVersionHandler()
 
+	r.GET("latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
 	r.GET("versions", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleVersionHandler.HandleListArticleVersions)
 	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware("articleVersionService", model.PermissionCreator))
 	{
@@ -22,7 +23,6 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			articleVersionHandler.HandleCreateArticleVersion,
 		)
-		articleVersionRouter.GET("latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
 		articleVersionNumberRouter := articleVersionRouter.Group("v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}))
 		{
 			articleVersionNumberRouter.GET("", articleVersionHandler.HandleGetArticleVersionInfo)

@@ -43,36 +43,24 @@ func NewArticleVersionService() ArticleVersionService {
 func (s *articleVersionService) CreateArticleVersion(req *protocol.CreateArticleVersionRequest) (rsp *protocol.CreateArticleVersionResponse, err error) {
 	rsp = &protocol.CreateArticleVersionResponse{}
 
-	if req.CurUserName != req.UserName {
-		logger.Logger.Info("[ArticleVersionService] no permission to create article version",
-			zap.String("curUserName", req.CurUserName),
-			zap.String("userName", req.UserName))
-		return nil, protocol.ErrNoPermission
-	}
-
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleVersionService] user not found", zap.String("userName", req.UserName))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[ArticleVersionService] failed to get user", zap.String("userName", req.UserName), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleVersionService] article not found",
-				zap.String("articleSlug", req.ArticleSlug),
-				zap.Uint("userID", user.ID))
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[ArticleVersionService] failed to get article",
-			zap.String("articleSlug", req.ArticleSlug),
-			zap.Uint("userID", user.ID),
+			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
+	}
+
+	if article.UserID != req.UserID {
+		logger.Logger.Error("[ArticleVersionService] no permission to create article version",
+			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("userID", req.UserID))
+		return nil, protocol.ErrNoPermission
 	}
 
 	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"version"}, []string{})
@@ -102,6 +90,15 @@ func (s *articleVersionService) CreateArticleVersion(req *protocol.CreateArticle
 		return nil, protocol.ErrInternalError
 	}
 
+	rsp.ArticleVersion = &protocol.ArticleVersion{
+		ArticleID:        version.ArticleID,
+		ArticleVersionID: version.ID,
+		VersionID:        version.Version,
+		Content:          version.Content,
+		CreatedAt:        version.CreatedAt.Format(time.DateTime),
+		UpdatedAt:        version.UpdatedAt.Format(time.DateTime),
+	}
+
 	return rsp, nil
 }
 
@@ -109,50 +106,31 @@ func (s *articleVersionService) CreateArticleVersion(req *protocol.CreateArticle
 func (s *articleVersionService) GetArticleVersionInfo(req *protocol.GetArticleVersionInfoRequest) (rsp *protocol.GetArticleVersionInfoResponse, err error) {
 	rsp = &protocol.GetArticleVersionInfoResponse{}
 
-	if req.CurUserName != req.UserName {
-		logger.Logger.Info("[ArticleVersionService] no permission to get article version",
-			zap.String("curUserName", req.CurUserName),
-			zap.String("userName", req.UserName))
-		return nil, protocol.ErrNoPermission
-	}
-
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleVersionService] user not found", zap.String("userName", req.UserName))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[ArticleVersionService] failed to get user", zap.String("userName", req.UserName), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleVersionService] article not found",
-				zap.String("articleSlug", req.ArticleSlug),
-				zap.Uint("userID", user.ID))
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[ArticleVersionService] failed to get article",
-			zap.String("articleSlug", req.ArticleSlug),
-			zap.Uint("userID", user.ID),
+			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	version, err := s.articleVersionDAO.GetByArticleIDAndVersion(s.db, article.ID, req.Version,
+	version, err := s.articleVersionDAO.GetByArticleIDAndVersion(s.db, article.ID, req.VersionID,
 		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleVersionService] version not found",
 				zap.Uint("articleID", article.ID),
-				zap.Uint("version", req.Version))
+				zap.Uint("versionID", req.VersionID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[ArticleVersionService] failed to get version",
 			zap.Uint("articleID", article.ID),
-			zap.Uint("version", req.Version),
+			zap.Uint("versionID", req.VersionID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -160,7 +138,7 @@ func (s *articleVersionService) GetArticleVersionInfo(req *protocol.GetArticleVe
 	rsp.Version = &protocol.ArticleVersion{
 		ArticleID:        version.ArticleID,
 		ArticleVersionID: version.ID,
-		Version:          version.Version,
+		VersionID:        version.Version,
 		Content:          version.Content,
 		CreatedAt:        version.CreatedAt.Format(time.DateTime),
 		UpdatedAt:        version.UpdatedAt.Format(time.DateTime),
@@ -173,36 +151,25 @@ func (s *articleVersionService) GetArticleVersionInfo(req *protocol.GetArticleVe
 func (s *articleVersionService) GetLatestArticleVersionInfo(req *protocol.GetLatestArticleVersionInfoRequest) (rsp *protocol.GetLatestArticleVersionInfoResponse, err error) {
 	rsp = &protocol.GetLatestArticleVersionInfoResponse{}
 
-	if req.CurUserName != req.UserName {
-		logger.Logger.Info("[ArticleVersionService] no permission to get latest article version",
-			zap.String("curUserName", req.CurUserName),
-			zap.String("userName", req.UserName))
-		return nil, protocol.ErrNoPermission
-	}
-
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleVersionService] user not found", zap.String("userName", req.UserName))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[ArticleVersionService] failed to get user", zap.String("userName", req.UserName), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleVersionService] article not found",
-				zap.String("articleSlug", req.ArticleSlug),
-				zap.Uint("userID", user.ID))
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[ArticleVersionService] failed to get article",
-			zap.String("articleSlug", req.ArticleSlug),
-			zap.Uint("userID", user.ID),
+			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
+	}
+
+	// 如果文章不是公开的，则只有作者本人可以查看
+	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
+		logger.Logger.Error("[ArticleVersionService] no permission to get latest article version",
+			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("userID", req.UserID))
+		return nil, protocol.ErrNoPermission
 	}
 
 	version, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID,
@@ -222,7 +189,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(req *protocol.GetLat
 	rsp.Version = &protocol.ArticleVersion{
 		ArticleID:        version.ArticleID,
 		ArticleVersionID: version.ID,
-		Version:          version.Version,
+		VersionID:        version.Version,
 		Content:          version.Content,
 		CreatedAt:        version.CreatedAt.Format(time.DateTime),
 		UpdatedAt:        version.UpdatedAt.Format(time.DateTime),
@@ -235,36 +202,24 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(req *protocol.GetLat
 func (s *articleVersionService) ListArticleVersions(req *protocol.ListArticleVersionsRequest) (rsp *protocol.ListArticleVersionsResponse, err error) {
 	rsp = &protocol.ListArticleVersionsResponse{}
 
-	if req.CurUserName != req.UserName {
-		logger.Logger.Info("[ArticleVersionService] no permission to list article versions",
-			zap.String("curUserName", req.CurUserName),
-			zap.String("userName", req.UserName))
-		return nil, protocol.ErrNoPermission
-	}
-
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleVersionService] user not found", zap.String("userName", req.UserName))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[ArticleVersionService] failed to get user", zap.String("userName", req.UserName), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{"id"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleVersionService] article not found",
-				zap.String("articleSlug", req.ArticleSlug),
-				zap.Uint("userID", user.ID))
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[ArticleVersionService] failed to get article",
-			zap.String("articleSlug", req.ArticleSlug),
-			zap.Uint("userID", user.ID),
+			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
+	}
+
+	if article.UserID != req.UserID {
+		logger.Logger.Error("[ArticleVersionService] no permission to list article versions",
+			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("userID", req.UserID))
+		return nil, protocol.ErrNoPermission
 	}
 
 	versions, pageInfo, err := s.articleVersionDAO.PaginateByArticleID(s.db, article.ID,
@@ -281,7 +236,7 @@ func (s *articleVersionService) ListArticleVersions(req *protocol.ListArticleVer
 		return &protocol.ArticleVersion{
 			ArticleID:        version.ArticleID,
 			ArticleVersionID: version.ID,
-			Version:          version.Version,
+			VersionID:        version.Version,
 			Content:          version.Content,
 			CreatedAt:        version.CreatedAt.Format(time.DateTime),
 			UpdatedAt:        version.UpdatedAt.Format(time.DateTime),

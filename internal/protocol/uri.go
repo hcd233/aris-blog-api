@@ -8,11 +8,11 @@ type UserURI struct {
 	UserID uint `uri:"userID" binding:"required"`
 }
 
-// ArticleSlugURI 文章别名路径参数
+// ArticleURI 文章别名路径参数
 //
 //	author centonhuang
 //	update 2024-09-21 06:13:15
-type ArticleSlugURI struct {
+type ArticleURI struct {
 	ArticleID uint `uri:"articleID" binding:"required"`
 }
 
@@ -37,7 +37,7 @@ type CategoryURI struct {
 //	author centonhuang
 //	update 2024-10-18 03:13:26
 type ArticleVersionURI struct {
-	ArticleSlugURI
+	ArticleURI
 	Version uint `uri:"version" binding:"required,min=1"`
 }
 

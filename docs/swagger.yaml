@@ -29,6 +29,21 @@ definitions:
       views:
         type: integer
     type: object
+  protocol.ArticleVersion:
+    properties:
+      articleID:
+        type: integer
+      content:
+        type: string
+      createdAt:
+        type: string
+      updatedAt:
+        type: string
+      version:
+        type: integer
+      versionID:
+        type: integer
+    type: object
   protocol.CallbackResponse:
     properties:
       accessToken:
@@ -66,6 +81,20 @@ definitions:
     - slug
     - tags
     - title
+    type: object
+  protocol.CreateArticleVersionBody:
+    properties:
+      content:
+        maxLength: 20000
+        minLength: 100
+        type: string
+    required:
+    - content
+    type: object
+  protocol.CreateArticleVersionResponse:
+    properties:
+      articleVersion:
+        $ref: '#/definitions/protocol.ArticleVersion'
     type: object
   protocol.CreateCategoryBody:
     properties:
@@ -126,6 +155,11 @@ definitions:
       article:
         $ref: '#/definitions/protocol.Article'
     type: object
+  protocol.GetArticleVersionInfoResponse:
+    properties:
+      version:
+        $ref: '#/definitions/protocol.ArticleVersion'
+    type: object
   protocol.GetCategoryInfoResponse:
     properties:
       category:
@@ -135,6 +169,11 @@ definitions:
     properties:
       user:
         $ref: '#/definitions/protocol.CurUser'
+    type: object
+  protocol.GetLatestArticleVersionInfoResponse:
+    properties:
+      version:
+        $ref: '#/definitions/protocol.ArticleVersion'
     type: object
   protocol.GetRootCategoryResponse:
     properties:
@@ -156,6 +195,15 @@ definitions:
       data: {}
       error:
         type: string
+    type: object
+  protocol.ListArticleVersionsResponse:
+    properties:
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+      versions:
+        items:
+          $ref: '#/definitions/protocol.ArticleVersion'
+        type: array
     type: object
   protocol.ListArticlesResponse:
     properties:
@@ -649,6 +697,99 @@ paths:
       summary: 更新文章状态
       tags:
       - article
+  /v1/article/version:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 创建文章版本请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CreateArticleVersionBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 创建文章版本响应
+          schema:
+            $ref: '#/definitions/protocol.CreateArticleVersionResponse'
+      summary: 创建文章版本
+      tags:
+      - articleVersion
+  /v1/article/version/latest:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: articleID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取最新文章版本信息响应
+          schema:
+            $ref: '#/definitions/protocol.GetLatestArticleVersionInfoResponse'
+      summary: 获取最新文章版本信息
+      tags:
+      - articleVersion
+  /v1/article/version/v{version}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: articleID
+        required: true
+        type: integer
+      - in: path
+        minimum: 1
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取文章版本信息响应
+          schema:
+            $ref: '#/definitions/protocol.GetArticleVersionInfoResponse'
+      summary: 获取文章版本信息
+      tags:
+      - articleVersion
+  /v1/article/version/versions:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: articleID
+        required: true
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 列出文章版本响应
+          schema:
+            $ref: '#/definitions/protocol.ListArticleVersionsResponse'
+      summary: 列出文章版本
+      tags:
+      - articleVersion
   /v1/articles:
     get:
       consumes:
