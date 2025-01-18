@@ -82,7 +82,7 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagSlug} [get]
+//	@Router			/v1/tag/{tagID} [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:52:48
@@ -113,7 +113,7 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagSlug} [put]
+//	@Router			/v1/tag/{tagID} [put]
 //	receiver s *tagHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -143,14 +143,14 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 //	@Tags			tag
 //	@Accept			json
 //	@Produce		json
-//	@Param			tagSlug	path		string	true	"标签slug"
+//	@Param			path	path	protocol.TagURI	true	"标签ID"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteTagResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagSlug} [delete]
+//	@Router			/v1/tag/{tagID} [delete]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:55:24
