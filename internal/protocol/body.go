@@ -99,8 +99,8 @@ type UpdateArticleStatusBody struct {
 //	update 2024-10-24 04:29:01
 type CreateArticleCommentBody struct {
 	ArticleID uint   `json:"articleID" binding:"required"`
-	ReplyTo uint   `json:"replyTo" binding:"omitempty"`
-	Content string `json:"content" binding:"required,min=1,max=300"`
+	ReplyTo   uint   `json:"replyTo" binding:"omitempty"`
+	Content   string `json:"content" binding:"required,min=1,max=300"`
 }
 
 // LikeBody 点赞请求体
@@ -117,8 +117,7 @@ type LikeBody struct {
 //	update 2024-10-29 06:49:41
 type LikeArticleBody struct {
 	LikeBody
-	Author      string `json:"author" binding:"required"`
-	ArticleSlug string `json:"articleSlug" binding:"required"`
+	ArticleID uint `json:"articleID" binding:"required"`
 }
 
 // LikeCommentBody 点赞评论请求体
@@ -136,7 +135,7 @@ type LikeCommentBody struct {
 //	update 2024-10-29 06:50:42
 type LikeTagBody struct {
 	LikeBody
-	TagSlug string `json:"tagSlug" binding:"required"`
+	TagID uint `json:"tagID" binding:"required"`
 }
 
 // LogUserViewArticleBody 记录文章浏览请求体
@@ -144,9 +143,8 @@ type LikeTagBody struct {
 //	author centonhuang
 //	update 2024-11-09 07:34:14
 type LogUserViewArticleBody struct {
-	Author      string `json:"author" binding:"required"`
-	ArticleSlug string `json:"articleSlug" binding:"required"`
-	Progress    int8   `json:"progress" binding:"min=0,max=100"`
+	ArticleID uint `json:"articleID" binding:"required"`
+	Progress  int8 `json:"progress" binding:"min=0,max=100"`
 }
 
 // Template 提示词模板

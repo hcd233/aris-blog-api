@@ -232,6 +232,37 @@ definitions:
       error:
         type: string
     type: object
+  protocol.LikeArticleBody:
+    properties:
+      articleID:
+        type: integer
+      undo:
+        type: boolean
+    required:
+    - articleID
+    type: object
+  protocol.LikeCommentBody:
+    properties:
+      commentID:
+        type: integer
+      undo:
+        type: boolean
+    required:
+    - commentID
+    type: object
+  protocol.LikeCommentResponse:
+    type: object
+  protocol.LikeTagBody:
+    properties:
+      tagID:
+        type: integer
+      undo:
+        type: boolean
+    required:
+    - tagID
+    type: object
+  protocol.LikeTagResponse:
+    type: object
   protocol.ListArticleVersionsResponse:
     properties:
       pageInfo:
@@ -285,6 +316,19 @@ definitions:
         items:
           $ref: '#/definitions/protocol.Tag'
         type: array
+    type: object
+  protocol.LogArticleViewResponse:
+    type: object
+  protocol.LogUserViewArticleBody:
+    properties:
+      articleID:
+        type: integer
+      progress:
+        maximum: 100
+        minimum: 0
+        type: integer
+    required:
+    - articleID
     type: object
   protocol.LoginResponse:
     properties:
@@ -1806,6 +1850,306 @@ paths:
       summary: 处理Github OAuth2登录
       tags:
       - oauth2
+  /v1/operation/like/article:
+    post:
+      consumes:
+      - application/json
+      description: 点赞文章
+      parameters:
+      - description: 点赞文章请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.LikeArticleBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListChildrenCategoriesResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 点赞文章
+      tags:
+      - operation
+  /v1/operation/like/comment:
+    post:
+      consumes:
+      - application/json
+      description: 点赞评论
+      parameters:
+      - description: 点赞评论请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.LikeCommentBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.LikeCommentResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 点赞评论
+      tags:
+      - operation
+  /v1/operation/like/tag:
+    post:
+      consumes:
+      - application/json
+      description: 点赞标签
+      parameters:
+      - description: 点赞标签请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.LikeTagBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.LikeTagResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 点赞标签
+      tags:
+      - operation
+  /v1/operation/view/article:
+    post:
+      consumes:
+      - application/json
+      description: 记录文章浏览
+      parameters:
+      - description: 记录文章浏览请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.LogUserViewArticleBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.LogArticleViewResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 记录文章浏览
+      tags:
+      - operation
   /v1/ping:
     get:
       consumes:
