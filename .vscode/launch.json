@@ -11,6 +11,15 @@
             "args": ["server", "start", "--host", "0.0.0.0", "--port", "8170"],
         },
         {
+            "name": "Aris-Blog-Bucket-Create",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/main.go",
+            "envFile": "${workspaceFolder}/api.env",
+            "args": ["object", "bucket", "create"],
+        },
+        {
             "name": "Aris-Blog-Migrate",
             "type": "go",
             "request": "launch",

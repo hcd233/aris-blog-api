@@ -28,12 +28,6 @@ func initAssetRouter(r *gin.RouterGroup) {
 		}
 		objectRouter := assetRouter.Group("/object")
 		{
-			objectRouter.POST(
-				"bucket",
-				middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator),
-				assetHandler.HandleCreateBucket,
-			)
-
 			objectRouter.GET(
 				"images",
 				middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator),

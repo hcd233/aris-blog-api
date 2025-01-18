@@ -255,9 +255,9 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
 	rsp = &protocol.GenerateContentCompletionResponse{}
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.CurUserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.CurUserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
@@ -309,15 +309,22 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
 	rsp = &protocol.GenerateArticleSummaryResponse{}
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.CurUserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.CurUserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, req.CurUserID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to get article", zap.String("articleSlug", req.ArticleSlug), zap.Error(err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Logger.Error("[AIService] article not found",
+				zap.Uint("articleID", req.ArticleID))
+			return nil, protocol.ErrDataNotExists
+		}
+		logger.Logger.Error("[AIService] failed to get article",
+			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -374,7 +381,7 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 //	update 2025-01-05 18:03:27
 func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error) {
 	// TODO: 实现
-	return nil, protocol.ErrInternalError
+	return nil, protocol.ErrNoImplement
 }
 
 // GenerateArticleQA 生成文章问答
@@ -387,31 +394,48 @@ func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTransl
 //	update 2025-01-05 18:03:44
 func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
 	rsp = &protocol.GenerateArticleQAResponse{}
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.CurUserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.CurUserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, req.CurUserID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to get article", zap.String("articleSlug", req.ArticleSlug), zap.Error(err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Logger.Error("[AIService] article not found",
+				zap.Uint("articleID", req.ArticleID))
+			return nil, protocol.ErrDataNotExists
+		}
+		logger.Logger.Error("[AIService] failed to get article",
+			zap.Uint("articleID", req.ArticleID),
+			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Logger.Error("[AIService] article version not found",
+				zap.Uint("articleID", article.ID))
+			return nil, protocol.ErrDataNotExists
+		}
+		logger.Logger.Error("[AIService] failed to get article version",
+			zap.Uint("articleID", article.ID),
+			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(model.TaskContentCompletion)))
+			logger.Logger.Error("[AIService] latest prompt not found",
+				zap.String("taskName", string(model.TaskContentCompletion)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(model.TaskContentCompletion)), zap.Error(err))
+		logger.Logger.Error("[AIService] failed to get latest prompt",
+			zap.String("taskName", string(model.TaskContentCompletion)),
+			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -453,19 +477,22 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
 	rsp = &protocol.GenerateTermExplainationResponse{}
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.CurUserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.CurUserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, req.CurUserID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] article not found", zap.String("articleSlug", req.ArticleSlug))
+			logger.Logger.Error("[AIService] article not found",
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get article", zap.String("articleSlug", req.ArticleSlug), zap.Error(err))
+		logger.Logger.Error("[AIService] failed to get article",
+			zap.Uint("articleID", req.ArticleID),
+			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 

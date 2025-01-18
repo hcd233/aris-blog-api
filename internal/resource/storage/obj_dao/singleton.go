@@ -29,6 +29,7 @@ func GetImageObjDAO() *BaseMinioObjDAO {
 	imageObjOnce.Do(func() {
 		ImageObjDAOSingleton = &BaseMinioObjDAO{
 			ObjectType: ObjectTypeImage,
+			BucketName: BucketNameUserImage,
 			client:     storage.GetObjectStorage(),
 		}
 	})
@@ -44,6 +45,7 @@ func GetThumbnailObjDAO() *BaseMinioObjDAO {
 	thumbnailObjOnce.Do(func() {
 		ThumbnailObjDAOSingleton = &BaseMinioObjDAO{
 			ObjectType: ObjectTypeThumbnail,
+			BucketName: BucketNameUserImage,
 			client:     storage.GetObjectStorage(),
 		}
 	})

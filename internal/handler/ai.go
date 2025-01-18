@@ -41,6 +41,24 @@ func NewAIHandler() AIHandler {
 	}
 }
 
+// HandleGetPrompt 获取Prompt
+//
+//	@Summary		获取Prompt
+//	@Description	获取Prompt
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		json
+//	@Param			uri		path		protocol.PromptVersionURI	true	"Prompt版本URI"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteUserViewResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/prompt/{taskName}/{version} [get]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.PromptVersionURI)
 
@@ -66,6 +84,25 @@ func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
+// HandleListPrompt 获取Prompt列表
+//
+//	@Summary		获取Prompt列表
+//	@Description	获取Prompt列表
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		json
+//	@Param			uri		path		protocol.TaskURI	true	"任务URI"
+//	@Param			param	query		protocol.PageParam	true	"分页参数"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListPromptResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/prompt [get]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 	uri := c.MustGet("uri").(*protocol.TaskURI)
@@ -80,6 +117,25 @@ func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
+// HandleCreatePrompt 创建Prompt
+//
+//	@Summary		创建Prompt
+//	@Description	创建Prompt
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		json
+//	@Param			uri		path		protocol.TaskURI	true	"任务URI"
+//	@Param			body	body		protocol.CreatePromptBody	true	"创建Prompt请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreatePromptResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/prompt [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TaskURI)
 	body := c.MustGet("body").(*protocol.CreatePromptBody)
@@ -94,12 +150,30 @@ func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
+// HandleGenerateContentCompletion 生成内容补全
+//
+//	@Summary		生成内容补全
+//	@Description	生成内容补全
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		text/event-stream
+//	@Param			body	body		protocol.GenerateContentCompletionBody	true	"生成内容补全请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.SSEResponse{}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/content-completion [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateContentCompletionBody)
 
 	req := &protocol.GenerateContentCompletionRequest{
-		CurUserID:   userID,
+		UserID:      userID,
 		Context:     body.Context,
 		Instruction: body.Instruction,
 		Reference:   body.Reference,
@@ -115,13 +189,31 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
 }
 
+// HandleGenerateArticleSummary 生成文章摘要
+//
+//	@Summary		生成文章摘要
+//	@Description	生成文章摘要
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		text/event-stream
+//	@Param			body	body		protocol.GenerateArticleSummaryBody	true	"生成文章摘要请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.SSEResponse{}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/article-summary [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateArticleSummaryBody)
 
 	req := &protocol.GenerateArticleSummaryRequest{
-		CurUserID:   userID,
-		ArticleSlug: body.ArticleSlug,
+		UserID:      userID,
+		ArticleID:   body.ArticleID,
 		Instruction: body.Instruction,
 		Temperature: body.Temperature,
 	}
@@ -135,24 +227,61 @@ func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
 }
 
+// HandleGenerateArticleTranslation 生成文章翻译
+//
+//	@Summary		生成文章翻译
+//	@Description	生成文章翻译
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		text/event-stream
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.SSEResponse{}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/article-translation [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
 	// TODO: 实现
 	req := &protocol.GenerateArticleTranslationRequest{}
 
-	_, err := h.svc.GenerateArticleTranslation(req)
+	rsp, err := h.svc.GenerateArticleTranslation(req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return
 	}
+
+	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
 }
 
+// HandleGenerateArticleQA 生成文章问答
+//
+//	@Summary		生成文章问答
+//	@Description	生成文章问答
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		text/event-stream
+//	@Param			body	body		protocol.GenerateArticleQABody	true	"生成文章问答请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.SSEResponse{}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/article-qa [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateArticleQABody)
 
 	req := &protocol.GenerateArticleQARequest{
-		CurUserID:   userID,
-		ArticleSlug: body.ArticleSlug,
+		UserID:      userID,
+		ArticleID:   body.ArticleID,
 		Question:    body.Question,
 		Temperature: body.Temperature,
 	}
@@ -166,13 +295,31 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
 }
 
+// HandleGenerateTermExplaination 生成术语解释
+//
+//	@Summary		生成术语解释
+//	@Description	生成术语解释
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		text/event-stream
+//	@Param			body	body		protocol.GenerateTermExplainationBody	true	"生成术语解释请求体"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.SSEResponse{}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/term-explaination [post]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
 	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.GenerateTermExplainationBody)
 
 	req := &protocol.GenerateTermExplainationRequest{
-		CurUserID:   userID,
-		ArticleSlug: body.ArticleSlug,
+		UserID:      userID,
+		ArticleID:   body.ArticleID,
 		Term:        body.Term,
 		Position:    body.Position,
 		Temperature: body.Temperature,
