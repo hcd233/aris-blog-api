@@ -170,6 +170,11 @@ definitions:
       total:
         type: integer
     type: object
+  protocol.PingResponse:
+    properties:
+      status:
+        type: string
+    type: object
   protocol.RefreshTokenBody:
     properties:
       refreshToken:
@@ -848,6 +853,28 @@ paths:
       summary: 处理Github OAuth2登录
       tags:
       - oauth2
+  /v1/ping:
+    get:
+      consumes:
+      - application/json
+      description: 健康检查
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.PingResponse'
+                error:
+                  type: object
+              type: object
+      summary: 健康检查
+      tags:
+      - ping
   /v1/tag:
     post:
       consumes:

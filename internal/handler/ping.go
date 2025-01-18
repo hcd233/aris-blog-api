@@ -27,6 +27,13 @@ func NewPingHandler() PingHandler {
 
 // HandlePing 处理健康检查请求
 //
+//	@Summary		健康检查
+//	@Description	健康检查
+//	@Tags			ping
+//	@Accept			json
+//	@Produce		json
+//	@Success		200		{object}	protocol.HTTPResponse{data=protocol.PingResponse,error=nil}
+//	@Router			/v1/ping [get]
 //	receiver h *pingHandler
 //	param c *gin.Context
 //	author centonhuang
