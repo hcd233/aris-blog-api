@@ -501,8 +501,8 @@ type CreateArticleResponse struct {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type GetArticleInfoRequest struct {
-	UserID      uint   `json:"userID"`
-	ArticleID   uint   `json:"articleID"`
+	UserID    uint   `json:"userID"`
+	ArticleID uint   `json:"articleID"`
 }
 
 // GetArticleInfoResponse 获取文章信息响应
@@ -552,8 +552,8 @@ type UpdateArticleStatusResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type DeleteArticleRequest struct {
-	UserID      uint   `json:"userID"`
-	ArticleID   uint   `json:"articleID"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
 }
 
 // DeleteArticleResponse 删除文章响应
@@ -634,7 +634,7 @@ type QueryUserArticleResponse struct {
 type ArticleVersion struct {
 	ArticleVersionID uint   `json:"versionID"`
 	ArticleID        uint   `json:"articleID"`
-	Version          uint   `json:"version"`
+	VersionID        uint   `json:"version"`
 	Content          string `json:"content"`
 	CreatedAt        string `json:"createdAt"`
 	UpdatedAt        string `json:"updatedAt"`
@@ -645,27 +645,27 @@ type ArticleVersion struct {
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type CreateArticleVersionRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
-	Content     string `json:"content"`
+	UserID    uint   `json:"userID"`
+	ArticleID uint   `json:"articleID"`
+	Content   string `json:"content"`
 }
 
 // CreateArticleVersionResponse 创建文章版本响应
 //
 //	author centonhuang
 //	update 2025-01-05 16:42:48
-type CreateArticleVersionResponse struct{}
+type CreateArticleVersionResponse struct {
+	ArticleVersion *ArticleVersion `json:"articleVersion"`
+}
 
 // GetArticleVersionInfoRequest 获取文章版本信息请求
 //
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type GetArticleVersionInfoRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
-	Version     uint   `json:"version"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
+	VersionID uint `json:"versionID"`
 }
 
 // GetArticleVersionInfoResponse 获取文章版本信息响应
@@ -681,9 +681,8 @@ type GetArticleVersionInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type GetLatestArticleVersionInfoRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
 }
 
 // GetLatestArticleVersionInfoResponse 获取最新文章版本信息响应
@@ -699,9 +698,8 @@ type GetLatestArticleVersionInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type ListArticleVersionsRequest struct {
-	CurUserName string     `json:"curUserName"`
-	UserName    string     `json:"userName"`
-	ArticleSlug string     `json:"articleSlug"`
+	UserID      uint       `json:"userID"`
+	ArticleID   uint       `json:"articleID"`
 	PageParam   *PageParam `json:"pageParam"`
 }
 

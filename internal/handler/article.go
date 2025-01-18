@@ -78,7 +78,7 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 //	@Tags article
 //	@Accept json
 //	@Produce json
-//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Param path path protocol.ArticleURI true "文章ID"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.GetArticleInfoResponse "获取文章信息响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
@@ -111,7 +111,7 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 //	@Tags article
 //	@Accept json
 //	@Produce json
-//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Param path path protocol.ArticleURI true "文章ID"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.UpdateArticleResponse "更新文章响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
@@ -148,7 +148,7 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 //	@Tags article
 //	@Accept json
 //	@Produce json
-//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Param path path protocol.ArticleURI true "文章ID"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.UpdateArticleStatusResponse "更新文章状态响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
@@ -183,7 +183,7 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 //	@Tags article
 //	@Accept json
 //	@Produce json
-//	@Param path path protocol.ArticleSlugURI true "文章ID"
+//	@Param path path protocol.ArticleURI true "文章ID"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.DeleteArticleResponse "删除文章响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}

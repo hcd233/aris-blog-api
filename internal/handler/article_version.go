@@ -27,16 +27,27 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 }
 
 // HandleCreateArticleVersion 创建文章版本
+//
+//	@Summary 创建文章版本
+//	@Tags articleVersion
+//	@Accept json
+//	@Produce json
+//	@Param body body protocol.CreateArticleVersionBody true "创建文章版本请求体"
+//	@Success 200 {object} protocol.CreateArticleVersionResponse "创建文章版本响应"
+//	@Router /v1/article/version [post]
+//	receiver h *articleVersionHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	userID := c.GetUint("userID")
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
 	req := &protocol.CreateArticleVersionRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
-		Content:     body.Content,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
+		Content:   body.Content,
 	}
 
 	rsp, err := h.svc.CreateArticleVersion(req)
@@ -45,15 +56,26 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 }
 
 // HandleGetArticleVersionInfo 获取文章版本信息
+//
+//	@Summary 获取文章版本信息
+//	@Tags articleVersion
+//	@Accept json
+//	@Produce json
+//	@Param uri path protocol.ArticleVersionURI true "文章版本路径参数"
+//	@Success 200 {object} protocol.GetArticleVersionInfoResponse "获取文章版本信息响应"
+//	@Router /v1/article/version/v{version} [get]
+//	receiver h *articleVersionHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
-	userName := c.GetString("userName")
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleVersionURI)
 
 	req := &protocol.GetArticleVersionInfoRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
-		Version:     uri.Version,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
+		VersionID: uri.Version,
 	}
 
 	rsp, err := h.svc.GetArticleVersionInfo(req)
@@ -62,14 +84,25 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 }
 
 // HandleGetLatestArticleVersionInfo 获取最新文章版本信息
+//
+//	@Summary 获取最新文章版本信息
+//	@Tags articleVersion
+//	@Accept json
+//	@Produce json
+//	@Param uri path protocol.ArticleURI true "文章路径参数"
+//	@Success 200 {object} protocol.GetLatestArticleVersionInfoResponse "获取最新文章版本信息响应"
+//	@Router /v1/article/version/latest [get]
+//	receiver h *articleVersionHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context) {
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	userID := c.GetUint("userID")
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	req := &protocol.GetLatestArticleVersionInfoRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
 	}
 
 	rsp, err := h.svc.GetLatestArticleVersionInfo(req)
@@ -78,16 +111,28 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context
 }
 
 // HandleListArticleVersions 列出文章版本
+//
+//	@Summary 列出文章版本
+//	@Tags articleVersion
+//	@Accept json
+//	@Produce json
+//	@Param uri path protocol.ArticleURI true "文章路径参数"
+//	@Param param query protocol.PageParam true "分页参数"
+//	@Success 200 {object} protocol.ListArticleVersionsResponse "列出文章版本响应"
+//	@Router /v1/article/version/versions [get]
+//	receiver h *articleVersionHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleListArticleVersions(c *gin.Context) {
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	userID := c.GetUint("userID")
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListArticleVersionsRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		ArticleSlug: uri.ArticleSlug,
-		PageParam:   param,
+		UserID:    userID,
+		ArticleID: uri.ArticleID,
+		PageParam: param,
 	}
 
 	rsp, err := h.svc.ListArticleVersions(req)
