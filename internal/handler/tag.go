@@ -44,6 +44,9 @@ func NewTagHandler() TagHandler {
 //	@Param			body	body		protocol.CreateTagBody	true	"创建标签请求体"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateTagResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag [post]
 //	param c *gin.Context
@@ -75,6 +78,9 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	@Param			tagSlug	path		string	true	"标签slug"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetTagInfoResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagSlug} [get]
 //	param c *gin.Context
@@ -83,11 +89,11 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	req := protocol.GetTagInfoRequest{
+	req := &protocol.GetTagInfoRequest{
 		TagSlug: uri.TagSlug,
 	}
 
-	rsp, err := h.svc.GetTagInfo(&req)
+	rsp, err := h.svc.GetTagInfo(req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -103,6 +109,9 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	@Param			body	body		protocol.UpdateTagBody	true	"更新标签请求体"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateTagResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagSlug} [put]
 //	receiver s *tagHandler
@@ -114,7 +123,7 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TagURI)
 	body := c.MustGet("body").(*protocol.UpdateTagBody)
 
-	req := protocol.UpdateTagRequest{
+	req := &protocol.UpdateTagRequest{
 		CurUserID:   userID,
 		TagSlug:     uri.TagSlug,
 		Name:        body.Name,
@@ -122,7 +131,7 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.UpdateTag(&req)
+	rsp, err := h.svc.UpdateTag(req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -137,6 +146,9 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 //	@Param			tagSlug	path		string	true	"标签slug"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteTagResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagSlug} [delete]
 //	param c *gin.Context
@@ -146,12 +158,12 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.TagURI)
 
-	req := protocol.DeleteTagRequest{
+	req := &protocol.DeleteTagRequest{
 		CurUserID: userID,
 		TagName:   uri.TagSlug,
 	}
 
-	rsp, err := h.svc.DeleteTag(&req)
+	rsp, err := h.svc.DeleteTag(req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -166,6 +178,9 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 //	@Param			param	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListTagsResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tags [get]
 //	param c *gin.Context
@@ -174,11 +189,11 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 func (h *tagHandler) HandleListTags(c *gin.Context) {
 	param := c.MustGet("param").(*protocol.PageParam)
 
-	req := protocol.ListTagsRequest{
+	req := &protocol.ListTagsRequest{
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListTags(&req)
+	rsp, err := h.svc.ListTags(req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

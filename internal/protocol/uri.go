@@ -47,7 +47,6 @@ type ArticleVersionURI struct {
 //	author centonhuang
 //	update 2024-10-24 05:57:22
 type CommentURI struct {
-	ArticleSlugURI
 	CommentID uint `uri:"commentID" binding:"required,min=1"`
 }
 
