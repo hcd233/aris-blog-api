@@ -12,12 +12,11 @@ func initUserRouter(r *gin.RouterGroup) {
 
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
-		userRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), userHandler.HandleQueryUser)
-		userRouter.GET("me", userHandler.HandleGetCurUserInfo)
-		userNameRouter := userRouter.Group("/:userName", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
+		userRouter.GET("current", userHandler.HandleGetCurUserInfo)
+		userRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userHandler.HandleUpdateInfo)
+		userNameRouter := userRouter.Group("/:userID", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 		{
 			userNameRouter.GET("", userHandler.HandleGetUserInfo)
-			userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userHandler.HandleUpdateInfo)
 		}
 
 	}

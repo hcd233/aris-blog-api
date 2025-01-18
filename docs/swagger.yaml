@@ -77,6 +77,23 @@ definitions:
     type: object
   protocol.CreateTagResponse:
     type: object
+  protocol.CurUser:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      lastLogin:
+        type: string
+      name:
+        type: string
+      permission:
+        type: string
+      userID:
+        type: integer
+    type: object
   protocol.DeleteCategoryResponse:
     type: object
   protocol.DeleteTagResponse:
@@ -85,6 +102,11 @@ definitions:
     properties:
       category:
         $ref: '#/definitions/protocol.Category'
+    type: object
+  protocol.GetCurUserInfoResponse:
+    properties:
+      user:
+        $ref: '#/definitions/protocol.CurUser'
     type: object
   protocol.GetRootCategoryResponse:
     properties:
@@ -95,6 +117,11 @@ definitions:
     properties:
       tag:
         $ref: '#/definitions/protocol.Tag'
+    type: object
+  protocol.GetUserInfoResponse:
+    properties:
+      user:
+        $ref: '#/definitions/protocol.User'
     type: object
   protocol.HTTPResponse:
     properties:
@@ -201,6 +228,30 @@ definitions:
     - slug
     type: object
   protocol.UpdateTagResponse:
+    type: object
+  protocol.UpdateUserBody:
+    properties:
+      userName:
+        type: string
+    required:
+    - userName
+    type: object
+  protocol.UpdateUserInfoResponse:
+    type: object
+  protocol.User:
+    properties:
+      avatar:
+        type: string
+      createdAt:
+        type: string
+      email:
+        type: string
+      lastLogin:
+        type: string
+      name:
+        type: string
+      userID:
+        type: integer
     type: object
 host: 9.134.115.68:8170
 info:
@@ -1054,6 +1105,222 @@ paths:
       summary: 刷新令牌
       tags:
       - token
+  /v1/user:
+    put:
+      consumes:
+      - application/json
+      description: 更新用户信息
+      parameters:
+      - description: 更新用户信息请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.UpdateUserBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.UpdateUserInfoResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 更新用户信息
+      tags:
+      - user
+  /v1/user/{userID}:
+    get:
+      consumes:
+      - application/json
+      description: 获取用户信息
+      parameters:
+      - in: path
+        name: userID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.GetUserInfoResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取用户信息
+      tags:
+      - user
+  /v1/user/current:
+    get:
+      consumes:
+      - application/json
+      description: 获取当前用户信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.GetCurUserInfoResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取当前用户信息
+      tags:
+      - user
 securityDefinitions:
   ApiKeyAuth:
     in: header
