@@ -21,7 +21,6 @@ func initUserRouter(r *gin.RouterGroup) {
 
 			initUserArticleRouter(userNameRouter)
 			initUserCategoryRouter(userNameRouter)
-			initUserTagRouter(userNameRouter)
 			initUserOperationRouter(userNameRouter)
 			initUserAssetRouter(userNameRouter)
 		}

@@ -22,7 +22,7 @@ import (
 // @host           9.134.115.68:8170
 // @BasePath       /
 
-// @securityDefinitions.apikey BearerAuth
+// @securityDefinitions.apikey ApiKeyAuth
 // @in header
 // @name Authorization
 func main() {

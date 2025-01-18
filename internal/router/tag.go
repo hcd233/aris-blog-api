@@ -14,7 +14,6 @@ func initTagRouter(r *gin.RouterGroup) {
 	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagHandler.HandleListTags)
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
-		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagHandler.HandleQueryTag)
 		tagRouter.POST(
 			"",
 			middleware.LimitUserPermissionMiddleware("createTag", model.PermissionCreator),
@@ -39,12 +38,3 @@ func initTagRouter(r *gin.RouterGroup) {
 	}
 }
 
-func initUserTagRouter(r *gin.RouterGroup) {
-	tagHandler := handler.NewTagHandler()
-
-	r.GET("tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagHandler.HandleListUserTags)
-	tagRouter := r.Group("/tag")
-	{
-		tagRouter.GET("", middleware.ValidateParamMiddleware(&protocol.QueryParam{}), tagHandler.HandleQueryUserTag)
-	}
-}
