@@ -4,6 +4,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
@@ -63,12 +64,20 @@ func (s *articleVersionService) CreateArticleVersion(req *protocol.CreateArticle
 		return nil, protocol.ErrNoPermission
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"version"}, []string{})
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"version", "content"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Logger.Error("[ArticleVersionService] failed to get latest version",
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
+	}
+
+	if latestVersion.Content == req.Content {
+		logger.Logger.Warn("[ArticleVersionService] content is the same as the latest version",
+			zap.Uint("articleID", article.ID),
+			zap.Uint("articleVersionID", latestVersion.ID),
+			zap.String("content", req.Content))
+		return nil, protocol.ErrDataExists
 	}
 
 	nextVersion := uint(1)
@@ -237,7 +246,7 @@ func (s *articleVersionService) ListArticleVersions(req *protocol.ListArticleVer
 			ArticleID:        version.ArticleID,
 			ArticleVersionID: version.ID,
 			VersionID:        version.Version,
-			Content:          version.Content,
+			Content:          string([]rune(version.Content)[:constant.ListArticleVersionContentLength]) + "...",
 			CreatedAt:        version.CreatedAt.Format(time.DateTime),
 			UpdatedAt:        version.UpdatedAt.Format(time.DateTime),
 		}

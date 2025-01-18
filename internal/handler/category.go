@@ -144,7 +144,7 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [put]
+//	@Router			/v1/category/{categoryID} [patch]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-10-02 03:45:55
@@ -182,9 +182,11 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 04:55:08
 func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
 	req := &protocol.DeleteCategoryRequest{
+		UserID:     userID,
 		CategoryID: uri.CategoryID,
 	}
 

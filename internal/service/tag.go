@@ -69,6 +69,17 @@ func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.Cr
 		return nil, protocol.ErrInternalError
 	}
 
+	rsp.Tag = &protocol.Tag{
+		TagID:       tag.ID,
+		Name:        tag.Name,
+		Slug:        tag.Slug,
+		Description: tag.Description,
+		UserID:      tag.UserID,
+		CreatedAt:   tag.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   tag.UpdatedAt.Format(time.DateTime),
+		Likes:       tag.Likes,
+	}
+
 	return rsp, nil
 }
 

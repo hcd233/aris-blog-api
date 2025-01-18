@@ -12,9 +12,13 @@ import (
 func initCommentRouter(r *gin.RouterGroup) {
 	commentHandler := handler.NewCommentHandler()
 
-	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListArticleComments)
-	commentRouter := r.Group("/comment")
+	commentRouter := r.Group("/comment", middleware.JwtMiddleware())
 	{
+		commentRouter.GET("article/:articleID/list",
+			middleware.ValidateParamMiddleware(&protocol.PageParam{}),
+			middleware.ValidateURIMiddleware(&protocol.ArticleURI{}),
+			commentHandler.HandleListArticleComments,
+		)
 		commentRouter.POST(
 			"",
 			middleware.RateLimiterMiddleware("createComment", "userID", 10*time.Second, 1),

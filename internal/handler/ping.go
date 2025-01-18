@@ -33,7 +33,7 @@ func NewPingHandler() PingHandler {
 //	@Accept			json
 //	@Produce		json
 //	@Success		200		{object}	protocol.HTTPResponse{data=protocol.PingResponse,error=nil}
-//	@Router			/v1/ping [get]
+//	@Router			/ [get]
 //	receiver h *pingHandler
 //	param c *gin.Context
 //	author centonhuang

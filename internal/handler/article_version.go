@@ -32,9 +32,15 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 //	@Tags articleVersion
 //	@Accept json
 //	@Produce json
+//	@Param uri path protocol.ArticleURI true "文章路径参数"
 //	@Param body body protocol.CreateArticleVersionBody true "创建文章版本请求体"
+//	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.CreateArticleVersionResponse "创建文章版本响应"
-//	@Router /v1/article/version [post]
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID}/version [post]
 //	receiver h *articleVersionHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -62,8 +68,13 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 //	@Accept json
 //	@Produce json
 //	@Param uri path protocol.ArticleVersionURI true "文章版本路径参数"
+//	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.GetArticleVersionInfoResponse "获取文章版本信息响应"
-//	@Router /v1/article/version/v{version} [get]
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID}/version/v{version} [get]
 //	receiver h *articleVersionHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -90,8 +101,13 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 //	@Accept json
 //	@Produce json
 //	@Param uri path protocol.ArticleURI true "文章路径参数"
+//	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.GetLatestArticleVersionInfoResponse "获取最新文章版本信息响应"
-//	@Router /v1/article/version/latest [get]
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID}/version/latest [get]
 //	receiver h *articleVersionHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -118,8 +134,13 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context
 //	@Produce json
 //	@Param uri path protocol.ArticleURI true "文章路径参数"
 //	@Param param query protocol.PageParam true "分页参数"
+//	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.ListArticleVersionsResponse "列出文章版本响应"
-//	@Router /v1/article/version/versions [get]
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/{articleID}/version/list [get]
 //	receiver h *articleVersionHandler
 //	param c *gin.Context
 //	author centonhuang

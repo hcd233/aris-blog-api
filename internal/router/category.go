@@ -22,7 +22,7 @@ func initCategoryRouter(r *gin.RouterGroup) {
 		{
 			categoryIDRouter.GET("", categoryHandler.HandleGetCategoryInfo)
 			categoryIDRouter.DELETE("", categoryHandler.HandleDeleteCategory)
-			categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryHandler.HandleUpdateCategoryInfo)
+			categoryIDRouter.PATCH("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryHandler.HandleUpdateCategoryInfo)
 			categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenCategories)
 			categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenArticles)
 		}

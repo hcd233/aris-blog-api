@@ -14,6 +14,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
+	objdao "github.com/hcd233/aris-blog-api/internal/resource/storage/obj_dao"
 
 	"github.com/hcd233/aris-blog-api/internal/util"
 	"go.uber.org/zap"
@@ -42,6 +43,8 @@ type githubOauth2Service struct {
 	oauth2Config       *oauth2.Config
 	db                 *gorm.DB
 	userDAO            *dao.UserDAO
+	imageObjDAO        *objdao.BaseMinioObjDAO
+	thumbnailObjDAO    *objdao.BaseMinioObjDAO
 	accessTokenSigner  auth.JwtTokenSigner
 	refreshTokenSigner auth.JwtTokenSigner
 }
@@ -53,8 +56,10 @@ type githubOauth2Service struct {
 //	update 2025-01-05 13:43:24
 func NewGithubOauth2Service() Oauth2Service {
 	return &githubOauth2Service{
-		db:      database.GetDBInstance(),
-		userDAO: dao.GetUserDAO(),
+		db:              database.GetDBInstance(),
+		userDAO:         dao.GetUserDAO(),
+		imageObjDAO:     objdao.GetImageObjDAO(),
+		thumbnailObjDAO: objdao.GetThumbnailObjDAO(),
 		oauth2Config: &oauth2.Config{
 			Endpoint:     github.Endpoint,
 			Scopes:       githubUserScopes,
@@ -159,6 +164,25 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
+
+		_, err = s.imageObjDAO.CreateDir(user.ID)
+		if err != nil {
+			logger.Logger.Error("[Oauth2Service] failed to create image dir",
+				zap.Uint("userID", user.ID),
+				zap.Error(err))
+			return nil, protocol.ErrInternalError
+		}
+		logger.Logger.Info("[Oauth2Service] image dir created",
+			zap.Uint("userID", user.ID))
+		_, err = s.thumbnailObjDAO.CreateDir(user.ID)
+		if err != nil {
+			logger.Logger.Error("[Oauth2Service] failed to create thumbnail dir",
+				zap.Uint("userID", user.ID),
+				zap.Error(err))
+			return nil, protocol.ErrInternalError
+		}
+		logger.Logger.Info("[Oauth2Service] thumbnail dir created",
+			zap.Uint("userID", user.ID))
 	}
 
 	if user.GithubBindID == "" {

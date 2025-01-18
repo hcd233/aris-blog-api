@@ -72,7 +72,7 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 
 	getTagFunc := func(tagSlug string) {
 		defer wg.Done()
-		tag, err := s.tagDAO.GetBySlug(s.db, tagSlug, []string{"id"}, []string{})
+		tag, err := s.tagDAO.GetBySlug(s.db, tagSlug, []string{"id", "slug"}, []string{})
 		if err != nil {
 			errChan <- err
 			return
@@ -102,15 +102,26 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 		tags = append(tags, *tag)
 	}
 
+	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id"}, []string{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Logger.Error("[ArticleService] category not found",
+				zap.Uint("categoryID", req.CategoryID))
+			return nil, protocol.ErrDataNotExists
+		}
+		logger.Logger.Error("[ArticleService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
 	article := &model.Article{
-		UserID:     req.UserID,
-		Status:     model.ArticleStatusDraft,
-		Title:      req.Title,
-		Slug:       req.Slug,
-		Tags:       tags,
-		CategoryID: req.CategoryID,
-		Comments:   []model.Comment{},
-		Versions:   []model.ArticleVersion{},
+		UserID:   req.UserID,
+		Status:   model.ArticleStatusDraft,
+		Title:    req.Title,
+		Slug:     req.Slug,
+		Tags:     tags,
+		Category: category,
+		Comments: []model.Comment{},
+		Versions: []model.ArticleVersion{},
 	}
 
 	if err := s.articleDAO.Create(s.db, article); err != nil {
@@ -343,7 +354,6 @@ func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp 
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
-
 
 	if err := s.articleDAO.Delete(s.db, article); err != nil {
 		logger.Logger.Error("[ArticleService] failed to delete article",

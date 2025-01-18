@@ -1,5 +1,13 @@
 basePath: /
 definitions:
+  model.ArticleStatus:
+    enum:
+    - draft
+    - publish
+    type: string
+    x-enum-varnames:
+    - ArticleStatusDraft
+    - ArticleStatusPublish
   protocol.Article:
     properties:
       articleID:
@@ -377,6 +385,15 @@ definitions:
     type: object
   protocol.LikeTagResponse:
     type: object
+  protocol.ListArticleCommentsResponse:
+    properties:
+      comments:
+        items:
+          $ref: '#/definitions/protocol.Comment'
+        type: array
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+    type: object
   protocol.ListArticleVersionsResponse:
     properties:
       pageInfo:
@@ -422,11 +439,6 @@ definitions:
       pageInfo:
         $ref: '#/definitions/protocol.PageInfo'
     type: object
-  protocol.ListImagesRequest:
-    properties:
-      userID:
-        type: integer
-    type: object
   protocol.ListImagesResponse:
     properties:
       images:
@@ -452,13 +464,6 @@ definitions:
           $ref: '#/definitions/protocol.Tag'
         type: array
     type: object
-  protocol.ListUserLikeArticlesRequest:
-    properties:
-      pageParam:
-        $ref: '#/definitions/protocol.PageParam'
-      userID:
-        type: integer
-    type: object
   protocol.ListUserLikeArticlesResponse:
     properties:
       articles:
@@ -468,13 +473,6 @@ definitions:
       pageInfo:
         $ref: '#/definitions/protocol.PageInfo'
     type: object
-  protocol.ListUserLikeCommentsRequest:
-    properties:
-      pageParam:
-        $ref: '#/definitions/protocol.PageParam'
-      userID:
-        type: integer
-    type: object
   protocol.ListUserLikeCommentsResponse:
     properties:
       comments:
@@ -483,13 +481,6 @@ definitions:
         type: array
       pageInfo:
         $ref: '#/definitions/protocol.PageInfo'
-    type: object
-  protocol.ListUserLikeTagsRequest:
-    properties:
-      pageParam:
-        $ref: '#/definitions/protocol.PageParam'
-      userID:
-        type: integer
     type: object
   protocol.ListUserLikeTagsResponse:
     properties:
@@ -631,7 +622,27 @@ definitions:
     - content
     - role
     type: object
+  protocol.UpdateArticleBody:
+    properties:
+      categoryID:
+        type: integer
+      slug:
+        type: string
+      title:
+        type: string
+    type: object
   protocol.UpdateArticleResponse:
+    type: object
+  protocol.UpdateArticleStatusBody:
+    properties:
+      status:
+        allOf:
+        - $ref: '#/definitions/model.ArticleStatus'
+        enum:
+        - draft
+        - publish
+    required:
+    - status
     type: object
   protocol.UpdateArticleStatusResponse:
     type: object
@@ -713,6 +724,28 @@ info:
   title: Aris-blog
   version: "1.0"
 paths:
+  /:
+    get:
+      consumes:
+      - application/json
+      description: 健康检查
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.PingResponse'
+                error:
+                  type: object
+              type: object
+      summary: 健康检查
+      tags:
+      - ping
   /v1/ai/article-qa:
     post:
       consumes:
@@ -1509,7 +1542,7 @@ paths:
       summary: 获取文章信息
       tags:
       - article
-    put:
+    patch:
       consumes:
       - application/json
       description: 更新文章
@@ -1518,6 +1551,12 @@ paths:
         name: articleID
         required: true
         type: integer
+      - description: 更新文章请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.UpdateArticleBody'
       produces:
       - application/json
       responses:
@@ -1584,6 +1623,12 @@ paths:
         name: articleID
         required: true
         type: integer
+      - description: 更新文章状态请求
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.UpdateArticleStatusBody'
       produces:
       - application/json
       responses:
@@ -1640,11 +1685,15 @@ paths:
       summary: 更新文章状态
       tags:
       - article
-  /v1/article/version:
+  /v1/article/{articleID}/version:
     post:
       consumes:
       - application/json
       parameters:
+      - in: path
+        name: articleID
+        required: true
+        type: integer
       - description: 创建文章版本请求体
         in: body
         name: body
@@ -1658,10 +1707,56 @@ paths:
           description: 创建文章版本响应
           schema:
             $ref: '#/definitions/protocol.CreateArticleVersionResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
       summary: 创建文章版本
       tags:
       - articleVersion
-  /v1/article/version/latest:
+  /v1/article/{articleID}/version/latest:
     get:
       consumes:
       - application/json
@@ -1677,34 +1772,56 @@ paths:
           description: 获取最新文章版本信息响应
           schema:
             $ref: '#/definitions/protocol.GetLatestArticleVersionInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
       summary: 获取最新文章版本信息
       tags:
       - articleVersion
-  /v1/article/version/v{version}:
-    get:
-      consumes:
-      - application/json
-      parameters:
-      - in: path
-        name: articleID
-        required: true
-        type: integer
-      - in: path
-        minimum: 1
-        name: version
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: 获取文章版本信息响应
-          schema:
-            $ref: '#/definitions/protocol.GetArticleVersionInfoResponse'
-      summary: 获取文章版本信息
-      tags:
-      - articleVersion
-  /v1/article/version/versions:
+  /v1/article/{articleID}/version/list:
     get:
       consumes:
       - application/json
@@ -1730,10 +1847,126 @@ paths:
           description: 列出文章版本响应
           schema:
             $ref: '#/definitions/protocol.ListArticleVersionsResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
       summary: 列出文章版本
       tags:
       - articleVersion
-  /v1/articles:
+  /v1/article/{articleID}/version/v{version}:
+    get:
+      consumes:
+      - application/json
+      parameters:
+      - in: path
+        name: articleID
+        required: true
+        type: integer
+      - in: path
+        minimum: 1
+        name: version
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取文章版本信息响应
+          schema:
+            $ref: '#/definitions/protocol.GetArticleVersionInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取文章版本信息
+      tags:
+      - articleVersion
+  /v1/article/list:
     get:
       consumes:
       - application/json
@@ -1811,12 +2044,16 @@ paths:
       - application/json
       description: 列出用户喜欢的文章
       parameters:
-      - description: 列出用户喜欢的文章请求体
-        in: body
-        name: body
+      - in: query
+        minimum: 1
+        name: page
         required: true
-        schema:
-          $ref: '#/definitions/protocol.ListUserLikeArticlesRequest'
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -1886,12 +2123,16 @@ paths:
       - application/json
       description: 列出用户喜欢的评论
       parameters:
-      - description: 列出用户喜欢的评论请求体
-        in: body
-        name: body
+      - in: query
+        minimum: 1
+        name: page
         required: true
-        schema:
-          $ref: '#/definitions/protocol.ListUserLikeCommentsRequest'
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -1961,12 +2202,16 @@ paths:
       - application/json
       description: 列出用户喜欢的标签
       parameters:
-      - description: 列出用户喜欢的标签请求体
-        in: body
-        name: body
+      - in: query
+        minimum: 1
+        name: page
         required: true
-        schema:
-          $ref: '#/definitions/protocol.ListUserLikeTagsRequest'
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -2259,12 +2504,16 @@ paths:
       - application/json
       description: 列出图片
       parameters:
-      - description: 列出图片请求体
-        in: body
-        name: body
+      - in: query
+        minimum: 1
+        name: page
         required: true
-        schema:
-          $ref: '#/definitions/protocol.ListImagesRequest'
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -2326,6 +2575,81 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 列出图片
+      tags:
+      - asset
+  /v1/asset/view/article/{viewID}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除用户浏览的文章
+      parameters:
+      - description: 删除用户浏览的文章请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.DeleteUserViewRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.DeleteUserViewResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 删除用户浏览的文章
       tags:
       - asset
   /v1/asset/view/articles:
@@ -2401,81 +2725,6 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: 列出用户浏览的文章
-      tags:
-      - asset
-  /v1/asset/view/articles/{viewID}:
-    delete:
-      consumes:
-      - application/json
-      description: 删除用户浏览的文章
-      parameters:
-      - description: 删除用户浏览的文章请求体
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/protocol.DeleteUserViewRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/protocol.HTTPResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/protocol.DeleteUserViewResponse'
-                error:
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            allOf:
-            - $ref: '#/definitions/protocol.HTTPResponse'
-            - properties:
-                data:
-                  type: object
-                error:
-                  type: string
-              type: object
-        "401":
-          description: Unauthorized
-          schema:
-            allOf:
-            - $ref: '#/definitions/protocol.HTTPResponse'
-            - properties:
-                data:
-                  type: object
-                error:
-                  type: string
-              type: object
-        "403":
-          description: Forbidden
-          schema:
-            allOf:
-            - $ref: '#/definitions/protocol.HTTPResponse'
-            - properties:
-                data:
-                  type: object
-                error:
-                  type: string
-              type: object
-        "500":
-          description: Internal Server Error
-          schema:
-            allOf:
-            - $ref: '#/definitions/protocol.HTTPResponse'
-            - properties:
-                data:
-                  type: object
-                error:
-                  type: string
-              type: object
-      security:
-      - ApiKeyAuth: []
-      summary: 删除用户浏览的文章
       tags:
       - asset
   /v1/category:
@@ -2699,7 +2948,7 @@ paths:
       summary: 获取分类信息
       tags:
       - category
-    put:
+    patch:
       consumes:
       - application/json
       description: 更新分类信息
@@ -3171,6 +3420,16 @@ paths:
         name: commentID
         required: true
         type: integer
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
       produces:
       - application/json
       responses:
@@ -3234,11 +3493,94 @@ paths:
       summary: 列出子评论
       tags:
       - comment
+  /v1/comment/article/{articleID}/list:
+    get:
+      consumes:
+      - application/json
+      description: 列出文章评论
+      parameters:
+      - in: path
+        name: articleID
+        required: true
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 列出文章评论响应
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListArticleCommentsResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出文章评论
+      tags:
+      - comment
   /v1/oauth2/github/callback:
     get:
       consumes:
       - application/json
-      description: 处理Github OAuth2回调请求,验证code和state
+      description: Github OAuth2回调请求,验证code和state
       parameters:
       - description: 授权码
         in: query
@@ -3308,14 +3650,14 @@ paths:
                 error:
                   type: string
               type: object
-      summary: 处理Github OAuth2回调
+      summary: Github OAuth2回调
       tags:
       - oauth2
   /v1/oauth2/github/login:
     get:
       consumes:
       - application/json
-      description: 处理Github OAuth2登录请求,返回重定向URL
+      description: Github OAuth2登录请求,返回重定向URL
       produces:
       - application/json
       responses:
@@ -3374,7 +3716,7 @@ paths:
                 error:
                   type: string
               type: object
-      summary: 处理Github OAuth2登录
+      summary: Github OAuth2登录
       tags:
       - oauth2
   /v1/operation/like/article:
@@ -3677,28 +4019,6 @@ paths:
       summary: 记录文章浏览
       tags:
       - operation
-  /v1/ping:
-    get:
-      consumes:
-      - application/json
-      description: 健康检查
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/protocol.HTTPResponse'
-            - properties:
-                data:
-                  $ref: '#/definitions/protocol.PingResponse'
-                error:
-                  type: object
-              type: object
-      summary: 健康检查
-      tags:
-      - ping
   /v1/tag:
     post:
       consumes:
@@ -3919,7 +4239,7 @@ paths:
       summary: 获取标签信息
       tags:
       - tag
-    put:
+    patch:
       consumes:
       - application/json
       description: 更新标签
@@ -3997,7 +4317,7 @@ paths:
       summary: 更新标签
       tags:
       - tag
-  /v1/tags:
+  /v1/tag/list:
     get:
       consumes:
       - application/json
@@ -4119,7 +4439,7 @@ paths:
       tags:
       - token
   /v1/user:
-    put:
+    patch:
       consumes:
       - application/json
       description: 更新用户信息

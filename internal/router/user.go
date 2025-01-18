@@ -13,7 +13,7 @@ func initUserRouter(r *gin.RouterGroup) {
 	userRouter := r.Group("/user", middleware.JwtMiddleware())
 	{
 		userRouter.GET("current", userHandler.HandleGetCurUserInfo)
-		userRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userHandler.HandleUpdateInfo)
+		userRouter.PATCH("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userHandler.HandleUpdateInfo)
 		userNameRouter := userRouter.Group("/:userID", middleware.ValidateURIMiddleware(&protocol.UserURI{}))
 		{
 			userNameRouter.GET("", userHandler.HandleGetUserInfo)

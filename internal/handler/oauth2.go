@@ -28,10 +28,10 @@ func NewGithubOauth2Handler() Oauth2Handler {
 	}
 }
 
-// HandleLogin 处理Github OAuth2登录
+// HandleLogin Github OAuth2登录
 //
-//	@Summary		处理Github OAuth2登录
-//	@Description	处理Github OAuth2登录请求,返回重定向URL
+//	@Summary		Github OAuth2登录
+//	@Description	Github OAuth2登录请求,返回重定向URL
 //	@Tags			oauth2
 //	@Accept			json
 //	@Produce		json
@@ -53,10 +53,10 @@ func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleCallback 处理Github OAuth2回调
+// HandleCallback Github OAuth2回调
 //
-//	@Summary		处理Github OAuth2回调
-//	@Description	处理Github OAuth2回调请求,验证code和state
+//	@Summary		Github OAuth2回调
+//	@Description	Github OAuth2回调请求,验证code和state
 //	@Tags			oauth2
 //	@Accept			json
 //	@Produce		json

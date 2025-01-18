@@ -23,6 +23,44 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/": {
+            "get": {
+                "description": "健康检查",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ping"
+                ],
+                "summary": "健康检查",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/protocol.PingResponse"
+                                        },
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/ai/article-qa": {
             "post": {
                 "security": [
@@ -1219,41 +1257,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/article/version": {
-            "post": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "articleVersion"
-                ],
-                "summary": "创建文章版本",
-                "parameters": [
-                    {
-                        "description": "创建文章版本请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.CreateArticleVersionBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "创建文章版本响应",
-                        "schema": {
-                            "$ref": "#/definitions/protocol.CreateArticleVersionResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/article/version/latest": {
+        "/v1/article/list": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "列出文章",
                 "consumes": [
                     "application/json"
                 ],
@@ -1261,46 +1272,10 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "articleVersion"
+                    "article"
                 ],
-                "summary": "获取最新文章版本信息",
+                "summary": "列出文章",
                 "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "articleID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "获取最新文章版本信息响应",
-                        "schema": {
-                            "$ref": "#/definitions/protocol.GetLatestArticleVersionInfoResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/article/version/versions": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "articleVersion"
-                ],
-                "summary": "列出文章版本",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "articleID",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -1318,82 +1293,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "列出文章版本响应",
+                        "description": "列出文章响应",
                         "schema": {
-                            "$ref": "#/definitions/protocol.ListArticleVersionsResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/article/version/v{version}": {
-            "get": {
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "articleVersion"
-                ],
-                "summary": "获取文章版本信息",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "articleID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "version",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "获取文章版本信息响应",
-                        "schema": {
-                            "$ref": "#/definitions/protocol.GetArticleVersionInfoResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/article/{articleID}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "获取文章信息",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "article"
-                ],
-                "summary": "获取文章信息",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "articleID",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "获取文章信息响应",
-                        "schema": {
-                            "$ref": "#/definitions/protocol.GetArticleInfoResponse"
+                            "$ref": "#/definitions/protocol.ListArticlesResponse"
                         }
                     },
                     "400": {
@@ -1481,14 +1383,16 @@ const docTemplate = `{
                         }
                     }
                 }
-            },
-            "put": {
+            }
+        },
+        "/v1/article/{articleID}": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新文章",
+                "description": "获取文章信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -1498,7 +1402,7 @@ const docTemplate = `{
                 "tags": [
                     "article"
                 ],
-                "summary": "更新文章",
+                "summary": "获取文章信息",
                 "parameters": [
                     {
                         "type": "integer",
@@ -1509,9 +1413,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "更新文章响应",
+                        "description": "获取文章信息响应",
                         "schema": {
-                            "$ref": "#/definitions/protocol.UpdateArticleResponse"
+                            "$ref": "#/definitions/protocol.GetArticleInfoResponse"
                         }
                     },
                     "400": {
@@ -1717,6 +1621,133 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "更新文章",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "article"
+                ],
+                "summary": "更新文章",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新文章请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.UpdateArticleBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "更新文章响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.UpdateArticleResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
             }
         },
         "/v1/article/{articleID}/status": {
@@ -1743,6 +1774,15 @@ const docTemplate = `{
                         "name": "articleID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "更新文章状态请求",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.UpdateArticleStatusBody"
+                        }
                     }
                 ],
                 "responses": {
@@ -1839,14 +1879,13 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/articles": {
-            "get": {
+        "/v1/article/{articleID}/version": {
+            "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "列出文章",
                 "consumes": [
                     "application/json"
                 ],
@@ -1854,10 +1893,263 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "article"
+                    "articleVersion"
                 ],
-                "summary": "列出文章",
+                "summary": "创建文章版本",
                 "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "创建文章版本请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CreateArticleVersionBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "创建文章版本响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.CreateArticleVersionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/article/{articleID}/version/latest": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "获取最新文章版本信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取最新文章版本信息响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.GetLatestArticleVersionInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/article/{articleID}/version/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "列出文章版本",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "minimum": 1,
                         "type": "integer",
@@ -1875,9 +2167,135 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "列出文章响应",
+                        "description": "列出文章版本响应",
                         "schema": {
-                            "$ref": "#/definitions/protocol.ListArticlesResponse"
+                            "$ref": "#/definitions/protocol.ListArticleVersionsResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/article/{articleID}/version/v{version}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "articleVersion"
+                ],
+                "summary": "获取文章版本信息",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "获取文章版本信息响应",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.GetArticleVersionInfoResponse"
                         }
                     },
                     "400": {
@@ -1987,13 +2405,18 @@ const docTemplate = `{
                 "summary": "列出用户喜欢的文章",
                 "parameters": [
                     {
-                        "description": "列出用户喜欢的文章请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.ListUserLikeArticlesRequest"
-                        }
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2125,13 +2548,18 @@ const docTemplate = `{
                 "summary": "列出用户喜欢的评论",
                 "parameters": [
                     {
-                        "description": "列出用户喜欢的评论请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.ListUserLikeCommentsRequest"
-                        }
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2263,13 +2691,18 @@ const docTemplate = `{
                 "summary": "列出用户喜欢的标签",
                 "parameters": [
                     {
-                        "description": "列出用户喜欢的标签请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.ListUserLikeTagsRequest"
-                        }
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2811,13 +3244,18 @@ const docTemplate = `{
                 "summary": "列出图片",
                 "parameters": [
                     {
-                        "description": "列出图片请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.ListImagesRequest"
-                        }
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -2833,6 +3271,144 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/protocol.ListImagesResponse"
+                                        },
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/asset/view/article/{viewID}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "删除用户浏览的文章",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "asset"
+                ],
+                "summary": "删除用户浏览的文章",
+                "parameters": [
+                    {
+                        "description": "删除用户浏览的文章请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.DeleteUserViewRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/protocol.DeleteUserViewResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -2971,144 +3547,6 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/protocol.ListUserViewArticlesResponse"
-                                        },
-                                        "error": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/asset/view/articles/{viewID}": {
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "删除用户浏览的文章",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "asset"
-                ],
-                "summary": "删除用户浏览的文章",
-                "parameters": [
-                    {
-                        "description": "删除用户浏览的文章请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.DeleteUserViewRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/protocol.DeleteUserViewResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -3605,13 +4043,13 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
+            "delete": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "更新分类信息",
+                "description": "删除分类",
                 "consumes": [
                     "application/json"
                 ],
@@ -3621,22 +4059,13 @@ const docTemplate = `{
                 "tags": [
                     "category"
                 ],
-                "summary": "更新分类信息",
+                "summary": "删除分类",
                 "parameters": [
                     {
                         "type": "integer",
                         "name": "categoryID",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "description": "更新分类请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.UpdateCategoryBody"
-                        }
                     }
                 ],
                 "responses": {
@@ -3651,7 +4080,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/protocol.UpdateCategoryResponse"
+                                            "$ref": "#/definitions/protocol.DeleteCategoryResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -3747,13 +4176,13 @@ const docTemplate = `{
                     }
                 }
             },
-            "delete": {
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除分类",
+                "description": "更新分类信息",
                 "consumes": [
                     "application/json"
                 ],
@@ -3763,13 +4192,22 @@ const docTemplate = `{
                 "tags": [
                     "category"
                 ],
-                "summary": "删除分类",
+                "summary": "更新分类信息",
                 "parameters": [
                     {
                         "type": "integer",
                         "name": "categoryID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "description": "更新分类请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.UpdateCategoryBody"
+                        }
                     }
                 ],
                 "responses": {
@@ -3784,7 +4222,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/protocol.DeleteCategoryResponse"
+                                            "$ref": "#/definitions/protocol.UpdateCategoryResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -4317,6 +4755,155 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/comment/article/{articleID}/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "列出文章评论",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "comment"
+                ],
+                "summary": "列出文章评论",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "articleID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "列出文章评论响应",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/protocol.ListArticleCommentsResponse"
+                                        },
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
         "/v1/comment/{commentID}": {
             "delete": {
                 "security": [
@@ -4478,6 +5065,20 @@ const docTemplate = `{
                         "name": "commentID",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -4591,7 +5192,7 @@ const docTemplate = `{
         },
         "/v1/oauth2/github/callback": {
             "get": {
-                "description": "处理Github OAuth2回调请求,验证code和state",
+                "description": "Github OAuth2回调请求,验证code和state",
                 "consumes": [
                     "application/json"
                 ],
@@ -4601,7 +5202,7 @@ const docTemplate = `{
                 "tags": [
                     "oauth2"
                 ],
-                "summary": "处理Github OAuth2回调",
+                "summary": "Github OAuth2回调",
                 "parameters": [
                     {
                         "type": "string",
@@ -4729,7 +5330,7 @@ const docTemplate = `{
         },
         "/v1/oauth2/github/login": {
             "get": {
-                "description": "处理Github OAuth2登录请求,返回重定向URL",
+                "description": "Github OAuth2登录请求,返回重定向URL",
                 "consumes": [
                     "application/json"
                 ],
@@ -4739,7 +5340,7 @@ const docTemplate = `{
                 "tags": [
                     "oauth2"
                 ],
-                "summary": "处理Github OAuth2登录",
+                "summary": "Github OAuth2登录",
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -5401,44 +6002,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ping": {
-            "get": {
-                "description": "健康检查",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ping"
-                ],
-                "summary": "健康检查",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/protocol.PingResponse"
-                                        },
-                                        "error": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
         "/v1/tag": {
             "post": {
                 "security": [
@@ -5481,6 +6044,149 @@ const docTemplate = `{
                                     "properties": {
                                         "data": {
                                             "$ref": "#/definitions/protocol.CreateTagResponse"
+                                        },
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/tag/list": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "获取标签列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tag"
+                ],
+                "summary": "列出标签",
+                "parameters": [
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/protocol.ListTagsResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -5711,148 +6417,6 @@ const docTemplate = `{
                     }
                 }
             },
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "更新标签",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "tag"
-                ],
-                "summary": "更新标签",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "tagID",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "更新标签请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.UpdateTagBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/protocol.UpdateTagResponse"
-                                        },
-                                        "error": {
-                                            "type": "object"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            },
             "delete": {
                 "security": [
                     {
@@ -5985,16 +6549,14 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/v1/tags": {
-            "get": {
+            },
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取标签列表",
+                "description": "更新标签",
                 "consumes": [
                     "application/json"
                 ],
@@ -6004,21 +6566,22 @@ const docTemplate = `{
                 "tags": [
                     "tag"
                 ],
-                "summary": "列出标签",
+                "summary": "更新标签",
                 "parameters": [
                     {
-                        "minimum": 1,
                         "type": "integer",
-                        "name": "page",
-                        "in": "query",
+                        "name": "tagID",
+                        "in": "path",
                         "required": true
                     },
                     {
-                        "maximum": 50,
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "pageSize",
-                        "in": "query"
+                        "description": "更新标签请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.UpdateTagBody"
+                        }
                     }
                 ],
                 "responses": {
@@ -6033,7 +6596,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/protocol.ListTagsResponse"
+                                            "$ref": "#/definitions/protocol.UpdateTagResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -6206,7 +6769,7 @@ const docTemplate = `{
             }
         },
         "/v1/user": {
-            "put": {
+            "patch": {
                 "security": [
                     {
                         "ApiKeyAuth": []
@@ -6607,6 +7170,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "model.ArticleStatus": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "publish"
+            ],
+            "x-enum-varnames": [
+                "ArticleStatusDraft",
+                "ArticleStatusPublish"
+            ]
+        },
         "protocol.Article": {
             "type": "object",
             "properties": {
@@ -7179,6 +7753,20 @@ const docTemplate = `{
         "protocol.LikeTagResponse": {
             "type": "object"
         },
+        "protocol.ListArticleCommentsResponse": {
+            "type": "object",
+            "properties": {
+                "comments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/protocol.Comment"
+                    }
+                },
+                "pageInfo": {
+                    "$ref": "#/definitions/protocol.PageInfo"
+                }
+            }
+        },
         "protocol.ListArticleVersionsResponse": {
             "type": "object",
             "properties": {
@@ -7249,14 +7837,6 @@ const docTemplate = `{
                 }
             }
         },
-        "protocol.ListImagesRequest": {
-            "type": "object",
-            "properties": {
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
         "protocol.ListImagesResponse": {
             "type": "object",
             "properties": {
@@ -7296,17 +7876,6 @@ const docTemplate = `{
                 }
             }
         },
-        "protocol.ListUserLikeArticlesRequest": {
-            "type": "object",
-            "properties": {
-                "pageParam": {
-                    "$ref": "#/definitions/protocol.PageParam"
-                },
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
         "protocol.ListUserLikeArticlesResponse": {
             "type": "object",
             "properties": {
@@ -7321,17 +7890,6 @@ const docTemplate = `{
                 }
             }
         },
-        "protocol.ListUserLikeCommentsRequest": {
-            "type": "object",
-            "properties": {
-                "pageParam": {
-                    "$ref": "#/definitions/protocol.PageParam"
-                },
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
         "protocol.ListUserLikeCommentsResponse": {
             "type": "object",
             "properties": {
@@ -7343,17 +7901,6 @@ const docTemplate = `{
                 },
                 "pageInfo": {
                     "$ref": "#/definitions/protocol.PageInfo"
-                }
-            }
-        },
-        "protocol.ListUserLikeTagsRequest": {
-            "type": "object",
-            "properties": {
-                "pageParam": {
-                    "$ref": "#/definitions/protocol.PageParam"
-                },
-                "userID": {
-                    "type": "integer"
                 }
             }
         },
@@ -7571,8 +8118,41 @@ const docTemplate = `{
                 }
             }
         },
+        "protocol.UpdateArticleBody": {
+            "type": "object",
+            "properties": {
+                "categoryID": {
+                    "type": "integer"
+                },
+                "slug": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            }
+        },
         "protocol.UpdateArticleResponse": {
             "type": "object"
+        },
+        "protocol.UpdateArticleStatusBody": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
+                    "enum": [
+                        "draft",
+                        "publish"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/model.ArticleStatus"
+                        }
+                    ]
+                }
+            }
         },
         "protocol.UpdateArticleStatusResponse": {
             "type": "object"

@@ -70,7 +70,7 @@ func (o *ChatOpenAI) Invoke(messages []message.Message) (sequence string, err er
 		context.Background(),
 		openai.ChatCompletionRequest{
 			Model: string(o.model),
-			Messages: lo.Map(messages, func(message message.Message, idx int) openai.ChatCompletionMessage {
+			Messages: lo.Map(messages, func(message message.Message, _ int) openai.ChatCompletionMessage {
 				return openai.ChatCompletionMessage{
 					Role:    message.Role,
 					Content: message.Content,

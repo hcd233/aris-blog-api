@@ -230,7 +230,7 @@ func (s *categoryService) DeleteCategory(req *protocol.DeleteCategoryRequest) (r
 	if category.ParentID == 0 {
 		logger.Logger.Error("[CategoryService] root category cannot be deleted",
 			zap.Uint("categoryID", category.ID))
-		return nil, protocol.ErrInternalError
+		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.categoryDAO.DeleteReclusiveByID(s.db, category.ID, []string{"id", "name"}, []string{}); err != nil {

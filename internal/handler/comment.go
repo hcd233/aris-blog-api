@@ -88,6 +88,21 @@ func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 }
 
 // HandleListArticleComments 列出文章评论
+//
+//	@Summary 列出文章评论
+//	@Description 列出文章评论
+//	@Tags comment
+//	@Accept json
+//	@Produce json
+//	@Param path path protocol.ArticleURI true "文章ID"
+//	@Param param query protocol.PageParam true "分页参数"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.HTTPResponse{data=protocol.ListArticleCommentsResponse,error=nil} "列出文章评论响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/comment/article/{articleID}/list [get]
 func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
@@ -112,6 +127,7 @@ func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 //	@Accept json
 //	@Produce json
 //	@Param path path protocol.CommentURI true "评论ID"
+//	@Param param query protocol.PageParam true "分页参数"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.HTTPResponse{data=protocol.ListChildrenCommentsResponse,error=nil} "列出子评论响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}

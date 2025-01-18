@@ -113,7 +113,7 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagID} [put]
+//	@Router			/v1/tag/{tagID} [patch]
 //	receiver s *tagHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -182,7 +182,7 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tags [get]
+//	@Router			/v1/tag/list [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:55:31

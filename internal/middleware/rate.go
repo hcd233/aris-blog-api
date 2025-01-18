@@ -44,10 +44,15 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 	// 创建中间件
 	middleware := mgin.NewMiddleware(instance,
 		mgin.WithLimitReachedHandler(func(c *gin.Context) {
-			logger.Logger.Error("[RateLimiterMiddleware] limit reached",
-				zap.String("prefix", serviceName),
-				zap.String("key", key),
-				zap.Any("value", c.MustGet(key)))
+			fields := []zap.Field{zap.String("serviceName", serviceName)}
+
+			if key == "" {
+				fields = append(fields, zap.String("key", "ip"), zap.String("value", c.ClientIP()))
+			} else {
+				fields = append(fields, zap.String("key", key), zap.String("value", c.GetString(key)))
+			}
+
+			logger.Logger.Error("[RateLimiterMiddleware] rate limit reached", fields...)
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
 		}),
 		mgin.WithKeyGetter(func(c *gin.Context) string {
@@ -56,11 +61,12 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 	)
 
 	return func(c *gin.Context) {
-		// 获取限频 key
-		value := c.MustGet(key)
-
+		var key, value string
 		if key == "" {
+			key = "ip"
 			value = c.ClientIP() // 如果没有指定的参数，则使用 IP 地址作为 key
+		} else {
+			value = c.GetString(key)
 		}
 
 		// 设置限频 key
