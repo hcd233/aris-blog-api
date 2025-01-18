@@ -35,8 +35,11 @@ func NewGithubOauth2Handler() Oauth2Handler {
 //	@Tags			oauth2
 //	@Accept			json
 //	@Produce		json
-//	@Success		200	{object}	protocol.LoginResponse
-//	@Failure		500	{object}	protocol.LoginResponse
+//	@Success		200	{object}	protocol.HTTPResponse{data=protocol.LoginResponse,error=nil}
+//	@Failure		400	{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401	{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403	{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500	{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/oauth2/github/login [get]
 //	receiver h *githubOauth2Handler
 //	param c *gin.Context
@@ -59,8 +62,11 @@ func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
 //	@Produce		json
 //	@Param			code	query		string	true	"授权码"
 //	@Param			state	query		string	true	"状态码"
-//	@Success		200		{object}	protocol.CallbackResponse
-//	@Failure		500		{object}	protocol.CallbackResponse
+//	@Success		200		{object}	protocol.HTTPResponse{data=protocol.CallbackResponse,error=nil}
+//	@Failure		400		{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401		{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403		{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/oauth2/github/callback [get]
 //	receiver h *githubOauth2Handler
 //	param c *gin.Context

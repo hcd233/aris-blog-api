@@ -826,11 +826,58 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/protocol.CallbackResponse'
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.CallbackResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/protocol.CallbackResponse'
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
       summary: 处理Github OAuth2回调
       tags:
       - oauth2
@@ -845,11 +892,58 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/protocol.LoginResponse'
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.LoginResponse'
+                error:
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/protocol.LoginResponse'
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
       summary: 处理Github OAuth2登录
       tags:
       - oauth2
@@ -901,6 +995,39 @@ paths:
                 error:
                   type: object
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal Server Error
           schema:
@@ -942,6 +1069,39 @@ paths:
                 error:
                   type: object
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal Server Error
           schema:
@@ -981,6 +1141,39 @@ paths:
                   $ref: '#/definitions/protocol.GetTagInfoResponse'
                 error:
                   type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
               type: object
         "500":
           description: Internal Server Error
@@ -1028,6 +1221,39 @@ paths:
                 error:
                   type: object
               type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
         "500":
           description: Internal Server Error
           schema:
@@ -1073,6 +1299,39 @@ paths:
                   $ref: '#/definitions/protocol.ListTagsResponse'
                 error:
                   type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
               type: object
         "500":
           description: Internal Server Error
