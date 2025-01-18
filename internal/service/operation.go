@@ -48,40 +48,29 @@ func NewOperationService() OperationService {
 func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error) {
 	rsp = &protocol.LikeArticleResponse{}
 
-	user, err := s.userDAO.GetByName(s.db, req.Author, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] user not found", zap.String("userName", req.Author))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[OperationService] failed to get user", zap.String("userName", req.Author), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{"id", "likes", "status", "user_id"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[OperationService] article not found",
-				zap.String("articleSlug", req.ArticleSlug),
-				zap.Uint("userID", user.ID))
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[OperationService] failed to get article",
-			zap.String("articleSlug", req.ArticleSlug),
-			zap.Uint("userID", user.ID),
+			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	if req.CurUserID != user.ID && article.Status != model.ArticleStatusPublish {
+	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
+	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Logger.Info("[OperationService] no permission to like article",
-			zap.Uint("curUserID", req.CurUserID),
-			zap.String("author", req.Author))
+			zap.Uint("userID", req.UserID),
+			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
 
 	userLike := &model.UserLike{
-		UserID:     req.CurUserID,
+		UserID:     req.UserID,
 		ObjectID:   article.ID,
 		ObjectType: model.LikeObjectTypeArticle,
 	}
@@ -98,7 +87,7 @@ func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *p
 	if req.Undo {
 		if err = s.transactUndoLikeArticle(tx, article, userLike); err != nil {
 			logger.Logger.Error("[OperationService] failed to undo like article",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -106,7 +95,7 @@ func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *p
 	} else {
 		if err = s.transactLikeArticle(tx, article, userLike); err != nil {
 			logger.Logger.Error("[OperationService] failed to like article",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -140,16 +129,17 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 		return nil, protocol.ErrInternalError
 	}
 
-	if req.CurUserID != article.UserID && article.Status != model.ArticleStatusPublish {
+	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
+	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Logger.Info("[OperationService] no permission to like comment",
-			zap.Uint("curUserID", req.CurUserID),
+			zap.Uint("userID", req.UserID),
 			zap.Uint("articleID", article.ID),
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
 
 	userLike := &model.UserLike{
-		UserID:     req.CurUserID,
+		UserID:     req.UserID,
 		ObjectID:   comment.ID,
 		ObjectType: model.LikeObjectTypeComment,
 	}
@@ -166,7 +156,7 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 	if req.Undo {
 		if err = s.transactUndoLikeComment(tx, comment, userLike); err != nil {
 			logger.Logger.Error("[OperationService] failed to undo like comment",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("commentID", comment.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -174,7 +164,7 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 	} else {
 		if err = s.transactLikeComment(tx, comment, userLike); err != nil {
 			logger.Logger.Error("[OperationService] failed to like comment",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("commentID", comment.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -188,18 +178,18 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error) {
 	rsp = &protocol.LikeTagResponse{}
 
-	tag, err := s.tagDAO.GetBySlug(s.db, req.TagSlug, []string{"id", "likes"}, []string{})
+	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "likes"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] tag not found", zap.String("tagSlug", req.TagSlug))
+			logger.Logger.Error("[OperationService] tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[OperationService] failed to get tag", zap.String("tagSlug", req.TagSlug), zap.Error(err))
+		logger.Logger.Error("[OperationService] failed to get tag", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	userLike := &model.UserLike{
-		UserID:     req.CurUserID,
+		UserID:     req.UserID,
 		ObjectID:   tag.ID,
 		ObjectType: model.LikeObjectTypeTag,
 	}
@@ -216,7 +206,7 @@ func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.
 	if req.Undo {
 		if err = s.transactUndoLikeTag(tx, tag, userLike); err != nil {
 			logger.Logger.Error("[OperationService] failed to undo like tag",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("tagID", tag.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -224,7 +214,7 @@ func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.
 	} else {
 		if err = s.transactLikeTag(tx, tag, userLike); err != nil {
 			logger.Logger.Error("[OperationService] failed to like tag",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("tagID", tag.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -238,42 +228,30 @@ func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.
 func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error) {
 	rsp = &protocol.LogArticleViewResponse{}
 
-	user, err := s.userDAO.GetByName(s.db, req.Author, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] user not found", zap.String("userName", req.Author))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[OperationService] failed to get user", zap.String("userName", req.Author), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{"id", "status"}, []string{})
+	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[OperationService] article not found",
-				zap.String("articleSlug", req.ArticleSlug),
-				zap.Uint("userID", user.ID))
+				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[OperationService] failed to get article",
-			zap.String("articleSlug", req.ArticleSlug),
-			zap.Uint("userID", user.ID),
+			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	if req.CurUserID != user.ID && article.Status != model.ArticleStatusPublish {
+	// 如果用户不是文章作者，且文章状态不是已发布，则不允许浏览
+	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Logger.Info("[OperationService] no permission to view article",
-			zap.Uint("curUserID", req.CurUserID),
-			zap.String("author", req.Author))
+			zap.Uint("userID", req.UserID),
+			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
 
-	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(s.db, req.CurUserID, article.ID, []string{"id", "created_at", "progress"}, []string{})
+	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(s.db, req.UserID, article.ID, []string{"id", "created_at", "progress"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Logger.Error("[OperationService] failed to get user view",
-			zap.Uint("userID", req.CurUserID),
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -282,21 +260,21 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 	if userView.ID == 0 || userView.Progress >= 95 {
 		if req.Progress != 0 {
 			logger.Logger.Error("[OperationService] invalid progress",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Int8("progress", req.Progress))
 			return nil, protocol.ErrInternalError
 		}
 
 		userView = &model.UserView{
-			UserID:    req.CurUserID,
+			UserID:    req.UserID,
 			ArticleID: article.ID,
 			Progress:  req.Progress,
 		}
 
 		if err = s.userViewDAO.Create(s.db, userView); err != nil {
 			logger.Logger.Error("[OperationService] failed to create user view",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -304,7 +282,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 	} else {
 		if req.Progress-userView.Progress < 5 {
 			logger.Logger.Info("[OperationService] log view too frequently",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Int8("lastProgress", userView.Progress),
 				zap.Int8("progress", req.Progress))
@@ -316,7 +294,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 			"last_viewed_at": time.Now(),
 		}); err != nil {
 			logger.Logger.Error("[OperationService] failed to update user view",
-				zap.Uint("userID", req.CurUserID),
+				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError

@@ -717,10 +717,9 @@ type ListArticleVersionsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type LikeArticleRequest struct {
-	CurUserID   uint   `json:"curUserID"`
-	Author      string `json:"author"`
-	ArticleSlug string `json:"articleSlug"`
-	Undo        bool   `json:"undo"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
+	Undo      bool `json:"undo"`
 }
 
 // LikeArticleResponse 点赞文章响应
@@ -734,7 +733,7 @@ type LikeArticleResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:20
 type LikeCommentRequest struct {
-	CurUserID uint `json:"curUserID"`
+	UserID    uint `json:"curUserID"`
 	CommentID uint `json:"commentID"`
 	Undo      bool `json:"undo"`
 }
@@ -750,9 +749,9 @@ type LikeCommentResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:23
 type LikeTagRequest struct {
-	CurUserID uint   `json:"curUserID"`
-	TagSlug   string `json:"tagSlug"`
-	Undo      bool   `json:"undo"`
+	UserID uint `json:"userID"`
+	TagID  uint `json:"tagID"`
+	Undo   bool `json:"undo"`
 }
 
 // LikeTagResponse 点赞标签响应
@@ -766,10 +765,9 @@ type LikeTagResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:26
 type LogArticleViewRequest struct {
-	CurUserID   uint   `json:"curUserID"`
-	Author      string `json:"author"`
-	ArticleSlug string `json:"articleSlug"`
-	Progress    int8   `json:"progress"`
+	UserID    uint   `json:"userID"`
+	ArticleID uint   `json:"articleID"`
+	Progress  int8   `json:"progress"`
 }
 
 // LogArticleViewResponse 记录文章浏览响应
