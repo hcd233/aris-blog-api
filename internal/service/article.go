@@ -379,8 +379,9 @@ func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp 
 func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
 	rsp = &protocol.ListArticlesResponse{}
 
-	articles, pageInfo, err := s.articleDAO.PaginateByPublished(
+	articles, pageInfo, err := s.articleDAO.PaginateByStatus(
 		s.db,
+		model.ArticleStatusPublish,
 		[]string{
 			"id", "slug", "title", "status", "user_id",
 			"created_at", "updated_at", "published_at",

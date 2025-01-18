@@ -42,7 +42,6 @@ func initArticleRouter(r *gin.RouterGroup) {
 			)
 
 			initArticleVersionRouter(articleSlugRouter)
-			initArticleCommentRouter(articleSlugRouter)
 		}
 	}
 }

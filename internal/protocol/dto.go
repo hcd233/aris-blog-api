@@ -501,8 +501,8 @@ type CreateArticleResponse struct {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type GetArticleInfoRequest struct {
-	UserID    uint   `json:"userID"`
-	ArticleID uint   `json:"articleID"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
 }
 
 // GetArticleInfoResponse 获取文章信息响应
@@ -698,9 +698,9 @@ type GetLatestArticleVersionInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type ListArticleVersionsRequest struct {
-	UserID      uint       `json:"userID"`
-	ArticleID   uint       `json:"articleID"`
-	PageParam   *PageParam `json:"pageParam"`
+	UserID    uint       `json:"userID"`
+	ArticleID uint       `json:"articleID"`
+	PageParam *PageParam `json:"pageParam"`
 }
 
 // ListArticleVersionsResponse 列出文章版本响应
@@ -796,11 +796,10 @@ type Comment struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:31
 type CreateArticleCommentRequest struct {
-	CurUserID   uint   `json:"curUserID"`
-	Author      string `json:"author"`
-	ArticleSlug string `json:"articleSlug"`
-	Content     string `json:"content"`
-	ReplyTo     uint   `json:"replyTo"`
+	UserID    uint   `json:"userID"`
+	ArticleID uint   `json:"articleID"`
+	Content   string `json:"content"`
+	ReplyTo   uint   `json:"replyTo"`
 }
 
 // CreateArticleCommentResponse 创建文章评论响应
@@ -816,9 +815,9 @@ type CreateArticleCommentResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:34
 type GetCommentInfoRequest struct {
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
-	CommentID   uint   `json:"commentID"`
+	UserID    uint `json:"userID"`
+	ArticleID uint `json:"articleID"`
+	CommentID uint `json:"commentID"`
 }
 
 // GetCommentInfoResponse 获取评论信息响应
@@ -834,10 +833,8 @@ type GetCommentInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:38
 type DeleteCommentRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
-	ArticleSlug string `json:"articleSlug"`
-	CommentID   uint   `json:"commentID"`
+	UserID    uint `json:"userID"`
+	CommentID uint `json:"commentID"`
 }
 
 // DeleteCommentResponse 删除评论响应
@@ -851,10 +848,9 @@ type DeleteCommentResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:41
 type ListArticleCommentsRequest struct {
-	CurUserName string     `json:"curUserName"`
-	UserName    string     `json:"userName"`
-	ArticleSlug string     `json:"articleSlug"`
-	PageParam   *PageParam `json:"pageParam"`
+	UserID    uint       `json:"userID"`
+	ArticleID uint       `json:"articleID"`
+	PageParam *PageParam `json:"pageParam"`
 }
 
 // ListArticleCommentsResponse 列出文章评论响应
@@ -871,8 +867,7 @@ type ListArticleCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:44
 type ListChildrenCommentsRequest struct {
-	UserName    string     `json:"userName"`
-	ArticleSlug string     `json:"articleSlug"`
+	UserID      uint       `json:"userID"`
 	CommentID   uint       `json:"commentID"`
 	PageParam   *PageParam `json:"pageParam"`
 }
