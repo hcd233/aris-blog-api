@@ -30,7 +30,6 @@ type TagURI struct {
 //	author centonhuang
 //	update 2024-10-01 04:52:37
 type CategoryURI struct {
-	UserURI
 	CategoryID uint `uri:"categoryID" binding:"required"`
 }
 

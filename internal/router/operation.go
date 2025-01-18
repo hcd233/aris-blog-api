@@ -9,7 +9,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
 
-func initUserOperationRouter(r *gin.RouterGroup) {
+func initOperationRouter(r *gin.RouterGroup) {
 	operationHandler := handler.NewOperationHandler()
 
 	operationRouter := r.Group("/operation")

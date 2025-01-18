@@ -18,9 +18,6 @@ type ArticleHandler interface {
 	HandleUpdateArticleStatus(c *gin.Context)
 	HandleDeleteArticle(c *gin.Context)
 	HandleListArticles(c *gin.Context)
-	HandleListUserArticles(c *gin.Context)
-	HandleQueryArticle(c *gin.Context)
-	HandleQueryUserArticle(c *gin.Context)
 }
 
 type articleHandler struct {
@@ -167,64 +164,6 @@ func (h *articleHandler) HandleListArticles(c *gin.Context) {
 	}
 
 	rsp, err := h.svc.ListArticles(req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
-// HandleListUserArticles 列出用户文章
-//
-//	receiver h *articleHandler
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleListUserArticles(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
-	param := c.MustGet("param").(*protocol.PageParam)
-
-	req := &protocol.ListUserArticlesRequest{
-		UserName:  uri.UserName,
-		PageParam: param,
-	}
-
-	rsp, err := h.svc.ListUserArticles(req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
-// HandleQueryArticle 查询文章
-//
-//	receiver h *articleHandler
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleQueryArticle(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.QueryParam)
-
-	req := &protocol.QueryArticleRequest{
-		QueryParam: param,
-	}
-
-	rsp, err := h.svc.QueryArticle(req)
-
-	util.SendHTTPResponse(c, rsp, err)
-}
-
-// HandleQueryUserArticle 查询用户文章
-//
-//	receiver h *articleHandler
-//	param c *gin.Context
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleQueryUserArticle(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
-	param := c.MustGet("param").(*protocol.QueryParam)
-
-	req := &protocol.QueryUserArticleRequest{
-		UserName:   uri.UserName,
-		QueryParam: param,
-	}
-
-	rsp, err := h.svc.QueryUserArticle(req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
