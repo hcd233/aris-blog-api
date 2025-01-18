@@ -5,7 +5,7 @@ package protocol
 //	author centonhuang
 //	update 2024-09-18 02:50:19
 type UserURI struct {
-	UserName string `uri:"userName" binding:"required"`
+	UserID uint `uri:"userID" binding:"required"`
 }
 
 // ArticleSlugURI 文章别名路径参数

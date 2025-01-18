@@ -94,7 +94,7 @@ type GetCurUserInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-04 21:19:41
 type GetUserInfoRequest struct {
-	UserName string `json:"userName"`
+	UserID uint `json:"userID"`
 }
 
 // GetUserInfoResponse 获取用户信息响应
@@ -110,8 +110,7 @@ type GetUserInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-04 21:19:47
 type UpdateUserInfoRequest struct {
-	CurUserName     string `json:"curUserName"`
-	UserName        string `json:"userName"`
+	UserID          uint   `json:"userID"`
 	UpdatedUserName string `json:"updatedUserName"`
 }
 
@@ -325,9 +324,9 @@ type Article struct {
 //	author centonhuang
 //	update 2025-01-05 13:22:59
 type CreateCategoryRequest struct {
-	UserID      uint   `json:"userID"`
-	Name        string `json:"name"`
-	ParentID    uint   `json:"parentID"`
+	UserID   uint   `json:"userID"`
+	Name     string `json:"name"`
+	ParentID uint   `json:"parentID"`
 }
 
 // CreateCategoryResponse 创建分类响应
@@ -343,8 +342,8 @@ type CreateCategoryResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:03
 type GetCategoryInfoRequest struct {
-	UserID      uint   `json:"userID"`
-	CategoryID  uint   `json:"categoryID"`
+	UserID     uint `json:"userID"`
+	CategoryID uint `json:"categoryID"`
 }
 
 // GetCategoryInfoResponse 获取分类信息响应
@@ -376,10 +375,10 @@ type GetRootCategoryResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:14
 type UpdateCategoryRequest struct {
-	UserID      uint   `json:"userID"`
-	CategoryID  uint   `json:"categoryID"`
-	Name        string `json:"name"`
-	ParentID    uint   `json:"parentID"`
+	UserID     uint   `json:"userID"`
+	CategoryID uint   `json:"categoryID"`
+	Name       string `json:"name"`
+	ParentID   uint   `json:"parentID"`
 }
 
 // UpdateCategoryResponse 更新分类响应
@@ -395,8 +394,8 @@ type UpdateCategoryResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:18
 type DeleteCategoryRequest struct {
-	UserID      uint   `json:"userID"`
-	CategoryID  uint   `json:"categoryID"`
+	UserID     uint `json:"userID"`
+	CategoryID uint `json:"categoryID"`
 }
 
 // DeleteCategoryResponse 删除分类响应
@@ -410,9 +409,9 @@ type DeleteCategoryResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 13:23:21
 type ListChildrenCategoriesRequest struct {
-	UserID      uint       `json:"userID"`
-	CategoryID  uint       `json:"categoryID"`
-	PageParam   *PageParam `json:"pageParam"`
+	UserID     uint       `json:"userID"`
+	CategoryID uint       `json:"categoryID"`
+	PageParam  *PageParam `json:"pageParam"`
 }
 
 // ListChildrenCategoriesResponse 列出子分类响应
@@ -429,9 +428,9 @@ type ListChildrenCategoriesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:25
 type ListChildrenArticlesRequest struct {
-	UserID      uint       `json:"userID"`
-	CategoryID  uint       `json:"categoryID"`
-	PageParam   *PageParam `json:"pageParam"`
+	UserID     uint       `json:"userID"`
+	CategoryID uint       `json:"categoryID"`
+	PageParam  *PageParam `json:"pageParam"`
 }
 
 // ListChildrenArticlesResponse 列出子文章响应

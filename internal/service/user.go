@@ -21,7 +21,6 @@ type UserService interface {
 	GetCurUserInfo(req *protocol.GetCurUserInfoRequest) (rsp *protocol.GetCurUserInfoResponse, err error)
 	GetUserInfo(req *protocol.GetUserInfoRequest) (rsp *protocol.GetUserInfoResponse, err error)
 	UpdateUserInfo(req *protocol.UpdateUserInfoRequest) (rsp *protocol.UpdateUserInfoResponse, err error)
-	QueryUser(req *protocol.QueryUserRequest) (rsp *protocol.QueryUserResponse, err error)
 }
 
 type userService struct {
@@ -101,13 +100,13 @@ func (s *userService) GetCurUserInfo(req *protocol.GetCurUserInfoRequest) (rsp *
 func (s *userService) GetUserInfo(req *protocol.GetUserInfoRequest) (rsp *protocol.GetUserInfoResponse, err error) {
 	rsp = &protocol.GetUserInfoResponse{}
 
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	user, err := s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[UserService] user not found", zap.String("userName", req.UserName))
+			logger.Logger.Error("[UserService] user not found", zap.Uint("userID", req.UserID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[UserService] failed to get user by name", zap.String("userName", req.UserName), zap.Error(err))
+		logger.Logger.Error("[UserService] failed to get user by id", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -132,48 +131,14 @@ func (s *userService) GetUserInfo(req *protocol.GetUserInfoRequest) (rsp *protoc
 }
 
 func (s *userService) UpdateUserInfo(req *protocol.UpdateUserInfoRequest) (rsp *protocol.UpdateUserInfoResponse, err error) {
-	if req.CurUserName != req.UserName {
-		logger.Logger.Info("[UserService] no permission to update user info",
-			zap.String("curUserName", req.CurUserName),
-			zap.String("userName", req.UserName))
-		return nil, protocol.ErrNoPermission
-	}
-
 	rsp = &protocol.UpdateUserInfoResponse{}
 
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id", "name"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[UserService] user not found", zap.String("userName", req.UserName))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[UserService] failed to get user by name", zap.String("userName", req.UserName), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	if err := s.userDAO.Update(s.db, &model.User{ID: user.ID}, map[string]interface{}{
+	if err := s.userDAO.Update(s.db, &model.User{ID: req.UserID}, map[string]interface{}{
 		"name": req.UpdatedUserName,
 	}); err != nil {
-		logger.Logger.Error("[UserService] failed to update user", zap.Uint("userID", user.ID), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	user, err = s.userDAO.GetByID(s.db, user.ID, []string{"id", "name", "avatar"}, []string{})
-	if err != nil {
-		logger.Logger.Error("[UserService] failed to get user after update", zap.Error(err))
+		logger.Logger.Error("[UserService] failed to update user", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	return rsp, nil
-}
-
-func (s *userService) QueryUser(*protocol.QueryUserRequest) (*protocol.QueryUserResponse, error) {
-	// users, queryInfo, err := s.userDocDAO.QueryDocument(req.Query, req.Filter, req.Page, req.PageSize)
-	// if err != nil {
-	// 	logger.Logger.Error("[UserService] failed to query users", zap.Error(err))
-	// 	return nil, protocol.ErrInternalError
-	// }
-
-	// TODO: 查询用户和列出用户合并
-	return nil, protocol.ErrInternalError
 }
