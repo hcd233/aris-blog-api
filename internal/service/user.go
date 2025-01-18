@@ -55,13 +55,13 @@ func NewUserService() UserService {
 func (s *userService) GetCurUserInfo(req *protocol.GetCurUserInfoRequest) (rsp *protocol.GetCurUserInfoResponse, err error) {
 	rsp = &protocol.GetCurUserInfoResponse{}
 
-	user, err := s.userDAO.GetByID(s.db, req.CurUserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	user, err := s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[UserService] user not found", zap.Uint("userID", req.CurUserID))
+			logger.Logger.Error("[UserService] user not found", zap.Uint("userID", req.UserID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[UserService] failed to get user by id", zap.Uint("userID", req.CurUserID), zap.Error(err))
+		logger.Logger.Error("[UserService] failed to get user by id", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 

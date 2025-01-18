@@ -273,7 +273,7 @@ func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp 
 func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
 	rsp = &protocol.UpdateArticleStatusResponse{}
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "status", "title", "slug", "user_id", "category_id"}, []string{"User", "Category", "Tags"})
+	article, err := s.articleDAO.GetByIDAndUserID(s.db, req.ArticleID, req.UserID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleService] article not found",
@@ -284,13 +284,6 @@ func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRe
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
-	}
-
-	if article.UserID != req.UserID {
-		logger.Logger.Error("[ArticleService] no permission to update article status",
-			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
-		return nil, protocol.ErrNoPermission
 	}
 
 	if article.Status == req.Status {
@@ -338,7 +331,7 @@ func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRe
 func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
 	rsp = &protocol.DeleteArticleResponse{}
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "slug", "user_id"}, []string{})
+	article, err := s.articleDAO.GetByIDAndUserID(s.db, req.ArticleID, req.UserID, []string{"id", "slug"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[ArticleService] article not found",
@@ -351,12 +344,6 @@ func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp 
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
-		logger.Logger.Error("[ArticleService] no permission to delete article",
-			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
-		return nil, protocol.ErrNoPermission
-	}
 
 	if err := s.articleDAO.Delete(s.db, article); err != nil {
 		logger.Logger.Error("[ArticleService] failed to delete article",

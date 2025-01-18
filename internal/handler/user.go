@@ -53,7 +53,7 @@ func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
 	userID := c.GetUint("userID")
 
 	req := protocol.GetCurUserInfoRequest{
-		CurUserID: userID,
+		UserID: userID,
 	}
 
 	rsp, err := h.svc.GetCurUserInfo(&req)
