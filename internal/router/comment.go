@@ -9,7 +9,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
 
-func initArticleCommentRouter(r *gin.RouterGroup) {
+func initCommentRouter(r *gin.RouterGroup) {
 	commentHandler := handler.NewCommentHandler()
 
 	r.GET("comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListArticleComments)
@@ -23,7 +23,6 @@ func initArticleCommentRouter(r *gin.RouterGroup) {
 		)
 		commentIDRouter := commentRouter.Group(":commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
 		{
-			commentIDRouter.GET("", commentHandler.HandleGetCommentInfo)
 			commentIDRouter.DELETE("", commentHandler.HandleDeleteComment)
 			commentIDRouter.GET("subComments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListChildrenComments)
 		}

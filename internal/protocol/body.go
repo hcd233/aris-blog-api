@@ -98,6 +98,7 @@ type UpdateArticleStatusBody struct {
 //	author centonhuang
 //	update 2024-10-24 04:29:01
 type CreateArticleCommentBody struct {
+	ArticleID uint   `json:"articleID" binding:"required"`
 	ReplyTo uint   `json:"replyTo" binding:"omitempty"`
 	Content string `json:"content" binding:"required,min=1,max=300"`
 }

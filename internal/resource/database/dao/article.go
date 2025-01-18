@@ -31,7 +31,7 @@ func (dao *ArticleDAO) Delete(db *gorm.DB, article *model.Article) (err error) {
 	return
 }
 
-// GetBySlugAndUserID 通过slug获取文章
+// GetByIDAndStatus 通过ID和状态获取文章
 //
 //	receiver dao *ArticleDAO
 //	param db *gorm.DB
@@ -42,12 +42,12 @@ func (dao *ArticleDAO) Delete(db *gorm.DB, article *model.Article) (err error) {
 //	return err error
 //	author centonhuang
 //	update 2024-10-17 07:17:59
-func (dao *ArticleDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint, fields, preloads []string) (article *model.Article, err error) {
+func (dao *ArticleDAO) GetByIDAndStatus(db *gorm.DB, articleID uint, status model.ArticleStatus, fields, preloads []string) (article *model.Article, err error) {
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	err = sql.Where(&model.Article{Slug: slug, UserID: userID}).First(&article).Error
+	err = sql.Where(&model.Article{ID: articleID, Status: status}).First(&article).Error
 	return
 }
 
@@ -120,11 +120,13 @@ func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields
 	return
 }
 
-// PaginateByPublished 列出已发布的文章
+// PaginateByStatus 列出已发布的文章
 //
 //	receiver dao *ArticleDAO
 //	param db *gorm.DB
+//	param status model.ArticleStatus
 //	param fields []string
+//	param preloads []string
 //	param page int
 //	param pageSize int
 //	return articles *[]model.Article
@@ -132,14 +134,14 @@ func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 05:33:37
-func (dao *ArticleDAO) PaginateByPublished(db *gorm.DB, fields []string, preloads []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByStatus(db *gorm.DB, status model.ArticleStatus, fields []string, preloads []string, page, pageSize int) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := pageSize, (page-1)*pageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	err = sql.Where(&model.Article{Status: model.ArticleStatusPublish}).Limit(limit).Offset(offset).Find(&articles).Error
+	err = sql.Where(&model.Article{Status: status}).Limit(limit).Offset(offset).Find(&articles).Error
 	if err != nil {
 		return
 	}

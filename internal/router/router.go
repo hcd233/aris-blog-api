@@ -30,6 +30,7 @@ func RegisterRouter(r *gin.Engine) {
 		initCategoryRouter(v1Router)
 		initTagRouter(v1Router)
 		initArticleRouter(v1Router)
+		initCommentRouter(v1Router)
 
 		initAssetRouter(v1Router)
 		initOperationRouter(v1Router)
