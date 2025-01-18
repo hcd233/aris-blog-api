@@ -30,7 +30,7 @@ func NewCommentHandler() CommentHandler {
 // HandleCreateArticleComment 创建文章评论
 func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
 	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleCommentBody)
 
 	req := &protocol.CreateArticleCommentRequest{
@@ -81,7 +81,7 @@ func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 // HandleListArticleComments 列出文章评论
 func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListArticleCommentsRequest{

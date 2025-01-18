@@ -92,7 +92,7 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	req := &protocol.GetArticleInfoRequest{
 		UserID:    userID,
@@ -125,7 +125,7 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 
 	req := &protocol.UpdateArticleRequest{
@@ -162,7 +162,7 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
 
 	req := &protocol.UpdateArticleStatusRequest{
@@ -197,7 +197,7 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	req := &protocol.DeleteArticleRequest{
 		UserID:    userID,
