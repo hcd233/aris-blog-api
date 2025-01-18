@@ -20,7 +20,7 @@ func initTagRouter(r *gin.RouterGroup) {
 			middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}),
 			tagHandler.HandleCreateTag,
 		)
-		tagSlugRouter := tagRouter.Group("/:tagSlug", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
+		tagSlugRouter := tagRouter.Group("/:tagID", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
 		{
 			tagSlugRouter.GET("", tagHandler.HandleGetTagInfo)
 			tagSlugRouter.PUT(

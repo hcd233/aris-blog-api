@@ -24,9 +24,6 @@ type TagService interface {
 	UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error)
 	DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error)
 	ListTags(req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error)
-	ListUserTags(req *protocol.ListUserTagsRequest) (rsp *protocol.ListUserTagsResponse, err error)
-	QueryTag(req *protocol.QueryTagRequest) (rsp *protocol.QueryTagResponse, err error)
-	QueryUserTag(req *protocol.QueryUserTagRequest) (rsp *protocol.QueryUserTagResponse, err error)
 }
 
 type tagService struct {
@@ -62,7 +59,7 @@ func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.Cr
 		Name:        req.Name,
 		Slug:        req.Slug,
 		Description: req.Description,
-		UserID:      req.CurUserID,
+		UserID:      req.UserID,
 	}
 
 	if err := s.tagDAO.Create(s.db, tag); err != nil {
@@ -86,15 +83,15 @@ func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.Cr
 func (s *tagService) GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error) {
 	rsp = &protocol.GetTagInfoResponse{}
 
-	tag, err := s.tagDAO.GetBySlug(s.db, req.TagSlug,
+	tag, err := s.tagDAO.GetByID(s.db, req.TagID,
 		[]string{"id", "name", "slug", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[TagService] Tag not found", zap.String("tagSlug", req.TagSlug))
+			logger.Logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[TagService] Get tag info failed", zap.String("tagSlug", req.TagSlug), zap.Error(err))
+		logger.Logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -123,19 +120,19 @@ func (s *tagService) GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.
 func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error) {
 	rsp = &protocol.UpdateTagResponse{}
 
-	tag, err := s.tagDAO.GetBySlug(s.db, req.TagSlug, []string{"id", "user_id"}, []string{})
+	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[TagService] Tag not found", zap.String("tagSlug", req.TagSlug))
+			logger.Logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[TagService] Get tag info failed", zap.String("tagSlug", req.TagSlug), zap.Error(err))
+		logger.Logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	if tag.UserID != req.CurUserID {
+	if tag.UserID != req.UserID {
 		logger.Logger.Info("[TagService] no permission to update tag",
-			zap.Uint("curUserID", req.CurUserID),
+			zap.Uint("userID", req.UserID),
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -153,21 +150,19 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 
 	if len(updateFields) == 0 {
 		logger.Logger.Warn("[TagService] No fields to update",
-			zap.Uint("curUserID", req.CurUserID),
-			zap.String("tagSlug", req.TagSlug),
+			zap.Uint("userID", req.UserID),
+			zap.Uint("tagID", req.TagID),
 			zap.Any("updateFields", updateFields))
 		return rsp, nil
 	}
 
 	if err := s.tagDAO.Update(s.db, tag, updateFields); err != nil {
 		logger.Logger.Error("[TagService] Update tag failed",
-			zap.String("tagSlug", req.TagSlug),
+			zap.Uint("tagID", req.TagID),
 			zap.Any("updateFields", updateFields),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
-
-	tag = lo.Must1(s.tagDAO.GetBySlug(s.db, req.TagSlug, []string{"id", "name", "slug", "description", "user_id"}, []string{"User"}))
 
 	return rsp, nil
 }
@@ -183,25 +178,25 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 func (s *tagService) DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error) {
 	rsp = &protocol.DeleteTagResponse{}
 
-	tag, err := s.tagDAO.GetBySlug(s.db, req.TagName, []string{"id", "name", "slug", "user_id"}, []string{})
+	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "name", "slug", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[TagService] Tag not found", zap.String("tagName", req.TagName))
+			logger.Logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[TagService] Get tag info failed", zap.String("tagName", req.TagName), zap.Error(err))
+		logger.Logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	if tag.UserID != req.CurUserID {
+	if tag.UserID != req.UserID {
 		logger.Logger.Info("[TagService] no permission to delete tag",
-			zap.Uint("curUserID", req.CurUserID),
+			zap.Uint("userID", req.UserID),
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.tagDAO.Delete(s.db, tag); err != nil {
-		logger.Logger.Error("[TagService] Delete tag failed", zap.String("tagName", req.TagName), zap.Error(err))
+		logger.Logger.Error("[TagService] Delete tag failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -248,43 +243,4 @@ func (s *tagService) ListTags(req *protocol.ListTagsRequest) (rsp *protocol.List
 	}
 
 	return rsp, nil
-}
-
-// ListUserTags 列出用户标签
-//
-//	receiver s *tagService
-//	param req *protocol.ListUserTagsRequest
-//	return rsp *protocol.ListUserTagsResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 12:37:54
-func (s *tagService) ListUserTags(*protocol.ListUserTagsRequest) (*protocol.ListUserTagsResponse, error) {
-	// TODO: 和合并标签合并
-	return nil, protocol.ErrNoImplement
-}
-
-// QueryTag
-//
-//	receiver s *tagService
-//	param req *protocol.QueryTagRequest
-//	return rsp *protocol.QueryTagResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 11:52:53
-func (s *tagService) QueryTag(*protocol.QueryTagRequest) (*protocol.QueryTagResponse, error) {
-	// TODO: 和合并标签合并
-	return nil, protocol.ErrNoImplement
-}
-
-// QueryUserTag
-//
-//	receiver s *tagService
-//	param req *protocol.QueryUserTagRequest
-//	return rsp *protocol.QueryUserTagResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 11:52:55
-func (s *tagService) QueryUserTag(*protocol.QueryUserTagRequest) (*protocol.QueryUserTagResponse, error) {
-	// TODO: 和合并标签合并
-	return nil, protocol.ErrInternalError
 }
