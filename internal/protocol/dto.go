@@ -325,8 +325,7 @@ type Article struct {
 //	author centonhuang
 //	update 2025-01-05 13:22:59
 type CreateCategoryRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
+	UserID      uint   `json:"userID"`
 	Name        string `json:"name"`
 	ParentID    uint   `json:"parentID"`
 }
@@ -344,8 +343,7 @@ type CreateCategoryResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:03
 type GetCategoryInfoRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
+	UserID      uint   `json:"userID"`
 	CategoryID  uint   `json:"categoryID"`
 }
 
@@ -362,8 +360,7 @@ type GetCategoryInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:08
 type GetRootCategoryRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
+	UserID uint `json:"userID"`
 }
 
 // GetRootCategoryResponse 获取根分类响应
@@ -379,8 +376,7 @@ type GetRootCategoryResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:14
 type UpdateCategoryRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
+	UserID      uint   `json:"userID"`
 	CategoryID  uint   `json:"categoryID"`
 	Name        string `json:"name"`
 	ParentID    uint   `json:"parentID"`
@@ -399,8 +395,7 @@ type UpdateCategoryResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:18
 type DeleteCategoryRequest struct {
-	CurUserName string `json:"curUserName"`
-	UserName    string `json:"userName"`
+	UserID      uint   `json:"userID"`
 	CategoryID  uint   `json:"categoryID"`
 }
 
@@ -415,8 +410,7 @@ type DeleteCategoryResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 13:23:21
 type ListChildrenCategoriesRequest struct {
-	CurUserName string     `json:"curUserName"`
-	UserName    string     `json:"userName"`
+	UserID      uint       `json:"userID"`
 	CategoryID  uint       `json:"categoryID"`
 	PageParam   *PageParam `json:"pageParam"`
 }
@@ -435,8 +429,7 @@ type ListChildrenCategoriesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:25
 type ListChildrenArticlesRequest struct {
-	CurUserName string     `json:"curUserName"`
-	UserName    string     `json:"userName"`
+	UserID      uint       `json:"userID"`
 	CategoryID  uint       `json:"categoryID"`
 	PageParam   *PageParam `json:"pageParam"`
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initUserAssetRouter(r *gin.RouterGroup) {
+func initAssetRouter(r *gin.RouterGroup) {
 	assetHandler := handler.NewAssetHandler()
 
 	assetRouter := r.Group("/asset")

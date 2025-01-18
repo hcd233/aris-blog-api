@@ -8,21 +8,21 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initUserCategoryRouter(r *gin.RouterGroup) {
+func initCategoryRouter(r *gin.RouterGroup) {
 	categoryHandler := handler.NewCategoryHandler()
 
-	r.GET("rootCategory", middleware.LimitUserPermissionMiddleware("categoryService", model.PermissionCreator), categoryHandler.HandleGetRootCategories)
 	categoryRouter := r.Group("/category", middleware.LimitUserPermissionMiddleware("categoryService", model.PermissionCreator))
 	{
+		categoryRouter.GET("root", categoryHandler.HandleGetRootCategories)
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), categoryHandler.HandleCreateCategory)
-	}
 
-	categoryIDRouter := categoryRouter.Group(":categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
-	{
-		categoryIDRouter.GET("", categoryHandler.HandleGetCategoryInfo)
-		categoryIDRouter.DELETE("", categoryHandler.HandleDeleteCategory)
-		categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryHandler.HandleUpdateCategoryInfo)
-		categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenCategories)
-		categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenArticles)
+		categoryIDRouter := categoryRouter.Group(":categoryID", middleware.ValidateURIMiddleware(&protocol.CategoryURI{}))
+		{
+			categoryIDRouter.GET("", categoryHandler.HandleGetCategoryInfo)
+			categoryIDRouter.DELETE("", categoryHandler.HandleDeleteCategory)
+			categoryIDRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryHandler.HandleUpdateCategoryInfo)
+			categoryIDRouter.GET("subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenCategories)
+			categoryIDRouter.GET("subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenArticles)
+		}
 	}
 }

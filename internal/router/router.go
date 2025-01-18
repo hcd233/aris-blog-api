@@ -26,8 +26,13 @@ func RegisterRouter(r *gin.Engine) {
 		initOauth2Router(v1Router)
 
 		initUserRouter(v1Router)
+
+		initCategoryRouter(v1Router)
 		initTagRouter(v1Router)
 		initArticleRouter(v1Router)
+
+		initAssetRouter(v1Router)
+		initOperationRouter(v1Router)
 
 		initAIRouter(v1Router)
 	}

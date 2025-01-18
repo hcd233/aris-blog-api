@@ -18,11 +18,6 @@ func initUserRouter(r *gin.RouterGroup) {
 		{
 			userNameRouter.GET("", userHandler.HandleGetUserInfo)
 			userNameRouter.PUT("", middleware.ValidateBodyMiddleware(&protocol.UpdateUserBody{}), userHandler.HandleUpdateInfo)
-
-			initUserArticleRouter(userNameRouter)
-			initUserCategoryRouter(userNameRouter)
-			initUserOperationRouter(userNameRouter)
-			initUserAssetRouter(userNameRouter)
 		}
 
 	}

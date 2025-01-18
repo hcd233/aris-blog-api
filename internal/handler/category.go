@@ -42,15 +42,13 @@ func NewCategoryHandler() CategoryHandler {
 //	author centonhuang
 //	update 2024-09-28 07:03:28
 func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.UserURI)
+	userID := c.GetUint("userID")
 	body := c.MustGet("body").(*protocol.CreateCategoryBody)
 
 	req := &protocol.CreateCategoryRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		Name:        body.Name,
-		ParentID:    body.ParentID,
+		UserID:   userID,
+		Name:     body.Name,
+		ParentID: body.ParentID,
 	}
 
 	rsp, err := h.svc.CreateCategory(req)
@@ -64,13 +62,12 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-01 04:58:27
 func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	userID := c.GetUint("userID")
 
+	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	req := &protocol.GetCategoryInfoRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		CategoryID:  uri.CategoryID,
+		UserID:     userID,
+		CategoryID: uri.CategoryID,
 	}
 
 	rsp, err := h.svc.GetCategoryInfo(req)
@@ -84,12 +81,9 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-23 03:56:26
 func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
-	userName := c.GetString("userName")
-	uri := c.MustGet("uri").(*protocol.UserURI)
-
+	userID := c.GetUint("userID")
 	req := &protocol.GetRootCategoryRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
+		UserID: userID,
 	}
 
 	rsp, err := h.svc.GetRootCategory(req)
@@ -103,16 +97,13 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 03:45:55
 func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
-	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
 
 	req := &protocol.UpdateCategoryRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		CategoryID:  uri.CategoryID,
-		Name:        body.Name,
-		ParentID:    body.ParentID,
+		CategoryID: uri.CategoryID,
+		Name:       body.Name,
+		ParentID:   body.ParentID,
 	}
 
 	rsp, err := h.svc.UpdateCategory(req)
@@ -126,13 +117,10 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 04:55:08
 func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
-	userName := c.GetString("userName")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 
 	req := &protocol.DeleteCategoryRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		CategoryID:  uri.CategoryID,
+		CategoryID: uri.CategoryID,
 	}
 
 	rsp, err := h.svc.DeleteCategory(req)
@@ -146,15 +134,14 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-01 05:09:47
 func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
-	userName := c.GetString("userName")
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListChildrenCategoriesRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		CategoryID:  uri.CategoryID,
-		PageParam:   param,
+		UserID:     userID,
+		CategoryID: uri.CategoryID,
+		PageParam:  param,
 	}
 
 	rsp, err := h.svc.ListChildrenCategories(req)
@@ -168,15 +155,14 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 01:38:12
 func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
-	userName := c.GetString("userName")
+	userID := c.GetUint("userID")
 	uri := c.MustGet("uri").(*protocol.CategoryURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
 	req := &protocol.ListChildrenArticlesRequest{
-		CurUserName: userName,
-		UserName:    uri.UserName,
-		CategoryID:  uri.CategoryID,
-		PageParam:   param,
+		UserID:     userID,
+		CategoryID: uri.CategoryID,
+		PageParam:  param,
 	}
 
 	rsp, err := h.svc.ListChildrenArticles(req)

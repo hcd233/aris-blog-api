@@ -26,9 +26,6 @@ type ArticleService interface {
 	UpdateArticleStatus(req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error)
 	DeleteArticle(req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error)
 	ListArticles(req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error)
-	ListUserArticles(req *protocol.ListUserArticlesRequest) (rsp *protocol.ListUserArticlesResponse, err error)
-	QueryArticle(req *protocol.QueryArticleRequest) (rsp *protocol.QueryArticleResponse, err error)
-	QueryUserArticle(req *protocol.QueryUserArticleRequest) (rsp *protocol.QueryUserArticleResponse, err error)
 }
 
 type articleService struct {
@@ -460,91 +457,4 @@ func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *p
 	}
 
 	return rsp, nil
-}
-
-// ListUserArticles 列出用户文章
-//
-//	receiver s *articleService
-//	param req *protocol.ListUserArticlesRequest
-//	return rsp *protocol.ListUserArticlesResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) ListUserArticles(req *protocol.ListUserArticlesRequest) (rsp *protocol.ListUserArticlesResponse, err error) {
-	rsp = &protocol.ListUserArticlesResponse{}
-
-	user, err := s.userDAO.GetByName(s.db, req.UserName, []string{"id"}, []string{})
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] user not found", zap.String("userName", req.UserName))
-			return nil, protocol.ErrDataNotExists
-		}
-		logger.Logger.Error("[ArticleService] failed to get user", zap.String("userName", req.UserName), zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	articles, pageInfo, err := s.articleDAO.PaginateByUserID(s.db, user.ID,
-		[]string{
-			"id", "slug", "title", "status", "user_id",
-			"created_at", "updated_at", "published_at",
-			"likes", "views",
-		},
-		[]string{"Comments", "Tags"},
-		req.PageParam.Page, req.PageParam.PageSize)
-	if err != nil {
-		logger.Logger.Error("[ArticleService] failed to paginate user articles",
-			zap.Uint("userID", user.ID),
-			zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-
-	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *protocol.Article {
-		return &protocol.Article{
-			ArticleID:   article.ID,
-			Title:       article.Title,
-			Slug:        article.Slug,
-			UserID:      article.UserID,
-			CreatedAt:   article.CreatedAt.Format(time.DateTime),
-			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
-			PublishedAt: article.PublishedAt.Format(time.DateTime),
-			Likes:       article.Likes,
-			Views:       article.Views,
-			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
-			Comments:    len(article.Comments),
-		}
-	})
-
-	rsp.PageInfo = &protocol.PageInfo{
-		Page:     pageInfo.Page,
-		PageSize: pageInfo.PageSize,
-		Total:    pageInfo.Total,
-	}
-
-	return rsp, nil
-}
-
-// QueryArticle 查询文章
-//
-//	receiver s *articleService
-//	param req *protocol.QueryArticleRequest
-//	return rsp *protocol.QueryArticleResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) QueryArticle(*protocol.QueryArticleRequest) (*protocol.QueryArticleResponse, error) {
-	// TODO: 合并
-	return nil, protocol.ErrInternalError
-}
-
-// QueryUserArticle 查询用户文章
-//
-//	receiver s *articleService
-//	param req *protocol.QueryUserArticleRequest
-//	return rsp *protocol.QueryUserArticleResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) QueryUserArticle(*protocol.QueryUserArticleRequest) (*protocol.QueryUserArticleResponse, error) {
-	// TODO: 合并
-	return nil, protocol.ErrInternalError
 }
