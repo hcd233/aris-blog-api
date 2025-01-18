@@ -3,6 +3,7 @@ package logger
 
 import (
 	"os"
+	"path"
 	"strings"
 
 	"github.com/hcd233/aris-blog-api/internal/config"
@@ -15,6 +16,12 @@ import (
 //
 //	update 2024-09-16 12:47:59
 var Logger *zap.Logger
+
+const (
+	infoLogFile = "aris-blog-api.log"
+	errLogFile  = "aris-blog-api-error.log"
+	panicLogFile = "aris-blog-api-panic.log"
+)
 
 func init() {
 	var (
@@ -37,7 +44,7 @@ func init() {
 
 	// general logger
 	logFileWriter := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   strings.Join([]string{config.LogDirPath, "aris-ai-go.log"}, "/"),
+		Filename:   path.Join(config.LogDirPath, infoLogFile),
 		MaxSize:    100, // MB
 		MaxBackups: 3,
 		MaxAge:     7, // days
@@ -46,7 +53,7 @@ func init() {
 
 	// error logger
 	errFileWriter := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   config.LogDirPath + "/aris-ai-go-error.log",
+		Filename:   path.Join(config.LogDirPath, errLogFile),
 		MaxSize:    500, // MB
 		MaxBackups: 3,
 		MaxAge:     30, // days
@@ -55,7 +62,7 @@ func init() {
 
 	// panic logger
 	panicFileWriter := zapcore.AddSync(&lumberjack.Logger{
-		Filename:   config.LogDirPath + "/aris-ai-go-panic.log",
+		Filename:   path.Join(config.LogDirPath, panicLogFile),
 		MaxSize:    500, // MB
 		MaxBackups: 3,
 		MaxAge:     30, // days

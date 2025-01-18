@@ -11,37 +11,38 @@ import (
 func initArticleRouter(r *gin.RouterGroup) {
 	articleHandler := handler.NewArticleHandler()
 
-	r.GET("articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
+		articleRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
+	
 		articleRouter.POST(
 			"",
 			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
 			articleHandler.HandleCreateArticle,
 		)
-		articleSlugRouter := articleRouter.Group("/:articleSlug", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
+		articleIDRouter := articleRouter.Group("/:articleID", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
 		{
-			articleSlugRouter.GET("", articleHandler.HandleGetArticleInfo)
-			articleSlugRouter.PUT(
+			articleIDRouter.GET("", articleHandler.HandleGetArticleInfo)
+			articleIDRouter.PATCH(
 				"",
 				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 				middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}),
 				articleHandler.HandleUpdateArticle,
 			)
-			articleSlugRouter.DELETE(
+			articleIDRouter.DELETE(
 				"",
 				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 				articleHandler.HandleDeleteArticle,
 			)
-			articleSlugRouter.PUT(
+			articleIDRouter.PUT(
 				"status",
 				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 				middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}),
 				articleHandler.HandleUpdateArticleStatus,
 			)
 
-			initArticleVersionRouter(articleSlugRouter)
+			initArticleVersionRouter(articleIDRouter)
 		}
 	}
 }

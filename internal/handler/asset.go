@@ -49,7 +49,7 @@ func NewAssetHandler() AssetHandler {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.ListUserLikeArticlesRequest	true	"列出用户喜欢的文章请求体"
+//	@Param			page	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserLikeArticlesResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -81,7 +81,7 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.ListUserLikeCommentsRequest	true	"列出用户喜欢的评论请求体"
+//	@Param			page	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserLikeCommentsResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -113,7 +113,7 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.ListUserLikeTagsRequest	true	"列出用户喜欢的标签请求体"
+//	@Param			page	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserLikeTagsResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -145,7 +145,7 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.ListImagesRequest	true	"列出图片请求体"
+//	@Param			page	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListImagesResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -336,7 +336,7 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/asset/view/articles/{viewID} [delete]
+//	@Router			/v1/asset/view/article/{viewID} [delete]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35

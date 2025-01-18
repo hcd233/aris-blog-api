@@ -120,23 +120,6 @@ type UpdateUserInfoRequest struct {
 //	update 2025-01-05 11:35:18
 type UpdateUserInfoResponse struct{}
 
-// QueryUserRequest 查询用户请求
-//
-//	author centonhuang
-//	update 2025-01-05 11:35:17
-type QueryUserRequest struct {
-	QueryParam *QueryParam
-}
-
-// QueryUserResponse 查询用户响应
-//
-//	author centonhuang
-//	update 2025-01-05 11:35:23
-type QueryUserResponse struct {
-	Users     []*User     `json:"users"`
-	QueryInfo *QueryParam `json:"queryInfo"`
-}
-
 // Tag 标签
 //
 //	author centonhuang
@@ -255,41 +238,6 @@ type ListUserTagsResponse struct {
 	PageInfo *PageInfo `json:"pageInfo"`
 }
 
-// QueryTagRequest 查询标签请求
-//
-//	author centonhuang
-//	update 2025-01-05 12:37:54
-type QueryTagRequest struct {
-	QueryParam *QueryParam
-}
-
-// QueryTagResponse 查询标签响应
-//
-//	author centonhuang
-//	update 2025-01-05 12:37:54
-type QueryTagResponse struct {
-	Tags      []*Tag      `json:"tags"`
-	QueryInfo *QueryParam `json:"queryInfo"`
-}
-
-// QueryUserTagRequest 查询用户标签请求
-//
-//	author centonhuang
-//	update 2025-01-05 12:37:54
-type QueryUserTagRequest struct {
-	UserName   string
-	QueryParam *QueryParam
-}
-
-// QueryUserTagResponse 查询用户标签响应
-//
-//	author centonhuang
-//	update 2025-01-05 12:37:54
-type QueryUserTagResponse struct {
-	Tags      []*Tag      `json:"tags"`
-	QueryInfo *QueryParam `json:"queryInfo"`
-}
-
 // Category 分类
 //
 //	author centonhuang
@@ -297,7 +245,7 @@ type QueryUserTagResponse struct {
 type Category struct {
 	CategoryID uint   `json:"categoryID"`
 	Name       string `json:"name"`
-	ParentID   uint   `json:"parentID,omitempty"`
+	ParentID   uint   `json:"parentID"`
 	CreatedAt  string `json:"createdAt"`
 	UpdatedAt  string `json:"updatedAt"`
 }
@@ -595,39 +543,6 @@ type ListUserArticlesRequest struct {
 type ListUserArticlesResponse struct {
 	Articles []*Article `json:"articles"`
 	PageInfo *PageInfo  `json:"pageInfo"`
-}
-
-// QueryArticleRequest 查询文章请求
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-type QueryArticleRequest struct {
-	QueryParam *QueryParam `json:"queryParam"`
-}
-
-// QueryArticleResponse 查询文章响应
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-type QueryArticleResponse struct {
-	QueryInfo *QueryParam `json:"queryInfo"`
-}
-
-// QueryUserArticleRequest 查询用户文章请求
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-type QueryUserArticleRequest struct {
-	UserName   string      `json:"userName"`
-	QueryParam *QueryParam `json:"queryParam"`
-}
-
-// QueryUserArticleResponse 查询用户文章响应
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-type QueryUserArticleResponse struct {
-	QueryInfo *QueryParam `json:"queryInfo"`
 }
 
 // ArticleVersion 文章版本
@@ -1059,8 +974,8 @@ type ListUserViewArticlesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:41
 type DeleteUserViewRequest struct {
-	UserID    uint `json:"userID"`
-	ViewID    uint `json:"viewID"`
+	UserID uint `json:"userID"`
+	ViewID uint `json:"viewID"`
 }
 
 // DeleteUserViewResponse 删除用户浏览的文章响应

@@ -48,7 +48,7 @@ func InitDatabase() {
 			TranslateError: true,
 			Logger: &GormLoggerAdapter{
 				ZapLogger: logger.Logger,
-				LogLevel:  4, // Info级别
+				LogLevel:  gormlogger.Info, // Info级别
 			},
 		}))
 
@@ -67,7 +67,7 @@ func InitDatabase() {
 //	update 2025-01-05 21:10:18
 type GormLoggerAdapter struct {
 	ZapLogger *zap.Logger
-	LogLevel  int
+	LogLevel  gormlogger.LogLevel
 }
 
 // LogMode 设置日志级别
@@ -79,7 +79,7 @@ type GormLoggerAdapter struct {
 //	update 2025-01-05 21:10:15
 func (l *GormLoggerAdapter) LogMode(level gormlogger.LogLevel) gormlogger.Interface {
 	newLogger := *l
-	newLogger.LogLevel = int(level)
+	newLogger.LogLevel = level
 	return &newLogger
 }
 
@@ -108,6 +108,7 @@ func (l *GormLoggerAdapter) Warn(_ context.Context, msg string, data ...interfac
 }
 
 // Error 打印error级别的日志
+// π
 //
 //	receiver l *GormLogger
 //	param _ context.Context
@@ -143,5 +144,5 @@ func (l *GormLoggerAdapter) Trace(_ context.Context, begin time.Time, fc func() 
 		return
 	}
 
-	l.ZapLogger.Debug("[GORM] trace", fields...)
+	l.ZapLogger.Info("[GORM] trace", fields...)
 }

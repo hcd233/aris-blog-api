@@ -11,11 +11,11 @@ import (
 func initTokenRouter(r *gin.RouterGroup) {
 	tokenHandler := handler.NewTokenHandler()
 
-	tokenRouter := r.Group("/token", middleware.JwtMiddleware())
+	tokenRouter := r.Group("/token")
 	{
 		tokenRouter.POST(
 			"refresh",
-			middleware.RateLimiterMiddleware("refreshToken", "userID", config.JwtAccessTokenExpired/4, 2),
+			middleware.RateLimiterMiddleware("refreshToken", "", config.JwtAccessTokenExpired/4, 2),
 			middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}),
 			tokenHandler.HandleRefreshToken,
 		)

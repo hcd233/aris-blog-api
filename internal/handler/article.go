@@ -112,13 +112,14 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 //	@Accept json
 //	@Produce json
 //	@Param path path protocol.ArticleURI true "文章ID"
+//	@Param body body protocol.UpdateArticleBody true "更新文章请求"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.UpdateArticleResponse "更新文章响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID} [put]
+//	@Router /v1/article/{articleID} [patch]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
@@ -149,6 +150,7 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 //	@Accept json
 //	@Produce json
 //	@Param path path protocol.ArticleURI true "文章ID"
+//	@Param body body protocol.UpdateArticleStatusBody true "更新文章状态请求"
 //	@Security ApiKeyAuth
 //	@Success 200 {object} protocol.UpdateArticleStatusResponse "更新文章状态响应"
 //	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
@@ -223,7 +225,7 @@ func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 //	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/articles [get]
+//	@Router /v1/article/list [get]
 //	receiver h *articleHandler
 //	param c *gin.Context
 //	author centonhuang
