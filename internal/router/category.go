@@ -11,7 +11,9 @@ import (
 func initCategoryRouter(r *gin.RouterGroup) {
 	categoryHandler := handler.NewCategoryHandler()
 
-	categoryRouter := r.Group("/category", middleware.LimitUserPermissionMiddleware("categoryService", model.PermissionCreator))
+	categoryRouter := r.Group("/category",
+		middleware.JwtMiddleware(),
+		middleware.LimitUserPermissionMiddleware("categoryService", model.PermissionCreator))
 	{
 		categoryRouter.GET("root", categoryHandler.HandleGetRootCategories)
 		categoryRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreateCategoryBody{}), categoryHandler.HandleCreateCategory)

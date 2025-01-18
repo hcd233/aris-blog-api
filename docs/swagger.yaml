@@ -1,11 +1,67 @@
 basePath: /
 definitions:
+  protocol.Article:
+    properties:
+      articleID:
+        type: integer
+      comments:
+        type: integer
+      createdAt:
+        type: string
+      likes:
+        type: integer
+      publishedAt:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      tags:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+      updatedAt:
+        type: string
+      userID:
+        type: integer
+      views:
+        type: integer
+    type: object
   protocol.CallbackResponse:
     properties:
       accessToken:
         type: string
       refreshToken:
         type: string
+    type: object
+  protocol.Category:
+    properties:
+      categoryID:
+        type: integer
+      createdAt:
+        type: string
+      name:
+        type: string
+      parentID:
+        type: integer
+      updatedAt:
+        type: string
+    type: object
+  protocol.CreateCategoryBody:
+    properties:
+      name:
+        type: string
+      parentID:
+        type: integer
+    required:
+    - name
+    type: object
+  protocol.CreateCategoryResponse:
+    properties:
+      category:
+        $ref: '#/definitions/protocol.Category'
     type: object
   protocol.CreateTagBody:
     properties:
@@ -21,7 +77,19 @@ definitions:
     type: object
   protocol.CreateTagResponse:
     type: object
+  protocol.DeleteCategoryResponse:
+    type: object
   protocol.DeleteTagResponse:
+    type: object
+  protocol.GetCategoryInfoResponse:
+    properties:
+      category:
+        $ref: '#/definitions/protocol.Category'
+    type: object
+  protocol.GetRootCategoryResponse:
+    properties:
+      category:
+        $ref: '#/definitions/protocol.Category'
     type: object
   protocol.GetTagInfoResponse:
     properties:
@@ -33,6 +101,24 @@ definitions:
       data: {}
       error:
         type: string
+    type: object
+  protocol.ListChildrenArticlesResponse:
+    properties:
+      articles:
+        items:
+          $ref: '#/definitions/protocol.Article'
+        type: array
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
+    type: object
+  protocol.ListChildrenCategoriesResponse:
+    properties:
+      categories:
+        items:
+          $ref: '#/definitions/protocol.Category'
+        type: array
+      pageInfo:
+        $ref: '#/definitions/protocol.PageInfo'
     type: object
   protocol.ListTagsResponse:
     properties:
@@ -90,6 +176,18 @@ definitions:
       userID:
         type: integer
     type: object
+  protocol.UpdateCategoryBody:
+    properties:
+      name:
+        type: string
+      parentID:
+        type: integer
+    type: object
+  protocol.UpdateCategoryResponse:
+    properties:
+      category:
+        $ref: '#/definitions/protocol.Category'
+    type: object
   protocol.UpdateTagBody:
     properties:
       description:
@@ -117,6 +215,462 @@ info:
   title: Aris-blog
   version: "1.0"
 paths:
+  /v1/category:
+    post:
+      consumes:
+      - application/json
+      description: 创建分类
+      parameters:
+      - description: 创建分类请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.CreateCategoryBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.CreateCategoryResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 创建分类
+      tags:
+      - category
+  /v1/category/{categoryID}:
+    delete:
+      consumes:
+      - application/json
+      description: 删除分类
+      parameters:
+      - in: path
+        name: categoryID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.DeleteCategoryResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 删除分类
+      tags:
+      - category
+    get:
+      consumes:
+      - application/json
+      description: 根据分类ID获取分类详细信息
+      parameters:
+      - description: 分类ID
+        in: path
+        name: categoryID
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.GetCategoryInfoResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取分类信息
+      tags:
+      - category
+    put:
+      consumes:
+      - application/json
+      description: 更新分类信息
+      parameters:
+      - in: path
+        name: categoryID
+        required: true
+        type: integer
+      - description: 更新分类请求体
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/protocol.UpdateCategoryBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.UpdateCategoryResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 更新分类信息
+      tags:
+      - category
+  /v1/category/{categoryID}/subArticles:
+    get:
+      consumes:
+      - application/json
+      description: 列出子文章
+      parameters:
+      - in: path
+        name: categoryID
+        required: true
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListChildrenArticlesResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出子文章
+      tags:
+      - category
+  /v1/category/{categoryID}/subCategories:
+    get:
+      consumes:
+      - application/json
+      description: 列出子分类
+      parameters:
+      - in: path
+        name: categoryID
+        required: true
+        type: integer
+      - in: query
+        minimum: 1
+        name: page
+        required: true
+        type: integer
+      - in: query
+        maximum: 50
+        minimum: 1
+        name: pageSize
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.ListChildrenCategoriesResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 列出子分类
+      tags:
+      - category
+  /v1/category/root:
+    get:
+      consumes:
+      - application/json
+      description: 获取根分类信息
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  $ref: '#/definitions/protocol.GetRootCategoryResponse'
+                error:
+                  type: object
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取根分类信息
+      tags:
+      - category
   /v1/oauth2/github/callback:
     get:
       consumes:

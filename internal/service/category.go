@@ -99,7 +99,7 @@ func (s *categoryService) CreateCategory(req *protocol.CreateCategoryRequest) (r
 func (s *categoryService) GetCategoryInfo(req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error) {
 	rsp = &protocol.GetCategoryInfoResponse{}
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "parent_id", "created_at", "updated_at"}, []string{})
+	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
@@ -131,7 +131,7 @@ func (s *categoryService) GetCategoryInfo(req *protocol.GetCategoryInfoRequest) 
 func (s *categoryService) GetRootCategory(req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error) {
 	rsp = &protocol.GetRootCategoryResponse{}
 
-	rootCategory, err := s.categoryDAO.GetRootByUserID(s.db, req.UserID, []string{"id", "name", "created_at", "updated_at"}, []string{})
+	rootCategory, err := s.categoryDAO.GetRootByUserID(s.db, req.UserID, []string{"id", "name", "user_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[CategoryService] root category not found", zap.Uint("userID", req.UserID))
@@ -170,7 +170,7 @@ func (s *categoryService) UpdateCategory(req *protocol.UpdateCategoryRequest) (r
 		return rsp, nil
 	}
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "parent_id", "created_at", "updated_at"}, []string{})
+	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
@@ -210,7 +210,7 @@ func (s *categoryService) UpdateCategory(req *protocol.UpdateCategoryRequest) (r
 func (s *categoryService) DeleteCategory(req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error) {
 	rsp = &protocol.DeleteCategoryResponse{}
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
+	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
@@ -247,7 +247,7 @@ func (s *categoryService) DeleteCategory(req *protocol.DeleteCategoryRequest) (r
 func (s *categoryService) ListChildrenCategories(req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error) {
 	rsp = &protocol.ListChildrenCategoriesResponse{}
 
-	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
+	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
@@ -297,7 +297,7 @@ func (s *categoryService) ListChildrenCategories(req *protocol.ListChildrenCateg
 func (s *categoryService) ListChildrenArticles(req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error) {
 	rsp = &protocol.ListChildrenArticlesResponse{}
 
-	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "parent_id", "user_id"}, []string{})
+	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
