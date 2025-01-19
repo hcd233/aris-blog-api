@@ -81,6 +81,12 @@ var (
 	// MinioTLS bool Minio TLS
 	MinioTLS bool
 
+	// MinioRegion string Minio Region
+	MinioRegion string
+
+	// MinioBucketName string Minio Bucket Name
+	MinioBucketName string
+
 	// MinioAccessID string Minio Access ID
 	MinioAccessID string
 
@@ -151,6 +157,8 @@ func initEnvironment() {
 
 	MinioEndpoint = config.GetString("minio.endpoint")
 	MinioTLS = config.GetBool("minio.tls")
+	MinioRegion = config.GetString("minio.region")
+	MinioBucketName = config.GetString("minio.bucket.name")
 	MinioAccessID = config.GetString("minio.access.id")
 	MinioAccessKey = config.GetString("minio.access.key")
 

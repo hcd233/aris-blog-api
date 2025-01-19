@@ -55,7 +55,7 @@ func NewAIHandler() AIHandler {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/prompt/{taskName}/{version} [get]
+//	@Router			/v1/ai/prompt/{taskName}/v{version} [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -72,6 +72,24 @@ func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
+// HandleGetLatestPrompt 获取最新Prompt
+//
+//	@Summary		获取最新Prompt
+//	@Description	获取最新Prompt
+//	@Tags			ai
+//	@Accept			json
+//	@Produce		json
+//	@Param			uri		path		protocol.TaskURI	true	"任务URI"
+//	@Security		ApiKeyAuth
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetLatestPromptResponse,error=nil}
+//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/ai/prompt/{taskName}/latest [get]
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 	uri := c.MustGet("uri").(*protocol.TaskURI)
 
@@ -99,7 +117,7 @@ func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/prompt [get]
+//	@Router			/v1/ai/prompt/{taskName} [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -132,7 +150,7 @@ func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/prompt [post]
+//	@Router			/v1/ai/prompt/{taskName} [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -164,7 +182,7 @@ func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/content-completion [post]
+//	@Router			/v1/ai/app/creator/contentCompletion [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -203,7 +221,7 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/article-summary [post]
+//	@Router			/v1/ai/app/creator/articleSummary [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -240,7 +258,7 @@ func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/article-translation [post]
+//	@Router			/v1/ai/app/creator/articleTranslation [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -271,7 +289,7 @@ func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/article-qa [post]
+//	@Router			/v1/ai/app/reader/articleQA [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35
@@ -309,7 +327,7 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/ai/term-explaination [post]
+//	@Router			/v1/ai/app/reader/termExplaination [post]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-04 15:46:35

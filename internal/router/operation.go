@@ -12,7 +12,7 @@ import (
 func initOperationRouter(r *gin.RouterGroup) {
 	operationHandler := handler.NewOperationHandler()
 
-	operationRouter := r.Group("/operation")
+	operationRouter := r.Group("/operation", middleware.JwtMiddleware())
 	{
 		userLikeRouter := operationRouter.Group("/like")
 		{

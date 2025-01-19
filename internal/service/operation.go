@@ -267,9 +267,10 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 		}
 
 		userView = &model.UserView{
-			UserID:    req.UserID,
-			ArticleID: article.ID,
-			Progress:  req.Progress,
+			UserID:       req.UserID,
+			ArticleID:    article.ID,
+			Progress:     req.Progress,
+			LastViewedAt: time.Now(),
 		}
 
 		if err = s.userViewDAO.Create(s.db, userView); err != nil {

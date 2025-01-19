@@ -63,7 +63,6 @@ type ViewURI struct {
 //	author centonhuang
 //	update 2024-10-29 07:43:35
 type ObjectURI struct {
-	UserURI
 	ObjectName string `uri:"objectName" binding:"required"`
 }
 

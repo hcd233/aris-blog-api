@@ -3,6 +3,7 @@ package objdao
 import (
 	"sync"
 
+	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/resource/storage"
 )
 
@@ -29,7 +30,7 @@ func GetImageObjDAO() *BaseMinioObjDAO {
 	imageObjOnce.Do(func() {
 		ImageObjDAOSingleton = &BaseMinioObjDAO{
 			ObjectType: ObjectTypeImage,
-			BucketName: BucketNameUserImage,
+			BucketName: config.MinioBucketName,
 			client:     storage.GetObjectStorage(),
 		}
 	})
@@ -45,7 +46,7 @@ func GetThumbnailObjDAO() *BaseMinioObjDAO {
 	thumbnailObjOnce.Do(func() {
 		ThumbnailObjDAOSingleton = &BaseMinioObjDAO{
 			ObjectType: ObjectTypeThumbnail,
-			BucketName: BucketNameUserImage,
+			BucketName: config.MinioBucketName,
 			client:     storage.GetObjectStorage(),
 		}
 	})

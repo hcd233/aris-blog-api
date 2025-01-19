@@ -24,6 +24,7 @@ func InitObjectStorage() {
 	minioClient = lo.Must1(minio.New(config.MinioEndpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioAccessID, config.MinioAccessKey, ""),
 		Secure: config.MinioTLS,
+		Region: config.MinioRegion,
 	}))
 
 	_ = lo.Must1(minioClient.ListBuckets(context.Background()))
