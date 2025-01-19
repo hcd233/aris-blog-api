@@ -93,6 +93,21 @@ var (
 	// MinioAccessKey string Minio Access Key
 	MinioAccessKey string
 
+	// CosRegion string Cos Region
+	CosRegion string
+
+	// CosSecretID string Cos Access ID
+	CosSecretID string
+
+	// CosSecretKey string Cos Secret Key
+	CosSecretKey string
+
+	// CosBucketName string Cos Bucket Name
+	CosBucketName string
+
+	// CosAppID string Cos App ID
+	CosAppID string
+
 	// OpenAIAPIKey string OpenAI API Key
 	OpenAIAPIKey string
 
@@ -161,6 +176,12 @@ func initEnvironment() {
 	MinioBucketName = config.GetString("minio.bucket.name")
 	MinioAccessID = config.GetString("minio.access.id")
 	MinioAccessKey = config.GetString("minio.access.key")
+
+	CosBucketName = config.GetString("cos.bucket.name")
+	CosAppID = config.GetString("cos.app.id")
+	CosRegion = config.GetString("cos.region")
+	CosSecretID = config.GetString("cos.secret.id")
+	CosSecretKey = config.GetString("cos.secret.key")
 
 	OpenAIAPIKey = config.GetString("openai.api.key")
 	OpenAIBaseURL = config.GetString("openai.base.url")

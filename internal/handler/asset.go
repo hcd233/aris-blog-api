@@ -255,6 +255,7 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 		return
 	}
 
+	c.Header("Content-Type", "image/jpeg")
 	c.Redirect(http.StatusFound, rsp.PresignedURL)
 }
 
