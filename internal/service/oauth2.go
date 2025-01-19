@@ -43,8 +43,8 @@ type githubOauth2Service struct {
 	oauth2Config       *oauth2.Config
 	db                 *gorm.DB
 	userDAO            *dao.UserDAO
-	imageObjDAO        *objdao.BaseMinioObjDAO
-	thumbnailObjDAO    *objdao.BaseMinioObjDAO
+	imageObjDAO        objdao.ObjDAO
+	thumbnailObjDAO    objdao.ObjDAO
 	accessTokenSigner  auth.JwtTokenSigner
 	refreshTokenSigner auth.JwtTokenSigner
 }
