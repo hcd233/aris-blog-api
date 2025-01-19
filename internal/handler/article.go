@@ -18,6 +18,7 @@ type ArticleHandler interface {
 	HandleUpdateArticleStatus(c *gin.Context)
 	HandleDeleteArticle(c *gin.Context)
 	HandleListArticles(c *gin.Context)
+	HandleGetArticleInfoBySlug(c *gin.Context)
 }
 
 type articleHandler struct {
@@ -100,6 +101,40 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 	}
 
 	rsp, err := h.svc.GetArticleInfo(req)
+
+	util.SendHTTPResponse(c, rsp, err)
+}
+
+// HandleGetArticleInfoBySlug 获取文章信息
+//
+//	@Summary 获取文章信息
+//	@Description 获取文章信息
+//	@Tags article
+//	@Accept json
+//	@Produce json
+//	@Param path path protocol.ArticleSlugURI true "作者名和文章别名"
+//	@Security ApiKeyAuth
+//	@Success 200 {object} protocol.GetArticleInfoResponse "获取文章信息响应"
+//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
+//	@Router /v1/article/slug/{authorName}/{articleSlug} [get]
+//	receiver h *articleHandler
+//	param c *gin.Context
+//	author centonhuang
+//	update 2025-01-19 15:23:26
+func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
+	userID := c.GetUint("userID")
+	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+
+	req := &protocol.GetArticleInfoBySlugRequest{
+		UserID:      userID,
+		AuthorName:  uri.AuthorName,
+		ArticleSlug: uri.ArticleSlug,
+	}
+
+	rsp, err := h.svc.GetArticleInfoBySlug(req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

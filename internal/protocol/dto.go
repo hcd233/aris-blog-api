@@ -461,6 +461,24 @@ type GetArticleInfoResponse struct {
 	Article *Article `json:"article"`
 }
 
+// GetArticleInfoBySlugRequest 获取文章信息请求
+//
+//	author centonhuang
+//	update 2025-01-19 15:23:26
+type GetArticleInfoBySlugRequest struct {
+	UserID      uint   `json:"userID"`
+	AuthorName  string `json:"authorName"`
+	ArticleSlug string `json:"articleSlug"`
+}
+
+// GetArticleInfoBySlugResponse 获取文章信息响应
+//
+//	author centonhuang
+//	update 2025-01-19 15:23:26
+type GetArticleInfoBySlugResponse struct {
+	Article *Article `json:"article"`
+}
+
 // UpdateArticleRequest 更新文章请求
 //
 //	author centonhuang

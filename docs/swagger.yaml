@@ -2080,6 +2080,76 @@ paths:
       summary: 列出文章
       tags:
       - article
+  /v1/article/slug/{authorName}/{articleSlug}:
+    get:
+      consumes:
+      - application/json
+      description: 获取文章信息
+      parameters:
+      - in: path
+        name: articleSlug
+        required: true
+        type: string
+      - in: path
+        name: authorName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 获取文章信息响应
+          schema:
+            $ref: '#/definitions/protocol.GetArticleInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "401":
+          description: Unauthorized
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "403":
+          description: Forbidden
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+        "500":
+          description: Internal Server Error
+          schema:
+            allOf:
+            - $ref: '#/definitions/protocol.HTTPResponse'
+            - properties:
+                data:
+                  type: object
+                error:
+                  type: string
+              type: object
+      security:
+      - ApiKeyAuth: []
+      summary: 获取文章信息
+      tags:
+      - article
   /v1/asset/like/articles:
     get:
       consumes:
