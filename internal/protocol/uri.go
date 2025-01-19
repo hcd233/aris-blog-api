@@ -16,6 +16,15 @@ type ArticleURI struct {
 	ArticleID uint `uri:"articleID" binding:"required"`
 }
 
+// ArticleSlugURI 文章别名路径参数
+//
+//	author centonhuang
+//	update 2025-01-19 15:23:26
+type ArticleSlugURI struct {
+	AuthorName  string `uri:"authorName" binding:"required"`
+	ArticleSlug string `uri:"articleSlug" binding:"required"`
+}
+
 // TagURI 标签路径参数
 //
 //	author centonhuang

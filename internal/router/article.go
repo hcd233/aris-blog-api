@@ -14,7 +14,11 @@ func initArticleRouter(r *gin.RouterGroup) {
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
 		articleRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
-	
+
+		articleRouter.GET("/slug/:authorName/:articleSlug",
+			middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}),
+			articleHandler.HandleGetArticleInfoBySlug)
+
 		articleRouter.POST(
 			"",
 			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),

@@ -22,6 +22,7 @@ import (
 type ArticleService interface {
 	CreateArticle(req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error)
 	GetArticleInfo(req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error)
+	GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error)
 	UpdateArticle(req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error)
 	UpdateArticleStatus(req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error)
 	DeleteArticle(req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error)
@@ -191,6 +192,74 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 		logger.Logger.Error("[ArticleService] no permission to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Uint("userID", req.UserID))
+		return nil, protocol.ErrNoPermission
+	}
+
+	rsp.Article = &protocol.Article{
+		ArticleID:   article.ID,
+		Title:       article.Title,
+		Slug:        article.Slug,
+		Status:      string(article.Status),
+		UserID:      article.UserID,
+		CreatedAt:   article.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
+		PublishedAt: article.PublishedAt.Format(time.DateTime),
+		Likes:       article.Likes,
+		Views:       article.Views,
+		Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
+		Comments:    len(article.Comments),
+	}
+
+	return rsp, nil
+}
+
+// GetArticleInfoBySlug 获取文章信息
+//
+//	receiver s *articleService
+//	param req *protocol.GetArticleInfoBySlugRequest
+//	return rsp *protocol.GetArticleInfoBySlugResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-19 15:23:26
+func (s *articleService) GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error) {
+	rsp = &protocol.GetArticleInfoBySlugResponse{}
+
+	user, err := s.userDAO.GetByName(s.db, req.AuthorName, []string{"id"}, []string{})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Logger.Error("[ArticleService] user not found",
+				zap.String("authorName", req.AuthorName))
+			return nil, protocol.ErrDataNotExists
+		}
+		logger.Logger.Error("[ArticleService] failed to get user",
+			zap.String("authorName", req.AuthorName),
+			zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{
+		"id", "slug", "title", "status", "user_id",
+		"created_at", "updated_at", "published_at",
+		"likes", "views",
+	}, []string{"Comments", "Tags"})
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Logger.Error("[ArticleService] article not found",
+				zap.String("slug", req.ArticleSlug))
+			return nil, protocol.ErrDataNotExists
+		}
+		logger.Logger.Error("[ArticleService] failed to get article",
+			zap.String("slug", req.ArticleSlug),
+			zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	// 如果文章不是公开的，则只有作者本人可以查看
+	if article.UserID != user.ID && article.Status != model.ArticleStatusPublish {
+		logger.Logger.Error("[ArticleService] no permission to get article",
+			zap.String("ArticleSlug", req.ArticleSlug),
+			zap.String("AuthorName", req.AuthorName),
+			zap.Uint("userID", user.ID))
 		return nil, protocol.ErrNoPermission
 	}
 
