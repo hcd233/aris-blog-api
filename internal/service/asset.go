@@ -312,6 +312,7 @@ func (s *assetService) ListImages(req *protocol.ListImagesRequest) (rsp *protoco
 //	author centonhuang
 //	update 2025-01-05 17:20:31
 func (s *assetService) UploadImage(req *protocol.UploadImageRequest) (rsp *protocol.UploadImageResponse, err error) {
+	rsp = &protocol.UploadImageResponse{}
 	if !util.IsValidImageFormat(req.FileName) {
 		logger.Logger.Error("[AssetService] invalid image format", zap.String("fileName", req.FileName))
 		return nil, protocol.ErrBadRequest
@@ -405,6 +406,7 @@ func (s *assetService) UploadImage(req *protocol.UploadImageRequest) (rsp *proto
 //	update 2025-01-05 17:49:39
 func (s *assetService) GetImage(req *protocol.GetImageRequest) (rsp *protocol.GetImageResponse, err error) {
 	rsp = &protocol.GetImageResponse{}
+
 	var presignedURL *url.URL
 	switch req.Quality {
 	case "raw":
@@ -436,6 +438,7 @@ func (s *assetService) GetImage(req *protocol.GetImageRequest) (rsp *protocol.Ge
 //	update 2025-01-05 17:49:33
 func (s *assetService) DeleteImage(req *protocol.DeleteImageRequest) (rsp *protocol.DeleteImageResponse, err error) {
 	rsp = &protocol.DeleteImageResponse{}
+
 	var wg sync.WaitGroup
 	var imageErr, thumbnailErr error
 
@@ -478,7 +481,7 @@ func (s *assetService) ListUserViewArticles(req *protocol.ListUserViewArticlesRe
 
 	rsp.UserViews = lo.Map(*userViews, func(userView model.UserView, _ int) *protocol.UserView {
 		return &protocol.UserView{
-			ID:           userView.ID,
+			ViewID:       userView.ID,
 			Progress:     userView.Progress,
 			LastViewedAt: userView.LastViewedAt.Format(time.DateTime),
 			UserID:       userView.UserID,
@@ -494,6 +497,8 @@ func (s *assetService) ListUserViewArticles(req *protocol.ListUserViewArticlesRe
 }
 
 func (s *assetService) DeleteUserView(req *protocol.DeleteUserViewRequest) (rsp *protocol.DeleteUserViewResponse, err error) {
+	rsp = &protocol.DeleteUserViewResponse{}
+
 	userView, err := s.userViewDAO.GetByID(s.db, req.ViewID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {

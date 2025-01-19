@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/url"
 	"path"
+	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
@@ -18,7 +19,6 @@ import (
 //	author centonhuang
 //	update 2025-01-05 22:45:30
 type ObjDAO interface {
-	composeBucketName(userID uint) (bucketName string)
 	CreateBucket(userID uint) (exist bool, err error)
 	ListObjects(userID uint) (objectInfos []ObjectInfo, err error)
 	UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error)
@@ -33,12 +33,6 @@ type ObjDAO interface {
 type ObjectType string
 
 const (
-	// BucketNameUserImage 用户图片桶
-	//
-	//	author centonhuang
-	//	update 2025-01-05 22:45:40
-	BucketNameUserImage = "aris-blog-image"
-
 	// ObjectTypeImage ObjectType
 	//	update 2025-01-05 17:36:01
 	ObjectTypeImage ObjectType = "image"
@@ -144,13 +138,14 @@ func (dao *BaseMinioObjDAO) CreateDir(userID uint) (objectInfo *ObjectInfo, err 
 //	update 2025-01-05 17:37:45
 func (dao *BaseMinioObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
+	dirName += "/"
 
 	ctx, cancel := context.WithTimeout(context.Background(), listObjectsTimeout)
 	defer cancel()
 
 	objectCh := dao.client.ListObjects(ctx, dao.BucketName, minio.ListObjectsOptions{
-		Prefix:     dirName + "/",
-		StartAfter: dirName + "/",
+		Prefix:     dirName,
+		StartAfter: dirName,
 	})
 
 	for object := range objectCh {
@@ -160,12 +155,12 @@ func (dao *BaseMinioObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, 
 		}
 
 		// 跳过目录本身
-		if object.Key == dirName+"/" {
+		if object.Key == dirName {
 			continue
 		}
 
 		objectInfos = append(objectInfos, ObjectInfo{
-			ObjectName:   object.Key,
+			ObjectName:   strings.TrimPrefix(object.Key, dirName),
 			ContentType:  object.ContentType,
 			Size:         object.Size,
 			LastModified: object.LastModified,
@@ -193,7 +188,7 @@ func (dao *BaseMinioObjDAO) UploadObject(userID uint, objectName string, size in
 	ctx, cancel := context.WithTimeout(context.Background(), uploadObjectTimeout)
 	defer cancel()
 
-	_, err = dao.client.PutObject(ctx, dirName, objectName, reader, size, minio.PutObjectOptions{})
+	_, err = dao.client.PutObject(ctx, dao.BucketName, objectName, reader, size, minio.PutObjectOptions{})
 	return
 }
 
@@ -253,7 +248,7 @@ func (dao *BaseMinioObjDAO) PresignObject(userID uint, objectName string) (presi
 	ctx, cancel := context.WithTimeout(context.Background(), presignObjectTimeout)
 	defer cancel()
 
-	presignedURL, err = dao.client.PresignedGetObject(ctx, dirName, objectName, presignObjectExpire, nil)
+	presignedURL, err = dao.client.PresignedGetObject(ctx, dao.BucketName, objectName, presignObjectExpire, nil)
 	return
 }
 

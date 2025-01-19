@@ -87,10 +87,10 @@ func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleListArticleComments 列出文章评论
+// HandleListArticleComments 列出文章一级评论
 //
-//	@Summary 列出文章评论
-//	@Description 列出文章评论
+//	@Summary 列出文章一级评论
+//	@Description 列出文章一级评论
 //	@Tags comment
 //	@Accept json
 //	@Produce json

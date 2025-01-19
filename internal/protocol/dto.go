@@ -944,7 +944,7 @@ type DeleteImageResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 17:53:09
 type UserView struct {
-	ID           uint   `json:"id"`
+	ViewID       uint   `json:"viewID"`
 	Progress     int8   `json:"progress"`
 	LastViewedAt string `json:"lastViewedAt"`
 	UserID       uint   `json:"userID"`
@@ -989,7 +989,7 @@ type DeleteUserViewResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 18:07:58
 type Prompt struct {
-	ID        uint       `json:"id"`
+	PromptID  uint       `json:"promptID"`
 	CreatedAt string     `json:"createdAt"`
 	Task      string     `json:"task"`
 	Version   uint       `json:"version"`

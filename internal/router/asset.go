@@ -13,7 +13,7 @@ import (
 func initAssetRouter(r *gin.RouterGroup) {
 	assetHandler := handler.NewAssetHandler()
 
-	assetRouter := r.Group("/asset")
+	assetRouter := r.Group("/asset", middleware.JwtMiddleware())
 	{
 		likeRouter := assetRouter.Group("/like")
 		{

@@ -82,7 +82,7 @@ func (s *aiService) GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.Get
 	}
 
 	rsp.Prompt = &protocol.Prompt{
-		ID:        prompt.ID,
+		PromptID:  prompt.ID,
 		CreatedAt: prompt.CreatedAt.Format(time.DateTime),
 		Task:      string(prompt.Task),
 		Version:   prompt.Version,
@@ -120,7 +120,7 @@ func (s *aiService) GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *
 	}
 
 	rsp.Prompt = &protocol.Prompt{
-		ID:        prompt.ID,
+		PromptID:  prompt.ID,
 		CreatedAt: prompt.CreatedAt.Format(time.DateTime),
 		Task:      string(prompt.Task),
 		Version:   prompt.Version,
@@ -159,7 +159,7 @@ func (s *aiService) ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.L
 
 	rsp.Prompts = lo.Map(prompts, func(p *model.Prompt, _ int) *protocol.Prompt {
 		return &protocol.Prompt{
-			ID:        p.ID,
+			PromptID:  p.ID,
 			CreatedAt: p.CreatedAt.Format(time.DateTime),
 			Task:      string(p.Task),
 			Version:   p.Version,

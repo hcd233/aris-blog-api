@@ -56,7 +56,7 @@ func NewAssetHandler() AssetHandler {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/asset/like/article [get]
+//	@Router			/v1/asset/like/articles [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-11-03 06:45:42
@@ -88,7 +88,7 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/asset/like/comment [get]
+//	@Router			/v1/asset/like/comments [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-11-03 06:47:41
@@ -120,7 +120,7 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/asset/like/tag [get]
+//	@Router			/v1/asset/like/tags [get]
 //	param c *gin.Context
 //	author centonhuang
 //	update 2024-11-03 06:47:43
@@ -145,7 +145,6 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			page	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListImagesResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -227,7 +226,8 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.GetImageRequest	true	"获取图片请求体"
+//	@Param			path		path		protocol.ObjectURI	true	"对象URI"
+//	@Param			param	query		protocol.ImageParam	true	"图片参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetImageResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -265,7 +265,7 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.DeleteImageRequest	true	"删除图片请求体"
+//	@Param			path		path		protocol.ObjectURI	true	"对象URI"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteImageResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -297,7 +297,7 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.ListUserViewArticlesRequest	true	"列出用户浏览的文章请求体"
+//	@Param			page	query		protocol.PageParam	true	"分页参数"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListUserViewArticlesResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
@@ -322,14 +322,14 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleDeleteUserView 删除用户浏览的文章
+// HandleDeleteUserView 删除用户的文章浏览记录
 //
-//	@Summary		删除用户浏览的文章
-//	@Description	删除用户浏览的文章
+//	@Summary		删除用户的文章浏览记录
+//	@Description	删除用户的文章浏览记录
 //	@Tags			asset
 //	@Accept			json
 //	@Produce		json
-//	@Param			body	body		protocol.DeleteUserViewRequest	true	"删除用户浏览的文章请求体"
+//	@Param			path		path		protocol.ViewURI	true	"浏览URI"
 //	@Security		ApiKeyAuth
 //	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteUserViewResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}

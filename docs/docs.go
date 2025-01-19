@@ -61,130 +61,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/article-qa": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "生成文章问答",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "text/event-stream"
-                ],
-                "tags": [
-                    "ai"
-                ],
-                "summary": "生成文章问答",
-                "parameters": [
-                    {
-                        "description": "生成文章问答请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.GenerateArticleQABody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/protocol.SSEResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/protocol.HTTPResponse"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "object"
-                                        },
-                                        "error": {
-                                            "type": "string"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/v1/ai/article-summary": {
+        "/v1/ai/app/creator/articleSummary": {
             "post": {
                 "security": [
                     {
@@ -307,7 +184,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/article-translation": {
+        "/v1/ai/app/creator/articleTranslation": {
             "post": {
                 "security": [
                     {
@@ -419,7 +296,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/content-completion": {
+        "/v1/ai/app/creator/contentCompletion": {
             "post": {
                 "security": [
                     {
@@ -542,7 +419,253 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/prompt": {
+        "/v1/ai/app/reader/articleQA": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "生成文章问答",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "生成文章问答",
+                "parameters": [
+                    {
+                        "description": "生成文章问答请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.GenerateArticleQABody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.SSEResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/app/reader/termExplaination": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "生成术语解释",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "text/event-stream"
+                ],
+                "tags": [
+                    "ai"
+                ],
+                "summary": "生成术语解释",
+                "parameters": [
+                    {
+                        "description": "生成术语解释请求体",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/protocol.GenerateTermExplainationBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/protocol.SSEResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "object"
+                                        },
+                                        "error": {
+                                            "type": "string"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/ai/prompt/{taskName}": {
             "get": {
                 "security": [
                     {
@@ -847,14 +970,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/prompt/{taskName}/{version}": {
+        "/v1/ai/prompt/{taskName}/latest": {
             "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "获取Prompt",
+                "description": "获取最新Prompt",
                 "consumes": [
                     "application/json"
                 ],
@@ -864,7 +987,7 @@ const docTemplate = `{
                 "tags": [
                     "ai"
                 ],
-                "summary": "获取Prompt",
+                "summary": "获取最新Prompt",
                 "parameters": [
                     {
                         "enum": [
@@ -876,13 +999,6 @@ const docTemplate = `{
                         ],
                         "type": "string",
                         "name": "taskName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "version",
                         "in": "path",
                         "required": true
                     }
@@ -899,7 +1015,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/protocol.DeleteUserViewResponse"
+                                            "$ref": "#/definitions/protocol.GetLatestPromptResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -996,40 +1112,66 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/ai/term-explaination": {
-            "post": {
+        "/v1/ai/prompt/{taskName}/v{version}": {
+            "get": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "生成术语解释",
+                "description": "获取Prompt",
                 "consumes": [
                     "application/json"
                 ],
                 "produces": [
-                    "text/event-stream"
+                    "application/json"
                 ],
                 "tags": [
                     "ai"
                 ],
-                "summary": "生成术语解释",
+                "summary": "获取Prompt",
                 "parameters": [
                     {
-                        "description": "生成术语解释请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.GenerateTermExplainationBody"
-                        }
+                        "enum": [
+                            "contentCompletion",
+                            "articleSummary",
+                            "articleTranslation",
+                            "articleQA",
+                            "termExplaination"
+                        ],
+                        "type": "string",
+                        "name": "taskName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "version",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/protocol.SSEResponse"
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/protocol.HTTPResponse"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/protocol.DeleteUserViewResponse"
+                                        },
+                                        "error": {
+                                            "type": "object"
+                                        }
+                                    }
+                                }
+                            ]
                         }
                     },
                     "400": {
@@ -2385,7 +2527,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/asset/like/article": {
+        "/v1/asset/like/articles": {
             "get": {
                 "security": [
                     {
@@ -2528,7 +2670,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/asset/like/comment": {
+        "/v1/asset/like/comments": {
             "get": {
                 "security": [
                     {
@@ -2671,7 +2813,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/asset/like/tag": {
+        "/v1/asset/like/tags": {
             "get": {
                 "security": [
                     {
@@ -2970,13 +3112,20 @@ const docTemplate = `{
                 "summary": "获取图片",
                 "parameters": [
                     {
-                        "description": "获取图片请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.GetImageRequest"
-                        }
+                        "type": "string",
+                        "name": "objectName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "raw",
+                            "thumb"
+                        ],
+                        "type": "string",
+                        "name": "quality",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3106,13 +3255,10 @@ const docTemplate = `{
                 "summary": "删除图片",
                 "parameters": [
                     {
-                        "description": "删除图片请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.DeleteImageRequest"
-                        }
+                        "type": "string",
+                        "name": "objectName",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3242,22 +3388,6 @@ const docTemplate = `{
                     "asset"
                 ],
                 "summary": "列出图片",
-                "parameters": [
-                    {
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "page",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "maximum": 50,
-                        "minimum": 1,
-                        "type": "integer",
-                        "name": "pageSize",
-                        "in": "query"
-                    }
-                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -3374,7 +3504,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "删除用户浏览的文章",
+                "description": "删除用户的文章浏览记录",
                 "consumes": [
                     "application/json"
                 ],
@@ -3384,16 +3514,19 @@ const docTemplate = `{
                 "tags": [
                     "asset"
                 ],
-                "summary": "删除用户浏览的文章",
+                "summary": "删除用户的文章浏览记录",
                 "parameters": [
                     {
-                        "description": "删除用户浏览的文章请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.DeleteUserViewRequest"
-                        }
+                        "type": "integer",
+                        "name": "userID",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "name": "viewID",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -3525,13 +3658,18 @@ const docTemplate = `{
                 "summary": "列出用户浏览的文章",
                 "parameters": [
                     {
-                        "description": "列出用户浏览的文章请求体",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/protocol.ListUserViewArticlesRequest"
-                        }
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "maximum": 50,
+                        "minimum": 1,
+                        "type": "integer",
+                        "name": "pageSize",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -4762,7 +4900,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "列出文章评论",
+                "description": "列出文章一级评论",
                 "consumes": [
                     "application/json"
                 ],
@@ -4772,7 +4910,7 @@ const docTemplate = `{
                 "tags": [
                     "comment"
                 ],
-                "summary": "列出文章评论",
+                "summary": "列出文章一级评论",
                 "parameters": [
                     {
                         "type": "integer",
@@ -7478,33 +7616,11 @@ const docTemplate = `{
         "protocol.DeleteCommentResponse": {
             "type": "object"
         },
-        "protocol.DeleteImageRequest": {
-            "type": "object",
-            "properties": {
-                "imageName": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
         "protocol.DeleteImageResponse": {
             "type": "object"
         },
         "protocol.DeleteTagResponse": {
             "type": "object"
-        },
-        "protocol.DeleteUserViewRequest": {
-            "type": "object",
-            "properties": {
-                "userID": {
-                    "type": "integer"
-                },
-                "viewID": {
-                    "type": "integer"
-                }
-            }
         },
         "protocol.DeleteUserViewResponse": {
             "type": "object"
@@ -7628,20 +7744,6 @@ const docTemplate = `{
                 }
             }
         },
-        "protocol.GetImageRequest": {
-            "type": "object",
-            "properties": {
-                "imageName": {
-                    "type": "string"
-                },
-                "quality": {
-                    "type": "string"
-                },
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
         "protocol.GetImageResponse": {
             "type": "object",
             "properties": {
@@ -7655,6 +7757,14 @@ const docTemplate = `{
             "properties": {
                 "version": {
                     "$ref": "#/definitions/protocol.ArticleVersion"
+                }
+            }
+        },
+        "protocol.GetLatestPromptResponse": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "$ref": "#/definitions/protocol.Prompt"
                 }
             }
         },
@@ -7918,17 +8028,6 @@ const docTemplate = `{
                 }
             }
         },
-        "protocol.ListUserViewArticlesRequest": {
-            "type": "object",
-            "properties": {
-                "pageParam": {
-                    "$ref": "#/definitions/protocol.PageParam"
-                },
-                "userID": {
-                    "type": "integer"
-                }
-            }
-        },
         "protocol.ListUserViewArticlesResponse": {
             "type": "object",
             "properties": {
@@ -7984,23 +8083,6 @@ const docTemplate = `{
                 }
             }
         },
-        "protocol.PageParam": {
-            "type": "object",
-            "required": [
-                "page"
-            ],
-            "properties": {
-                "page": {
-                    "type": "integer",
-                    "minimum": 1
-                },
-                "pageSize": {
-                    "type": "integer",
-                    "maximum": 50,
-                    "minimum": 1
-                }
-            }
-        },
         "protocol.PingResponse": {
             "type": "object",
             "properties": {
@@ -8015,7 +8097,7 @@ const docTemplate = `{
                 "createdAt": {
                     "type": "string"
                 },
-                "id": {
+                "promptID": {
                     "type": "integer"
                 },
                 "task": {
@@ -8243,9 +8325,6 @@ const docTemplate = `{
                 "articleID": {
                     "type": "integer"
                 },
-                "id": {
-                    "type": "integer"
-                },
                 "lastViewedAt": {
                     "type": "string"
                 },
@@ -8253,6 +8332,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "userID": {
+                    "type": "integer"
+                },
+                "viewID": {
                     "type": "integer"
                 }
             }
