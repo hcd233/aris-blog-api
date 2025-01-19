@@ -49,8 +49,8 @@ type assetService struct {
 	commentDAO      *dao.CommentDAO
 	userLikeDAO     *dao.UserLikeDAO
 	userViewDAO     *dao.UserViewDAO
-	imageObjDAO     *objdao.BaseMinioObjDAO
-	thumbnailObjDAO *objdao.BaseMinioObjDAO
+	imageObjDAO     objdao.ObjDAO
+	thumbnailObjDAO objdao.ObjDAO
 }
 
 // NewAssetService 创建资产服务

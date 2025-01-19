@@ -19,10 +19,12 @@ import (
 //	author centonhuang
 //	update 2025-01-05 22:45:30
 type ObjDAO interface {
-	CreateBucket(userID uint) (exist bool, err error)
+	CreateBucket() (err error)
+	CreateDir(userID uint) (objectInfo *ObjectInfo, err error)
 	ListObjects(userID uint) (objectInfos []ObjectInfo, err error)
 	UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error)
 	DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error)
+	PresignObject(userID uint, objectName string) (presignedURL *url.URL, err error)
 	DeleteObject(userID uint, objectName string) (err error)
 }
 
