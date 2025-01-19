@@ -32,13 +32,13 @@ var createBucketCmd = &cobra.Command{
 		lo.Must0(imageObjDAO.CreateBucket())
 
 		logger.Logger.Info("[Object Storage] Bucket created",
-			zap.String("bucket", imageObjDAO.BucketName))
+			zap.String("bucket", imageObjDAO.GetBucketName()))
 
 		thumbnailObjDAO := objdao.GetThumbnailObjDAO()
 		lo.Must0(thumbnailObjDAO.CreateBucket())
 
 		logger.Logger.Info("[Object Storage] Bucket created",
-			zap.String("bucket", thumbnailObjDAO.BucketName))
+			zap.String("bucket", thumbnailObjDAO.GetBucketName()))
 	},
 }
 

@@ -16,11 +16,7 @@ import (
 
 var minioClient *minio.Client
 
-// InitObjectStorage 初始化对象存储
-//
-//	author centonhuang
-//	update 2024-12-09 15:59:06
-func InitObjectStorage() {
+func initMinioClient() {
 	minioClient = lo.Must1(minio.New(config.MinioEndpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(config.MinioAccessID, config.MinioAccessKey, ""),
 		Secure: config.MinioTLS,
@@ -29,10 +25,10 @@ func InitObjectStorage() {
 
 	_ = lo.Must1(minioClient.ListBuckets(context.Background()))
 
-	logger.Logger.Info("[Object Storage] Connected to Minio database", zap.String("endpoint", config.MinioEndpoint))
+	logger.Logger.Info("[Object Storage] Connected to Minio", zap.String("endpoint", config.MinioEndpoint))
 }
 
-// GetObjectStorage 获取对象存储客户端
-func GetObjectStorage() *minio.Client {
+// GetMinioStorage 获取Minio存储客户端
+func GetMinioStorage() *minio.Client {
 	return minioClient
 }
