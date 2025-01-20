@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/gzip"
+
 	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/aris-blog-api/internal/config"
@@ -42,6 +44,9 @@ var startServerCmd = &cobra.Command{
 		r.Use(
 			middleware.LogMiddleware(logger.Logger),
 			ginzap.RecoveryWithZap(logger.Logger, true),
+			gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions(
+				[]string{".pdf", ".mp3", ".wav", ".ogg", ".mov", ".weba", ".mkv", ".mp4", ".webm", ".flac"},
+			)),
 			middleware.CORSMiddleware(),
 		)
 
