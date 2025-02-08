@@ -55,15 +55,11 @@ volumes:
   redis-data:
     name: redis-data
     external: true
-  meilisearch-data:
-    name: meilisearch-data
-    external: true
   minio-data:
     name: minio-data
     external: true
 
 # docker volume create mysql-data 
-# docker volume create meilisearch-data
-# docker volume create minio-data
 # docker volume create redis-data
+# docker volume create minio-data
 # docker compose -f docker/debug-docker-compose.yml up -d
