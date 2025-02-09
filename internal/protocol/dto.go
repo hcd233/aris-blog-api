@@ -1090,7 +1090,7 @@ type GenerateContentCompletionRequest struct {
 	Context     string  `json:"context"`
 	Instruction string  `json:"instruction"`
 	Reference   string  `json:"reference"`
-	Temperature float64 `json:"temperature"`
+	Temperature float32 `json:"temperature"`
 }
 
 // GenerateContentCompletionResponse 生成内容完成响应
@@ -1110,7 +1110,7 @@ type GenerateArticleSummaryRequest struct {
 	UserID      uint    `json:"userID"`
 	ArticleID   uint    `json:"articleID"`
 	Instruction string  `json:"instruction"`
-	Temperature float64 `json:"temperature"`
+	Temperature float32 `json:"temperature"`
 }
 
 // GenerateArticleSummaryResponse 生成文章总结响应
@@ -1145,7 +1145,7 @@ type GenerateArticleQARequest struct {
 	UserID      uint    `json:"userID"`
 	ArticleID   uint    `json:"articleID"`
 	Question    string  `json:"question"`
-	Temperature float64 `json:"temperature"`
+	Temperature float32 `json:"temperature"`
 }
 
 // GenerateArticleQAResponse 生成文章问答响应
@@ -1166,7 +1166,7 @@ type GenerateTermExplainationRequest struct {
 	ArticleID   uint    `json:"articleID"`
 	Term        string  `json:"term"`
 	Position    uint    `json:"position"`
-	Temperature float64 `json:"temperature"`
+	Temperature float32 `json:"temperature"`
 }
 
 // GenerateTermExplainationResponse 生成术语解释响应

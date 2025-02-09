@@ -1,21 +1,28 @@
 package service
 
 import (
+	"context"
 	"errors"
+	"fmt"
+	"io"
 	"strings"
 	"time"
 
-	chat_model "github.com/hcd233/aris-blog-api/internal/ai/chat_model"
-	"github.com/hcd233/aris-blog-api/internal/ai/prompt"
+	"github.com/cloudwego/eino-ext/callbacks/langfuse"
+	"github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino/callbacks"
+	"github.com/cloudwego/eino/components/prompt"
+	"github.com/cloudwego/eino/compose"
+	"github.com/cloudwego/eino/schema"
+	"github.com/hcd233/aris-blog-api/internal/ai/callback"
+	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
-	"github.com/hcd233/aris-blog-api/internal/resource/llm"
 	"github.com/hcd233/aris-blog-api/internal/util"
 	"github.com/samber/lo"
-	"github.com/sashabaranov/go-openai"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -48,7 +55,6 @@ func NewAIService() AIService {
 		articleDAO:        dao.GetArticleDAO(),
 		articleVersionDAO: dao.GetArticleVersionDAO(),
 		promptDAO:         dao.GetPromptDAO(),
-		openAI:            llm.GetOpenAIClient(),
 	}
 }
 
@@ -58,7 +64,6 @@ type aiService struct {
 	articleDAO        *dao.ArticleDAO
 	articleVersionDAO *dao.ArticleVersionDAO
 	promptDAO         *dao.PromptDAO
-	openAI            *openai.Client
 }
 
 // GetPrompt 获取提示词
@@ -200,6 +205,7 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 	variables := util.ExtractVariablesFromContent(content)
 
 	if len(variables) == 0 {
+		logger.Logger.Error("[AIService] no variables found in the content", zap.String("taskName", req.TaskName), zap.String("content", content))
 		return nil, protocol.ErrBadRequest
 	}
 
@@ -255,40 +261,107 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
 	rsp = &protocol.GenerateContentCompletionResponse{}
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(model.TaskContentCompletion)))
+			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(model.TaskContentCompletion)), zap.Error(err))
+		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
-		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	messages := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) schema.MessagesTemplate {
+		return &schema.Message{
+			Name:    string(latestPrompt.Task),
+			Role:    schema.RoleType(template.Role),
+			Content: template.Content,
+		}
 	})
 
-	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, req.Temperature)
+	ctx := context.Background()
 
-	params := map[string]interface{}{
+	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
+
+	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
+		Model:       config.OpenAIModel,
+		APIKey:      config.OpenAIAPIKey,
+		BaseURL:     config.OpenAIBaseURL,
+		Temperature: &req.Temperature,
+	})
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	chain := compose.NewChain[map[string]any, *schema.Message]()
+	_ = chain.AppendChatTemplate(promptTemplate)
+	_ = chain.AppendChatModel(chatOpenAI)
+	runnable, err := chain.Compile(ctx)
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	input := map[string]interface{}{
 		"context":     req.Context,
 		"instruction": req.Instruction,
 		"reference":   req.Reference,
 	}
 
-	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
-	if err != nil {
-		logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
-		return nil, protocol.ErrInternalError
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+
+	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
+		Host:      config.LangfuseHost,
+		PublicKey: config.LangfusePublicKey,
+		SecretKey: config.LangfuseSecretKey,
+		UserID:    userUniqueID,
+		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
+		Tags: []string{
+			string(latestPrompt.Task),
+		},
+	})
+	callbackHandlers := []callbacks.Handler{
+		langfuseCallbackHandler,
+		callback.NewLogCallbackHandler(),
 	}
+
+	tokenChan, errChan := make(chan string), make(chan error)
+	go func() {
+		defer close(tokenChan)
+		defer close(errChan)
+
+		sr, err := runnable.Stream(ctx, input, compose.WithCallbacks(callbackHandlers...))
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return
+			}
+			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			errChan <- err
+			return
+		}
+		defer sr.Close()
+
+		for {
+			chunk, err := sr.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return
+				}
+				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				errChan <- err
+				return
+			}
+
+			tokenChan <- chunk.Content
+		}
+	}()
 
 	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
@@ -309,7 +382,7 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
 	rsp = &protocol.GenerateArticleSummaryResponse{}
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
@@ -334,34 +407,102 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 		return nil, protocol.ErrInternalError
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleSummary, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(model.TaskContentCompletion)))
+			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(model.TaskContentCompletion)), zap.Error(err))
+		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
-		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	messages := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) schema.MessagesTemplate {
+		return &schema.Message{
+			Name:    string(latestPrompt.Task),
+			Role:    schema.RoleType(template.Role),
+			Content: template.Content,
+		}
 	})
 
-	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, req.Temperature)
+	ctx := context.Background()
 
-	params := map[string]interface{}{
+	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
+
+	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
+		Model:       config.OpenAIModel,
+		APIKey:      config.OpenAIAPIKey,
+		BaseURL:     config.OpenAIBaseURL,
+		Temperature: &req.Temperature,
+	})
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	chain := compose.NewChain[map[string]any, *schema.Message]()
+	_ = chain.AppendChatTemplate(promptTemplate)
+	_ = chain.AppendChatModel(chatOpenAI)
+	runnable, err := chain.Compile(ctx)
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	input := map[string]interface{}{
 		"title":       article.Title,
 		"content":     latestVersion.Content,
 		"instruction": req.Instruction,
 	}
 
-	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
-	if err != nil {
-		logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
-		return nil, protocol.ErrInternalError
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+
+	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
+		Host:      config.LangfuseHost,
+		PublicKey: config.LangfusePublicKey,
+		SecretKey: config.LangfuseSecretKey,
+		UserID:    userUniqueID,
+		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
+		Tags: []string{
+			fmt.Sprintf("%d", req.ArticleID),
+			string(latestPrompt.Task),
+		},
+	})
+	callbackHandlers := []callbacks.Handler{
+		langfuseCallbackHandler,
+		callback.NewLogCallbackHandler(),
 	}
+
+	tokenChan, errChan := make(chan string), make(chan error)
+	go func() {
+		defer close(tokenChan)
+		defer close(errChan)
+
+		sr, err := runnable.Stream(ctx, input, compose.WithCallbacks(callbackHandlers...))
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return
+			}
+			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			errChan <- err
+			return
+		}
+		defer sr.Close()
+
+		for {
+			chunk, err := sr.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return
+				}
+				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				errChan <- err
+				return
+			}
+
+			tokenChan <- chunk.Content
+		}
+	}()
 
 	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
@@ -394,7 +535,7 @@ func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTransl
 //	update 2025-01-05 18:03:44
 func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
 	rsp = &protocol.GenerateArticleQAResponse{}
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
@@ -426,37 +567,105 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 		return nil, protocol.ErrInternalError
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleQA, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Logger.Error("[AIService] latest prompt not found",
-				zap.String("taskName", string(model.TaskContentCompletion)))
+				zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Logger.Error("[AIService] failed to get latest prompt",
-			zap.String("taskName", string(model.TaskContentCompletion)),
+			zap.String("taskName", string(latestPrompt.Task)),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
-		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	messages := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) schema.MessagesTemplate {
+		return &schema.Message{
+			Name:    string(latestPrompt.Task),
+			Role:    schema.RoleType(template.Role),
+			Content: template.Content,
+		}
 	})
 
-	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, req.Temperature)
+	ctx := context.Background()
 
-	params := map[string]interface{}{
+	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
+
+	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
+		Model:       config.OpenAIModel,
+		APIKey:      config.OpenAIAPIKey,
+		BaseURL:     config.OpenAIBaseURL,
+		Temperature: &req.Temperature,
+	})
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	chain := compose.NewChain[map[string]any, *schema.Message]()
+	_ = chain.AppendChatTemplate(promptTemplate)
+	_ = chain.AppendChatModel(chatOpenAI)
+	runnable, err := chain.Compile(ctx)
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	input := map[string]interface{}{
 		"title":    article.Title,
 		"content":  latestVersion.Content,
 		"question": req.Question,
 	}
 
-	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
-	if err != nil {
-		logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
-		return nil, protocol.ErrInternalError
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+
+	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
+		Host:      config.LangfuseHost,
+		PublicKey: config.LangfusePublicKey,
+		SecretKey: config.LangfuseSecretKey,
+		UserID:    userUniqueID,
+		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
+		Tags: []string{
+			fmt.Sprintf("%d", req.ArticleID),
+			string(latestPrompt.Task),
+		},
+	})
+	callbackHandlers := []callbacks.Handler{
+		langfuseCallbackHandler,
+		callback.NewLogCallbackHandler(),
 	}
+
+	tokenChan, errChan := make(chan string), make(chan error)
+	go func() {
+		defer close(tokenChan)
+		defer close(errChan)
+
+		sr, err := runnable.Stream(ctx, input, compose.WithCallbacks(callbackHandlers...))
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return
+			}
+			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			errChan <- err
+			return
+		}
+		defer sr.Close()
+
+		for {
+			chunk, err := sr.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return
+				}
+				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				errChan <- err
+				return
+			}
+
+			tokenChan <- chunk.Content
+		}
+	}()
 
 	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
@@ -477,7 +686,7 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
 	rsp = &protocol.GenerateTermExplainationResponse{}
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "llm_quota"}, []string{}))
+	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
@@ -506,22 +715,47 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 		return nil, protocol.ErrInternalError
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskTermExplaination, []string{"id", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskTermExplaination, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(model.TaskTermExplaination)))
+			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(model.TaskTermExplaination)), zap.Error(err))
+		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	oneTurnPrompts := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) prompt.Prompt {
-		return prompt.NewOneTurnPrompt(template.Role, template.Content)
+	messages := lo.Map(latestPrompt.Templates, func(template model.Template, _ int) schema.MessagesTemplate {
+		return &schema.Message{
+			Name:    string(latestPrompt.Task),
+			Role:    schema.RoleType(template.Role),
+			Content: template.Content,
+		}
 	})
 
-	promptTemplate := prompt.NewMultiTurnPrompt(oneTurnPrompts)
-	chatOpenAI := chat_model.NewChatOpenAI(chat_model.ZhipuGlm4Flash, req.Temperature)
+	ctx := context.Background()
+
+	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
+
+	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
+		Model:       config.OpenAIModel,
+		APIKey:      config.OpenAIAPIKey,
+		BaseURL:     config.OpenAIBaseURL,
+		Temperature: &req.Temperature,
+	})
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+
+	chain := compose.NewChain[map[string]any, *schema.Message]()
+	_ = chain.AppendChatTemplate(promptTemplate)
+	_ = chain.AppendChatModel(chatOpenAI)
+	runnable, err := chain.Compile(ctx)
+	if err != nil {
+		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
 
 	contextWindowLen := 200
 
@@ -537,18 +771,60 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 		right = int(req.Position) + contextWindowLen/2
 	}
 
-	params := map[string]interface{}{
+	input := map[string]interface{}{
 		"title":   article.Title,
 		"content": latestVersion.Content,
 		"context": latestVersion.Content[left:right],
 		"term":    req.Term,
 	}
 
-	tokenChan, errChan, err := chatOpenAI.Stream(lo.Must1(promptTemplate.Format(params)))
-	if err != nil {
-		logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
-		return nil, protocol.ErrInternalError
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+
+	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
+		Host:      config.LangfuseHost,
+		PublicKey: config.LangfusePublicKey,
+		SecretKey: config.LangfuseSecretKey,
+		UserID:    userUniqueID,
+		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
+		Tags: []string{
+			fmt.Sprintf("%d", req.ArticleID),
+			string(latestPrompt.Task),
+		},
+	})
+	callbackHandlers := []callbacks.Handler{
+		langfuseCallbackHandler,
+		callback.NewLogCallbackHandler(),
 	}
+
+	tokenChan, errChan := make(chan string), make(chan error)
+	go func() {
+		defer close(tokenChan)
+		defer close(errChan)
+
+		sr, err := runnable.Stream(ctx, input, compose.WithCallbacks(callbackHandlers...))
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return
+			}
+			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			errChan <- err
+			return
+		}
+		defer sr.Close()
+		for {
+			chunk, err := sr.Recv()
+			if err != nil {
+				if errors.Is(err, io.EOF) {
+					return
+				}
+				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				errChan <- err
+				return
+			}
+
+			tokenChan <- chunk.Content
+		}
+	}()
 
 	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
