@@ -1,8 +1,11 @@
 module github.com/hcd233/aris-blog-api
 
-go 1.22.7
+go 1.22.5
 
 require (
+	github.com/cloudwego/eino v0.3.8
+	github.com/cloudwego/eino-ext/callbacks/langfuse v0.0.0-20250208101713-241b89a45552
+	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250208101713-241b89a45552
 	github.com/disintegration/imaging v1.6.2
 	github.com/gin-contrib/cors v1.7.2
 	github.com/gin-contrib/gzip v1.2.0
@@ -11,17 +14,14 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.1
 	github.com/google/uuid v1.6.0
 	github.com/minio/minio-go/v7 v7.0.80
-	github.com/pkoukk/tiktoken-go v0.1.7
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
-	github.com/stretchr/testify v1.10.0
 	github.com/swaggo/files v1.0.1
 	github.com/swaggo/gin-swagger v1.6.0
 	github.com/swaggo/swag v1.16.4
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.60
 	github.com/ulule/limiter/v3 v3.11.2
-	github.com/yuin/goldmark v1.7.8
 	go.uber.org/zap v1.27.0
 	golang.org/x/image v0.22.0
 	golang.org/x/oauth2 v0.21.0
@@ -32,18 +32,27 @@ require (
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
+	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
-	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
-	github.com/dlclark/regexp2 v1.10.0 // indirect
+	github.com/cloudwego/eino-ext/libs/acl/langfuse v0.0.0-20250113033825-eb19b2b6b386 // indirect
+	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250208100047-4b90fcb10809 // indirect
+	github.com/getkin/kin-openapi v0.118.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
 	github.com/go-openapi/jsonreference v0.21.0 // indirect
 	github.com/go-openapi/spec v0.21.0 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/goph/emperror v0.17.2 // indirect
+	github.com/invopop/yaml v0.1.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
+	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
 	github.com/mozillazg/go-httpheader v0.4.0 // indirect
-	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
+	github.com/nikolalohinski/gonja v1.5.3 // indirect
+	github.com/perimeterx/marshmallow v1.1.4 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
+	github.com/slongfield/pyfmt v0.0.0-20220222012616-ea85ff4c361f // indirect
+	github.com/yargevad/filepathx v1.0.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
 )
 

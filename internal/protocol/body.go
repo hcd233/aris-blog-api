@@ -169,7 +169,7 @@ type CreatePromptBody struct {
 //	author centonhuang
 //	update 2024-12-08 16:39:20
 type AIAPPRequestBody struct {
-	Temperature float64 `json:"temperature" binding:"omitempty,min=0,max=1"`
+	Temperature float32 `json:"temperature" binding:"omitempty,min=0,max=1"`
 }
 
 // GenerateContentCompletionBody 生成内容补全请求体
