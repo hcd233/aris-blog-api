@@ -108,11 +108,23 @@ var (
 	// CosAppID string Cos App ID
 	CosAppID string
 
+	// OpenAIModel string OpenAI Model
+	OpenAIModel string
+
 	// OpenAIAPIKey string OpenAI API Key
 	OpenAIAPIKey string
 
 	// OpenAIBaseURL string OpenAI Base URL
 	OpenAIBaseURL string
+
+	// LangfuseHost string Langfuse Host
+	LangfuseHost string
+
+	// LangfusePublicKey string Langfuse Public Key
+	LangfusePublicKey string
+
+	// LangfuseSecretKey string Langfuse Secret Key
+	LangfuseSecretKey string
 
 	// JwtAccessTokenExpired time.Duration Access Jwt Token过期时间
 	//	update 2024-06-22 11:09:19
@@ -183,8 +195,13 @@ func initEnvironment() {
 	CosSecretID = config.GetString("cos.secret.id")
 	CosSecretKey = config.GetString("cos.secret.key")
 
+	OpenAIModel = config.GetString("openai.model")
 	OpenAIAPIKey = config.GetString("openai.api.key")
 	OpenAIBaseURL = config.GetString("openai.base.url")
+
+	LangfuseHost = config.GetString("langfuse.host")
+	LangfusePublicKey = config.GetString("langfuse.public.key")
+	LangfuseSecretKey = config.GetString("langfuse.secret.key")
 
 	JwtAccessTokenExpired = config.GetDuration("jwt.access.token.expired")
 	JwtAccessTokenSecret = config.GetString("jwt.access.token.secret")
