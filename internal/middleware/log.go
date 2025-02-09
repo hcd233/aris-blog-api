@@ -31,6 +31,8 @@ func LogMiddleware(logger *zap.Logger) gin.HandlerFunc {
 			zap.String("ip", c.ClientIP()),
 			zap.String("user-agent", c.Request.UserAgent()),
 			zap.String("latency", latency.String()),
+			zap.String("req-content-type", c.Request.Header.Get("Content-Type")),
+			zap.String("rsp-content-type", c.Writer.Header().Get("Content-Type")),
 		}
 
 		if len(c.Errors) > 0 {
