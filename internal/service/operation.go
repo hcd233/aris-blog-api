@@ -23,7 +23,6 @@ type OperationService interface {
 }
 
 type operationService struct {
-	db          *gorm.DB
 	userDAO     *dao.UserDAO
 	tagDAO      *dao.TagDAO
 	articleDAO  *dao.ArticleDAO
@@ -35,7 +34,6 @@ type operationService struct {
 // NewOperationService 创建用户操作服务
 func NewOperationService() OperationService {
 	return &operationService{
-		db:          database.GetDBInstance(),
 		userDAO:     dao.GetUserDAO(),
 		tagDAO:      dao.GetTagDAO(),
 		articleDAO:  dao.GetArticleDAO(),
@@ -48,9 +46,11 @@ func NewOperationService() OperationService {
 // LikeArticle 点赞文章
 func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error) {
 	rsp = &protocol.LikeArticleResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] article not found",
@@ -77,7 +77,7 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 		ObjectType: model.LikeObjectTypeArticle,
 	}
 
-	tx := s.db.Begin()
+	tx := db.Begin()
 	defer func() {
 		if err != nil {
 			tx.Rollback()
@@ -110,9 +110,11 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 // LikeComment 点赞评论
 func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error) {
 	rsp = &protocol.LikeCommentResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	comment, err := s.commentDAO.GetByID(s.db, req.CommentID, []string{"id", "likes", "article_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	comment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "likes", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] comment not found", zap.Uint("commentID", req.CommentID))
@@ -122,7 +124,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 		return nil, protocol.ErrInternalError
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, comment.ArticleID, []string{"id", "status", "user_id"}, []string{})
+	article, err := s.articleDAO.GetByID(db, comment.ArticleID, []string{"id", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] article not found", zap.Uint("articleID", comment.ArticleID))
@@ -147,7 +149,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 		ObjectType: model.LikeObjectTypeComment,
 	}
 
-	tx := s.db.Begin()
+	tx := db.Begin()
 	defer func() {
 		if err != nil {
 			tx.Rollback()
@@ -180,9 +182,11 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 // LikeTag 点赞标签
 func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error) {
 	rsp = &protocol.LikeTagResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "likes"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "likes"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] tag not found", zap.Uint("tagID", req.TagID))
@@ -198,7 +202,7 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 		ObjectType: model.LikeObjectTypeTag,
 	}
 
-	tx := s.db.Begin()
+	tx := db.Begin()
 	defer func() {
 		if err != nil {
 			tx.Rollback()
@@ -231,9 +235,11 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 // LogArticleView 记录文章浏览
 func (s *operationService) LogArticleView(ctx context.Context, req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error) {
 	rsp = &protocol.LogArticleViewResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "status"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] article not found",
@@ -254,7 +260,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 		return nil, protocol.ErrNoPermission
 	}
 
-	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(s.db, req.UserID, article.ID, []string{"id", "created_at", "progress"}, []string{})
+	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(db, req.UserID, article.ID, []string{"id", "created_at", "progress"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[OperationService] failed to get user view",
 			zap.Uint("articleID", article.ID),
@@ -278,7 +284,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 			LastViewedAt: time.Now(),
 		}
 
-		if err = s.userViewDAO.Create(s.db, userView); err != nil {
+		if err = s.userViewDAO.Create(db, userView); err != nil {
 			logger.Error("[OperationService] failed to create user view",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
@@ -295,7 +301,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 			return nil, protocol.ErrTooManyRequests
 		}
 
-		if err = s.userViewDAO.Update(s.db, userView, map[string]interface{}{
+		if err = s.userViewDAO.Update(db, userView, map[string]interface{}{
 			"progress":       req.Progress,
 			"last_viewed_at": time.Now(),
 		}); err != nil {

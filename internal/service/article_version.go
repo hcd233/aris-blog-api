@@ -25,7 +25,6 @@ type ArticleVersionService interface {
 }
 
 type articleVersionService struct {
-	db                *gorm.DB
 	userDAO           *dao.UserDAO
 	articleDAO        *dao.ArticleDAO
 	articleVersionDAO *dao.ArticleVersionDAO
@@ -34,7 +33,6 @@ type articleVersionService struct {
 // NewArticleVersionService 创建文章版本服务
 func NewArticleVersionService() ArticleVersionService {
 	return &articleVersionService{
-		db:                database.GetDBInstance(),
 		userDAO:           dao.GetUserDAO(),
 		articleDAO:        dao.GetArticleDAO(),
 		articleVersionDAO: dao.GetArticleVersionDAO(),
@@ -44,9 +42,11 @@ func NewArticleVersionService() ArticleVersionService {
 // CreateArticleVersion 创建文章版本
 func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *protocol.CreateArticleVersionRequest) (rsp *protocol.CreateArticleVersionResponse, err error) {
 	rsp = &protocol.CreateArticleVersionResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleVersionService] article not found",
@@ -66,7 +66,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 		return nil, protocol.ErrNoPermission
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"version", "content"}, []string{})
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"version", "content"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[ArticleVersionService] failed to get latest version",
 			zap.Uint("articleID", article.ID),
@@ -93,7 +93,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 		Content:   req.Content,
 	}
 
-	if err := s.articleVersionDAO.Create(s.db, version); err != nil {
+	if err := s.articleVersionDAO.Create(db, version); err != nil {
 		logger.Error("[ArticleVersionService] failed to create version",
 			zap.Uint("articleID", article.ID),
 			zap.Uint("version", version.Version),
@@ -116,9 +116,11 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 // GetArticleVersionInfo 获取文章版本信息
 func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *protocol.GetArticleVersionInfoRequest) (rsp *protocol.GetArticleVersionInfoResponse, err error) {
 	rsp = &protocol.GetArticleVersionInfoResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleVersionService] article not found",
@@ -131,7 +133,7 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 		return nil, protocol.ErrInternalError
 	}
 
-	version, err := s.articleVersionDAO.GetByArticleIDAndVersion(s.db, article.ID, req.VersionID,
+	version, err := s.articleVersionDAO.GetByArticleIDAndVersion(db, article.ID, req.VersionID,
 		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -162,9 +164,11 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 // GetLatestArticleVersionInfo 获取最新文章版本信息
 func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *protocol.GetLatestArticleVersionInfoRequest) (rsp *protocol.GetLatestArticleVersionInfoResponse, err error) {
 	rsp = &protocol.GetLatestArticleVersionInfoResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleVersionService] article not found",
@@ -185,7 +189,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 		return nil, protocol.ErrNoPermission
 	}
 
-	version, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID,
+	version, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID,
 		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -214,9 +218,11 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 // ListArticleVersions 列出文章版本
 func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *protocol.ListArticleVersionsRequest) (rsp *protocol.ListArticleVersionsResponse, err error) {
 	rsp = &protocol.ListArticleVersionsResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleVersionService] article not found",
@@ -236,7 +242,7 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *pr
 		return nil, protocol.ErrNoPermission
 	}
 
-	versions, pageInfo, err := s.articleVersionDAO.PaginateByArticleID(s.db, article.ID,
+	versions, pageInfo, err := s.articleVersionDAO.PaginateByArticleID(db, article.ID,
 		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {

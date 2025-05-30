@@ -43,7 +43,6 @@ type AssetService interface {
 }
 
 type assetService struct {
-	db              *gorm.DB
 	userDAO         *dao.UserDAO
 	tagDAO          *dao.TagDAO
 	articleDAO      *dao.ArticleDAO
@@ -61,7 +60,6 @@ type assetService struct {
 //	update 2025-01-05 16:41:39
 func NewAssetService() AssetService {
 	return &assetService{
-		db:              database.GetDBInstance(),
 		userDAO:         dao.GetUserDAO(),
 		tagDAO:          dao.GetTagDAO(),
 		articleDAO:      dao.GetArticleDAO(),
@@ -83,9 +81,11 @@ func NewAssetService() AssetService {
 //	update 2025-01-05 16:47:40
 func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.ListUserLikeArticlesRequest) (rsp *protocol.ListUserLikeArticlesResponse, err error) {
 	rsp = &protocol.ListUserLikeArticlesResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(s.db, req.UserID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -95,7 +95,7 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 		return like.ObjectID
 	})
 
-	articles, err := s.articleDAO.BatchGetByIDs(s.db, articleIDs,
+	articles, err := s.articleDAO.BatchGetByIDs(db, articleIDs,
 		[]string{
 			"id", "slug", "title", "status", "user_id",
 			"created_at", "updated_at", "published_at",
@@ -122,7 +122,7 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 			}
 		})
 
-		err = s.userLikeDAO.BatchDelete(s.db, &deleteLikes)
+		err = s.userLikeDAO.BatchDelete(db, &deleteLikes)
 		if err != nil {
 			logger.Error("[AssetService] failed to delete user likes", zap.Uints("deletedIDs", deletedIDs), zap.Error(err))
 			err = nil
@@ -156,9 +156,11 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 
 func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.ListUserLikeCommentsRequest) (rsp *protocol.ListUserLikeCommentsResponse, err error) {
 	rsp = &protocol.ListUserLikeCommentsResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(s.db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -168,7 +170,7 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 		return like.ObjectID
 	})
 
-	comments, err := s.commentDAO.BatchGetByIDs(s.db, commentIDs,
+	comments, err := s.commentDAO.BatchGetByIDs(db, commentIDs,
 		[]string{"id", "user_id", "parent_id", "created_at", "content", "likes"},
 		[]string{},
 	)
@@ -191,7 +193,7 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 			}
 		})
 
-		err = s.userLikeDAO.BatchDelete(s.db, &deleteLikes)
+		err = s.userLikeDAO.BatchDelete(db, &deleteLikes)
 		if err != nil {
 			logger.Error("[AssetService] failed to delete user likes", zap.Uints("deletedIDs", deletedIDs), zap.Error(err))
 			err = nil
@@ -218,9 +220,11 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 
 func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListUserLikeTagsRequest) (rsp *protocol.ListUserLikeTagsResponse, err error) {
 	rsp = &protocol.ListUserLikeTagsResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(s.db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -230,7 +234,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 		return like.ObjectID
 	})
 
-	tags, err := s.tagDAO.BatchGetByIDs(s.db, tagIDs,
+	tags, err := s.tagDAO.BatchGetByIDs(db, tagIDs,
 		[]string{"id", "slug", "name", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{})
 	if err != nil {
@@ -252,7 +256,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 			}
 		})
 
-		err = s.userLikeDAO.BatchDelete(s.db, &deleteLikes)
+		err = s.userLikeDAO.BatchDelete(db, &deleteLikes)
 		if err != nil {
 			logger.Error("[AssetService] failed to delete user likes", zap.Uints("deletedIDs", deletedIDs), zap.Error(err))
 			err = nil
@@ -289,6 +293,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 //	update 2025-01-05 17:15:38
 func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesRequest) (rsp *protocol.ListImagesResponse, err error) {
 	rsp = &protocol.ListImagesResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
 
 	objectInfos, err := s.imageObjDAO.ListObjects(req.UserID)
@@ -318,6 +323,7 @@ func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesR
 //	update 2025-01-05 17:20:31
 func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImageRequest) (rsp *protocol.UploadImageResponse, err error) {
 	rsp = &protocol.UploadImageResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
 
 	if !util.IsValidImageFormat(req.FileName) {
@@ -413,6 +419,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImag
 //	update 2025-01-05 17:49:39
 func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageRequest) (rsp *protocol.GetImageResponse, err error) {
 	rsp = &protocol.GetImageResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
 
 	var presignedURL *url.URL
@@ -446,6 +453,7 @@ func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageReque
 //	update 2025-01-05 17:49:33
 func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImageRequest) (rsp *protocol.DeleteImageResponse, err error) {
 	rsp = &protocol.DeleteImageResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
 
 	var wg sync.WaitGroup
@@ -481,9 +489,11 @@ func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImag
 
 func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.ListUserViewArticlesRequest) (rsp *protocol.ListUserViewArticlesResponse, err error) {
 	rsp = &protocol.ListUserViewArticlesResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(s.db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, req.PageParam.Page, req.PageParam.PageSize)
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Error("[AssetService] failed to list user view articles", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -508,9 +518,11 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.L
 
 func (s *assetService) DeleteUserView(ctx context.Context, req *protocol.DeleteUserViewRequest) (rsp *protocol.DeleteUserViewResponse, err error) {
 	rsp = &protocol.DeleteUserViewResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	userView, err := s.userViewDAO.GetByID(s.db, req.ViewID, []string{"id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	userView, err := s.userViewDAO.GetByID(db, req.ViewID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AssetService] user view not found", zap.Uint("userID", req.UserID), zap.Uint("viewID", req.ViewID))
@@ -525,7 +537,7 @@ func (s *assetService) DeleteUserView(ctx context.Context, req *protocol.DeleteU
 		return nil, protocol.ErrNoPermission
 	}
 
-	err = s.userViewDAO.Delete(s.db, userView)
+	err = s.userViewDAO.Delete(db, userView)
 	if err != nil {
 		logger.Error("[AssetService] failed to delete user view", zap.Uint("userID", req.UserID), zap.Uint("viewID", req.ViewID), zap.Error(err))
 		return nil, protocol.ErrInternalError

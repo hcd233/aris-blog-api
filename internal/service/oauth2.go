@@ -55,7 +55,6 @@ type Oauth2Service interface {
 
 type githubOauth2Service struct {
 	oauth2Config       *oauth2.Config
-	db                 *gorm.DB
 	userDAO            *dao.UserDAO
 	imageObjDAO        objdao.ObjDAO
 	thumbnailObjDAO    objdao.ObjDAO
@@ -70,7 +69,6 @@ type githubOauth2Service struct {
 //	update 2025-01-05 13:43:24
 func NewGithubOauth2Service() Oauth2Service {
 	return &githubOauth2Service{
-		db:              database.GetDBInstance(),
 		userDAO:         dao.GetUserDAO(),
 		imageObjDAO:     objdao.GetImageObjDAO(),
 		thumbnailObjDAO: objdao.GetThumbnailObjDAO(),
@@ -95,6 +93,7 @@ func NewGithubOauth2Service() Oauth2Service {
 //	update 2025-01-05 14:23:26
 func (s *githubOauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
 	rsp = &protocol.LoginResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
 
 	url := s.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
@@ -115,7 +114,9 @@ func (s *githubOauth2Service) Login(ctx context.Context, req *protocol.LoginRequ
 //	update 2025-01-05 14:23:26
 func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
 	rsp = &protocol.CallbackResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	if req.State != config.Oauth2StateString {
 		logger.Error("[Oauth2Service] invalid state",
@@ -139,7 +140,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	githubID := strconv.FormatInt(userInfo.ID, 10)
 	userName, email, avatar := userInfo.Login, userInfo.Email, userInfo.AvatarURL
 
-	user, err := s.userDAO.GetByEmail(s.db, email, []string{"id", "name", "avatar"}, []string{})
+	user, err := s.userDAO.GetByEmail(db, email, []string{"id", "name", "avatar"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[Oauth2Service] failed to get user by email",
 			zap.String("email", email),
@@ -149,7 +150,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 
 	if user.ID != 0 {
 		// 更新已存在用户
-		if err := s.userDAO.Update(s.db, user, map[string]interface{}{
+		if err := s.userDAO.Update(db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update user login time",
@@ -174,7 +175,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 			Categories: []model.Category{*defaultCategory},
 		}
 
-		if err := s.userDAO.Create(s.db, user); err != nil {
+		if err := s.userDAO.Create(db, user); err != nil {
 			logger.Error("[Oauth2Service] failed to create user",
 				zap.String("userName", userName),
 				zap.Error(err))
@@ -202,7 +203,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	}
 
 	if user.GithubBindID == "" {
-		if err := s.userDAO.Update(s.db, user, map[string]interface{}{
+		if err := s.userDAO.Update(db, user, map[string]interface{}{
 			"github_bind_id": githubID,
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update github bind id",

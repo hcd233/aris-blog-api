@@ -28,7 +28,6 @@ type TagService interface {
 }
 
 type tagService struct {
-	db      *gorm.DB
 	userDAO *dao.UserDAO
 	tagDAO  *dao.TagDAO
 }
@@ -40,7 +39,6 @@ type tagService struct {
 //	update 2025-01-05 11:48:36
 func NewTagService() TagService {
 	return &tagService{
-		db:      database.GetDBInstance(),
 		userDAO: dao.GetUserDAO(),
 		tagDAO:  dao.GetTagDAO(),
 	}
@@ -56,7 +54,10 @@ func NewTagService() TagService {
 //	update 2025-01-05 11:52:33
 func (s *tagService) CreateTag(ctx context.Context, req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error) {
 	rsp = &protocol.CreateTagResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
 	tag := &model.Tag{
 		Name:        req.Name,
 		Slug:        req.Slug,
@@ -64,7 +65,7 @@ func (s *tagService) CreateTag(ctx context.Context, req *protocol.CreateTagReque
 		UserID:      req.UserID,
 	}
 
-	if err := s.tagDAO.Create(s.db, tag); err != nil {
+	if err := s.tagDAO.Create(db, tag); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			logger.Error("[TagService] Tag is already exists", zap.String("name", req.Name), zap.String("slug", req.Slug), zap.Error(err))
 			return nil, protocol.ErrDataExists
@@ -97,9 +98,11 @@ func (s *tagService) CreateTag(ctx context.Context, req *protocol.CreateTagReque
 //	update 2025-01-05 11:52:46
 func (s *tagService) GetTagInfo(ctx context.Context, req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error) {
 	rsp = &protocol.GetTagInfoResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	tag, err := s.tagDAO.GetByID(s.db, req.TagID,
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	tag, err := s.tagDAO.GetByID(db, req.TagID,
 		[]string{"id", "name", "slug", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{})
 	if err != nil {
@@ -135,9 +138,11 @@ func (s *tagService) GetTagInfo(ctx context.Context, req *protocol.GetTagInfoReq
 //	update 2025-01-05 11:52:46
 func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error) {
 	rsp = &protocol.UpdateTagResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
@@ -173,7 +178,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagReque
 		return rsp, nil
 	}
 
-	if err := s.tagDAO.Update(s.db, tag, updateFields); err != nil {
+	if err := s.tagDAO.Update(db, tag, updateFields); err != nil {
 		logger.Error("[TagService] Update tag failed",
 			zap.Uint("tagID", req.TagID),
 			zap.Any("updateFields", updateFields),
@@ -194,9 +199,11 @@ func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagReque
 //	update 2025-01-05 11:52:48
 func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error) {
 	rsp = &protocol.DeleteTagResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "name", "slug", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "name", "slug", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
@@ -213,7 +220,7 @@ func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagReque
 		return nil, protocol.ErrNoPermission
 	}
 
-	if err := s.tagDAO.Delete(s.db, tag); err != nil {
+	if err := s.tagDAO.Delete(db, tag); err != nil {
 		logger.Error("[TagService] Delete tag failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -231,9 +238,11 @@ func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagReque
 //	update 2025-01-05 11:52:50
 func (s *tagService) ListTags(ctx context.Context, req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error) {
 	rsp = &protocol.ListTagsResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	tags, pageInfo, err := s.tagDAO.Paginate(s.db,
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	tags, pageInfo, err := s.tagDAO.Paginate(db,
 		[]string{"id", "slug", "name", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{},
 		req.PageParam.Page, req.PageParam.PageSize)

@@ -12,7 +12,6 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 // TokenService 令牌服务
@@ -24,7 +23,6 @@ type TokenService interface {
 }
 
 type tokenService struct {
-	db                 *gorm.DB
 	userDAO            *dao.UserDAO
 	accessTokenSigner  auth.JwtTokenSigner
 	refreshTokenSigner auth.JwtTokenSigner
@@ -37,7 +35,6 @@ type tokenService struct {
 //	update 2025-01-04 17:18:59
 func NewTokenService() TokenService {
 	return &tokenService{
-		db:                 database.GetDBInstance(),
 		userDAO:            dao.GetUserDAO(),
 		accessTokenSigner:  auth.GetJwtAccessTokenSigner(),
 		refreshTokenSigner: auth.GetJwtRefreshTokenSigner(),
@@ -46,7 +43,9 @@ func NewTokenService() TokenService {
 
 func (s *tokenService) RefreshToken(ctx context.Context, req *protocol.RefreshTokenRequest) (rsp *protocol.RefreshTokenResponse, err error) {
 	rsp = &protocol.RefreshTokenResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	userID, err := s.refreshTokenSigner.DecodeToken(req.RefreshToken)
 	if err != nil {
@@ -54,7 +53,7 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *protocol.RefreshTo
 		return nil, protocol.ErrInternalError
 	}
 
-	_, err = s.userDAO.GetByID(s.db, userID, []string{"id"}, []string{})
+	_, err = s.userDAO.GetByID(db, userID, []string{"id"}, []string{})
 	if err != nil {
 		logger.Error("[TokenService] failed to get user by id", zap.Uint("userID", userID), zap.Error(err))
 		return nil, protocol.ErrInternalError

@@ -31,7 +31,6 @@ type ArticleService interface {
 }
 
 type articleService struct {
-	db                *gorm.DB
 	userDAO           *dao.UserDAO
 	tagDAO            *dao.TagDAO
 	categoryDAO       *dao.CategoryDAO
@@ -46,7 +45,6 @@ type articleService struct {
 //	update 2025-01-05 15:23:26
 func NewArticleService() ArticleService {
 	return &articleService{
-		db:                database.GetDBInstance(),
 		userDAO:           dao.GetUserDAO(),
 		tagDAO:            dao.GetTagDAO(),
 		categoryDAO:       dao.GetCategoryDAO(),
@@ -65,7 +63,10 @@ func NewArticleService() ArticleService {
 //	update 2025-01-05 15:23:26
 func (s *articleService) CreateArticle(ctx context.Context, req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error) {
 	rsp = &protocol.CreateArticleResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
 	tags := []model.Tag{}
 	tagChan, errChan := make(chan *model.Tag, len(req.Tags)), make(chan error, len(req.Tags))
 
@@ -74,7 +75,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 
 	getTagFunc := func(tagSlug string) {
 		defer wg.Done()
-		tag, err := s.tagDAO.GetBySlug(s.db, tagSlug, []string{"id", "slug"}, []string{})
+		tag, err := s.tagDAO.GetBySlug(db, tagSlug, []string{"id", "slug"}, []string{})
 		if err != nil {
 			errChan <- err
 			return
@@ -104,7 +105,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 		tags = append(tags, *tag)
 	}
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id"}, []string{})
+	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] category not found",
@@ -126,7 +127,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 		Versions: []model.ArticleVersion{},
 	}
 
-	if err := s.articleDAO.Create(s.db, article); err != nil {
+	if err := s.articleDAO.Create(db, article); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			logger.Error("[ArticleService] article slug duplicated",
 				zap.Uint("userID", article.UserID),
@@ -170,9 +171,11 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 //	update 2025-01-05 15:23:26
 func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error) {
 	rsp = &protocol.GetArticleInfoResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{
 		"id", "slug", "title", "status", "user_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
@@ -225,9 +228,11 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 //	update 2025-01-19 15:23:26
 func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error) {
 	rsp = &protocol.GetArticleInfoBySlugResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	user, err := s.userDAO.GetByName(s.db, req.AuthorName, []string{"id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user, err := s.userDAO.GetByName(db, req.AuthorName, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] user not found",
@@ -240,7 +245,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 		return nil, protocol.ErrInternalError
 	}
 
-	article, err := s.articleDAO.GetBySlugAndUserID(s.db, req.ArticleSlug, user.ID, []string{
+	article, err := s.articleDAO.GetBySlugAndUserID(db, req.ArticleSlug, user.ID, []string{
 		"id", "slug", "title", "status", "user_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
@@ -294,7 +299,9 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 //	update 2025-01-05 15:23:26
 func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error) {
 	rsp = &protocol.UpdateArticleResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	updateFields := make(map[string]interface{})
 	if req.UpdatedTitle != "" {
@@ -315,7 +322,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 		return rsp, nil
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "status", "user_id"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
@@ -335,7 +342,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 		return nil, protocol.ErrNoPermission
 	}
 
-	if err := s.articleDAO.Update(s.db, article, updateFields); err != nil {
+	if err := s.articleDAO.Update(db, article, updateFields); err != nil {
 		logger.Error("[ArticleService] failed to update article",
 			zap.Uint("articleID", article.ID),
 			zap.Any("updateFields", updateFields),
@@ -356,9 +363,11 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 //	update 2025-01-05 15:23:26
 func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
 	rsp = &protocol.UpdateArticleStatusResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByIDAndUserID(s.db, req.ArticleID, req.UserID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, req.UserID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
@@ -379,7 +388,7 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 	}
 
 	if req.Status == model.ArticleStatusPublish {
-		if err := s.articleDAO.Update(s.db, article, map[string]interface{}{
+		if err := s.articleDAO.Update(db, article, map[string]interface{}{
 			"status":       req.Status,
 			"published_at": time.Now(),
 		}); err != nil {
@@ -390,7 +399,7 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 			return nil, protocol.ErrInternalError
 		}
 	} else if req.Status == model.ArticleStatusDraft {
-		if err := s.articleDAO.Update(s.db, article, map[string]interface{}{
+		if err := s.articleDAO.Update(db, article, map[string]interface{}{
 			"status":       req.Status,
 			"published_at": nil,
 		}); err != nil {
@@ -415,9 +424,11 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 //	update 2025-01-05 15:23:26
 func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
 	rsp = &protocol.DeleteArticleResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByIDAndUserID(s.db, req.ArticleID, req.UserID, []string{"id", "slug"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, req.UserID, []string{"id", "slug"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
@@ -430,7 +441,7 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.Delete
 		return nil, protocol.ErrInternalError
 	}
 
-	if err := s.articleDAO.Delete(s.db, article); err != nil {
+	if err := s.articleDAO.Delete(db, article); err != nil {
 		logger.Error("[ArticleService] failed to delete article",
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
@@ -450,10 +461,12 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.Delete
 //	update 2025-01-05 15:23:26
 func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
 	rsp = &protocol.ListArticlesResponse{}
+	
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	articles, pageInfo, err := s.articleDAO.PaginateByStatus(
-		s.db,
+		db,
 		model.ArticleStatusPublish,
 		[]string{
 			"id", "slug", "title", "status", "user_id",
