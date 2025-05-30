@@ -54,7 +54,7 @@ func (h *tokenHandler) HandleRefreshToken(c *gin.Context) {
 		RefreshToken: body.RefreshToken,
 	}
 
-	rsp, err := h.svc.RefreshToken(c.Request.Context(), req)
+	rsp, err := h.svc.RefreshToken(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
