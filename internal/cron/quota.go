@@ -1,6 +1,7 @@
 package cron
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -27,7 +28,7 @@ func NewQuotaCron() Cron {
 		cron: cron.New(
 			cron.WithLogger(newCronLoggerAdapter("QuotaCron", logger.Logger())),
 		),
-		db:      database.GetDBInstance(),
+		db:      database.GetDBInstance(context.Background()),
 		userDAO: dao.GetUserDAO(),
 	}
 }

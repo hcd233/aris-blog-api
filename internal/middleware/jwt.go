@@ -24,11 +24,12 @@ import (
 //	author centonhuang
 //	update 2024-09-16 05:35:57
 func JwtMiddleware() gin.HandlerFunc {
-	db := database.GetDBInstance()
 	dao := dao.GetUserDAO()
 	jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
 
 	return func(c *gin.Context) {
+		db := database.GetDBInstance(c)
+
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
 			logger.LoggerWithContext(c).Error("[JwtMiddleware] token is empty")

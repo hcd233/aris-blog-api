@@ -25,7 +25,6 @@ type UserService interface {
 }
 
 type userService struct {
-	db         *gorm.DB
 	userDAO    *dao.UserDAO
 	tagDAO     *dao.TagDAO
 	articleDAO *dao.ArticleDAO
@@ -38,7 +37,6 @@ type userService struct {
 //	update 2025-01-04 21:03:45
 func NewUserService() UserService {
 	return &userService{
-		db:         database.GetDBInstance(),
 		userDAO:    dao.GetUserDAO(),
 		tagDAO:     dao.GetTagDAO(),
 		articleDAO: dao.GetArticleDAO(),
@@ -56,9 +54,11 @@ func NewUserService() UserService {
 //	update 2025-01-04 21:04:03
 func (s *userService) GetCurUserInfo(ctx context.Context, req *protocol.GetCurUserInfoRequest) (rsp *protocol.GetCurUserInfoResponse, err error) {
 	rsp = &protocol.GetCurUserInfoResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	user, err := s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user, err := s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[UserService] user not found", zap.Uint("userID", req.UserID))
@@ -103,9 +103,11 @@ func (s *userService) GetCurUserInfo(ctx context.Context, req *protocol.GetCurUs
 //	update 2025-01-04 21:09:04
 func (s *userService) GetUserInfo(ctx context.Context, req *protocol.GetUserInfoRequest) (rsp *protocol.GetUserInfoResponse, err error) {
 	logger := logger.LoggerWithContext(ctx)
-	rsp = &protocol.GetUserInfoResponse{}
 
-	user, err := s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
+	rsp = &protocol.GetUserInfoResponse{}
+	db := database.GetDBInstance(ctx)
+
+	user, err := s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[UserService] user not found", zap.Uint("userID", req.UserID))
@@ -137,9 +139,11 @@ func (s *userService) GetUserInfo(ctx context.Context, req *protocol.GetUserInfo
 
 func (s *userService) UpdateUserInfo(ctx context.Context, req *protocol.UpdateUserInfoRequest) (rsp *protocol.UpdateUserInfoResponse, err error) {
 	logger := logger.LoggerWithContext(ctx)
-	rsp = &protocol.UpdateUserInfoResponse{}
 
-	if err := s.userDAO.Update(s.db, &model.User{ID: req.UserID}, map[string]interface{}{
+	rsp = &protocol.UpdateUserInfoResponse{}
+	db := database.GetDBInstance(ctx)
+
+	if err := s.userDAO.Update(db, &model.User{ID: req.UserID}, map[string]interface{}{
 		"name": req.UpdatedUserName,
 	}); err != nil {
 		logger.Error("[UserService] failed to update user", zap.Uint("userID", req.UserID), zap.Error(err))

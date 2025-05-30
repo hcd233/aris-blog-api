@@ -20,9 +20,16 @@ import (
 var defaultLogger *zap.Logger
 
 const (
-	infoLogFile  = "aris-blog-api.log"
-	errLogFile   = "aris-blog-api-error.log"
-	panicLogFile = "aris-blog-api-panic.log"
+	infoLogFile    = "aris-blog-api.log"
+	errLogFile     = "aris-blog-api-error.log"
+	panicLogFile   = "aris-blog-api-panic.log"
+	logLevelDebug  = "DEBUG"
+	logLevelInfo   = "INFO"
+	logLevelWarn   = "WARN"
+	logLevelError  = "ERROR"
+	logLevelDPanic = "DPANIC"
+	logLevelPanic  = "PANIC"
+	logLevelFatal  = "FATAL"
 )
 
 func Logger() *zap.Logger {
@@ -44,13 +51,13 @@ func init() {
 	var (
 		cfg             zap.Config
 		zapLevelMapping = map[string]zap.AtomicLevel{
-			"DEBUG":  zap.NewAtomicLevelAt(zap.DebugLevel),
-			"INFO":   zap.NewAtomicLevelAt(zap.InfoLevel),
-			"WARN":   zap.NewAtomicLevelAt(zap.WarnLevel),
-			"ERROR":  zap.NewAtomicLevelAt(zap.ErrorLevel),
-			"DPANIC": zap.NewAtomicLevelAt(zap.DPanicLevel),
-			"PANIC":  zap.NewAtomicLevelAt(zap.PanicLevel),
-			"FATAL":  zap.NewAtomicLevelAt(zap.FatalLevel),
+			logLevelDebug:  zap.NewAtomicLevelAt(zap.DebugLevel),
+			logLevelInfo:   zap.NewAtomicLevelAt(zap.InfoLevel),
+			logLevelWarn:   zap.NewAtomicLevelAt(zap.WarnLevel),
+			logLevelError:  zap.NewAtomicLevelAt(zap.ErrorLevel),
+			logLevelDPanic: zap.NewAtomicLevelAt(zap.DPanicLevel),
+			logLevelPanic:  zap.NewAtomicLevelAt(zap.PanicLevel),
+			logLevelFatal:  zap.NewAtomicLevelAt(zap.FatalLevel),
 		}
 	)
 

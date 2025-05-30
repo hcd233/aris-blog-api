@@ -27,7 +27,6 @@ type CategoryService interface {
 }
 
 type categoryService struct {
-	db          *gorm.DB
 	userDAO     *dao.UserDAO
 	categoryDAO *dao.CategoryDAO
 	articleDAO  *dao.ArticleDAO
@@ -36,7 +35,6 @@ type categoryService struct {
 // NewCategoryService 创建分类服务
 func NewCategoryService() CategoryService {
 	return &categoryService{
-		db:          database.GetDBInstance(),
 		userDAO:     dao.GetUserDAO(),
 		categoryDAO: dao.GetCategoryDAO(),
 		articleDAO:  dao.GetArticleDAO(),
@@ -46,13 +44,15 @@ func NewCategoryService() CategoryService {
 // CreateCategory 创建分类
 func (s *categoryService) CreateCategory(ctx context.Context, req *protocol.CreateCategoryRequest) (rsp *protocol.CreateCategoryResponse, err error) {
 	rsp = &protocol.CreateCategoryResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	var parentCategory *model.Category
 	if req.ParentID == 0 {
-		parentCategory, err = s.categoryDAO.GetRootByUserID(s.db, req.UserID, []string{"id"}, []string{})
+		parentCategory, err = s.categoryDAO.GetRootByUserID(db, req.UserID, []string{"id"}, []string{})
 	} else {
-		parentCategory, err = s.categoryDAO.GetByID(s.db, req.ParentID, []string{"id"}, []string{})
+		parentCategory, err = s.categoryDAO.GetByID(db, req.ParentID, []string{"id"}, []string{})
 	}
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -72,7 +72,7 @@ func (s *categoryService) CreateCategory(ctx context.Context, req *protocol.Crea
 		UserID:   req.UserID,
 	}
 
-	if err := s.categoryDAO.Create(s.db, category); err != nil {
+	if err := s.categoryDAO.Create(db, category); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			logger.Error("[CategoryService] duplicated category",
 				zap.String("name", category.Name),
@@ -100,9 +100,11 @@ func (s *categoryService) CreateCategory(ctx context.Context, req *protocol.Crea
 // GetCategoryInfo 获取分类信息
 func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error) {
 	rsp = &protocol.GetCategoryInfoResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
@@ -133,9 +135,11 @@ func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.Get
 // GetRootCategory 获取根分类
 func (s *categoryService) GetRootCategory(ctx context.Context, req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error) {
 	rsp = &protocol.GetRootCategoryResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	rootCategory, err := s.categoryDAO.GetRootByUserID(s.db, req.UserID, []string{"id", "name", "user_id", "created_at", "updated_at"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	rootCategory, err := s.categoryDAO.GetRootByUserID(db, req.UserID, []string{"id", "name", "user_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CategoryService] root category not found", zap.Uint("userID", req.UserID))
@@ -159,7 +163,9 @@ func (s *categoryService) GetRootCategory(ctx context.Context, req *protocol.Get
 // UpdateCategory 更新分类
 func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.UpdateCategoryRequest) (rsp *protocol.UpdateCategoryResponse, err error) {
 	rsp = &protocol.UpdateCategoryResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	updateFields := make(map[string]interface{})
 	if req.Name != "" {
@@ -175,7 +181,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.Upda
 		return rsp, nil
 	}
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
+	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
@@ -192,7 +198,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.Upda
 		return nil, protocol.ErrNoPermission
 	}
 
-	if err := s.categoryDAO.Update(s.db, category, updateFields); err != nil {
+	if err := s.categoryDAO.Update(db, category, updateFields); err != nil {
 		logger.Error("[CategoryService] failed to update category",
 			zap.Uint("categoryID", category.ID),
 			zap.Any("updateFields", updateFields),
@@ -214,9 +220,11 @@ func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.Upda
 // DeleteCategory 删除分类
 func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error) {
 	rsp = &protocol.DeleteCategoryResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
@@ -239,7 +247,7 @@ func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.Dele
 		return nil, protocol.ErrNoPermission
 	}
 
-	if err := s.categoryDAO.DeleteReclusiveByID(s.db, category.ID, []string{"id", "name"}, []string{}); err != nil {
+	if err := s.categoryDAO.DeleteReclusiveByID(db, category.ID, []string{"id", "name"}, []string{}); err != nil {
 		logger.Error("[CategoryService] failed to delete category",
 			zap.Uint("categoryID", category.ID),
 			zap.Error(err))
@@ -252,9 +260,11 @@ func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.Dele
 // ListChildrenCategories 列出子分类
 func (s *categoryService) ListChildrenCategories(ctx context.Context, req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error) {
 	rsp = &protocol.ListChildrenCategoriesResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	parentCategory, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
@@ -264,7 +274,7 @@ func (s *categoryService) ListChildrenCategories(ctx context.Context, req *proto
 		return nil, protocol.ErrInternalError
 	}
 
-	categories, pageInfo, err := s.categoryDAO.PaginateChildren(s.db, parentCategory,
+	categories, pageInfo, err := s.categoryDAO.PaginateChildren(db, parentCategory,
 		[]string{"id", "name", "parent_id", "created_at", "updated_at"}, []string{},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
@@ -303,9 +313,11 @@ func (s *categoryService) ListChildrenCategories(ctx context.Context, req *proto
 // ListChildrenArticles 列出子文章
 func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error) {
 	rsp = &protocol.ListChildrenArticlesResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	parentCategory, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
@@ -322,7 +334,7 @@ func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protoco
 		return nil, protocol.ErrNoPermission
 	}
 
-	articles, pageInfo, err := s.articleDAO.PaginateByCategoryID(s.db, parentCategory.ID,
+	articles, pageInfo, err := s.articleDAO.PaginateByCategoryID(db, parentCategory.ID,
 		[]string{
 			"id", "slug", "title", "status", "user_id",
 			"created_at", "updated_at", "published_at",
