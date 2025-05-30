@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -19,11 +20,11 @@ import (
 //	author centonhuang
 //	update 2025-01-04 17:16:27
 type TagService interface {
-	CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error)
-	GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error)
-	UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error)
-	DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error)
-	ListTags(req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error)
+	CreateTag(ctx context.Context, req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error)
+	GetTagInfo(ctx context.Context, req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error)
+	UpdateTag(ctx context.Context, req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error)
+	DeleteTag(ctx context.Context, req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error)
+	ListTags(ctx context.Context, req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error)
 }
 
 type tagService struct {
@@ -53,8 +54,9 @@ func NewTagService() TagService {
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 11:52:33
-func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error) {
+func (s *tagService) CreateTag(ctx context.Context, req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error) {
 	rsp = &protocol.CreateTagResponse{}
+	logger := logger.LoggerWithContext(ctx)
 	tag := &model.Tag{
 		Name:        req.Name,
 		Slug:        req.Slug,
@@ -64,8 +66,10 @@ func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.Cr
 
 	if err := s.tagDAO.Create(s.db, tag); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			logger.Error("[TagService] Tag is already exists", zap.String("name", req.Name), zap.String("slug", req.Slug), zap.Error(err))
 			return nil, protocol.ErrDataExists
 		}
+		logger.Error("[TagService] Failed to create tag", zap.String("name", req.Name), zap.String("slug", req.Slug), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -91,18 +95,19 @@ func (s *tagService) CreateTag(req *protocol.CreateTagRequest) (rsp *protocol.Cr
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 11:52:46
-func (s *tagService) GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error) {
+func (s *tagService) GetTagInfo(ctx context.Context, req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error) {
 	rsp = &protocol.GetTagInfoResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	tag, err := s.tagDAO.GetByID(s.db, req.TagID,
 		[]string{"id", "name", "slug", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
+			logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
+		logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -128,21 +133,22 @@ func (s *tagService) GetTagInfo(req *protocol.GetTagInfoRequest) (rsp *protocol.
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 11:52:46
-func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error) {
+func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error) {
 	rsp = &protocol.UpdateTagResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
+			logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
+		logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if tag.UserID != req.UserID {
-		logger.Logger.Error("[TagService] no permission to update tag",
+		logger.Error("[TagService] no permission to update tag",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
@@ -160,7 +166,7 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 	}
 
 	if len(updateFields) == 0 {
-		logger.Logger.Warn("[TagService] No fields to update",
+		logger.Warn("[TagService] No fields to update",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("tagID", req.TagID),
 			zap.Any("updateFields", updateFields))
@@ -168,7 +174,7 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 	}
 
 	if err := s.tagDAO.Update(s.db, tag, updateFields); err != nil {
-		logger.Logger.Error("[TagService] Update tag failed",
+		logger.Error("[TagService] Update tag failed",
 			zap.Uint("tagID", req.TagID),
 			zap.Any("updateFields", updateFields),
 			zap.Error(err))
@@ -186,28 +192,29 @@ func (s *tagService) UpdateTag(req *protocol.UpdateTagRequest) (rsp *protocol.Up
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 11:52:48
-func (s *tagService) DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error) {
+func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error) {
 	rsp = &protocol.DeleteTagResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "name", "slug", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
+			logger.Error("[TagService] Tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
+		logger.Error("[TagService] Get tag info failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if tag.UserID != req.UserID {
-		logger.Logger.Error("[TagService] no permission to delete tag",
+		logger.Error("[TagService] no permission to delete tag",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.tagDAO.Delete(s.db, tag); err != nil {
-		logger.Logger.Error("[TagService] Delete tag failed", zap.Uint("tagID", req.TagID), zap.Error(err))
+		logger.Error("[TagService] Delete tag failed", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -222,15 +229,16 @@ func (s *tagService) DeleteTag(req *protocol.DeleteTagRequest) (rsp *protocol.De
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 11:52:50
-func (s *tagService) ListTags(req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error) {
+func (s *tagService) ListTags(ctx context.Context, req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error) {
 	rsp = &protocol.ListTagsResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	tags, pageInfo, err := s.tagDAO.Paginate(s.db,
 		[]string{"id", "slug", "name", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Logger.Error("[TagService] List tags failed", zap.Error(err))
+		logger.Error("[TagService] List tags failed", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 

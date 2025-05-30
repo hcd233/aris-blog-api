@@ -32,15 +32,15 @@ import (
 //	author centonhuang
 //	update 2025-01-05 17:57:43
 type AIService interface {
-	GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error)
-	GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error)
-	ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error)
-	CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error)
-	GenerateContentCompletion(req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error)
-	GenerateArticleSummary(req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error)
-	GenerateArticleTranslation(req *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error)
-	GenerateArticleQA(req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error)
-	GenerateTermExplaination(req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error)
+	GetPrompt(ctx context.Context, req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error)
+	GetLatestPrompt(ctx context.Context, req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error)
+	ListPrompt(ctx context.Context, req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error)
+	CreatePrompt(ctx context.Context, req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error)
+	GenerateContentCompletion(ctx context.Context, req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error)
+	GenerateArticleSummary(ctx context.Context, req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error)
+	GenerateArticleTranslation(ctx context.Context, req *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error)
+	GenerateArticleQA(ctx context.Context, req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error)
+	GenerateTermExplaination(ctx context.Context, req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error)
 }
 
 // NewAIService 创建AI服务
@@ -74,15 +74,17 @@ type aiService struct {
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:02:44
-func (s *aiService) GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error) {
+func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error) {
 	rsp = &protocol.GetPromptResponse{}
+	logger := logger.LoggerWithContext(ctx)
+
 	prompt, err := s.promptDAO.GetPromptByTaskAndVersion(s.db, model.Task(req.TaskName), req.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] prompt not found", zap.String("taskName", req.TaskName), zap.Uint("version", req.Version))
+			logger.Error("[AIService] prompt not found", zap.String("taskName", req.TaskName), zap.Uint("version", req.Version))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get prompt", zap.String("taskName", req.TaskName), zap.Uint("version", req.Version), zap.Error(err))
+		logger.Error("[AIService] failed to get prompt", zap.String("taskName", req.TaskName), zap.Uint("version", req.Version), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -111,16 +113,17 @@ func (s *aiService) GetPrompt(req *protocol.GetPromptRequest) (rsp *protocol.Get
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:02:55
-func (s *aiService) GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error) {
+func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error) {
 	rsp = &protocol.GetLatestPromptResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	prompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.Task(req.TaskName), []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] prompt not found", zap.String("taskName", req.TaskName))
+			logger.Error("[AIService] prompt not found", zap.String("taskName", req.TaskName))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", req.TaskName), zap.Error(err))
+		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -149,8 +152,9 @@ func (s *aiService) GetLatestPrompt(req *protocol.GetLatestPromptRequest) (rsp *
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:02:55
-func (s *aiService) ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error) {
+func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error) {
 	rsp = &protocol.ListPromptResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	prompts, pageInfo, err := s.promptDAO.PaginateByTask(s.db, model.Task(req.TaskName),
 		[]string{"id", "created_at", "task", "version", "templates", "variables"},
@@ -158,7 +162,7 @@ func (s *aiService) ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.L
 		req.PageParam.Page, req.PageParam.PageSize,
 	)
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to list prompt", zap.String("taskName", req.TaskName), zap.Error(err))
+		logger.Error("[AIService] failed to list prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -195,7 +199,10 @@ func (s *aiService) ListPrompt(req *protocol.ListPromptRequest) (rsp *protocol.L
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:03:07
-func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error) {
+func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error) {
+	rsp = &protocol.CreatePromptResponse{}
+	logger := logger.LoggerWithContext(ctx)
+
 	contents := lo.Map(req.Templates, func(tmplate protocol.Template, _ int) string {
 		return tmplate.Content
 	})
@@ -205,13 +212,13 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 	variables := util.ExtractVariablesFromContent(content)
 
 	if len(variables) == 0 {
-		logger.Logger.Error("[AIService] no variables found in the content", zap.String("taskName", req.TaskName), zap.String("content", content))
+		logger.Error("[AIService] no variables found in the content", zap.String("taskName", req.TaskName), zap.String("content", content))
 		return nil, protocol.ErrBadRequest
 	}
 
 	prompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.Task(req.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", req.TaskName), zap.Error(err))
+		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -220,12 +227,12 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 	})
 
 	if latestContent := strings.Join(contents, "\n"); latestContent == content {
-		logger.Logger.Info("[AIService] the content of the new version is the same as the latest version", zap.String("taskName", req.TaskName), zap.Any("templates", req.Templates))
+		logger.Info("[AIService] the content of the new version is the same as the latest version", zap.String("taskName", req.TaskName), zap.Any("templates", req.Templates))
 		return nil, protocol.ErrBadRequest
 	}
 
 	if l, r := lo.Difference(prompt.Variables, variables); prompt.ID != 0 && len(l)+len(r) > 0 {
-		logger.Logger.Info("[AIService] the variables of the latest prompt and the new prompt are mismatch",
+		logger.Info("[AIService] the variables of the latest prompt and the new prompt are mismatch",
 			zap.String("taskName", req.TaskName), zap.Strings("latestVariables", prompt.Variables), zap.Strings("newVariables", variables))
 		return nil, protocol.ErrBadRequest
 	}
@@ -243,7 +250,7 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 	}
 
 	if err = s.promptDAO.Create(s.db, prompt); err != nil {
-		logger.Logger.Error("[AIService] failed to create prompt", zap.String("taskName", req.TaskName), zap.Error(err))
+		logger.Error("[AIService] failed to create prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -258,22 +265,23 @@ func (s *aiService) CreatePrompt(req *protocol.CreatePromptRequest) (rsp *protoc
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:03:15
-func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
+func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
 	rsp = &protocol.GenerateContentCompletionResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
+			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
+		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -285,8 +293,6 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 		}
 	})
 
-	ctx := context.Background()
-
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
@@ -296,7 +302,7 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 		Temperature: &req.Temperature,
 	})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -305,7 +311,7 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 	_ = chain.AppendChatModel(chatOpenAI)
 	runnable, err := chain.Compile(ctx)
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		logger.Error("[AIService] failed to compile chain", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -342,7 +348,7 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 			if errors.Is(err, io.EOF) {
 				return
 			}
-			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			logger.Error("[AIService] failed to stream", zap.Error(err))
 			errChan <- err
 			return
 		}
@@ -354,7 +360,7 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				logger.Error("[AIService] failed to receive stream", zap.Error(err))
 				errChan <- err
 				return
 			}
@@ -379,23 +385,24 @@ func (s *aiService) GenerateContentCompletion(req *protocol.GenerateContentCompl
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:03:21
-func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
+func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
 	rsp = &protocol.GenerateArticleSummaryResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] article not found",
+			logger.Error("[AIService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get article",
+		logger.Error("[AIService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -403,17 +410,17 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 
 	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
+		logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleSummary, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
+			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
+		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -425,8 +432,6 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 		}
 	})
 
-	ctx := context.Background()
-
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
@@ -436,7 +441,7 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 		Temperature: &req.Temperature,
 	})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -445,7 +450,7 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 	_ = chain.AppendChatModel(chatOpenAI)
 	runnable, err := chain.Compile(ctx)
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		logger.Error("[AIService] failed to compile chain", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -483,7 +488,7 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 			if errors.Is(err, io.EOF) {
 				return
 			}
-			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			logger.Error("[AIService] failed to stream", zap.Error(err))
 			errChan <- err
 			return
 		}
@@ -495,7 +500,7 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				logger.Error("[AIService] failed to receive stream", zap.Error(err))
 				errChan <- err
 				return
 			}
@@ -520,7 +525,7 @@ func (s *aiService) GenerateArticleSummary(req *protocol.GenerateArticleSummaryR
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:03:27
-func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error) {
+func (s *aiService) GenerateArticleTranslation(_ context.Context, _ *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error) {
 	// TODO: 实现
 	return nil, protocol.ErrNoImplement
 }
@@ -533,22 +538,24 @@ func (s *aiService) GenerateArticleTranslation(_ *protocol.GenerateArticleTransl
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:03:44
-func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
+func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
 	rsp = &protocol.GenerateArticleQAResponse{}
+	logger := logger.LoggerWithContext(ctx)
+
 	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] article not found",
+			logger.Error("[AIService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get article",
+		logger.Error("[AIService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -557,11 +564,11 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] article version not found",
+			logger.Error("[AIService] article version not found",
 				zap.Uint("articleID", article.ID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get article version",
+		logger.Error("[AIService] failed to get article version",
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -570,11 +577,11 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleQA, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found",
+			logger.Error("[AIService] latest prompt not found",
 				zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt",
+		logger.Error("[AIService] failed to get latest prompt",
 			zap.String("taskName", string(latestPrompt.Task)),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -588,8 +595,6 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 		}
 	})
 
-	ctx := context.Background()
-
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
@@ -599,7 +604,7 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 		Temperature: &req.Temperature,
 	})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -608,7 +613,7 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 	_ = chain.AppendChatModel(chatOpenAI)
 	runnable, err := chain.Compile(ctx)
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		logger.Error("[AIService] failed to compile chain", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -646,7 +651,7 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 			if errors.Is(err, io.EOF) {
 				return
 			}
-			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			logger.Error("[AIService] failed to stream", zap.Error(err))
 			errChan <- err
 			return
 		}
@@ -658,7 +663,7 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				logger.Error("[AIService] failed to receive stream", zap.Error(err))
 				errChan <- err
 				return
 			}
@@ -683,23 +688,24 @@ func (s *aiService) GenerateArticleQA(req *protocol.GenerateArticleQARequest) (r
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 18:03:48
-func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
+func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
 	rsp = &protocol.GenerateTermExplainationResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] article not found",
+			logger.Error("[AIService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get article",
+		logger.Error("[AIService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -708,20 +714,20 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] article version not found", zap.Uint("articleID", article.ID))
+			logger.Error("[AIService] article version not found", zap.Uint("articleID", article.ID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
+		logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskTermExplaination, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
+			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
+		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -733,8 +739,6 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 		}
 	})
 
-	ctx := context.Background()
-
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
@@ -744,7 +748,7 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 		Temperature: &req.Temperature,
 	})
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to create chat openai", zap.Error(err))
+		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -753,7 +757,7 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 	_ = chain.AppendChatModel(chatOpenAI)
 	runnable, err := chain.Compile(ctx)
 	if err != nil {
-		logger.Logger.Error("[AIService] failed to compile chain", zap.Error(err))
+		logger.Error("[AIService] failed to compile chain", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -806,7 +810,7 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 			if errors.Is(err, io.EOF) {
 				return
 			}
-			logger.Logger.Error("[AIService] failed to stream", zap.Error(err))
+			logger.Error("[AIService] failed to stream", zap.Error(err))
 			errChan <- err
 			return
 		}
@@ -817,7 +821,7 @@ func (s *aiService) GenerateTermExplaination(req *protocol.GenerateTermExplainat
 				if errors.Is(err, io.EOF) {
 					return
 				}
-				logger.Logger.Error("[AIService] failed to receive stream", zap.Error(err))
+				logger.Error("[AIService] failed to receive stream", zap.Error(err))
 				errChan <- err
 				return
 			}

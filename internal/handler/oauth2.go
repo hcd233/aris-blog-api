@@ -48,7 +48,7 @@ func NewGithubOauth2Handler() Oauth2Handler {
 func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
 	req := &protocol.LoginRequest{}
 
-	rsp, err := h.svc.Login(req)
+	rsp, err := h.svc.Login(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -84,7 +84,7 @@ func (h *githubOauth2Handler) HandleCallback(c *gin.Context) {
 		State: params.State,
 	}
 
-	rsp, err := h.svc.Callback(req)
+	rsp, err := h.svc.Callback(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

@@ -34,7 +34,7 @@ func initCosClient() {
 
 	_, _ = lo.Must2(cosClient.Bucket.Get(context.Background(), &cos.BucketGetOptions{}))
 
-	logger.Logger.Info("[Object Storage] Connected to COS", zap.String("endpoint", endpoint.String()))
+	logger.Logger().Info("[Object Storage] Connected to COS", zap.String("endpoint", endpoint.String()))
 }
 
 // GetCosClient 获取 COS 客户端

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"sync"
 	"time"
@@ -20,13 +21,13 @@ import (
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type ArticleService interface {
-	CreateArticle(req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error)
-	GetArticleInfo(req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error)
-	GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error)
-	UpdateArticle(req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error)
-	UpdateArticleStatus(req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error)
-	DeleteArticle(req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error)
-	ListArticles(req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error)
+	CreateArticle(ctx context.Context, req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error)
+	GetArticleInfo(ctx context.Context, req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error)
+	GetArticleInfoBySlug(ctx context.Context, req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error)
+	UpdateArticle(ctx context.Context, req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error)
+	UpdateArticleStatus(ctx context.Context, req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error)
+	DeleteArticle(ctx context.Context, req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error)
+	ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error)
 }
 
 type articleService struct {
@@ -62,9 +63,9 @@ func NewArticleService() ArticleService {
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error) {
+func (s *articleService) CreateArticle(ctx context.Context, req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error) {
 	rsp = &protocol.CreateArticleResponse{}
-
+	logger := logger.LoggerWithContext(ctx)
 	tags := []model.Tag{}
 	tagChan, errChan := make(chan *model.Tag, len(req.Tags)), make(chan error, len(req.Tags))
 
@@ -92,10 +93,10 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 	if len(errChan) > 0 {
 		err := <-errChan
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] tag not found", zap.Error(err))
+			logger.Error("[ArticleService] tag not found", zap.Error(err))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get tag", zap.Error(err))
+		logger.Error("[ArticleService] failed to get tag", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -106,11 +107,11 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] category not found",
+			logger.Error("[ArticleService] category not found",
 				zap.Uint("categoryID", req.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[ArticleService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -127,13 +128,13 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 
 	if err := s.articleDAO.Create(s.db, article); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			logger.Logger.Error("[ArticleService] article slug duplicated",
+			logger.Error("[ArticleService] article slug duplicated",
 				zap.Uint("userID", article.UserID),
 				zap.String("title", article.Title),
 				zap.String("slug", article.Slug))
 			return nil, protocol.ErrDataExists
 		}
-		logger.Logger.Error("[ArticleService] failed to create article",
+		logger.Error("[ArticleService] failed to create article",
 			zap.Uint("userID", article.UserID),
 			zap.String("title", article.Title),
 			zap.String("slug", article.Slug),
@@ -167,8 +168,9 @@ func (s *articleService) CreateArticle(req *protocol.CreateArticleRequest) (rsp 
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error) {
+func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error) {
 	rsp = &protocol.GetArticleInfoResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{
 		"id", "slug", "title", "status", "user_id",
@@ -177,11 +179,11 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 	}, []string{"Comments", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] article not found",
+			logger.Error("[ArticleService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get article",
+		logger.Error("[ArticleService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -189,7 +191,7 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 
 	// 如果文章不是公开的，则只有作者本人可以查看
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Error("[ArticleService] no permission to get article",
+		logger.Error("[ArticleService] no permission to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Uint("userID", req.UserID))
 		return nil, protocol.ErrNoPermission
@@ -221,17 +223,18 @@ func (s *articleService) GetArticleInfo(req *protocol.GetArticleInfoRequest) (rs
 //	return err error
 //	author centonhuang
 //	update 2025-01-19 15:23:26
-func (s *articleService) GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error) {
+func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error) {
 	rsp = &protocol.GetArticleInfoBySlugResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	user, err := s.userDAO.GetByName(s.db, req.AuthorName, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] user not found",
+			logger.Error("[ArticleService] user not found",
 				zap.String("authorName", req.AuthorName))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get user",
+		logger.Error("[ArticleService] failed to get user",
 			zap.String("authorName", req.AuthorName),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -244,11 +247,11 @@ func (s *articleService) GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlug
 	}, []string{"Comments", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] article not found",
+			logger.Error("[ArticleService] article not found",
 				zap.String("slug", req.ArticleSlug))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get article",
+		logger.Error("[ArticleService] failed to get article",
 			zap.String("slug", req.ArticleSlug),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -256,7 +259,7 @@ func (s *articleService) GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlug
 
 	// 如果文章不是公开的，则只有作者本人可以查看
 	if article.UserID != user.ID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Error("[ArticleService] no permission to get article",
+		logger.Error("[ArticleService] no permission to get article",
 			zap.String("ArticleSlug", req.ArticleSlug),
 			zap.String("AuthorName", req.AuthorName),
 			zap.Uint("userID", user.ID))
@@ -289,8 +292,9 @@ func (s *articleService) GetArticleInfoBySlug(req *protocol.GetArticleInfoBySlug
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error) {
+func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error) {
 	rsp = &protocol.UpdateArticleResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	updateFields := make(map[string]interface{})
 	if req.UpdatedTitle != "" {
@@ -304,7 +308,7 @@ func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp 
 	}
 
 	if len(updateFields) == 0 {
-		logger.Logger.Warn("[ArticleService] no fields to update",
+		logger.Warn("[ArticleService] no fields to update",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("articleID", req.ArticleID),
 			zap.Any("updateFields", updateFields))
@@ -314,25 +318,25 @@ func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] article not found",
+			logger.Error("[ArticleService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get article",
+		logger.Error("[ArticleService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if article.UserID != req.UserID {
-		logger.Logger.Error("[ArticleService] no permission to update article",
+		logger.Error("[ArticleService] no permission to update article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Uint("userID", req.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.articleDAO.Update(s.db, article, updateFields); err != nil {
-		logger.Logger.Error("[ArticleService] failed to update article",
+		logger.Error("[ArticleService] failed to update article",
 			zap.Uint("articleID", article.ID),
 			zap.Any("updateFields", updateFields),
 			zap.Error(err))
@@ -350,24 +354,25 @@ func (s *articleService) UpdateArticle(req *protocol.UpdateArticleRequest) (rsp 
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
+func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
 	rsp = &protocol.UpdateArticleStatusResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByIDAndUserID(s.db, req.ArticleID, req.UserID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] article not found",
+			logger.Error("[ArticleService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get article",
+		logger.Error("[ArticleService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if article.Status == req.Status {
-		logger.Logger.Warn("[ArticleService] article status not changed",
+		logger.Warn("[ArticleService] article status not changed",
 			zap.Uint("articleID", req.ArticleID),
 			zap.String("status", string(req.Status)))
 		return rsp, nil
@@ -378,7 +383,7 @@ func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRe
 			"status":       req.Status,
 			"published_at": time.Now(),
 		}); err != nil {
-			logger.Logger.Error("[ArticleService] failed to update article status",
+			logger.Error("[ArticleService] failed to update article status",
 				zap.Uint("articleID", article.ID),
 				zap.String("status", string(req.Status)),
 				zap.Error(err))
@@ -389,7 +394,7 @@ func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRe
 			"status":       req.Status,
 			"published_at": nil,
 		}); err != nil {
-			logger.Logger.Error("[ArticleService] failed to update article status",
+			logger.Error("[ArticleService] failed to update article status",
 				zap.Uint("articleID", article.ID),
 				zap.String("status", string(req.Status)),
 				zap.Error(err))
@@ -408,24 +413,25 @@ func (s *articleService) UpdateArticleStatus(req *protocol.UpdateArticleStatusRe
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
+func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
 	rsp = &protocol.DeleteArticleResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByIDAndUserID(s.db, req.ArticleID, req.UserID, []string{"id", "slug"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[ArticleService] article not found",
+			logger.Error("[ArticleService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[ArticleService] failed to get article",
+		logger.Error("[ArticleService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if err := s.articleDAO.Delete(s.db, article); err != nil {
-		logger.Logger.Error("[ArticleService] failed to delete article",
+		logger.Error("[ArticleService] failed to delete article",
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -442,8 +448,9 @@ func (s *articleService) DeleteArticle(req *protocol.DeleteArticleRequest) (rsp 
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
+func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
 	rsp = &protocol.ListArticlesResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	articles, pageInfo, err := s.articleDAO.PaginateByStatus(
 		s.db,
@@ -457,7 +464,7 @@ func (s *articleService) ListArticles(req *protocol.ListArticlesRequest) (rsp *p
 		req.PageParam.Page, req.PageParam.PageSize,
 	)
 	if err != nil {
-		logger.Logger.Error("[ArticleService] failed to paginate articles", zap.Error(err))
+		logger.Error("[ArticleService] failed to paginate articles", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 

@@ -2,11 +2,13 @@
 package logger
 
 import (
+	"context"
 	"os"
 	"path"
 	"strings"
 
 	"github.com/hcd233/aris-blog-api/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -15,13 +17,28 @@ import (
 // Logger undefined 全局日志
 //
 //	update 2024-09-16 12:47:59
-var Logger *zap.Logger
+var defaultLogger *zap.Logger
 
 const (
-	infoLogFile = "aris-blog-api.log"
-	errLogFile  = "aris-blog-api-error.log"
+	infoLogFile  = "aris-blog-api.log"
+	errLogFile   = "aris-blog-api-error.log"
 	panicLogFile = "aris-blog-api-panic.log"
 )
+
+func Logger() *zap.Logger {
+	return defaultLogger
+}
+
+func LoggerWithContext(ctx context.Context) *zap.Logger {
+	logger := defaultLogger
+	if traceID := ctx.Value(constant.CtxKeyTraceID); traceID != nil {
+		logger = logger.With(zap.String(constant.CtxKeyTraceID, traceID.(string)))
+	}
+	if userID := ctx.Value(constant.CtxKeyUserID); userID != nil {
+		logger = logger.With(zap.String(constant.CtxKeyUserID, userID.(string)))
+	}
+	return logger
+}
 
 func init() {
 	var (
@@ -88,5 +105,5 @@ func init() {
 		zapcore.NewCore(zapcore.NewConsoleEncoder(cfg.EncoderConfig), zapcore.NewMultiWriteSyncer(panicFileWriter), zapLevelMapping["PANIC"]),
 	)
 
-	Logger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapLevelMapping["PANIC"]))
+	defaultLogger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapLevelMapping["PANIC"]))
 }
