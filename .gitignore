@@ -1,5 +1,8 @@
-__debug*
+# files
 *.env
 *.log
 *.*rules
-*.vscode
+__debug*
+
+# dirs
+.vscode
