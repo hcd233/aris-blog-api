@@ -17,9 +17,9 @@ var migrateDatabaseCmd = &cobra.Command{
 	Use:   "migrate",
 	Short: "迁移数据库",
 	Long:  `执行数据库迁移操作，将数据库结构更新到最新的模式。`,
-	Run: func(_ *cobra.Command, _ []string) {
+	Run: func(cmd *cobra.Command, _ []string) {
 		database.InitDatabase()
-		db := database.GetDBInstance()
+		db := database.GetDBInstance(cmd.Context())
 		lo.Must0(db.AutoMigrate(model.Models...))
 	},
 }

@@ -50,7 +50,6 @@ type AIService interface {
 //	update 2025-01-05 17:57:43
 func NewAIService() AIService {
 	return &aiService{
-		db:                database.GetDBInstance(),
 		userDAO:           dao.GetUserDAO(),
 		articleDAO:        dao.GetArticleDAO(),
 		articleVersionDAO: dao.GetArticleVersionDAO(),
@@ -59,7 +58,6 @@ func NewAIService() AIService {
 }
 
 type aiService struct {
-	db                *gorm.DB
 	userDAO           *dao.UserDAO
 	articleDAO        *dao.ArticleDAO
 	articleVersionDAO *dao.ArticleVersionDAO
@@ -76,9 +74,11 @@ type aiService struct {
 //	update 2025-01-05 18:02:44
 func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error) {
 	rsp = &protocol.GetPromptResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	prompt, err := s.promptDAO.GetPromptByTaskAndVersion(s.db, model.Task(req.TaskName), req.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	prompt, err := s.promptDAO.GetPromptByTaskAndVersion(db, model.Task(req.TaskName), req.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] prompt not found", zap.String("taskName", req.TaskName), zap.Uint("version", req.Version))
@@ -115,9 +115,11 @@ func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptReques
 //	update 2025-01-05 18:02:55
 func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error) {
 	rsp = &protocol.GetLatestPromptResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	prompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.Task(req.TaskName), []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	prompt, err := s.promptDAO.GetLatestPromptByTask(db, model.Task(req.TaskName), []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] prompt not found", zap.String("taskName", req.TaskName))
@@ -154,9 +156,11 @@ func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatest
 //	update 2025-01-05 18:02:55
 func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error) {
 	rsp = &protocol.ListPromptResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	prompts, pageInfo, err := s.promptDAO.PaginateByTask(s.db, model.Task(req.TaskName),
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	prompts, pageInfo, err := s.promptDAO.PaginateByTask(db, model.Task(req.TaskName),
 		[]string{"id", "created_at", "task", "version", "templates", "variables"},
 		[]string{},
 		req.PageParam.Page, req.PageParam.PageSize,
@@ -201,7 +205,9 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 //	update 2025-01-05 18:03:07
 func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error) {
 	rsp = &protocol.CreatePromptResponse{}
+
 	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
 
 	contents := lo.Map(req.Templates, func(tmplate protocol.Template, _ int) string {
 		return tmplate.Content
@@ -216,7 +222,7 @@ func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePrompt
 		return nil, protocol.ErrBadRequest
 	}
 
-	prompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.Task(req.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
+	prompt, err := s.promptDAO.GetLatestPromptByTask(db, model.Task(req.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -249,7 +255,7 @@ func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePrompt
 		Version:   prompt.Version + 1,
 	}
 
-	if err = s.promptDAO.Create(s.db, prompt); err != nil {
+	if err = s.promptDAO.Create(db, prompt); err != nil {
 		logger.Error("[AIService] failed to create prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -267,15 +273,17 @@ func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePrompt
 //	update 2025-01-05 18:03:15
 func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
 	rsp = &protocol.GenerateContentCompletionResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskContentCompletion, []string{"id", "task", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(db, model.TaskContentCompletion, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
@@ -369,7 +377,7 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 		}
 	}()
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(s.userDAO.Update(db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
 	rsp.TokenChan = tokenChan
 	rsp.ErrChan = errChan
@@ -387,15 +395,17 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 //	update 2025-01-05 18:03:21
 func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
 	rsp = &protocol.GenerateArticleSummaryResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] article not found",
@@ -408,13 +418,13 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 		return nil, protocol.ErrInternalError
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleSummary, []string{"id", "task", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(db, model.TaskArticleSummary, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
@@ -509,7 +519,7 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 		}
 	}()
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(s.userDAO.Update(db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
 	rsp.TokenChan = tokenChan
 	rsp.ErrChan = errChan
@@ -540,15 +550,17 @@ func (s *aiService) GenerateArticleTranslation(_ context.Context, _ *protocol.Ge
 //	update 2025-01-05 18:03:44
 func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
 	rsp = &protocol.GenerateArticleQAResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] article not found",
@@ -561,7 +573,7 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 		return nil, protocol.ErrInternalError
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] article version not found",
@@ -574,7 +586,7 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 		return nil, protocol.ErrInternalError
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskArticleQA, []string{"id", "task", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(db, model.TaskArticleQA, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] latest prompt not found",
@@ -672,7 +684,7 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 		}
 	}()
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(s.userDAO.Update(db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
 	rsp.TokenChan = tokenChan
 	rsp.ErrChan = errChan
@@ -690,15 +702,17 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 //	update 2025-01-05 18:03:48
 func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
 	rsp = &protocol.GenerateTermExplainationResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(s.db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] article not found",
@@ -711,7 +725,7 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 		return nil, protocol.ErrInternalError
 	}
 
-	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(s.db, article.ID, []string{"id", "content"}, []string{})
+	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] article version not found", zap.Uint("articleID", article.ID))
@@ -721,7 +735,7 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 		return nil, protocol.ErrInternalError
 	}
 
-	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(s.db, model.TaskTermExplaination, []string{"id", "task", "templates"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(db, model.TaskTermExplaination, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
@@ -830,7 +844,7 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 		}
 	}()
 
-	lo.Must0(s.userDAO.Update(s.db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
+	lo.Must0(s.userDAO.Update(db, user, map[string]interface{}{"llm_quota": user.LLMQuota - 1}))
 
 	rsp.TokenChan = tokenChan
 	rsp.ErrChan = errChan
