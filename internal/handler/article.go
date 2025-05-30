@@ -46,7 +46,7 @@ func NewArticleHandler() ArticleHandler {
 //	@Produce		json
 //	@Param			body	body		protocol.CreateArticleBody	true	"创建文章请求"
 //	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteTagResponse,error=nil}
+//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateArticleResponse,error=nil}
 //	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}

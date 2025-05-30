@@ -1302,7 +1302,7 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/protocol.DeleteTagResponse"
+                                            "$ref": "#/definitions/protocol.CreateArticleResponse"
                                         },
                                         "error": {
                                             "type": "object"
@@ -7617,6 +7617,14 @@ const docTemplate = `{
             "properties": {
                 "comment": {
                     "$ref": "#/definitions/protocol.Comment"
+                }
+            }
+        },
+        "protocol.CreateArticleResponse": {
+            "type": "object",
+            "properties": {
+                "article": {
+                    "$ref": "#/definitions/protocol.Article"
                 }
             }
         },
