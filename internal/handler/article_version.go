@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -46,7 +47,7 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
 
@@ -56,7 +57,7 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 		Content:   body.Content,
 	}
 
-	rsp, err := h.svc.CreateArticleVersion(req)
+	rsp, err := h.svc.CreateArticleVersion(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -80,7 +81,7 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleVersionURI)
 
 	req := &protocol.GetArticleVersionInfoRequest{
@@ -89,7 +90,7 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 		VersionID: uri.Version,
 	}
 
-	rsp, err := h.svc.GetArticleVersionInfo(req)
+	rsp, err := h.svc.GetArticleVersionInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -113,7 +114,7 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	req := &protocol.GetLatestArticleVersionInfoRequest{
@@ -121,7 +122,7 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context
 		ArticleID: uri.ArticleID,
 	}
 
-	rsp, err := h.svc.GetLatestArticleVersionInfo(req)
+	rsp, err := h.svc.GetLatestArticleVersionInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -146,7 +147,7 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleListArticleVersions(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -156,7 +157,7 @@ func (h *articleVersionHandler) HandleListArticleVersions(c *gin.Context) {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListArticleVersions(req)
+	rsp, err := h.svc.ListArticleVersions(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

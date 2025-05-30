@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -56,7 +57,7 @@ func NewArticleHandler() ArticleHandler {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	body := c.MustGet("body").(*protocol.CreateArticleBody)
 
 	req := &protocol.CreateArticleRequest{
@@ -67,7 +68,7 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 		Tags:       body.Tags,
 	}
 
-	rsp, err := h.svc.CreateArticle(req)
+	rsp, err := h.svc.CreateArticle(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -92,7 +93,7 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	req := &protocol.GetArticleInfoRequest{
@@ -100,7 +101,7 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 		ArticleID: uri.ArticleID,
 	}
 
-	rsp, err := h.svc.GetArticleInfo(req)
+	rsp, err := h.svc.GetArticleInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -125,7 +126,7 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-19 15:23:26
 func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
 
 	req := &protocol.GetArticleInfoBySlugRequest{
@@ -134,7 +135,7 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
 		ArticleSlug: uri.ArticleSlug,
 	}
 
-	rsp, err := h.svc.GetArticleInfoBySlug(req)
+	rsp, err := h.svc.GetArticleInfoBySlug(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -160,7 +161,7 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleBody)
 
@@ -172,7 +173,7 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 		UpdatedCategoryID: body.CategoryID,
 	}
 
-	rsp, err := h.svc.UpdateArticle(req)
+	rsp, err := h.svc.UpdateArticle(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -198,7 +199,7 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
 
@@ -208,7 +209,7 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 		Status:    body.Status,
 	}
 
-	rsp, err := h.svc.UpdateArticleStatus(req)
+	rsp, err := h.svc.UpdateArticleStatus(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -233,7 +234,7 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 
 	req := &protocol.DeleteArticleRequest{
@@ -241,7 +242,7 @@ func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 		ArticleID: uri.ArticleID,
 	}
 
-	rsp, err := h.svc.DeleteArticle(req)
+	rsp, err := h.svc.DeleteArticle(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -272,7 +273,7 @@ func (h *articleHandler) HandleListArticles(c *gin.Context) {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListArticles(req)
+	rsp, err := h.svc.ListArticles(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

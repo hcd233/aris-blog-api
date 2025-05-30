@@ -52,7 +52,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 				fields = append(fields, zap.String("key", key), zap.String("value", c.GetString(key)))
 			}
 
-			logger.Logger.Error("[RateLimiterMiddleware] rate limit reached", fields...)
+			logger.LoggerWithContext(c).Error("[RateLimiterMiddleware] rate limit reached", fields...)
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
 		}),
 		mgin.WithKeyGetter(func(c *gin.Context) string {

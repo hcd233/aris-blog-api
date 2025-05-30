@@ -40,5 +40,5 @@ func InitCache() {
 
 	_ = lo.Must1(rdb.Ping(context.Background()).Result())
 
-	logger.Logger.Info("[Cache] Connected to Redis database", zap.String("host", config.RedisHost), zap.String("port", config.RedisPort), zap.Int("db", redisDB))
+	logger.Logger().Info("[Cache] Connected to Redis database", zap.String("host", config.RedisHost), zap.String("port", config.RedisPort), zap.Int("db", redisDB))
 }

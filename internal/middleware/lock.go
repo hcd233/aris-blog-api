@@ -35,7 +35,7 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) gin.Hand
 
 		success, err := redis.SetNX(ctx, lockKey, lockValue, expire).Result()
 		if err != nil {
-			logger.Logger.Error("[RedisLockMiddleware] failed to get lock", zap.Error(err))
+			logger.LoggerWithContext(c).Error("[RedisLockMiddleware] failed to get lock", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 			c.Abort()
 			return
@@ -44,12 +44,12 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) gin.Hand
 		if !success {
 			lockValue, err = redis.Get(ctx, lockKey).Result()
 			if err != nil {
-				logger.Logger.Error("[RedisLockMiddleware] failed to get lock info", zap.String("lockKey", lockKey), zap.Error(err))
+				logger.LoggerWithContext(c).Error("[RedisLockMiddleware] failed to get lock info", zap.String("lockKey", lockKey), zap.Error(err))
 				util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 				c.Abort()
 				return
 			}
-			logger.Logger.Info("[RedisLockMiddleware] resource is locked", zap.String("lockKey", lockKey), zap.String("lockValue", lockValue))
+			logger.LoggerWithContext(c).Info("[RedisLockMiddleware] resource is locked", zap.String("lockKey", lockKey), zap.String("lockValue", lockValue))
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
 			c.Abort()
 			return
@@ -65,7 +65,7 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) gin.Hand
 			end
 		`
 		if err := redis.Eval(context.Background(), luaScript, []string{lockKey}, lockValue).Err(); err != nil {
-			logger.Logger.Error("[RedisLockMiddleware] failed to release lock", zap.String("lockKey", lockKey), zap.Error(err))
+			logger.LoggerWithContext(c).Error("[RedisLockMiddleware] failed to release lock", zap.String("lockKey", lockKey), zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 			c.Abort()
 			return

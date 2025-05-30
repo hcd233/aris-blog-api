@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -43,7 +44,7 @@ func NewCommentHandler() CommentHandler {
 //	@Router /v1/comment [post]
 //	receiver h *commentHandler
 func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	body := c.MustGet("body").(*protocol.CreateArticleCommentBody)
 
 	req := &protocol.CreateArticleCommentRequest{
@@ -53,7 +54,7 @@ func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
 		ReplyTo:   body.ReplyTo,
 	}
 
-	rsp, err := h.svc.CreateArticleComment(req)
+	rsp, err := h.svc.CreateArticleComment(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -74,7 +75,7 @@ func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/comment/{commentID} [delete]
 func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.CommentURI)
 
 	req := &protocol.DeleteCommentRequest{
@@ -82,7 +83,7 @@ func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 		CommentID: uri.CommentID,
 	}
 
-	rsp, err := h.svc.DeleteComment(req)
+	rsp, err := h.svc.DeleteComment(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -104,7 +105,7 @@ func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/comment/article/{articleID}/list [get]
 func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.ArticleURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -114,7 +115,7 @@ func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListArticleComments(req)
+	rsp, err := h.svc.ListArticleComments(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -136,7 +137,7 @@ func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/comment/{commentID}/subComments [get]
 func (h *commentHandler) HandleListChildrenComments(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet("uri").(*protocol.CommentURI)
 	param := c.MustGet("param").(*protocol.PageParam)
 
@@ -146,7 +147,7 @@ func (h *commentHandler) HandleListChildrenComments(c *gin.Context) {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListChildrenComments(req)
+	rsp, err := h.svc.ListChildrenComments(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

@@ -30,7 +30,7 @@ func JwtMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		tokenString := c.GetHeader("Authorization")
 		if tokenString == "" {
-			logger.Logger.Error("[JwtMiddleware] token is empty")
+			logger.LoggerWithContext(c).Error("[JwtMiddleware] token is empty")
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
 			c.Abort()
 			return
@@ -38,7 +38,7 @@ func JwtMiddleware() gin.HandlerFunc {
 
 		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
-			logger.Logger.Error("[JwtMiddleware] failed to decode token", zap.Error(err))
+			logger.LoggerWithContext(c).Error("[JwtMiddleware] failed to decode token", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
 			c.Abort()
 			return
@@ -47,10 +47,10 @@ func JwtMiddleware() gin.HandlerFunc {
 		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"}, []string{})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				logger.Logger.Error("[JwtMiddleware] user not found", zap.Uint("userID", userID))
+				logger.LoggerWithContext(c).Error("[JwtMiddleware] user not found", zap.Uint("userID", userID))
 				util.SendHTTPResponse(c, nil, protocol.ErrDataNotExists)
 			} else {
-				logger.Logger.Error("[JwtMiddleware] failed to get user", zap.Uint("userID", userID), zap.Error(err))
+				logger.LoggerWithContext(c).Error("[JwtMiddleware] failed to get user", zap.Uint("userID", userID), zap.Error(err))
 				util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 			}
 			c.Abort()
