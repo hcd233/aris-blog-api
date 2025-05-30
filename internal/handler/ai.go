@@ -61,7 +61,7 @@ func NewAIHandler() AIHandler {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.PromptVersionURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.PromptVersionURI)
 
 	req := &protocol.GetPromptRequest{
 		TaskName: string(uri.TaskName),
@@ -92,7 +92,7 @@ func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.TaskURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.GetLatestPromptRequest{
 		TaskName: string(uri.TaskName),
@@ -123,8 +123,8 @@ func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleListPrompt(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.PageParam)
-	uri := c.MustGet("uri").(*protocol.TaskURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.ListPromptRequest{
 		TaskName:  string(uri.TaskName),
@@ -156,8 +156,8 @@ func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.TaskURI)
-	body := c.MustGet("body").(*protocol.CreatePromptBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreatePromptBody)
 
 	req := &protocol.CreatePromptRequest{
 		TaskName:  string(uri.TaskName),
@@ -189,7 +189,7 @@ func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.GenerateContentCompletionBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateContentCompletionBody)
 
 	req := &protocol.GenerateContentCompletionRequest{
 		UserID:      userID,
@@ -228,7 +228,7 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.GenerateArticleSummaryBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateArticleSummaryBody)
 
 	req := &protocol.GenerateArticleSummaryRequest{
 		UserID:      userID,
@@ -296,7 +296,7 @@ func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.GenerateArticleQABody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateArticleQABody)
 
 	req := &protocol.GenerateArticleQARequest{
 		UserID:      userID,
@@ -334,7 +334,7 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.GenerateTermExplainationBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateTermExplainationBody)
 
 	req := &protocol.GenerateTermExplainationRequest{
 		UserID:      userID,

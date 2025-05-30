@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -47,7 +48,7 @@ func NewTokenHandler() TokenHandler {
 //	author centonhuang
 //	update 2025-01-04 15:56:10
 func (h *tokenHandler) HandleRefreshToken(c *gin.Context) {
-	body := c.MustGet("body").(*protocol.RefreshTokenBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.RefreshTokenBody)
 
 	req := &protocol.RefreshTokenRequest{
 		RefreshToken: body.RefreshToken,

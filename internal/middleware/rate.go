@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/cache"
@@ -56,7 +57,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
 		}),
 		mgin.WithKeyGetter(func(c *gin.Context) string {
-			return c.MustGet("limiter").(string)
+			return c.MustGet(constant.CtxKeyLimiter).(string)
 		}),
 	)
 
@@ -70,7 +71,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 		}
 
 		// 设置限频 key
-		c.Set("limiter", fmt.Sprintf("%s:%v", key, value))
+		c.Set(constant.CtxKeyLimiter, fmt.Sprintf("%s:%v", key, value))
 
 		// 应用限频中间件
 		middleware(c)

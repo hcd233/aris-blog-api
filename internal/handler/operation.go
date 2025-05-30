@@ -47,7 +47,7 @@ func NewOperationHandler() OperationHandler {
 //	update 2024-10-01 05:09:47
 func (h *operationHandler) HandleUserLikeArticle(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.LikeArticleBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LikeArticleBody)
 
 	req := &protocol.LikeArticleRequest{
 		UserID:    userID,
@@ -77,7 +77,7 @@ func (h *operationHandler) HandleUserLikeArticle(c *gin.Context) {
 //	@Router			/v1/operation/like/comment [post]
 func (h *operationHandler) HandleUserLikeComment(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.LikeCommentBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LikeCommentBody)
 
 	req := &protocol.LikeCommentRequest{
 		UserID:    userID,
@@ -107,7 +107,7 @@ func (h *operationHandler) HandleUserLikeComment(c *gin.Context) {
 //	@Router			/v1/operation/like/tag [post]
 func (h *operationHandler) HandleUserLikeTag(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.LikeTagBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LikeTagBody)
 
 	req := &protocol.LikeTagRequest{
 		UserID: userID,
@@ -137,7 +137,7 @@ func (h *operationHandler) HandleUserLikeTag(c *gin.Context) {
 //	@Router			/v1/operation/view/article [post]
 func (h *operationHandler) HandleLogUserViewArticle(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.LogUserViewArticleBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LogUserViewArticleBody)
 
 	req := &protocol.LogArticleViewRequest{
 		UserID:    userID,

@@ -63,7 +63,7 @@ func NewAssetHandler() AssetHandler {
 //	update 2024-11-03 06:45:42
 func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	param := c.MustGet("param").(*protocol.PageParam)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeArticlesRequest{
 		UserID:    userID,
@@ -95,7 +95,7 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 //	update 2024-11-03 06:47:41
 func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	param := c.MustGet("param").(*protocol.PageParam)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeCommentsRequest{
 		UserID:    userID,
@@ -127,7 +127,7 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 //	update 2024-11-03 06:47:43
 func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	param := c.MustGet("param").(*protocol.PageParam)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeTagsRequest{
 		UserID:    userID,
@@ -241,8 +241,8 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleGetImage(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ObjectURI)
-	param := c.MustGet("param").(*protocol.ImageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ObjectURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.ImageParam)
 
 	req := &protocol.GetImageRequest{
 		UserID:    userID,
@@ -280,7 +280,7 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ObjectURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ObjectURI)
 
 	req := &protocol.DeleteImageRequest{
 		UserID:    userID,
@@ -312,7 +312,7 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 //	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	pageParam := c.MustGet("param").(*protocol.PageParam)
+	pageParam := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserViewArticlesRequest{
 		UserID:    userID,
@@ -344,7 +344,7 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 //	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ViewURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ViewURI)
 
 	req := &protocol.DeleteUserViewRequest{
 		UserID: userID,

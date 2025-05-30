@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/hcd233/aris-blog-api/internal/auth"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
@@ -56,9 +57,9 @@ func JwtMiddleware() gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-		c.Set("userID", user.ID)
-		c.Set("userName", user.Name)
-		c.Set("permission", user.Permission)
+		c.Set(constant.CtxKeyUserID, user.ID)
+		c.Set(constant.CtxKeyUserName, user.Name)
+		c.Set(constant.CtxKeyPermission, user.Permission)
 		c.Next()
 	}
 }
