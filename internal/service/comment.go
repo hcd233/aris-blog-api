@@ -24,7 +24,6 @@ type CommentService interface {
 }
 
 type commentService struct {
-	db         *gorm.DB
 	userDAO    *dao.UserDAO
 	articleDAO *dao.ArticleDAO
 	commentDAO *dao.CommentDAO
@@ -33,7 +32,6 @@ type commentService struct {
 // NewCommentService 创建评论服务
 func NewCommentService() CommentService {
 	return &commentService{
-		db:         database.GetDBInstance(),
 		userDAO:    dao.GetUserDAO(),
 		articleDAO: dao.GetArticleDAO(),
 		commentDAO: dao.GetCommentDAO(),
@@ -43,9 +41,11 @@ func NewCommentService() CommentService {
 // CreateArticleComment 创建文章评论
 func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error) {
 	rsp = &protocol.CreateArticleCommentResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByIDAndStatus(s.db, req.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByIDAndStatus(db, req.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CommentService] article not found",
@@ -60,7 +60,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 
 	var parent *model.Comment
 	if req.ReplyTo != 0 {
-		parent, err = s.commentDAO.GetByID(s.db, req.ReplyTo, []string{"id", "article_id"}, []string{})
+		parent, err = s.commentDAO.GetByID(db, req.ReplyTo, []string{"id", "article_id"}, []string{})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
 				logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.ReplyTo))
@@ -85,7 +85,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 		Content:   req.Content,
 	}
 
-	if err := s.commentDAO.Create(s.db, comment); err != nil {
+	if err := s.commentDAO.Create(db, comment); err != nil {
 		logger.Error("[CommentService] failed to create comment",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("articleID", article.ID),
@@ -107,9 +107,11 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 // DeleteComment 删除评论
 func (s *commentService) DeleteComment(ctx context.Context, req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error) {
 	rsp = &protocol.DeleteCommentResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	comment, err := s.commentDAO.GetByID(s.db, req.CommentID, []string{"id", "user_id", "article_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	comment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "user_id", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CommentService] comment not found",
@@ -122,7 +124,7 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 		return nil, protocol.ErrInternalError
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, comment.ArticleID, []string{"id", "user_id"}, []string{})
+	article, err := s.articleDAO.GetByID(db, comment.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		logger.Error("[CommentService] failed to get article",
 			zap.Uint("articleID", comment.ArticleID),
@@ -138,7 +140,7 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 		return nil, protocol.ErrNoPermission
 	}
 
-	if err := s.commentDAO.DeleteReclusiveByID(s.db, comment.ID, []string{"id"}, []string{}); err != nil {
+	if err := s.commentDAO.DeleteReclusiveByID(db, comment.ID, []string{"id"}, []string{}); err != nil {
 		logger.Error("[CommentService] failed to delete comment",
 			zap.Uint("commentID", comment.ID),
 			zap.Error(err))
@@ -151,9 +153,11 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 // ListArticleComments 列出文章评论
 func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error) {
 	rsp = &protocol.ListArticleCommentsResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CommentService] article not found",
@@ -173,7 +177,7 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 		return nil, protocol.ErrNoPermission
 	}
 
-	comments, pageInfo, err := s.commentDAO.PaginateRootsByArticleID(s.db, article.ID, []string{"id", "content", "created_at", "user_id", "likes"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	comments, pageInfo, err := s.commentDAO.PaginateRootsByArticleID(db, article.ID, []string{"id", "content", "created_at", "user_id", "likes"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
 		logger.Error("[CommentService] failed to paginate article comments",
 			zap.Uint("articleID", article.ID),
@@ -204,9 +208,11 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 // ListChildrenComments 列出子评论
 func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error) {
 	rsp = &protocol.ListChildrenCommentsResponse{}
-	logger := logger.LoggerWithContext(ctx)
 
-	parentComment, err := s.commentDAO.GetByID(s.db, req.CommentID, []string{"id", "article_id"}, []string{})
+	logger := logger.LoggerWithContext(ctx)
+	db := database.GetDBInstance(ctx)
+
+	parentComment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.CommentID))
@@ -216,7 +222,7 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 		return nil, protocol.ErrInternalError
 	}
 
-	article, err := s.articleDAO.GetByID(s.db, parentComment.ArticleID, []string{"id", "user_id", "status"}, []string{})
+	article, err := s.articleDAO.GetByID(db, parentComment.ArticleID, []string{"id", "user_id", "status"}, []string{})
 	if err != nil {
 		logger.Error("[CommentService] failed to get article", zap.Uint("articleID", parentComment.ArticleID), zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -229,7 +235,7 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 		return nil, protocol.ErrNoPermission
 	}
 
-	comments, pageInfo, err := s.commentDAO.PaginateChildren(s.db, parentComment,
+	comments, pageInfo, err := s.commentDAO.PaginateChildren(db, parentComment,
 		[]string{"id", "content", "created_at", "likes", "user_id", "parent_id"},
 		[]string{},
 		req.PageParam.Page, req.PageParam.PageSize)
