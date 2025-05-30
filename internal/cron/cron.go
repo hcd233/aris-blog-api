@@ -18,7 +18,7 @@ func InitCronJobs() {
 	quotaCron := NewQuotaCron()
 	quotaCron.Start()
 
-	logger.Logger.Info("[Cron] Init cron jobs")
+	logger.Logger().Info("[Cron] Init cron jobs")
 }
 
 type cronLoggerAdapter struct {

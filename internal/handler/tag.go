@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -53,8 +54,8 @@ func NewTagHandler() TagHandler {
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 func (h *tagHandler) HandleCreateTag(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.CreateTagBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateTagBody)
 
 	req := protocol.CreateTagRequest{
 		UserID:      userID,
@@ -63,7 +64,7 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.CreateTag(&req)
+	rsp, err := h.svc.CreateTag(c, &req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -87,13 +88,13 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.TagURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
 
 	req := &protocol.GetTagInfoRequest{
 		TagID: uri.TagID,
 	}
 
-	rsp, err := h.svc.GetTagInfo(req)
+	rsp, err := h.svc.GetTagInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -119,9 +120,9 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:55:16
 func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.TagURI)
-	body := c.MustGet("body").(*protocol.UpdateTagBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateTagBody)
 
 	req := &protocol.UpdateTagRequest{
 		UserID:      userID,
@@ -131,7 +132,7 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.UpdateTag(req)
+	rsp, err := h.svc.UpdateTag(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -155,15 +156,15 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:55:24
 func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.TagURI)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
 
 	req := &protocol.DeleteTagRequest{
 		UserID: userID,
 		TagID:  uri.TagID,
 	}
 
-	rsp, err := h.svc.DeleteTag(req)
+	rsp, err := h.svc.DeleteTag(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -187,13 +188,13 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:55:31
 func (h *tagHandler) HandleListTags(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.PageParam)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListTagsRequest{
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListTags(req)
+	rsp, err := h.svc.ListTags(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

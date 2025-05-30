@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -15,10 +16,10 @@ import (
 
 // OperationService 用户操作服务
 type OperationService interface {
-	LikeArticle(req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error)
-	LikeComment(req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error)
-	LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error)
-	LogArticleView(req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error)
+	LikeArticle(ctx context.Context, req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error)
+	LikeComment(ctx context.Context, req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error)
+	LikeTag(ctx context.Context, req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error)
+	LogArticleView(ctx context.Context, req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error)
 }
 
 type operationService struct {
@@ -45,17 +46,18 @@ func NewOperationService() OperationService {
 }
 
 // LikeArticle 点赞文章
-func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error) {
+func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error) {
 	rsp = &protocol.LikeArticleResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] article not found",
+			logger.Error("[OperationService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[OperationService] failed to get article",
+		logger.Error("[OperationService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -63,7 +65,7 @@ func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *p
 
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
 	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Info("[OperationService] no permission to like article",
+		logger.Info("[OperationService] no permission to like article",
 			zap.Uint("userID", req.UserID),
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
@@ -86,7 +88,7 @@ func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *p
 
 	if req.Undo {
 		if err = s.transactUndoLikeArticle(tx, article, userLike); err != nil {
-			logger.Logger.Error("[OperationService] failed to undo like article",
+			logger.Error("[OperationService] failed to undo like article",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
@@ -94,7 +96,7 @@ func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *p
 		}
 	} else {
 		if err = s.transactLikeArticle(tx, article, userLike); err != nil {
-			logger.Logger.Error("[OperationService] failed to like article",
+			logger.Error("[OperationService] failed to like article",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
@@ -106,32 +108,33 @@ func (s *operationService) LikeArticle(req *protocol.LikeArticleRequest) (rsp *p
 }
 
 // LikeComment 点赞评论
-func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error) {
+func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error) {
 	rsp = &protocol.LikeCommentResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	comment, err := s.commentDAO.GetByID(s.db, req.CommentID, []string{"id", "likes", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] comment not found", zap.Uint("commentID", req.CommentID))
+			logger.Error("[OperationService] comment not found", zap.Uint("commentID", req.CommentID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[OperationService] failed to get comment", zap.Uint("commentID", req.CommentID), zap.Error(err))
+		logger.Error("[OperationService] failed to get comment", zap.Uint("commentID", req.CommentID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	article, err := s.articleDAO.GetByID(s.db, comment.ArticleID, []string{"id", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] article not found", zap.Uint("articleID", comment.ArticleID))
+			logger.Error("[OperationService] article not found", zap.Uint("articleID", comment.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[OperationService] failed to get article", zap.Uint("articleID", comment.ArticleID), zap.Error(err))
+		logger.Error("[OperationService] failed to get article", zap.Uint("articleID", comment.ArticleID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
 	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Info("[OperationService] no permission to like comment",
+		logger.Info("[OperationService] no permission to like comment",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("articleID", article.ID),
 			zap.String("articleStatus", string(article.Status)))
@@ -155,7 +158,7 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 
 	if req.Undo {
 		if err = s.transactUndoLikeComment(tx, comment, userLike); err != nil {
-			logger.Logger.Error("[OperationService] failed to undo like comment",
+			logger.Error("[OperationService] failed to undo like comment",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("commentID", comment.ID),
 				zap.Error(err))
@@ -163,7 +166,7 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 		}
 	} else {
 		if err = s.transactLikeComment(tx, comment, userLike); err != nil {
-			logger.Logger.Error("[OperationService] failed to like comment",
+			logger.Error("[OperationService] failed to like comment",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("commentID", comment.ID),
 				zap.Error(err))
@@ -175,16 +178,17 @@ func (s *operationService) LikeComment(req *protocol.LikeCommentRequest) (rsp *p
 }
 
 // LikeTag 点赞标签
-func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error) {
+func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error) {
 	rsp = &protocol.LikeTagResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	tag, err := s.tagDAO.GetByID(s.db, req.TagID, []string{"id", "likes"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] tag not found", zap.Uint("tagID", req.TagID))
+			logger.Error("[OperationService] tag not found", zap.Uint("tagID", req.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[OperationService] failed to get tag", zap.Uint("tagID", req.TagID), zap.Error(err))
+		logger.Error("[OperationService] failed to get tag", zap.Uint("tagID", req.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -205,7 +209,7 @@ func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.
 
 	if req.Undo {
 		if err = s.transactUndoLikeTag(tx, tag, userLike); err != nil {
-			logger.Logger.Error("[OperationService] failed to undo like tag",
+			logger.Error("[OperationService] failed to undo like tag",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("tagID", tag.ID),
 				zap.Error(err))
@@ -213,7 +217,7 @@ func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.
 		}
 	} else {
 		if err = s.transactLikeTag(tx, tag, userLike); err != nil {
-			logger.Logger.Error("[OperationService] failed to like tag",
+			logger.Error("[OperationService] failed to like tag",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("tagID", tag.ID),
 				zap.Error(err))
@@ -225,17 +229,18 @@ func (s *operationService) LikeTag(req *protocol.LikeTagRequest) (rsp *protocol.
 }
 
 // LogArticleView 记录文章浏览
-func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error) {
+func (s *operationService) LogArticleView(ctx context.Context, req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error) {
 	rsp = &protocol.LogArticleViewResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[OperationService] article not found",
+			logger.Error("[OperationService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[OperationService] failed to get article",
+		logger.Error("[OperationService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -243,7 +248,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许浏览
 	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Info("[OperationService] no permission to view article",
+		logger.Info("[OperationService] no permission to view article",
 			zap.Uint("userID", req.UserID),
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
@@ -251,7 +256,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 
 	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(s.db, req.UserID, article.ID, []string{"id", "created_at", "progress"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Logger.Error("[OperationService] failed to get user view",
+		logger.Error("[OperationService] failed to get user view",
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -259,7 +264,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 
 	if userView.ID == 0 || userView.Progress >= 95 {
 		if req.Progress != 0 {
-			logger.Logger.Error("[OperationService] invalid progress",
+			logger.Error("[OperationService] invalid progress",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Int8("progress", req.Progress))
@@ -274,7 +279,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 		}
 
 		if err = s.userViewDAO.Create(s.db, userView); err != nil {
-			logger.Logger.Error("[OperationService] failed to create user view",
+			logger.Error("[OperationService] failed to create user view",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
@@ -282,7 +287,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 		}
 	} else {
 		if req.Progress-userView.Progress < 5 {
-			logger.Logger.Info("[OperationService] log view too frequently",
+			logger.Info("[OperationService] log view too frequently",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Int8("lastProgress", userView.Progress),
@@ -294,7 +299,7 @@ func (s *operationService) LogArticleView(req *protocol.LogArticleViewRequest) (
 			"progress":       req.Progress,
 			"last_viewed_at": time.Now(),
 		}); err != nil {
-			logger.Logger.Error("[OperationService] failed to update user view",
+			logger.Error("[OperationService] failed to update user view",
 				zap.Uint("userID", req.UserID),
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))

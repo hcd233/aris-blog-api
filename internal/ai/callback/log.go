@@ -101,6 +101,6 @@ func (l *logCallbackHandler) OnError(ctx context.Context, runInfo *callbacks.Run
 //	@update 2025-02-09 22:10:02
 func NewLogCallbackHandler() callbacks.Handler {
 	return &logCallbackHandler{
-		logger: logger.Logger,
+		logger: logger.Logger(),
 	}
 }

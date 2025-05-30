@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	"go.uber.org/zap"
 )
 
@@ -13,13 +14,15 @@ import (
 //	return gin.HandlerFunc
 //	author centonhuang
 //	update 2025-01-05 21:21:46
-func LogMiddleware(logger *zap.Logger) gin.HandlerFunc {
+func LogMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		path := c.Request.URL.Path
 		query := c.Request.URL.RawQuery
 
 		c.Next()
+
+		logger := logger.LoggerWithContext(c)
 
 		latency := time.Since(start)
 

@@ -26,18 +26,19 @@ var createBucketCmd = &cobra.Command{
 	Short: "创建桶",
 	Long:  `创建桶。`,
 	Run: func(_ *cobra.Command, _ []string) {
+		logger := logger.Logger()
 		storage.InitObjectStorage()
 
 		imageObjDAO := objdao.GetImageObjDAO()
 		lo.Must0(imageObjDAO.CreateBucket())
 
-		logger.Logger.Info("[Object Storage] Bucket created",
+		logger.Info("[Object Storage] Bucket created",
 			zap.String("bucket", imageObjDAO.GetBucketName()))
 
 		thumbnailObjDAO := objdao.GetThumbnailObjDAO()
 		lo.Must0(thumbnailObjDAO.CreateBucket())
 
-		logger.Logger.Info("[Object Storage] Bucket created",
+		logger.Info("[Object Storage] Bucket created",
 			zap.String("bucket", thumbnailObjDAO.GetBucketName()))
 	},
 }

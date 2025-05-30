@@ -25,7 +25,7 @@ type QuotaCron struct {
 func NewQuotaCron() Cron {
 	return &QuotaCron{
 		cron: cron.New(
-			cron.WithLogger(newCronLoggerAdapter("QuotaCron", logger.Logger)),
+			cron.WithLogger(newCronLoggerAdapter("QuotaCron", logger.Logger())),
 		),
 		db:      database.GetDBInstance(),
 		userDAO: dao.GetUserDAO(),
@@ -40,9 +40,10 @@ func (c *QuotaCron) Start() {
 }
 
 func (c *QuotaCron) deliverQuotas() {
+	logger := logger.Logger()
 	users, pageInfo, err := c.userDAO.Paginate(c.db, []string{"id", "permission", "llm_quota"}, []string{}, 2, -1)
 	if err != nil {
-		logger.Logger.Error("[QuotaCron] deliverQuotas get users error", zap.Error(err))
+		logger.Error("[QuotaCron] deliverQuotas get users error", zap.Error(err))
 		return
 	}
 	permissionIDMapping := map[model.Permission][]uint{
@@ -54,7 +55,7 @@ func (c *QuotaCron) deliverQuotas() {
 	for _, user := range *users {
 		permissionIDMapping[user.Permission] = append(permissionIDMapping[user.Permission], user.ID)
 	}
-	logger.Logger.Info(
+	logger.Info(
 		"[QuotaCron] deliverQuotas stats",
 		zap.Int64("total", pageInfo.Total),
 		zap.Int("reader", len(permissionIDMapping[model.PermissionReader])),
@@ -66,10 +67,10 @@ func (c *QuotaCron) deliverQuotas() {
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			logger.Logger.Error("[QuotaCron] deliverQuotas panic", zap.Error(fmt.Errorf("panic occurred: %v", r)))
+			logger.Error("[QuotaCron] deliverQuotas panic", zap.Error(fmt.Errorf("panic occurred: %v", r)))
 		} else if err != nil {
 			tx.Rollback()
-			logger.Logger.Error("[QuotaCron] deliverQuotas transaction error", zap.Error(err))
+			logger.Error("[QuotaCron] deliverQuotas transaction error", zap.Error(err))
 		} else {
 			tx.Commit()
 		}
@@ -83,5 +84,5 @@ func (c *QuotaCron) deliverQuotas() {
 		}
 	}
 
-	logger.Logger.Info("[QuotaCron] deliverQuotas success")
+	logger.Info("[QuotaCron] deliverQuotas success")
 }

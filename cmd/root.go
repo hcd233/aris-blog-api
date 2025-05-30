@@ -24,7 +24,7 @@ func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
 		msg := fmt.Sprintf("[Command] failed to execute command: %v", err)
-		logger.Logger.Error(msg)
+		logger.Logger().Error(msg)
 		os.Exit(1)
 	}
 }

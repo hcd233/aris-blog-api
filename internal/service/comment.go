@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -16,10 +17,10 @@ import (
 
 // CommentService 评论服务
 type CommentService interface {
-	CreateArticleComment(req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error)
-	DeleteComment(req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error)
-	ListArticleComments(req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error)
-	ListChildrenComments(req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error)
+	CreateArticleComment(ctx context.Context, req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error)
+	DeleteComment(ctx context.Context, req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error)
+	ListArticleComments(ctx context.Context, req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error)
+	ListChildrenComments(ctx context.Context, req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error)
 }
 
 type commentService struct {
@@ -40,17 +41,18 @@ func NewCommentService() CommentService {
 }
 
 // CreateArticleComment 创建文章评论
-func (s *commentService) CreateArticleComment(req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error) {
+func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error) {
 	rsp = &protocol.CreateArticleCommentResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByIDAndStatus(s.db, req.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CommentService] article not found",
+			logger.Error("[CommentService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CommentService] failed to get article",
+		logger.Error("[CommentService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -61,15 +63,15 @@ func (s *commentService) CreateArticleComment(req *protocol.CreateArticleComment
 		parent, err = s.commentDAO.GetByID(s.db, req.ReplyTo, []string{"id", "article_id"}, []string{})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				logger.Logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.ReplyTo))
+				logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.ReplyTo))
 				return nil, protocol.ErrDataNotExists
 			}
-			logger.Logger.Error("[CommentService] failed to get parent comment", zap.Uint("commentID", req.ReplyTo), zap.Error(err))
+			logger.Error("[CommentService] failed to get parent comment", zap.Uint("commentID", req.ReplyTo), zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
 
 		if parent.ArticleID != article.ID {
-			logger.Logger.Info("[CommentService] parent comment not belong to article",
+			logger.Info("[CommentService] parent comment not belong to article",
 				zap.Uint("commentID", req.ReplyTo),
 				zap.Uint("articleID", article.ID))
 			return nil, protocol.ErrBadRequest
@@ -84,7 +86,7 @@ func (s *commentService) CreateArticleComment(req *protocol.CreateArticleComment
 	}
 
 	if err := s.commentDAO.Create(s.db, comment); err != nil {
-		logger.Logger.Error("[CommentService] failed to create comment",
+		logger.Error("[CommentService] failed to create comment",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
@@ -103,17 +105,18 @@ func (s *commentService) CreateArticleComment(req *protocol.CreateArticleComment
 }
 
 // DeleteComment 删除评论
-func (s *commentService) DeleteComment(req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error) {
+func (s *commentService) DeleteComment(ctx context.Context, req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error) {
 	rsp = &protocol.DeleteCommentResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	comment, err := s.commentDAO.GetByID(s.db, req.CommentID, []string{"id", "user_id", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CommentService] comment not found",
+			logger.Error("[CommentService] comment not found",
 				zap.Uint("commentID", req.CommentID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CommentService] failed to get comment",
+		logger.Error("[CommentService] failed to get comment",
 			zap.Uint("commentID", req.CommentID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -121,7 +124,7 @@ func (s *commentService) DeleteComment(req *protocol.DeleteCommentRequest) (rsp 
 
 	article, err := s.articleDAO.GetByID(s.db, comment.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
-		logger.Logger.Error("[CommentService] failed to get article",
+		logger.Error("[CommentService] failed to get article",
 			zap.Uint("articleID", comment.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -129,14 +132,14 @@ func (s *commentService) DeleteComment(req *protocol.DeleteCommentRequest) (rsp 
 
 	// 只有文章作者和评论作者可以删除评论
 	if article.UserID != req.UserID && comment.UserID != req.UserID {
-		logger.Logger.Error("[CommentService] no permission to delete comment",
+		logger.Error("[CommentService] no permission to delete comment",
 			zap.Uint("commentUserID", comment.UserID),
 			zap.Uint("userID", req.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.commentDAO.DeleteReclusiveByID(s.db, comment.ID, []string{"id"}, []string{}); err != nil {
-		logger.Logger.Error("[CommentService] failed to delete comment",
+		logger.Error("[CommentService] failed to delete comment",
 			zap.Uint("commentID", comment.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -146,24 +149,25 @@ func (s *commentService) DeleteComment(req *protocol.DeleteCommentRequest) (rsp 
 }
 
 // ListArticleComments 列出文章评论
-func (s *commentService) ListArticleComments(req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error) {
+func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error) {
 	rsp = &protocol.ListArticleCommentsResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	article, err := s.articleDAO.GetByID(s.db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CommentService] article not found",
+			logger.Error("[CommentService] article not found",
 				zap.Uint("articleID", req.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CommentService] failed to get article",
+		logger.Error("[CommentService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Error("[CommentService] no permission to list article comments",
+		logger.Error("[CommentService] no permission to list article comments",
 			zap.Uint("articleUserID", article.UserID),
 			zap.Uint("userID", req.UserID))
 		return nil, protocol.ErrNoPermission
@@ -171,7 +175,7 @@ func (s *commentService) ListArticleComments(req *protocol.ListArticleCommentsRe
 
 	comments, pageInfo, err := s.commentDAO.PaginateRootsByArticleID(s.db, article.ID, []string{"id", "content", "created_at", "user_id", "likes"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Logger.Error("[CommentService] failed to paginate article comments",
+		logger.Error("[CommentService] failed to paginate article comments",
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -198,27 +202,28 @@ func (s *commentService) ListArticleComments(req *protocol.ListArticleCommentsRe
 }
 
 // ListChildrenComments 列出子评论
-func (s *commentService) ListChildrenComments(req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error) {
+func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error) {
 	rsp = &protocol.ListChildrenCommentsResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	parentComment, err := s.commentDAO.GetByID(s.db, req.CommentID, []string{"id", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.CommentID))
+			logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.CommentID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CommentService] failed to get parent comment", zap.Uint("commentID", req.CommentID), zap.Error(err))
+		logger.Error("[CommentService] failed to get parent comment", zap.Uint("commentID", req.CommentID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	article, err := s.articleDAO.GetByID(s.db, parentComment.ArticleID, []string{"id", "user_id", "status"}, []string{})
 	if err != nil {
-		logger.Logger.Error("[CommentService] failed to get article", zap.Uint("articleID", parentComment.ArticleID), zap.Error(err))
+		logger.Error("[CommentService] failed to get article", zap.Uint("articleID", parentComment.ArticleID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
-		logger.Logger.Error("[CommentService] no permission to list children comments",
+		logger.Error("[CommentService] no permission to list children comments",
 			zap.Uint("articleUserID", article.UserID),
 			zap.Uint("userID", req.UserID))
 		return nil, protocol.ErrNoPermission
@@ -229,7 +234,7 @@ func (s *commentService) ListChildrenComments(req *protocol.ListChildrenComments
 		[]string{},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Logger.Error("[CommentService] failed to paginate children comments",
+		logger.Error("[CommentService] failed to paginate children comments",
 			zap.Uint("parentID", parentComment.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -55,8 +56,8 @@ func NewCategoryHandler() CategoryHandler {
 //	author centonhuang
 //	update 2024-09-28 07:03:28
 func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.CreateCategoryBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateCategoryBody)
 
 	req := &protocol.CreateCategoryRequest{
 		UserID:   userID,
@@ -64,7 +65,7 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 		ParentID: body.ParentID,
 	}
 
-	rsp, err := h.svc.CreateCategory(req)
+	rsp, err := h.svc.CreateCategory(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -88,15 +89,15 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-01 04:58:27
 func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
 	req := &protocol.GetCategoryInfoRequest{
 		UserID:     userID,
 		CategoryID: uri.CategoryID,
 	}
 
-	rsp, err := h.svc.GetCategoryInfo(req)
+	rsp, err := h.svc.GetCategoryInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -119,12 +120,12 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-23 03:56:26
 func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	req := &protocol.GetRootCategoryRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetRootCategory(req)
+	rsp, err := h.svc.GetRootCategory(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -149,8 +150,8 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 03:45:55
 func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
 
 	req := &protocol.UpdateCategoryRequest{
 		CategoryID: uri.CategoryID,
@@ -158,7 +159,7 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 		ParentID:   body.ParentID,
 	}
 
-	rsp, err := h.svc.UpdateCategory(req)
+	rsp, err := h.svc.UpdateCategory(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -182,15 +183,15 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 04:55:08
 func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
 
 	req := &protocol.DeleteCategoryRequest{
 		UserID:     userID,
 		CategoryID: uri.CategoryID,
 	}
 
-	rsp, err := h.svc.DeleteCategory(req)
+	rsp, err := h.svc.DeleteCategory(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -215,9 +216,9 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-01 05:09:47
 func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenCategoriesRequest{
 		UserID:     userID,
@@ -225,7 +226,7 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListChildrenCategories(req)
+	rsp, err := h.svc.ListChildrenCategories(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -250,9 +251,9 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 01:38:12
 func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenArticlesRequest{
 		UserID:     userID,
@@ -260,7 +261,7 @@ func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
 		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListChildrenArticles(req)
+	rsp, err := h.svc.ListChildrenArticles(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

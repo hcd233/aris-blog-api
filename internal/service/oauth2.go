@@ -2,11 +2,11 @@ package service
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"strconv"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/hcd233/aris-blog-api/internal/auth"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -30,13 +30,27 @@ const (
 
 var githubUserScopes = []string{"user:email", "repo", "read:org"}
 
+// GithubUserInfo Github用户信息结构体
+type GithubUserInfo struct {
+	ID        int64  `json:"id"`
+	Login     string `json:"login"`
+	Email     string `json:"email"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+// GithubEmail Github邮箱信息结构体
+type GithubEmail struct {
+	Email   string `json:"email"`
+	Primary bool   `json:"primary"`
+}
+
 // Oauth2Service OAuth2服务
 //
 //	author centonhuang
 //	update 2025-01-05 13:43:22
 type Oauth2Service interface {
-	Login(req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error)
-	Callback(req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error)
+	Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error)
+	Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error)
 }
 
 type githubOauth2Service struct {
@@ -79,13 +93,14 @@ func NewGithubOauth2Service() Oauth2Service {
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 14:23:26
-func (s *githubOauth2Service) Login(*protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
+func (s *githubOauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
 	rsp = &protocol.LoginResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	url := s.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
 	rsp.RedirectURL = url
 
-	logger.Logger.Info("[Oauth2Service] login", zap.String("redirectURL", url))
+	logger.Info("[Oauth2Service] login", zap.String("redirectURL", url))
 
 	return rsp, nil
 }
@@ -98,11 +113,12 @@ func (s *githubOauth2Service) Login(*protocol.LoginRequest) (rsp *protocol.Login
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 14:23:26
-func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
+func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
 	rsp = &protocol.CallbackResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	if req.State != config.Oauth2StateString {
-		logger.Logger.Error("[Oauth2Service] invalid state",
+		logger.Error("[Oauth2Service] invalid state",
 			zap.String("state", req.State),
 			zap.String("expectedState", config.Oauth2StateString))
 		return nil, protocol.ErrUnauthorized
@@ -110,22 +126,22 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 
 	token, err := s.oauth2Config.Exchange(context.Background(), req.Code)
 	if err != nil {
-		logger.Logger.Error("[Oauth2Service] failed to exchange token", zap.Error(err))
+		logger.Error("[Oauth2Service] failed to exchange token", zap.Error(err))
 		return nil, protocol.ErrUnauthorized
 	}
 
-	data, err := s.getGithubUserInfo(token)
+	userInfo, err := s.getGithubUserInfo(token)
 	if err != nil {
-		logger.Logger.Error("[Oauth2Service] failed to get github user info", zap.Error(err))
+		logger.Error("[Oauth2Service] failed to get github user info", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	githubID := strconv.FormatFloat(data["id"].(float64), 'f', -1, 64)
-	userName, email, avatar := data["login"].(string), data["email"].(string), data["avatar_url"].(string)
+	githubID := strconv.FormatInt(userInfo.ID, 10)
+	userName, email, avatar := userInfo.Login, userInfo.Email, userInfo.AvatarURL
 
 	user, err := s.userDAO.GetByEmail(s.db, email, []string{"id", "name", "avatar"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Logger.Error("[Oauth2Service] failed to get user by email",
+		logger.Error("[Oauth2Service] failed to get user by email",
 			zap.String("email", email),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -136,7 +152,7 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 		if err := s.userDAO.Update(s.db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}); err != nil {
-			logger.Logger.Error("[Oauth2Service] failed to update user login time",
+			logger.Error("[Oauth2Service] failed to update user login time",
 				zap.Uint("userID", user.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -159,7 +175,7 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 		}
 
 		if err := s.userDAO.Create(s.db, user); err != nil {
-			logger.Logger.Error("[Oauth2Service] failed to create user",
+			logger.Error("[Oauth2Service] failed to create user",
 				zap.String("userName", userName),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -167,21 +183,21 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 
 		_, err = s.imageObjDAO.CreateDir(user.ID)
 		if err != nil {
-			logger.Logger.Error("[Oauth2Service] failed to create image dir",
+			logger.Error("[Oauth2Service] failed to create image dir",
 				zap.Uint("userID", user.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
-		logger.Logger.Info("[Oauth2Service] image dir created",
+		logger.Info("[Oauth2Service] image dir created",
 			zap.Uint("userID", user.ID))
 		_, err = s.thumbnailObjDAO.CreateDir(user.ID)
 		if err != nil {
-			logger.Logger.Error("[Oauth2Service] failed to create thumbnail dir",
+			logger.Error("[Oauth2Service] failed to create thumbnail dir",
 				zap.Uint("userID", user.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
-		logger.Logger.Info("[Oauth2Service] thumbnail dir created",
+		logger.Info("[Oauth2Service] thumbnail dir created",
 			zap.Uint("userID", user.ID))
 	}
 
@@ -189,7 +205,7 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 		if err := s.userDAO.Update(s.db, user, map[string]interface{}{
 			"github_bind_id": githubID,
 		}); err != nil {
-			logger.Logger.Error("[Oauth2Service] failed to update github bind id",
+			logger.Error("[Oauth2Service] failed to update github bind id",
 				zap.Uint("userID", user.ID),
 				zap.String("githubID", githubID),
 				zap.Error(err))
@@ -199,7 +215,7 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
 	if err != nil {
-		logger.Logger.Error("[Oauth2Service] failed to encode access token",
+		logger.Error("[Oauth2Service] failed to encode access token",
 			zap.Uint("userID", user.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -207,7 +223,7 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
 	if err != nil {
-		logger.Logger.Error("[Oauth2Service] failed to encode refresh token",
+		logger.Error("[Oauth2Service] failed to encode refresh token",
 			zap.Uint("userID", user.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -223,11 +239,11 @@ func (s *githubOauth2Service) Callback(req *protocol.CallbackRequest) (rsp *prot
 //
 //	receiver s *oauth2Service
 //	param token *oauth2.Token
-//	return map[string]interface{}
+//	return *GithubUserInfo
 //	return error
 //	author centonhuang
 //	update 2025-01-05 14:23:26
-func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (map[string]interface{}, error) {
+func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (*GithubUserInfo, error) {
 	client := s.oauth2Config.Client(context.Background(), token)
 
 	// 获取用户基本信息
@@ -237,8 +253,8 @@ func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (map[string
 	}
 	defer resp.Body.Close()
 
-	var data map[string]interface{}
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
+	var userInfo GithubUserInfo
+	if err := sonic.ConfigDefault.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
 		return nil, err
 	}
 
@@ -249,18 +265,18 @@ func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (map[string
 	}
 	defer emailResp.Body.Close()
 
-	var emails []map[string]interface{}
-	if err := json.NewDecoder(emailResp.Body).Decode(&emails); err != nil {
+	var emails []GithubEmail
+	if err := sonic.ConfigDefault.NewDecoder(emailResp.Body).Decode(&emails); err != nil {
 		return nil, err
 	}
 
 	// 选择主邮箱
 	for _, email := range emails {
-		if email["primary"].(bool) {
-			data["email"] = email["email"]
+		if email.Primary {
+			userInfo.Email = email.Email
 			break
 		}
 	}
 
-	return data, nil
+	return &userInfo, nil
 }
