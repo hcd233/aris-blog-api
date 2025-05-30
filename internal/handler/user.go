@@ -81,7 +81,7 @@ func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:56:30
 func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.UserURI)
 
 	req := &protocol.GetUserInfoRequest{
 		UserID: uri.UserID,
@@ -112,7 +112,7 @@ func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
 //	update 2025-01-04 15:56:40
 func (h *userHandler) HandleUpdateInfo(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.UpdateUserBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateUserBody)
 
 	req := &protocol.UpdateUserInfoRequest{
 		UserID:          userID,

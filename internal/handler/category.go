@@ -57,7 +57,7 @@ func NewCategoryHandler() CategoryHandler {
 //	update 2024-09-28 07:03:28
 func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.CreateCategoryBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateCategoryBody)
 
 	req := &protocol.CreateCategoryRequest{
 		UserID:   userID,
@@ -91,7 +91,7 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
 
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
 	req := &protocol.GetCategoryInfoRequest{
 		UserID:     userID,
 		CategoryID: uri.CategoryID,
@@ -150,8 +150,8 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 03:45:55
 func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	body := c.MustGet("body").(*protocol.UpdateCategoryBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
 
 	req := &protocol.UpdateCategoryRequest{
 		CategoryID: uri.CategoryID,
@@ -184,7 +184,7 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 //	update 2024-10-02 04:55:08
 func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
 
 	req := &protocol.DeleteCategoryRequest{
 		UserID:     userID,
@@ -217,8 +217,8 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 //	update 2024-10-01 05:09:47
 func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenCategoriesRequest{
 		UserID:     userID,
@@ -252,8 +252,8 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 //	update 2024-10-02 01:38:12
 func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.CategoryURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenArticlesRequest{
 		UserID:     userID,

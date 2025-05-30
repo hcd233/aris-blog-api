@@ -58,7 +58,7 @@ func NewArticleHandler() ArticleHandler {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.CreateArticleBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateArticleBody)
 
 	req := &protocol.CreateArticleRequest{
 		UserID:     userID,
@@ -94,7 +94,7 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.GetArticleInfoRequest{
 		UserID:    userID,
@@ -127,7 +127,7 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 //	update 2025-01-19 15:23:26
 func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleSlugURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleSlugURI)
 
 	req := &protocol.GetArticleInfoBySlugRequest{
 		UserID:      userID,
@@ -162,8 +162,8 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
-	body := c.MustGet("body").(*protocol.UpdateArticleBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateArticleBody)
 
 	req := &protocol.UpdateArticleRequest{
 		UserID:            userID,
@@ -200,8 +200,8 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
-	body := c.MustGet("body").(*protocol.UpdateArticleStatusBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateArticleStatusBody)
 
 	req := &protocol.UpdateArticleStatusRequest{
 		UserID:    userID,
@@ -235,7 +235,7 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.DeleteArticleRequest{
 		UserID:    userID,
@@ -267,7 +267,7 @@ func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleListArticles(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.PageParam)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListArticlesRequest{
 		PageParam: param,

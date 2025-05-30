@@ -48,8 +48,8 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
-	body := c.MustGet("body").(*protocol.CreateArticleVersionBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateArticleVersionBody)
 
 	req := &protocol.CreateArticleVersionRequest{
 		UserID:    userID,
@@ -82,7 +82,7 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleVersionURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleVersionURI)
 
 	req := &protocol.GetArticleVersionInfoRequest{
 		UserID:    userID,
@@ -115,7 +115,7 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.GetLatestArticleVersionInfoRequest{
 		UserID:    userID,
@@ -148,8 +148,8 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleListArticleVersions(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListArticleVersionsRequest{
 		UserID:    userID,

@@ -55,7 +55,7 @@ func NewTagHandler() TagHandler {
 //	update 2025-01-04 15:52:48
 func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.CreateTagBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateTagBody)
 
 	req := protocol.CreateTagRequest{
 		UserID:      userID,
@@ -88,7 +88,7 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.TagURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
 
 	req := &protocol.GetTagInfoRequest{
 		TagID: uri.TagID,
@@ -121,8 +121,8 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	update 2025-01-04 15:55:16
 func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.TagURI)
-	body := c.MustGet("body").(*protocol.UpdateTagBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateTagBody)
 
 	req := &protocol.UpdateTagRequest{
 		UserID:      userID,
@@ -157,7 +157,7 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 //	update 2025-01-04 15:55:24
 func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.TagURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
 
 	req := &protocol.DeleteTagRequest{
 		UserID: userID,
@@ -188,7 +188,7 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:55:31
 func (h *tagHandler) HandleListTags(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.PageParam)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListTagsRequest{
 		PageParam: param,

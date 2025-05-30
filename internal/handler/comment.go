@@ -45,7 +45,7 @@ func NewCommentHandler() CommentHandler {
 //	receiver h *commentHandler
 func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet("body").(*protocol.CreateArticleCommentBody)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateArticleCommentBody)
 
 	req := &protocol.CreateArticleCommentRequest{
 		UserID:    userID,
@@ -76,7 +76,7 @@ func (h *commentHandler) HandleCreateArticleComment(c *gin.Context) {
 //	@Router /v1/comment/{commentID} [delete]
 func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.CommentURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CommentURI)
 
 	req := &protocol.DeleteCommentRequest{
 		UserID:    userID,
@@ -106,8 +106,8 @@ func (h *commentHandler) HandleDeleteComment(c *gin.Context) {
 //	@Router /v1/comment/article/{articleID}/list [get]
 func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.ArticleURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListArticleCommentsRequest{
 		UserID:    userID,
@@ -138,8 +138,8 @@ func (h *commentHandler) HandleListArticleComments(c *gin.Context) {
 //	@Router /v1/comment/{commentID}/subComments [get]
 func (h *commentHandler) HandleListChildrenComments(c *gin.Context) {
 	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet("uri").(*protocol.CommentURI)
-	param := c.MustGet("param").(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CommentURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenCommentsRequest{
 		UserID:    userID,
