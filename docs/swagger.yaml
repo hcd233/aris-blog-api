@@ -124,6 +124,11 @@ definitions:
       comment:
         $ref: '#/definitions/protocol.Comment'
     type: object
+  protocol.CreateArticleResponse:
+    properties:
+      article:
+        $ref: '#/definitions/protocol.Article'
+    type: object
   protocol.CreateArticleVersionBody:
     properties:
       content:
@@ -1400,7 +1405,7 @@ paths:
             - $ref: '#/definitions/protocol.HTTPResponse'
             - properties:
                 data:
-                  $ref: '#/definitions/protocol.DeleteTagResponse'
+                  $ref: '#/definitions/protocol.CreateArticleResponse'
                 error:
                   type: object
               type: object
