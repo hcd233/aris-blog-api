@@ -47,7 +47,7 @@ func InitDatabase() {
 			DryRun:         false, // 只生成SQL不运行
 			TranslateError: true,
 			Logger: &GormLoggerAdapter{
-				ZapLogger: logger.Logger,
+				ZapLogger: logger.Logger(),
 				LogLevel:  gormlogger.Info, // Info级别
 			},
 		}))
@@ -58,7 +58,7 @@ func InitDatabase() {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(5 * time.Hour)
 
-	logger.Logger.Info("[Database] Connected to MySQL database", zap.String("host", config.MysqlHost), zap.String("port", config.MysqlPort), zap.String("database", config.MysqlDatabase))
+	logger.Logger().Info("[Database] Connected to MySQL database", zap.String("host", config.MysqlHost), zap.String("port", config.MysqlPort), zap.String("database", config.MysqlDatabase))
 }
 
 // GormLoggerAdapter 实现gorm的logger接口,使用zap输出SQL日志

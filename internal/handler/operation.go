@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -45,8 +46,8 @@ func NewOperationHandler() OperationHandler {
 //	author centonhuang
 //	update 2024-10-01 05:09:47
 func (h *operationHandler) HandleUserLikeArticle(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.LikeArticleBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LikeArticleBody)
 
 	req := &protocol.LikeArticleRequest{
 		UserID:    userID,
@@ -54,7 +55,7 @@ func (h *operationHandler) HandleUserLikeArticle(c *gin.Context) {
 		Undo:      body.Undo,
 	}
 
-	rsp, err := h.svc.LikeArticle(req)
+	rsp, err := h.svc.LikeArticle(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -75,8 +76,8 @@ func (h *operationHandler) HandleUserLikeArticle(c *gin.Context) {
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/operation/like/comment [post]
 func (h *operationHandler) HandleUserLikeComment(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.LikeCommentBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LikeCommentBody)
 
 	req := &protocol.LikeCommentRequest{
 		UserID:    userID,
@@ -84,7 +85,7 @@ func (h *operationHandler) HandleUserLikeComment(c *gin.Context) {
 		Undo:      body.Undo,
 	}
 
-	rsp, err := h.svc.LikeComment(req)
+	rsp, err := h.svc.LikeComment(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -105,8 +106,8 @@ func (h *operationHandler) HandleUserLikeComment(c *gin.Context) {
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/operation/like/tag [post]
 func (h *operationHandler) HandleUserLikeTag(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.LikeTagBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LikeTagBody)
 
 	req := &protocol.LikeTagRequest{
 		UserID: userID,
@@ -114,7 +115,7 @@ func (h *operationHandler) HandleUserLikeTag(c *gin.Context) {
 		Undo:   body.Undo,
 	}
 
-	rsp, err := h.svc.LikeTag(req)
+	rsp, err := h.svc.LikeTag(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -135,8 +136,8 @@ func (h *operationHandler) HandleUserLikeTag(c *gin.Context) {
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/operation/view/article [post]
 func (h *operationHandler) HandleLogUserViewArticle(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.LogUserViewArticleBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.LogUserViewArticleBody)
 
 	req := &protocol.LogArticleViewRequest{
 		UserID:    userID,
@@ -144,7 +145,7 @@ func (h *operationHandler) HandleLogUserViewArticle(c *gin.Context) {
 		Progress:  body.Progress,
 	}
 
-	rsp, err := h.svc.LogArticleView(req)
+	rsp, err := h.svc.LogArticleView(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

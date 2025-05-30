@@ -5,6 +5,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -60,14 +61,14 @@ func NewAIHandler() AIHandler {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.PromptVersionURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.PromptVersionURI)
 
 	req := &protocol.GetPromptRequest{
 		TaskName: string(uri.TaskName),
 		Version:  uri.Version,
 	}
 
-	rsp, err := h.svc.GetPrompt(req)
+	rsp, err := h.svc.GetPrompt(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -91,13 +92,13 @@ func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.TaskURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.GetLatestPromptRequest{
 		TaskName: string(uri.TaskName),
 	}
 
-	rsp, err := h.svc.GetLatestPrompt(req)
+	rsp, err := h.svc.GetLatestPrompt(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -122,15 +123,15 @@ func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleListPrompt(c *gin.Context) {
-	param := c.MustGet("param").(*protocol.PageParam)
-	uri := c.MustGet("uri").(*protocol.TaskURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.ListPromptRequest{
 		TaskName:  string(uri.TaskName),
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListPrompt(req)
+	rsp, err := h.svc.ListPrompt(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -155,15 +156,15 @@ func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.TaskURI)
-	body := c.MustGet("body").(*protocol.CreatePromptBody)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreatePromptBody)
 
 	req := &protocol.CreatePromptRequest{
 		TaskName:  string(uri.TaskName),
 		Templates: body.Templates,
 	}
 
-	rsp, err := h.svc.CreatePrompt(req)
+	rsp, err := h.svc.CreatePrompt(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -187,8 +188,8 @@ func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.GenerateContentCompletionBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateContentCompletionBody)
 
 	req := &protocol.GenerateContentCompletionRequest{
 		UserID:      userID,
@@ -198,7 +199,7 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateContentCompletion(req)
+	rsp, err := h.svc.GenerateContentCompletion(c, req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return
@@ -226,8 +227,8 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.GenerateArticleSummaryBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateArticleSummaryBody)
 
 	req := &protocol.GenerateArticleSummaryRequest{
 		UserID:      userID,
@@ -236,7 +237,7 @@ func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateArticleSummary(req)
+	rsp, err := h.svc.GenerateArticleSummary(c, req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return
@@ -266,7 +267,7 @@ func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
 	// TODO: 实现
 	req := &protocol.GenerateArticleTranslationRequest{}
 
-	rsp, err := h.svc.GenerateArticleTranslation(req)
+	rsp, err := h.svc.GenerateArticleTranslation(c, req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return
@@ -294,8 +295,8 @@ func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.GenerateArticleQABody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateArticleQABody)
 
 	req := &protocol.GenerateArticleQARequest{
 		UserID:      userID,
@@ -304,7 +305,7 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateArticleQA(req)
+	rsp, err := h.svc.GenerateArticleQA(c, req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return
@@ -332,8 +333,8 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.GenerateTermExplainationBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateTermExplainationBody)
 
 	req := &protocol.GenerateTermExplainationRequest{
 		UserID:      userID,
@@ -343,7 +344,7 @@ func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateTermExplaination(req)
+	rsp, err := h.svc.GenerateTermExplaination(c, req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return

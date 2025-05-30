@@ -2,6 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -50,13 +51,13 @@ func NewUserHandler() UserHandler {
 //	author centonhuang
 //	update 2025-01-04 15:56:30
 func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 
-	req := protocol.GetCurUserInfoRequest{
+	req := &protocol.GetCurUserInfoRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetCurUserInfo(&req)
+	rsp, err := h.svc.GetCurUserInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -80,13 +81,13 @@ func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:56:30
 func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
-	uri := c.MustGet("uri").(*protocol.UserURI)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.UserURI)
 
 	req := &protocol.GetUserInfoRequest{
 		UserID: uri.UserID,
 	}
 
-	rsp, err := h.svc.GetUserInfo(req)
+	rsp, err := h.svc.GetUserInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -110,15 +111,15 @@ func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:56:40
 func (h *userHandler) HandleUpdateInfo(c *gin.Context) {
-	userID := c.GetUint("userID")
-	body := c.MustGet("body").(*protocol.UpdateUserBody)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateUserBody)
 
 	req := &protocol.UpdateUserInfoRequest{
 		UserID:          userID,
 		UpdatedUserName: body.UserName,
 	}
 
-	rsp, err := h.svc.UpdateUserInfo(req)
+	rsp, err := h.svc.UpdateUserInfo(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

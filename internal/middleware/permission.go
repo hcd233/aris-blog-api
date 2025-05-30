@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -18,10 +19,10 @@ import (
 //	update 2025-01-05 15:07:08
 func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.Permission) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID := c.MustGet("userID").(uint)
-		permission := c.MustGet("permission").(model.Permission)
+		userID := c.MustGet(constant.CtxKeyUserID).(uint)
+		permission := c.MustGet(constant.CtxKeyPermission).(model.Permission)
 		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
-			logger.Logger.Info("[LimitUserPermissionMiddleware] permission denied",
+			logger.LoggerWithContext(c).Info("[LimitUserPermissionMiddleware] permission denied",
 				zap.Uint("userID", userID),
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),

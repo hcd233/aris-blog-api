@@ -21,7 +21,7 @@ func InitOpenAIClient() {
 	clientConfig.BaseURL = config.OpenAIBaseURL
 	client = openai.NewClientWithConfig(clientConfig)
 
-	logger.Logger.Info("[OpenAI] Connected to OpenAI API", zap.String("baseURL", config.OpenAIBaseURL))
+	logger.Logger().Info("[OpenAI] Connected to OpenAI API", zap.String("baseURL", config.OpenAIBaseURL))
 }
 
 // GetOpenAIClient 获取OpenAI客户端

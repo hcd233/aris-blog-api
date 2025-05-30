@@ -17,7 +17,7 @@ import (
 func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindUri(uri); err != nil {
-			logger.Logger.Info("[ValidateURIMiddleware] failed to bind uri", zap.Error(err))
+			logger.LoggerWithContext(c).Info("[ValidateURIMiddleware] failed to bind uri", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
 			c.Abort()
 			return
@@ -36,7 +36,7 @@ func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
 func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindQuery(param); err != nil {
-			logger.Logger.Info("[ValidateParamMiddleware] failed to bind param", zap.Error(err))
+			logger.LoggerWithContext(c).Info("[ValidateParamMiddleware] failed to bind param", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
 			c.Abort()
 			return
@@ -55,7 +55,7 @@ func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
 func ValidateBodyMiddleware(body interface{}) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		if err := c.ShouldBindJSON(body); err != nil {
-			logger.Logger.Info("[ValidateBodyMiddleware] failed to bind body", zap.Error(err))
+			logger.LoggerWithContext(c).Info("[ValidateBodyMiddleware] failed to bind body", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
 			c.Abort()
 			return

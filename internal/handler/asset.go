@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -61,15 +62,15 @@ func NewAssetHandler() AssetHandler {
 //	author centonhuang
 //	update 2024-11-03 06:45:42
 func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
-	userID := c.GetUint("userID")
-	param := c.MustGet("param").(*protocol.PageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeArticlesRequest{
 		UserID:    userID,
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListUserLikeArticles(req)
+	rsp, err := h.svc.ListUserLikeArticles(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -93,15 +94,15 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 //	author centonhuang
 //	update 2024-11-03 06:47:41
 func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
-	userID := c.GetUint("userID")
-	param := c.MustGet("param").(*protocol.PageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeCommentsRequest{
 		UserID:    userID,
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListUserLikeComments(req)
+	rsp, err := h.svc.ListUserLikeComments(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -125,15 +126,15 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 //	author centonhuang
 //	update 2024-11-03 06:47:43
 func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
-	userID := c.GetUint("userID")
-	param := c.MustGet("param").(*protocol.PageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeTagsRequest{
 		UserID:    userID,
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListUserLikeTags(req)
+	rsp, err := h.svc.ListUserLikeTags(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -156,13 +157,13 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleListImages(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 
 	req := &protocol.ListImagesRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.ListImages(req)
+	rsp, err := h.svc.ListImages(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -186,10 +187,10 @@ func (h *assetHandler) HandleListImages(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleUploadImage(c *gin.Context) {
-	userID := c.GetUint("userID")
+	userID := c.GetUint(constant.CtxKeyUserID)
 	file, err := c.FormFile("file")
 	if err != nil {
-		logger.Logger.Error("[HandleUploadImage] get file error", zap.Error(err))
+		logger.LoggerWithContext(c).Error("[HandleUploadImage] get file error", zap.Error(err))
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 		return
 	}
@@ -200,7 +201,7 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 
 	reader, err := file.Open()
 	if err != nil {
-		logger.Logger.Error("[HandleUploadImage] open file error", zap.Error(err))
+		logger.LoggerWithContext(c).Error("[HandleUploadImage] open file error", zap.Error(err))
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 		return
 	}
@@ -214,7 +215,7 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 		ReadSeeker:  reader,
 	}
 
-	rsp, err := h.svc.UploadImage(req)
+	rsp, err := h.svc.UploadImage(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -239,9 +240,9 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleGetImage(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ObjectURI)
-	param := c.MustGet("param").(*protocol.ImageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ObjectURI)
+	param := c.MustGet(constant.CtxKeyParam).(*protocol.ImageParam)
 
 	req := &protocol.GetImageRequest{
 		UserID:    userID,
@@ -249,7 +250,7 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 		Quality:   param.Quality,
 	}
 
-	rsp, err := h.svc.GetImage(req)
+	rsp, err := h.svc.GetImage(c, req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
 		return
@@ -278,15 +279,15 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ObjectURI)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ObjectURI)
 
 	req := &protocol.DeleteImageRequest{
 		UserID:    userID,
 		ImageName: uri.ObjectName,
 	}
 
-	rsp, err := h.svc.DeleteImage(req)
+	rsp, err := h.svc.DeleteImage(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -310,15 +311,15 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
-	userID := c.GetUint("userID")
-	pageParam := c.MustGet("param").(*protocol.PageParam)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	pageParam := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserViewArticlesRequest{
 		UserID:    userID,
 		PageParam: pageParam,
 	}
 
-	rsp, err := h.svc.ListUserViewArticles(req)
+	rsp, err := h.svc.ListUserViewArticles(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }
@@ -342,15 +343,15 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
-	userID := c.GetUint("userID")
-	uri := c.MustGet("uri").(*protocol.ViewURI)
+	userID := c.GetUint(constant.CtxKeyUserID)
+	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ViewURI)
 
 	req := &protocol.DeleteUserViewRequest{
 		UserID: userID,
 		ViewID: uri.ViewID,
 	}
 
-	rsp, err := h.svc.DeleteUserView(req)
+	rsp, err := h.svc.DeleteUserView(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
 }

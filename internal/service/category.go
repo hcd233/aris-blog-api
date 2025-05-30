@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -16,13 +17,13 @@ import (
 
 // CategoryService 分类服务
 type CategoryService interface {
-	CreateCategory(req *protocol.CreateCategoryRequest) (rsp *protocol.CreateCategoryResponse, err error)
-	GetCategoryInfo(req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error)
-	GetRootCategory(req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error)
-	UpdateCategory(req *protocol.UpdateCategoryRequest) (rsp *protocol.UpdateCategoryResponse, err error)
-	DeleteCategory(req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error)
-	ListChildrenCategories(req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error)
-	ListChildrenArticles(req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error)
+	CreateCategory(ctx context.Context, req *protocol.CreateCategoryRequest) (rsp *protocol.CreateCategoryResponse, err error)
+	GetCategoryInfo(ctx context.Context, req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error)
+	GetRootCategory(ctx context.Context, req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error)
+	UpdateCategory(ctx context.Context, req *protocol.UpdateCategoryRequest) (rsp *protocol.UpdateCategoryResponse, err error)
+	DeleteCategory(ctx context.Context, req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error)
+	ListChildrenCategories(ctx context.Context, req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error)
+	ListChildrenArticles(ctx context.Context, req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error)
 }
 
 type categoryService struct {
@@ -43,8 +44,9 @@ func NewCategoryService() CategoryService {
 }
 
 // CreateCategory 创建分类
-func (s *categoryService) CreateCategory(req *protocol.CreateCategoryRequest) (rsp *protocol.CreateCategoryResponse, err error) {
+func (s *categoryService) CreateCategory(ctx context.Context, req *protocol.CreateCategoryRequest) (rsp *protocol.CreateCategoryResponse, err error) {
 	rsp = &protocol.CreateCategoryResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	var parentCategory *model.Category
 	if req.ParentID == 0 {
@@ -54,11 +56,11 @@ func (s *categoryService) CreateCategory(req *protocol.CreateCategoryRequest) (r
 	}
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] parent category not found",
+			logger.Error("[CategoryService] parent category not found",
 				zap.Uint("parentID", req.ParentID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get parent category",
+		logger.Error("[CategoryService] failed to get parent category",
 			zap.Uint("parentID", req.ParentID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -72,12 +74,12 @@ func (s *categoryService) CreateCategory(req *protocol.CreateCategoryRequest) (r
 
 	if err := s.categoryDAO.Create(s.db, category); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
-			logger.Logger.Error("[CategoryService] duplicated category",
+			logger.Error("[CategoryService] duplicated category",
 				zap.String("name", category.Name),
 				zap.Uint("parentID", category.ParentID))
 			return nil, protocol.ErrDataExists
 		}
-		logger.Logger.Error("[CategoryService] failed to create category",
+		logger.Error("[CategoryService] failed to create category",
 			zap.String("name", category.Name),
 			zap.Uint("parentID", category.ParentID),
 			zap.Error(err))
@@ -96,21 +98,22 @@ func (s *categoryService) CreateCategory(req *protocol.CreateCategoryRequest) (r
 }
 
 // GetCategoryInfo 获取分类信息
-func (s *categoryService) GetCategoryInfo(req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error) {
+func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error) {
 	rsp = &protocol.GetCategoryInfoResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
+			logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if req.UserID != category.UserID {
-		logger.Logger.Error("[CategoryService] no permission to get category",
+		logger.Error("[CategoryService] no permission to get category",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
@@ -128,16 +131,17 @@ func (s *categoryService) GetCategoryInfo(req *protocol.GetCategoryInfoRequest) 
 }
 
 // GetRootCategory 获取根分类
-func (s *categoryService) GetRootCategory(req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error) {
+func (s *categoryService) GetRootCategory(ctx context.Context, req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error) {
 	rsp = &protocol.GetRootCategoryResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	rootCategory, err := s.categoryDAO.GetRootByUserID(s.db, req.UserID, []string{"id", "name", "user_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] root category not found", zap.Uint("userID", req.UserID))
+			logger.Error("[CategoryService] root category not found", zap.Uint("userID", req.UserID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get root category", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get root category", zap.Uint("userID", req.UserID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -153,8 +157,9 @@ func (s *categoryService) GetRootCategory(req *protocol.GetRootCategoryRequest) 
 }
 
 // UpdateCategory 更新分类
-func (s *categoryService) UpdateCategory(req *protocol.UpdateCategoryRequest) (rsp *protocol.UpdateCategoryResponse, err error) {
+func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.UpdateCategoryRequest) (rsp *protocol.UpdateCategoryResponse, err error) {
 	rsp = &protocol.UpdateCategoryResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	updateFields := make(map[string]interface{})
 	if req.Name != "" {
@@ -165,7 +170,7 @@ func (s *categoryService) UpdateCategory(req *protocol.UpdateCategoryRequest) (r
 	}
 
 	if len(updateFields) == 0 {
-		logger.Logger.Warn("[CategoryService] no fields to update",
+		logger.Warn("[CategoryService] no fields to update",
 			zap.Uint("categoryID", req.CategoryID))
 		return rsp, nil
 	}
@@ -173,22 +178,22 @@ func (s *categoryService) UpdateCategory(req *protocol.UpdateCategoryRequest) (r
 	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
+			logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if req.UserID != category.UserID {
-		logger.Logger.Error("[CategoryService] no permission to update category",
+		logger.Error("[CategoryService] no permission to update category",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.categoryDAO.Update(s.db, category, updateFields); err != nil {
-		logger.Logger.Error("[CategoryService] failed to update category",
+		logger.Error("[CategoryService] failed to update category",
 			zap.Uint("categoryID", category.ID),
 			zap.Any("updateFields", updateFields),
 			zap.Error(err))
@@ -207,34 +212,35 @@ func (s *categoryService) UpdateCategory(req *protocol.UpdateCategoryRequest) (r
 }
 
 // DeleteCategory 删除分类
-func (s *categoryService) DeleteCategory(req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error) {
+func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error) {
 	rsp = &protocol.DeleteCategoryResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	category, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
+			logger.Error("[CategoryService] category not found", zap.Uint("categoryID", req.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if req.UserID != category.UserID {
-		logger.Logger.Error("[CategoryService] no permission to delete category",
+		logger.Error("[CategoryService] no permission to delete category",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if category.ParentID == 0 {
-		logger.Logger.Error("[CategoryService] root category cannot be deleted",
+		logger.Error("[CategoryService] root category cannot be deleted",
 			zap.Uint("categoryID", category.ID))
 		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.categoryDAO.DeleteReclusiveByID(s.db, category.ID, []string{"id", "name"}, []string{}); err != nil {
-		logger.Logger.Error("[CategoryService] failed to delete category",
+		logger.Error("[CategoryService] failed to delete category",
 			zap.Uint("categoryID", category.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -244,16 +250,17 @@ func (s *categoryService) DeleteCategory(req *protocol.DeleteCategoryRequest) (r
 }
 
 // ListChildrenCategories 列出子分类
-func (s *categoryService) ListChildrenCategories(req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error) {
+func (s *categoryService) ListChildrenCategories(ctx context.Context, req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error) {
 	rsp = &protocol.ListChildrenCategoriesResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
+			logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get parent category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get parent category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -261,14 +268,14 @@ func (s *categoryService) ListChildrenCategories(req *protocol.ListChildrenCateg
 		[]string{"id", "name", "parent_id", "created_at", "updated_at"}, []string{},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Logger.Error("[CategoryService] failed to paginate children categories",
+		logger.Error("[CategoryService] failed to paginate children categories",
 			zap.Uint("parentID", parentCategory.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if req.UserID != parentCategory.UserID {
-		logger.Logger.Error("[CategoryService] no permission to list children categories",
+		logger.Error("[CategoryService] no permission to list children categories",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("categoryUserID", parentCategory.UserID))
 		return nil, protocol.ErrNoPermission
@@ -294,21 +301,22 @@ func (s *categoryService) ListChildrenCategories(req *protocol.ListChildrenCateg
 }
 
 // ListChildrenArticles 列出子文章
-func (s *categoryService) ListChildrenArticles(req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error) {
+func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error) {
 	rsp = &protocol.ListChildrenArticlesResponse{}
+	logger := logger.LoggerWithContext(ctx)
 
 	parentCategory, err := s.categoryDAO.GetByID(s.db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
+			logger.Error("[CategoryService] parent category not found", zap.Uint("categoryID", req.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Logger.Error("[CategoryService] failed to get parent category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get parent category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	if req.UserID != parentCategory.UserID {
-		logger.Logger.Error("[CategoryService] no permission to list children articles",
+		logger.Error("[CategoryService] no permission to list children articles",
 			zap.Uint("userID", req.UserID),
 			zap.Uint("categoryUserID", parentCategory.UserID))
 		return nil, protocol.ErrNoPermission
@@ -323,7 +331,7 @@ func (s *categoryService) ListChildrenArticles(req *protocol.ListChildrenArticle
 		[]string{"Tags", "Comments"},
 		req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Logger.Error("[CategoryService] failed to paginate children articles",
+		logger.Error("[CategoryService] failed to paginate children articles",
 			zap.Uint("categoryID", parentCategory.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
