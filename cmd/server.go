@@ -42,7 +42,8 @@ var startServerCmd = &cobra.Command{
 
 		r := gin.New()
 		r.Use(
-			middleware.LogMiddleware(logger.Logger()),
+			middleware.TraceMiddleware(),
+			middleware.LogMiddleware(),
 			ginzap.RecoveryWithZap(logger.Logger(), true),
 			gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions(
 				[]string{".pdf", ".mp3", ".wav", ".ogg", ".mov", ".weba", ".mkv", ".mp4", ".webm", ".flac"},
