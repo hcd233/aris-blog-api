@@ -130,13 +130,13 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 	if err := s.articleDAO.Create(db, article); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			logger.Error("[ArticleService] article slug duplicated",
-				zap.Uint("userID", article.UserID),
+
 				zap.String("title", article.Title),
 				zap.String("slug", article.Slug))
 			return nil, protocol.ErrDataExists
 		}
 		logger.Error("[ArticleService] failed to create article",
-			zap.Uint("userID", article.UserID),
+
 			zap.String("title", article.Title),
 			zap.String("slug", article.Slug),
 			zap.Error(err))
@@ -196,7 +196,7 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleService] no permission to get article",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -267,7 +267,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 		logger.Error("[ArticleService] no permission to get article",
 			zap.String("ArticleSlug", req.ArticleSlug),
 			zap.String("AuthorName", req.AuthorName),
-			zap.Uint("userID", user.ID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -316,7 +316,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 
 	if len(updateFields) == 0 {
 		logger.Warn("[ArticleService] no fields to update",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("articleID", req.ArticleID),
 			zap.Any("updateFields", updateFields))
 		return rsp, nil
@@ -338,7 +338,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 	if article.UserID != req.UserID {
 		logger.Error("[ArticleService] no permission to update article",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -461,7 +461,7 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.Delete
 //	update 2025-01-05 15:23:26
 func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
 	rsp = &protocol.ListArticlesResponse{}
-	
+
 	logger := logger.LoggerWithContext(ctx)
 	db := database.GetDBInstance(ctx)
 

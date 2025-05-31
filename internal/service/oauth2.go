@@ -154,7 +154,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 			"last_login": time.Now(),
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update user login time",
-				zap.Uint("userID", user.ID),
+
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
@@ -185,21 +185,19 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 		_, err = s.imageObjDAO.CreateDir(user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create image dir",
-				zap.Uint("userID", user.ID),
+
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
-		logger.Info("[Oauth2Service] image dir created",
-			zap.Uint("userID", user.ID))
+		logger.Info("[Oauth2Service] image dir created")
 		_, err = s.thumbnailObjDAO.CreateDir(user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create thumbnail dir",
-				zap.Uint("userID", user.ID),
+
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
-		logger.Info("[Oauth2Service] thumbnail dir created",
-			zap.Uint("userID", user.ID))
+		logger.Info("[Oauth2Service] thumbnail dir created")
 	}
 
 	if user.GithubBindID == "" {
@@ -207,7 +205,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 			"github_bind_id": githubID,
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update github bind id",
-				zap.Uint("userID", user.ID),
+
 				zap.String("githubID", githubID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -217,7 +215,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode access token",
-			zap.Uint("userID", user.ID),
+
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -225,7 +223,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode refresh token",
-			zap.Uint("userID", user.ID),
+
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}

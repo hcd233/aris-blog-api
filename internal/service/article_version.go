@@ -62,7 +62,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 	if article.UserID != req.UserID {
 		logger.Error("[ArticleVersionService] no permission to create article version",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -185,7 +185,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleVersionService] no permission to get latest article version",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -238,7 +238,7 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *pr
 	if article.UserID != req.UserID {
 		logger.Error("[ArticleVersionService] no permission to list article versions",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 

@@ -154,7 +154,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagReque
 
 	if tag.UserID != req.UserID {
 		logger.Error("[TagService] no permission to update tag",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -172,7 +172,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagReque
 
 	if len(updateFields) == 0 {
 		logger.Warn("[TagService] No fields to update",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("tagID", req.TagID),
 			zap.Any("updateFields", updateFields))
 		return rsp, nil
@@ -215,7 +215,7 @@ func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagReque
 
 	if tag.UserID != req.UserID {
 		logger.Error("[TagService] no permission to delete tag",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
 	}

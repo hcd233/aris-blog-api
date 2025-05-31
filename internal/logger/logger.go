@@ -52,6 +52,9 @@ func LoggerWithContext(ctx context.Context) *zap.Logger {
 	if userID := ctx.Value(constant.CtxKeyUserID); userID != nil {
 		logger = logger.With(zap.Uint(constant.CtxKeyUserID, userID.(uint)))
 	}
+	if userName := ctx.Value(constant.CtxKeyUserName); userName != nil {
+		logger = logger.With(zap.String(constant.CtxKeyUserName, userName.(string)))
+	}
 	return logger
 }
 

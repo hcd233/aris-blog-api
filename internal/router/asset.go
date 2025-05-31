@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -38,7 +39,7 @@ func initAssetRouter(r *gin.RouterGroup) {
 				imageRouter.POST(
 					"",
 					middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator),
-					middleware.RateLimiterMiddleware("uploadImage", "userID", 10*time.Second, 1),
+					middleware.RateLimiterMiddleware("uploadImage", constant.CtxKeyUserID, 10*time.Second, 1),
 					assetHandler.HandleUploadImage,
 				)
 				imageIDRouter := imageRouter.Group("/:objectName", middleware.ValidateURIMiddleware(&protocol.ObjectURI{}))

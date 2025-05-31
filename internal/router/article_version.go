@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -20,7 +21,7 @@ func initArticleVersionRouter(r *gin.RouterGroup) {
 
 		articleVersionRouter.POST(
 			"",
-			middleware.RateLimiterMiddleware("createArticleVersion", "userID", 10*time.Second, 1),
+			middleware.RateLimiterMiddleware("createArticleVersion", constant.CtxKeyUserID, 10*time.Second, 1),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			articleVersionHandler.HandleCreateArticleVersion,
 		)

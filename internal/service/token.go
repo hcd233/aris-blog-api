@@ -55,23 +55,23 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *protocol.RefreshTo
 
 	_, err = s.userDAO.GetByID(db, userID, []string{"id"}, []string{})
 	if err != nil {
-		logger.Error("[TokenService] failed to get user by id", zap.Uint("userID", userID), zap.Error(err))
+		logger.Error("[TokenService] failed to get user by id", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(userID)
 	if err != nil {
-		logger.Error("[TokenService] failed to encode access token", zap.Uint("userID", userID), zap.Error(err))
+		logger.Error("[TokenService] failed to encode access token", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(userID)
 	if err != nil {
-		logger.Error("[TokenService] failed to encode refresh token", zap.Uint("userID", userID), zap.Error(err))
+		logger.Error("[TokenService] failed to encode refresh token", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	logger.Info("[TokenService] refresh token success", zap.Uint("userID", userID), zap.String("accessToken", accessToken), zap.String("refreshToken", refreshToken))
+	logger.Info("[TokenService] refresh token success", zap.String("accessToken", accessToken), zap.String("refreshToken", refreshToken))
 
 	rsp.AccessToken = accessToken
 	rsp.RefreshToken = refreshToken
