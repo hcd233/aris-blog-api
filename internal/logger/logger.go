@@ -2,9 +2,7 @@
 package logger
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"os"
 	"path"
 	"strings"
@@ -12,7 +10,6 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"go.uber.org/zap"
-	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -42,58 +39,6 @@ const (
 	messageKey    = "message"
 	stacktraceKey = "stacktrace"
 )
-
-// indentedJSONEncoder 带缩进的JSON编码器
-type indentedJSONEncoder struct {
-	zapcore.Encoder
-}
-
-// newIndentedJSONEncoder 创建带缩进的JSON编码器
-func newIndentedJSONEncoder(cfg zapcore.EncoderConfig) zapcore.Encoder {
-	return &indentedJSONEncoder{
-		Encoder: zapcore.NewJSONEncoder(cfg),
-	}
-}
-
-// EncodeEntry 重写编码方法，添加JSON缩进
-func (enc *indentedJSONEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
-	// 使用原始编码器获取JSON
-	buf, err := enc.Encoder.EncodeEntry(entry, fields)
-	if err != nil {
-		return nil, err
-	}
-
-	// 获取原始JSON字节
-	jsonBytes := buf.Bytes()
-
-	// 移除最后的换行符
-	if len(jsonBytes) > 0 && jsonBytes[len(jsonBytes)-1] == '\n' {
-		jsonBytes = jsonBytes[:len(jsonBytes)-1]
-	}
-
-	// 创建缩进的JSON
-	var indentedBuf bytes.Buffer
-	if err := json.Indent(&indentedBuf, jsonBytes, "", "  "); err != nil {
-		// 如果缩进失败，返回原始内容
-		return buf, nil
-	}
-
-	// 添加换行符
-	indentedBuf.WriteByte('\n')
-
-	// 创建新的buffer并写入缩进后的内容
-	newBuf := buffer.NewPool().Get()
-	newBuf.Write(indentedBuf.Bytes())
-
-	return newBuf, nil
-}
-
-// Clone 克隆编码器
-func (enc *indentedJSONEncoder) Clone() zapcore.Encoder {
-	return &indentedJSONEncoder{
-		Encoder: enc.Encoder.Clone(),
-	}
-}
 
 func Logger() *zap.Logger {
 	return defaultLogger
@@ -153,8 +98,8 @@ func init() {
 		Compress:   false,
 	})
 
-	// 配置结构化日志编码器
-	encoderConfig := zapcore.EncoderConfig{
+	// 配置文件输出的JSON结构化日志编码器
+	jsonEncoderConfig := zapcore.EncoderConfig{
 		TimeKey:        timeKey,
 		LevelKey:       levelKey,
 		NameKey:        nameKey,
@@ -168,45 +113,44 @@ func init() {
 		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
 
-	// 控制台输出使用彩色编码器（开发模式）
-	consoleEncoderConfig := encoderConfig
-	if logLevel == zap.NewAtomicLevelAt(zap.DebugLevel) {
-		consoleEncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-		consoleEncoderConfig.ConsoleSeparator = "  "
+	// 配置控制台输出的彩色日志编码器
+	consoleEncoderConfig := zapcore.EncoderConfig{
+		TimeKey:          timeKey,
+		LevelKey:         levelKey,
+		NameKey:          nameKey,
+		CallerKey:        callerKey,
+		MessageKey:       messageKey,
+		StacktraceKey:    stacktraceKey,
+		LineEnding:       zapcore.DefaultLineEnding,
+		EncodeLevel:      zapcore.CapitalColorLevelEncoder, // 彩色级别编码
+		EncodeTime:       zapcore.RFC3339TimeEncoder,
+		EncodeDuration:   zapcore.SecondsDurationEncoder,
+		EncodeCaller:     zapcore.ShortCallerEncoder,
+		ConsoleSeparator: "  ", // 控制台分隔符
 	}
 
 	core := zapcore.NewTee(
-		// 控制台输出 - 根据调试模式选择编码器
-		func() zapcore.Core {
-			if logLevel == zap.NewAtomicLevelAt(zap.DebugLevel) {
-				return zapcore.NewCore(
-					zapcore.NewConsoleEncoder(consoleEncoderConfig),
-					zapcore.AddSync(os.Stdout),
-					logLevel,
-				)
-			}
-			// 生产模式使用带缩进的JSON编码器
-			return zapcore.NewCore(
-				newIndentedJSONEncoder(encoderConfig),
-				zapcore.AddSync(os.Stdout),
-				logLevel,
-			)
-		}(),
-		// 文件输出 - 统一使用JSON编码器（不缩进，节省空间）
+		// 控制台输出 - 始终使用彩色Console编码器
 		zapcore.NewCore(
-			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.NewConsoleEncoder(consoleEncoderConfig),
+			zapcore.AddSync(os.Stdout),
+			logLevel,
+		),
+		// 文件输出 - 统一使用JSON编码器
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(jsonEncoderConfig),
 			zapcore.NewMultiWriteSyncer(logFileWriter),
 			logLevel,
 		),
 		// Error log 输出到 err.log
 		zapcore.NewCore(
-			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.NewJSONEncoder(jsonEncoderConfig),
 			zapcore.NewMultiWriteSyncer(errFileWriter),
 			zapLevelMapping[logLevelError],
 		),
 		// Panic log 输出到 panic.log
 		zapcore.NewCore(
-			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.NewJSONEncoder(jsonEncoderConfig),
 			zapcore.NewMultiWriteSyncer(panicFileWriter),
 			zapLevelMapping[logLevelPanic],
 		),
