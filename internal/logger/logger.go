@@ -2,7 +2,9 @@
 package logger
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path"
 	"strings"
@@ -10,6 +12,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"go.uber.org/zap"
+	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 	"gopkg.in/natefinch/lumberjack.v2"
 )
@@ -20,9 +23,10 @@ import (
 var defaultLogger *zap.Logger
 
 const (
-	infoLogFile    = "aris-blog-api.log"
-	errLogFile     = "aris-blog-api-error.log"
-	panicLogFile   = "aris-blog-api-panic.log"
+	infoLogFile  = "aris-blog-api.log"
+	errLogFile   = "aris-blog-api-error.log"
+	panicLogFile = "aris-blog-api-panic.log"
+
 	logLevelDebug  = "DEBUG"
 	logLevelInfo   = "INFO"
 	logLevelWarn   = "WARN"
@@ -30,7 +34,66 @@ const (
 	logLevelDPanic = "DPANIC"
 	logLevelPanic  = "PANIC"
 	logLevelFatal  = "FATAL"
+
+	timeKey       = "timestamp"
+	levelKey      = "level"
+	nameKey       = "logger"
+	callerKey     = "caller"
+	messageKey    = "message"
+	stacktraceKey = "stacktrace"
 )
+
+// indentedJSONEncoder 带缩进的JSON编码器
+type indentedJSONEncoder struct {
+	zapcore.Encoder
+}
+
+// newIndentedJSONEncoder 创建带缩进的JSON编码器
+func newIndentedJSONEncoder(cfg zapcore.EncoderConfig) zapcore.Encoder {
+	return &indentedJSONEncoder{
+		Encoder: zapcore.NewJSONEncoder(cfg),
+	}
+}
+
+// EncodeEntry 重写编码方法，添加JSON缩进
+func (enc *indentedJSONEncoder) EncodeEntry(entry zapcore.Entry, fields []zapcore.Field) (*buffer.Buffer, error) {
+	// 使用原始编码器获取JSON
+	buf, err := enc.Encoder.EncodeEntry(entry, fields)
+	if err != nil {
+		return nil, err
+	}
+
+	// 获取原始JSON字节
+	jsonBytes := buf.Bytes()
+
+	// 移除最后的换行符
+	if len(jsonBytes) > 0 && jsonBytes[len(jsonBytes)-1] == '\n' {
+		jsonBytes = jsonBytes[:len(jsonBytes)-1]
+	}
+
+	// 创建缩进的JSON
+	var indentedBuf bytes.Buffer
+	if err := json.Indent(&indentedBuf, jsonBytes, "", "  "); err != nil {
+		// 如果缩进失败，返回原始内容
+		return buf, nil
+	}
+
+	// 添加换行符
+	indentedBuf.WriteByte('\n')
+
+	// 创建新的buffer并写入缩进后的内容
+	newBuf := buffer.NewPool().Get()
+	newBuf.Write(indentedBuf.Bytes())
+
+	return newBuf, nil
+}
+
+// Clone 克隆编码器
+func (enc *indentedJSONEncoder) Clone() zapcore.Encoder {
+	return &indentedJSONEncoder{
+		Encoder: enc.Encoder.Clone(),
+	}
+}
 
 func Logger() *zap.Logger {
 	return defaultLogger
@@ -48,18 +111,15 @@ func LoggerWithContext(ctx context.Context) *zap.Logger {
 }
 
 func init() {
-	var (
-		cfg             zap.Config
-		zapLevelMapping = map[string]zap.AtomicLevel{
-			logLevelDebug:  zap.NewAtomicLevelAt(zap.DebugLevel),
-			logLevelInfo:   zap.NewAtomicLevelAt(zap.InfoLevel),
-			logLevelWarn:   zap.NewAtomicLevelAt(zap.WarnLevel),
-			logLevelError:  zap.NewAtomicLevelAt(zap.ErrorLevel),
-			logLevelDPanic: zap.NewAtomicLevelAt(zap.DPanicLevel),
-			logLevelPanic:  zap.NewAtomicLevelAt(zap.PanicLevel),
-			logLevelFatal:  zap.NewAtomicLevelAt(zap.FatalLevel),
-		}
-	)
+	zapLevelMapping := map[string]zap.AtomicLevel{
+		logLevelDebug:  zap.NewAtomicLevelAt(zap.DebugLevel),
+		logLevelInfo:   zap.NewAtomicLevelAt(zap.InfoLevel),
+		logLevelWarn:   zap.NewAtomicLevelAt(zap.WarnLevel),
+		logLevelError:  zap.NewAtomicLevelAt(zap.ErrorLevel),
+		logLevelDPanic: zap.NewAtomicLevelAt(zap.DPanicLevel),
+		logLevelPanic:  zap.NewAtomicLevelAt(zap.PanicLevel),
+		logLevelFatal:  zap.NewAtomicLevelAt(zap.FatalLevel),
+	}
 
 	logLevel, ok := zapLevelMapping[strings.ToUpper(config.LogLevel)]
 	if !ok {
@@ -93,24 +153,64 @@ func init() {
 		Compress:   false,
 	})
 
-	if logLevel == zap.NewAtomicLevelAt(zap.DebugLevel) {
-		cfg = zap.NewDevelopmentConfig()
-	} else {
-		cfg = zap.NewProductionConfig()
+	// 配置结构化日志编码器
+	encoderConfig := zapcore.EncoderConfig{
+		TimeKey:        timeKey,
+		LevelKey:       levelKey,
+		NameKey:        nameKey,
+		CallerKey:      callerKey,
+		MessageKey:     messageKey,
+		StacktraceKey:  stacktraceKey,
+		LineEnding:     zapcore.DefaultLineEnding,
+		EncodeLevel:    zapcore.LowercaseLevelEncoder,
+		EncodeTime:     zapcore.RFC3339TimeEncoder,
+		EncodeDuration: zapcore.SecondsDurationEncoder,
+		EncodeCaller:   zapcore.ShortCallerEncoder,
 	}
-	// Set log level
-	cfg.EncoderConfig.EncodeTime = zapcore.RFC3339TimeEncoder
-	cfg.EncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
-	cfg.EncoderConfig.EncodeCaller = zapcore.ShortCallerEncoder
-	cfg.EncoderConfig.EncodeDuration = zapcore.SecondsDurationEncoder
-	cfg.EncoderConfig.ConsoleSeparator = "  "
+
+	// 控制台输出使用彩色编码器（开发模式）
+	consoleEncoderConfig := encoderConfig
+	if logLevel == zap.NewAtomicLevelAt(zap.DebugLevel) {
+		consoleEncoderConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+		consoleEncoderConfig.ConsoleSeparator = "  "
+	}
+
 	core := zapcore.NewTee(
-		zapcore.NewCore(zapcore.NewConsoleEncoder(cfg.EncoderConfig), zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), logFileWriter), logLevel),
-		// Error log / Panic log output to err.log
-		zapcore.NewCore(zapcore.NewConsoleEncoder(cfg.EncoderConfig), zapcore.NewMultiWriteSyncer(errFileWriter), zapLevelMapping["ERROR"]),
-		// PanicLog output to panic.log
-		zapcore.NewCore(zapcore.NewConsoleEncoder(cfg.EncoderConfig), zapcore.NewMultiWriteSyncer(panicFileWriter), zapLevelMapping["PANIC"]),
+		// 控制台输出 - 根据调试模式选择编码器
+		func() zapcore.Core {
+			if logLevel == zap.NewAtomicLevelAt(zap.DebugLevel) {
+				return zapcore.NewCore(
+					zapcore.NewConsoleEncoder(consoleEncoderConfig),
+					zapcore.AddSync(os.Stdout),
+					logLevel,
+				)
+			}
+			// 生产模式使用带缩进的JSON编码器
+			return zapcore.NewCore(
+				newIndentedJSONEncoder(encoderConfig),
+				zapcore.AddSync(os.Stdout),
+				logLevel,
+			)
+		}(),
+		// 文件输出 - 统一使用JSON编码器（不缩进，节省空间）
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.NewMultiWriteSyncer(logFileWriter),
+			logLevel,
+		),
+		// Error log 输出到 err.log
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.NewMultiWriteSyncer(errFileWriter),
+			zapLevelMapping[logLevelError],
+		),
+		// Panic log 输出到 panic.log
+		zapcore.NewCore(
+			zapcore.NewJSONEncoder(encoderConfig),
+			zapcore.NewMultiWriteSyncer(panicFileWriter),
+			zapLevelMapping[logLevelPanic],
+		),
 	)
 
-	defaultLogger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapLevelMapping["PANIC"]))
+	defaultLogger = zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1), zap.AddStacktrace(zapLevelMapping[logLevelPanic]))
 }
