@@ -7,7 +7,7 @@ networks:
 services:
 
   aris-db-migrate:
-    image: ghcr.io/hcd233/aris-blog-api:master
+    image: ghcr.io/hcd233/aris-blog-api:master # aris-blog-api:latest
     container_name: aris-db-migrate
     restart: no
     networks:
@@ -17,7 +17,7 @@ services:
     command: ["/app/aris-blog-api", "database", "migrate"]
 
   aris-blog-api:
-    image: ghcr.io/hcd233/aris-blog-api:master
+    image: ghcr.io/hcd233/aris-blog-api:master # aris-blog-api:latest
     container_name: aris-blog-api
     restart: always
     networks:

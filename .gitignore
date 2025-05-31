@@ -3,6 +3,7 @@
 *.log
 *.*rules
 __debug*
+*dockerfile
 
 # dirs
 .vscode
