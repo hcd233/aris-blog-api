@@ -61,10 +61,10 @@ func (s *userService) GetCurUserInfo(ctx context.Context, req *protocol.GetCurUs
 	user, err := s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[UserService] user not found", zap.Uint("userID", req.UserID))
+			logger.Error("[UserService] user not found")
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[UserService] failed to get user by id", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[UserService] failed to get user by id", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -81,8 +81,6 @@ func (s *userService) GetCurUserInfo(ctx context.Context, req *protocol.GetCurUs
 	}
 
 	logger.Info("[UserService] get cur user info",
-		zap.Uint("userID", user.ID),
-		zap.String("name", user.Name),
 		zap.String("email", user.Email),
 		zap.String("avatar", user.Avatar),
 		zap.Time("createdAt", user.CreatedAt),
@@ -110,16 +108,14 @@ func (s *userService) GetUserInfo(ctx context.Context, req *protocol.GetUserInfo
 	user, err := s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[UserService] user not found", zap.Uint("userID", req.UserID))
+			logger.Error("[UserService] user not found")
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[UserService] failed to get user by id", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[UserService] failed to get user by id", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	logger.Info("[UserService] get user info",
-		zap.Uint("userID", user.ID),
-		zap.String("name", user.Name),
 		zap.String("email", user.Email),
 		zap.String("avatar", user.Avatar),
 		zap.Time("createdAt", user.CreatedAt),
@@ -146,7 +142,7 @@ func (s *userService) UpdateUserInfo(ctx context.Context, req *protocol.UpdateUs
 	if err := s.userDAO.Update(db, &model.User{ID: req.UserID}, map[string]interface{}{
 		"name": req.UpdatedUserName,
 	}); err != nil {
-		logger.Error("[UserService] failed to update user", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[UserService] failed to update user", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 

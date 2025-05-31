@@ -116,7 +116,7 @@ func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.Get
 
 	if req.UserID != category.UserID {
 		logger.Error("[CategoryService] no permission to get category",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -142,10 +142,10 @@ func (s *categoryService) GetRootCategory(ctx context.Context, req *protocol.Get
 	rootCategory, err := s.categoryDAO.GetRootByUserID(db, req.UserID, []string{"id", "name", "user_id", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[CategoryService] root category not found", zap.Uint("userID", req.UserID))
+			logger.Error("[CategoryService] root category not found")
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[CategoryService] failed to get root category", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[CategoryService] failed to get root category", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -193,7 +193,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.Upda
 
 	if req.UserID != category.UserID {
 		logger.Error("[CategoryService] no permission to update category",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -236,7 +236,7 @@ func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.Dele
 
 	if req.UserID != category.UserID {
 		logger.Error("[CategoryService] no permission to delete category",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -286,7 +286,7 @@ func (s *categoryService) ListChildrenCategories(ctx context.Context, req *proto
 
 	if req.UserID != parentCategory.UserID {
 		logger.Error("[CategoryService] no permission to list children categories",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("categoryUserID", parentCategory.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -329,7 +329,7 @@ func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protoco
 
 	if req.UserID != parentCategory.UserID {
 		logger.Error("[CategoryService] no permission to list children articles",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("categoryUserID", parentCategory.UserID))
 		return nil, protocol.ErrNoPermission
 	}

@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -34,13 +35,13 @@ func initAIRouter(r *gin.RouterGroup) {
 				creatorToolRouter.POST(
 					"contentCompletion",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateContentCompletionBody{}),
-					middleware.RedisLockMiddleware("contentCompletion", "userID", 30*time.Second),
+					middleware.RedisLockMiddleware("contentCompletion", constant.CtxKeyUserID, 30*time.Second),
 					aiService.HandleGenerateContentCompletion,
 				)
 				creatorToolRouter.POST(
 					"articleSummary",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleSummaryBody{}),
-					middleware.RedisLockMiddleware("articleSummary", "userID", 30*time.Second),
+					middleware.RedisLockMiddleware("articleSummary", constant.CtxKeyUserID, 30*time.Second),
 					aiService.HandleGenerateArticleSummary,
 				)
 				// creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
@@ -51,7 +52,7 @@ func initAIRouter(r *gin.RouterGroup) {
 				readerToolRouter.POST(
 					"articleQA",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleQABody{}),
-					middleware.RedisLockMiddleware("articleQA", "userID", 30*time.Second),
+					middleware.RedisLockMiddleware("articleQA", constant.CtxKeyUserID, 30*time.Second),
 					aiService.HandleGenerateArticleQA,
 				)
 				// readerToolRouter.POST(

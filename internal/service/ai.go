@@ -279,7 +279,7 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
@@ -401,7 +401,7 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
@@ -414,7 +414,7 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 		}
 		logger.Error("[AIService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID), zap.Error(err))
+			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -556,7 +556,7 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
@@ -708,7 +708,7 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
-		logger.Info("[AIService] insufficient LLM quota", zap.Uint("userID", req.UserID), zap.Int("quota", int(user.LLMQuota)))
+		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 

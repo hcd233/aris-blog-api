@@ -19,11 +19,9 @@ import (
 //	update 2025-01-05 15:07:08
 func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.Permission) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		userID := c.MustGet(constant.CtxKeyUserID).(uint)
 		permission := c.MustGet(constant.CtxKeyPermission).(model.Permission)
 		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
 			logger.LoggerWithContext(c).Info("[LimitUserPermissionMiddleware] permission denied",
-				zap.Uint("userID", userID),
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),
 				zap.String("permission", string(permission)))

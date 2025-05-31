@@ -66,7 +66,7 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
 	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Info("[OperationService] no permission to like article",
-			zap.Uint("userID", req.UserID),
+
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
@@ -89,7 +89,7 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 	if req.Undo {
 		if err = s.transactUndoLikeArticle(tx, article, userLike); err != nil {
 			logger.Error("[OperationService] failed to undo like article",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -97,7 +97,7 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 	} else {
 		if err = s.transactLikeArticle(tx, article, userLike); err != nil {
 			logger.Error("[OperationService] failed to like article",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -137,7 +137,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
 	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Info("[OperationService] no permission to like comment",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("articleID", article.ID),
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
@@ -161,7 +161,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 	if req.Undo {
 		if err = s.transactUndoLikeComment(tx, comment, userLike); err != nil {
 			logger.Error("[OperationService] failed to undo like comment",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("commentID", comment.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -169,7 +169,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 	} else {
 		if err = s.transactLikeComment(tx, comment, userLike); err != nil {
 			logger.Error("[OperationService] failed to like comment",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("commentID", comment.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -214,7 +214,7 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 	if req.Undo {
 		if err = s.transactUndoLikeTag(tx, tag, userLike); err != nil {
 			logger.Error("[OperationService] failed to undo like tag",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("tagID", tag.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -222,7 +222,7 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 	} else {
 		if err = s.transactLikeTag(tx, tag, userLike); err != nil {
 			logger.Error("[OperationService] failed to like tag",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("tagID", tag.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -255,7 +255,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许浏览
 	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Info("[OperationService] no permission to view article",
-			zap.Uint("userID", req.UserID),
+
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
@@ -271,7 +271,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 	if userView.ID == 0 || userView.Progress >= 95 {
 		if req.Progress != 0 {
 			logger.Error("[OperationService] invalid progress",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("articleID", article.ID),
 				zap.Int8("progress", req.Progress))
 			return nil, protocol.ErrInternalError
@@ -286,7 +286,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 
 		if err = s.userViewDAO.Create(db, userView); err != nil {
 			logger.Error("[OperationService] failed to create user view",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -294,7 +294,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 	} else {
 		if req.Progress-userView.Progress < 5 {
 			logger.Info("[OperationService] log view too frequently",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("articleID", article.ID),
 				zap.Int8("lastProgress", userView.Progress),
 				zap.Int8("progress", req.Progress))
@@ -306,7 +306,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 			"last_viewed_at": time.Now(),
 		}); err != nil {
 			logger.Error("[OperationService] failed to update user view",
-				zap.Uint("userID", req.UserID),
+
 				zap.Uint("articleID", article.ID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError

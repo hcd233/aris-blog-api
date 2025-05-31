@@ -87,7 +87,7 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 
 	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Error("[AssetService] failed to get user likes", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -162,7 +162,7 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 
 	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Error("[AssetService] failed to get user likes", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -226,7 +226,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 
 	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Error("[AssetService] failed to get user likes", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -298,7 +298,7 @@ func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesR
 
 	objectInfos, err := s.imageObjDAO.ListObjects(req.UserID)
 	if err != nil {
-		logger.Error("[AssetService] failed to list images", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[AssetService] failed to list images", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -393,17 +393,17 @@ func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImag
 	wg.Wait()
 
 	if imageErr != nil {
-		logger.Error("[AssetService] failed to upload image", zap.Uint("userID", req.UserID), zap.String("fileName", req.FileName), zap.Error(imageErr))
+		logger.Error("[AssetService] failed to upload image", zap.String("fileName", req.FileName), zap.Error(imageErr))
 		return nil, protocol.ErrInternalError
 	}
 
 	if thumbnailErr != nil {
-		logger.Error("[AssetService] failed to upload thumbnail image", zap.Uint("userID", req.UserID), zap.String("fileName", req.FileName), zap.Error(thumbnailErr))
+		logger.Error("[AssetService] failed to upload thumbnail image", zap.String("fileName", req.FileName), zap.Error(thumbnailErr))
 		return nil, protocol.ErrInternalError
 	}
 
 	logger.Info("[AssetService] image uploaded successfully",
-		zap.Uint("userID", req.UserID),
+
 		zap.String("fileName", req.FileName),
 	)
 	return rsp, nil
@@ -431,14 +431,14 @@ func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageReque
 	}
 	if err != nil {
 		logger.Error("[AssetService] failed to presign object",
-			zap.Uint("userID", req.UserID),
+
 			zap.String("imageName", req.ImageName),
 			zap.String("quality", req.Quality), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	rsp.PresignedURL = presignedURL.String()
-	logger.Info("[AssetService] presigned URL", zap.Uint("userID", req.UserID), zap.String("imageName", req.ImageName), zap.String("quality", req.Quality), zap.String("url", rsp.PresignedURL))
+	logger.Info("[AssetService] presigned URL", zap.String("imageName", req.ImageName), zap.String("quality", req.Quality), zap.String("url", rsp.PresignedURL))
 
 	return rsp, nil
 }
@@ -474,16 +474,16 @@ func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImag
 	wg.Wait()
 
 	if imageErr != nil {
-		logger.Error("[AssetService] failed to delete image", zap.Uint("userID", req.UserID), zap.String("imageName", req.ImageName), zap.Error(imageErr))
+		logger.Error("[AssetService] failed to delete image", zap.String("imageName", req.ImageName), zap.Error(imageErr))
 		return nil, protocol.ErrInternalError
 	}
 
 	if thumbnailErr != nil {
-		logger.Error("[AssetService] failed to delete thumbnail image", zap.Uint("userID", req.UserID), zap.String("imageName", req.ImageName), zap.Error(thumbnailErr))
+		logger.Error("[AssetService] failed to delete thumbnail image", zap.String("imageName", req.ImageName), zap.Error(thumbnailErr))
 		return nil, protocol.ErrInternalError
 	}
 
-	logger.Info("[AssetService] image deleted successfully", zap.Uint("userID", req.UserID), zap.String("imageName", req.ImageName))
+	logger.Info("[AssetService] image deleted successfully", zap.String("imageName", req.ImageName))
 	return rsp, nil
 }
 
@@ -495,7 +495,7 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.L
 
 	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, req.PageParam.Page, req.PageParam.PageSize)
 	if err != nil {
-		logger.Error("[AssetService] failed to list user view articles", zap.Uint("userID", req.UserID), zap.Error(err))
+		logger.Error("[AssetService] failed to list user view articles", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -525,10 +525,10 @@ func (s *assetService) DeleteUserView(ctx context.Context, req *protocol.DeleteU
 	userView, err := s.userViewDAO.GetByID(db, req.ViewID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[AssetService] user view not found", zap.Uint("userID", req.UserID), zap.Uint("viewID", req.ViewID))
+			logger.Error("[AssetService] user view not found", zap.Uint("viewID", req.ViewID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[AssetService] failed to get user view", zap.Uint("userID", req.UserID), zap.Uint("viewID", req.ViewID), zap.Error(err))
+		logger.Error("[AssetService] failed to get user view", zap.Uint("viewID", req.ViewID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -539,10 +539,10 @@ func (s *assetService) DeleteUserView(ctx context.Context, req *protocol.DeleteU
 
 	err = s.userViewDAO.Delete(db, userView)
 	if err != nil {
-		logger.Error("[AssetService] failed to delete user view", zap.Uint("userID", req.UserID), zap.Uint("viewID", req.ViewID), zap.Error(err))
+		logger.Error("[AssetService] failed to delete user view", zap.Uint("viewID", req.ViewID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	logger.Info("[AssetService] user view deleted successfully", zap.Uint("userID", req.UserID), zap.Uint("viewID", req.ViewID))
+	logger.Info("[AssetService] user view deleted successfully", zap.Uint("viewID", req.ViewID))
 	return rsp, nil
 }

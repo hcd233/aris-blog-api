@@ -87,7 +87,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 
 	if err := s.commentDAO.Create(db, comment); err != nil {
 		logger.Error("[CommentService] failed to create comment",
-			zap.Uint("userID", req.UserID),
+
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -136,7 +136,7 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 	if article.UserID != req.UserID && comment.UserID != req.UserID {
 		logger.Error("[CommentService] no permission to delete comment",
 			zap.Uint("commentUserID", comment.UserID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -173,7 +173,7 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[CommentService] no permission to list article comments",
 			zap.Uint("articleUserID", article.UserID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -231,7 +231,7 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[CommentService] no permission to list children comments",
 			zap.Uint("articleUserID", article.UserID),
-			zap.Uint("userID", req.UserID))
+		)
 		return nil, protocol.ErrNoPermission
 	}
 

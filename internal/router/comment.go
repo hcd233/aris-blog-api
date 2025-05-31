@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -21,7 +22,7 @@ func initCommentRouter(r *gin.RouterGroup) {
 		)
 		commentRouter.POST(
 			"",
-			middleware.RateLimiterMiddleware("createComment", "userID", 10*time.Second, 1),
+			middleware.RateLimiterMiddleware("createComment", constant.CtxKeyUserID, 10*time.Second, 1),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleCommentBody{}),
 			commentHandler.HandleCreateArticleComment,
 		)
