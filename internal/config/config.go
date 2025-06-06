@@ -70,10 +70,6 @@ var (
 	//	update 2024-06-22 09:01:50
 	PostgresSSLMode string
 
-	// PostgresTimezone string Postgres时区
-	//	update 2024-06-22 09:02:06
-	PostgresTimezone string
-
 	// RedisHost string Redis主机
 	RedisHost string
 
@@ -167,7 +163,7 @@ func initEnvironment() {
 	config.SetDefault("log.dir", "./logs")
 
 	config.SetDefault("postgres.sslmode", "disable")
-	config.SetDefault("postgres.timezone", "Asia/Shanghai")
+	config.SetDefault("postgres.timezone", "UTC")
 
 	config.AutomaticEnv()
 
@@ -189,7 +185,6 @@ func initEnvironment() {
 	PostgresPort = config.GetString("postgres.port")
 	PostgresDatabase = config.GetString("postgres.database")
 	PostgresSSLMode = config.GetString("postgres.sslmode")
-	PostgresTimezone = config.GetString("postgres.timezone")
 
 	RedisHost = config.GetString("redis.host")
 	RedisPort = config.GetString("redis.port")
