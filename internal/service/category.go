@@ -116,7 +116,6 @@ func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.Get
 
 	if req.UserID != category.UserID {
 		logger.Error("[CategoryService] no permission to get category",
-
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -235,7 +234,6 @@ func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.Dele
 
 	if req.UserID != category.UserID {
 		logger.Error("[CategoryService] no permission to delete category",
-
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -285,7 +283,6 @@ func (s *categoryService) ListChildrenCategories(ctx context.Context, req *proto
 
 	if req.UserID != parentCategory.UserID {
 		logger.Error("[CategoryService] no permission to list children categories",
-
 			zap.Uint("categoryUserID", parentCategory.UserID))
 		return nil, protocol.ErrNoPermission
 	}
@@ -328,7 +325,6 @@ func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protoco
 
 	if req.UserID != parentCategory.UserID {
 		logger.Error("[CategoryService] no permission to list children articles",
-
 			zap.Uint("categoryUserID", parentCategory.UserID))
 		return nil, protocol.ErrNoPermission
 	}

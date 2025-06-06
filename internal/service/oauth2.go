@@ -154,7 +154,6 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 			"last_login": time.Now(),
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update user login time",
-
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
@@ -185,7 +184,6 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 		_, err = s.imageObjDAO.CreateDir(user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create image dir",
-
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
@@ -193,7 +191,6 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 		_, err = s.thumbnailObjDAO.CreateDir(user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create thumbnail dir",
-
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
@@ -205,7 +202,6 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 			"github_bind_id": githubID,
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update github bind id",
-
 				zap.String("githubID", githubID),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -215,7 +211,6 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode access token",
-
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -223,7 +218,6 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode refresh token",
-
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
