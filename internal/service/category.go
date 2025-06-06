@@ -193,7 +193,6 @@ func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.Upda
 
 	if req.UserID != category.UserID {
 		logger.Error("[CategoryService] no permission to update category",
-
 			zap.Uint("categoryUserID", category.UserID))
 		return nil, protocol.ErrNoPermission
 	}
