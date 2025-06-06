@@ -150,10 +150,12 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 //	author centonhuang
 //	update 2024-10-02 03:45:55
 func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
+	userID := c.GetUint(constant.CtxKeyUserID)
 	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
 	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
 
 	req := &protocol.UpdateCategoryRequest{
+		UserID:     userID,
 		CategoryID: uri.CategoryID,
 		Name:       body.Name,
 		ParentID:   body.ParentID,
