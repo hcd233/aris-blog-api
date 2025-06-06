@@ -130,13 +130,11 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 	if err := s.articleDAO.Create(db, article); err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
 			logger.Error("[ArticleService] article slug duplicated",
-
 				zap.String("title", article.Title),
 				zap.String("slug", article.Slug))
 			return nil, protocol.ErrDataExists
 		}
 		logger.Error("[ArticleService] failed to create article",
-
 			zap.String("title", article.Title),
 			zap.String("slug", article.Slug),
 			zap.Error(err))
@@ -316,7 +314,6 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 
 	if len(updateFields) == 0 {
 		logger.Warn("[ArticleService] no fields to update",
-
 			zap.Uint("articleID", req.ArticleID),
 			zap.Any("updateFields", updateFields))
 		return rsp, nil

@@ -403,7 +403,6 @@ func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImag
 	}
 
 	logger.Info("[AssetService] image uploaded successfully",
-
 		zap.String("fileName", req.FileName),
 	)
 	return rsp, nil
@@ -431,7 +430,6 @@ func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageReque
 	}
 	if err != nil {
 		logger.Error("[AssetService] failed to presign object",
-
 			zap.String("imageName", req.ImageName),
 			zap.String("quality", req.Quality), zap.Error(err))
 		return nil, protocol.ErrInternalError

@@ -87,7 +87,6 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 
 	if err := s.commentDAO.Create(db, comment); err != nil {
 		logger.Error("[CommentService] failed to create comment",
-
 			zap.Uint("articleID", article.ID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
