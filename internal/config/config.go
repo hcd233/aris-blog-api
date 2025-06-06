@@ -46,25 +46,33 @@ var (
 	//	update 2024-06-22 08:59:07
 	Oauth2GithubRedirectURL string
 
-	// MysqlUser string Mysql用户名
+	// PostgresUser string Postgres用户名
 	//	update 2024-06-22 09:00:30
-	MysqlUser string
+	PostgresUser string
 
-	// MysqlPassword string Mysql密码
+	// PostgresPassword string Postgres密码
 	//	update 2024-06-22 09:00:45
-	MysqlPassword string
+	PostgresPassword string
 
-	// MysqlHost string Mysql主机
+	// PostgresHost string Postgres主机
 	//	update 2024-06-22 09:01:02
-	MysqlHost string
+	PostgresHost string
 
-	// MysqlPort string Mysql端口
+	// PostgresPort string Postgres端口
 	//	update 2024-06-22 09:01:18
-	MysqlPort string
+	PostgresPort string
 
-	// MysqlDatabase string Mysql数据库
+	// PostgresDatabase string Postgres数据库
 	//	update 2024-06-22 09:01:34
-	MysqlDatabase string
+	PostgresDatabase string
+
+	// PostgresSSLMode string Postgres SSL模式
+	//	update 2024-06-22 09:01:50
+	PostgresSSLMode string
+
+	// PostgresTimezone string Postgres时区
+	//	update 2024-06-22 09:02:06
+	PostgresTimezone string
 
 	// RedisHost string Redis主机
 	RedisHost string
@@ -158,6 +166,9 @@ func initEnvironment() {
 	config.SetDefault("log.level", "info")
 	config.SetDefault("log.dir", "./logs")
 
+	config.SetDefault("postgres.sslmode", "disable")
+	config.SetDefault("postgres.timezone", "Asia/Shanghai")
+
 	config.AutomaticEnv()
 
 	ReadTimeout = time.Duration(config.GetInt("read.timeout")) * time.Second
@@ -172,11 +183,13 @@ func initEnvironment() {
 	Oauth2StateString = config.GetString("oauth2.state.string")
 	Oauth2GithubRedirectURL = config.GetString("oauth2.github.redirect.url")
 
-	MysqlUser = config.GetString("mysql.user")
-	MysqlPassword = config.GetString("mysql.password")
-	MysqlHost = config.GetString("mysql.host")
-	MysqlPort = config.GetString("mysql.port")
-	MysqlDatabase = config.GetString("mysql.database")
+	PostgresUser = config.GetString("postgres.user")
+	PostgresPassword = config.GetString("postgres.password")
+	PostgresHost = config.GetString("postgres.host")
+	PostgresPort = config.GetString("postgres.port")
+	PostgresDatabase = config.GetString("postgres.database")
+	PostgresSSLMode = config.GetString("postgres.sslmode")
+	PostgresTimezone = config.GetString("postgres.timezone")
 
 	RedisHost = config.GetString("redis.host")
 	RedisPort = config.GetString("redis.port")
