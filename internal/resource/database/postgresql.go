@@ -14,11 +14,12 @@ import (
 
 	"github.com/samber/lo"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
 )
 
-// DB undefined mysql数据库连接
+// DB undefined 数据库连接
 //
 //	update 2024-09-16 01:24:51
 var db *gorm.DB
@@ -37,19 +38,31 @@ func GetDBInstance(ctx context.Context) *gorm.DB {
 //	author centonhuang
 //	update 2024-09-22 10:04:36
 func InitDatabase() {
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
+	var dialector gorm.Dialector
+	var dbHost, dbPort, dbName string
 
-	db = lo.Must(gorm.Open(mysql.New(mysql.Config{
-		DSN:               dsn,
-		DefaultStringSize: 256,
-	}),
-		&gorm.Config{
-			DryRun:         false, // 只生成SQL不运行
-			TranslateError: true,
-			Logger: &GormLoggerAdapter{
-				LogLevel: gormlogger.Info, // Info级别
-			},
-		}))
+	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
+			config.PostgresHost, config.PostgresUser, config.PostgresPassword,
+			config.PostgresDatabase, config.PostgresPort, config.PostgresSSLMode, config.PostgresTimezone)
+		dialector = postgres.Open(dsn)
+		dbHost, dbPort, dbName = config.PostgresHost, config.PostgresPort, config.PostgresDatabase
+
+	// 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
+	// 		config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
+	// 	dialector = mysql.New(mysql.Config{
+	// 		DSN:               dsn,
+	// 		DefaultStringSize: 256,
+	// 	})
+	// 	dbHost, dbPort, dbName = config.MysqlHost, config.MysqlPort, config.MysqlDatabase
+
+
+	db = lo.Must(gorm.Open(dialector, &gorm.Config{
+		DryRun:         false, // 只生成SQL不运行
+		TranslateError: true,
+		Logger: &GormLoggerAdapter{
+			LogLevel: gormlogger.Info, // Info级别
+		},
+	}))
 
 	sqlDB := lo.Must(db.DB())
 
@@ -57,7 +70,10 @@ func InitDatabase() {
 	sqlDB.SetMaxOpenConns(100)
 	sqlDB.SetConnMaxLifetime(5 * time.Hour)
 
-	logger.Logger().Info("[Database] Connected to MySQL database", zap.String("host", config.MysqlHost), zap.String("port", config.MysqlPort), zap.String("database", config.MysqlDatabase))
+	logger.Logger().Info("[Database] Connected to database",
+		zap.String("host", dbHost),
+		zap.String("port", dbPort),
+		zap.String("database", dbName))
 }
 
 // GormLoggerAdapter 实现gorm的logger接口,使用zap输出SQL日志

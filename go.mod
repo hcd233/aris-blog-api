@@ -27,6 +27,7 @@ require (
 	golang.org/x/oauth2 v0.21.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/mysql v1.5.7
+	gorm.io/driver/postgres v1.6.0
 	gorm.io/gorm v1.25.10
 )
 
@@ -44,6 +45,10 @@ require (
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/goph/emperror v0.17.2 // indirect
 	github.com/invopop/yaml v0.2.0 // indirect
+	github.com/jackc/pgpassfile v1.0.0 // indirect
+	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
+	github.com/jackc/pgx/v5 v5.6.0 // indirect
+	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
 	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250408071642-761325becfd6 // indirect
@@ -54,6 +59,7 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/slongfield/pyfmt v0.0.0-20220222012616-ea85ff4c361f // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
+	golang.org/x/sync v0.14.0 // indirect
 	golang.org/x/tools v0.28.0 // indirect
 )
 
