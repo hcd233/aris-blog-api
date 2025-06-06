@@ -13,7 +13,6 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/samber/lo"
-	"gorm.io/driver/mysql"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	gormlogger "gorm.io/gorm/logger"
@@ -42,10 +41,10 @@ func InitDatabase() {
 	var dbHost, dbPort, dbName string
 
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%s sslmode=%s TimeZone=%s",
-			config.PostgresHost, config.PostgresUser, config.PostgresPassword,
-			config.PostgresDatabase, config.PostgresPort, config.PostgresSSLMode, config.PostgresTimezone)
-		dialector = postgres.Open(dsn)
-		dbHost, dbPort, dbName = config.PostgresHost, config.PostgresPort, config.PostgresDatabase
+		config.PostgresHost, config.PostgresUser, config.PostgresPassword,
+		config.PostgresDatabase, config.PostgresPort, config.PostgresSSLMode, config.PostgresTimezone)
+	dialector = postgres.Open(dsn)
+	dbHost, dbPort, dbName = config.PostgresHost, config.PostgresPort, config.PostgresDatabase
 
 	// 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 	// 		config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
@@ -54,7 +53,6 @@ func InitDatabase() {
 	// 		DefaultStringSize: 256,
 	// 	})
 	// 	dbHost, dbPort, dbName = config.MysqlHost, config.MysqlPort, config.MysqlDatabase
-
 
 	db = lo.Must(gorm.Open(dialector, &gorm.Config{
 		DryRun:         false, // 只生成SQL不运行
