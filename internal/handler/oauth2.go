@@ -7,13 +7,13 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
-// Oauth2Handler OAuth2处理器
+// Oauth2Handler OAuth2处理器接口
 type Oauth2Handler interface {
 	HandleLogin(c *gin.Context)
 	HandleCallback(c *gin.Context)
 }
 
-type githubOauth2Handler struct {
+type oauth2Handler struct {
 	svc service.Oauth2Service
 }
 
@@ -23,15 +23,29 @@ type githubOauth2Handler struct {
 //	author centonhuang
 //	update 2025-01-05 13:43:43
 func NewGithubOauth2Handler() Oauth2Handler {
-	return &githubOauth2Handler{
+	return &oauth2Handler{
 		svc: service.NewGithubOauth2Service(),
 	}
 }
 
-// HandleLogin Github OAuth2登录
+// NewQQOauth2Handler 创建QQ OAuth2处理器
+func NewQQOauth2Handler() Oauth2Handler {
+	return &oauth2Handler{
+		svc: service.NewQQOauth2Service(),
+	}
+}
+
+// NewGoogleOauth2Handler 创建Google OAuth2处理器
+func NewGoogleOauth2Handler() Oauth2Handler {
+	return &oauth2Handler{
+		svc: service.NewGoogleOauth2Service(),
+	}
+}
+
+// HandleLogin OAuth2登录
 //
-//	@Summary		Github OAuth2登录
-//	@Description	Github OAuth2登录请求,返回重定向URL
+//	@Summary		OAuth2登录
+//	@Description	OAuth2登录请求,返回重定向URL
 //	@Tags			oauth2
 //	@Accept			json
 //	@Produce		json
@@ -40,12 +54,11 @@ func NewGithubOauth2Handler() Oauth2Handler {
 //	@Failure		401	{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403	{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500	{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/oauth2/github/login [get]
-//	receiver h *githubOauth2Handler
+//	receiver h *oauth2Handler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 13:43:42
-func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
+func (h *oauth2Handler) HandleLogin(c *gin.Context) {
 	req := &protocol.LoginRequest{}
 
 	rsp, err := h.svc.Login(c, req)
@@ -53,10 +66,10 @@ func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
 	util.SendHTTPResponse(c, rsp, err)
 }
 
-// HandleCallback Github OAuth2回调
+// HandleCallback OAuth2回调
 //
-//	@Summary		Github OAuth2回调
-//	@Description	Github OAuth2回调请求,验证code和state
+//	@Summary		OAuth2回调
+//	@Description	OAuth2回调请求,验证code和state
 //	@Tags			oauth2
 //	@Accept			json
 //	@Produce		json
@@ -67,13 +80,12 @@ func (h *githubOauth2Handler) HandleLogin(c *gin.Context) {
 //	@Failure		401		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/oauth2/github/callback [get]
-//	receiver h *githubOauth2Handler
+//	receiver h *oauth2Handler
 //	param c *gin.Context
 //	author centonhuang
 //	update 2025-01-05 13:43:36
-func (h *githubOauth2Handler) HandleCallback(c *gin.Context) {
-	params := protocol.GithubCallbackParam{}
+func (h *oauth2Handler) HandleCallback(c *gin.Context) {
+	params := protocol.OAuth2CallbackParam{}
 	if err := c.BindQuery(&params); err != nil {
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 		return

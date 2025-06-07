@@ -9,6 +9,18 @@ type GithubCallbackParam struct {
 	State string `form:"state" binding:"required"`
 }
 
+// QQCallbackParam QQ回调请求参数
+type QQCallbackParam struct {
+	Code  string `form:"code" binding:"required"`
+	State string `form:"state" binding:"required"`
+}
+
+// OAuth2CallbackParam 通用OAuth2回调请求参数
+type OAuth2CallbackParam struct {
+	Code  string `form:"code" binding:"required"`
+	State string `form:"state" binding:"required"`
+}
+
 // PageParam 列表参数
 //
 //	author centonhuang

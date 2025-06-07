@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -15,20 +16,57 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	objdao "github.com/hcd233/aris-blog-api/internal/resource/storage/obj_dao"
+	"google.golang.org/api/people/v1"
 
 	"github.com/hcd233/aris-blog-api/internal/util"
 	"go.uber.org/zap"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/github"
+	"golang.org/x/oauth2/google"
 	"gorm.io/gorm"
 )
 
+// OAuth2Provider 第三方OAuth2提供商类型
+type OAuth2Provider string
+
 const (
-	githubUserURL      = "https://api.github.com/user"
-	githubUserEmailURL = "https://api.github.com/user/emails"
+	// ProviderGithub GitHub OAuth2提供商
+	ProviderGithub OAuth2Provider = "github"
+	// ProviderQQ QQ OAuth2提供商
+	ProviderQQ OAuth2Provider = "qq"
+	// ProviderGoogle Google OAuth2提供商
+	ProviderGoogle OAuth2Provider = "google"
 )
 
-var githubUserScopes = []string{"user:email", "repo", "read:org"}
+// 第三方服务常量定义
+const (
+	// GitHub相关
+	githubUserURL      = "https://api.github.com/user"
+	githubUserEmailURL = "https://api.github.com/user/emails"
+
+	// QQ相关
+	qqAuthorizeURL = "https://graph.qq.com/oauth2.0/authorize"
+	qqTokenURL     = "https://graph.qq.com/oauth2.0/token"
+	qqUserInfoURL  = "https://graph.qq.com/user/get_user_info"
+	qqOpenIDURL    = "https://graph.qq.com/oauth2.0/me"
+
+	// Google相关
+	googleUserInfoURL = "https://people.googleapis.com/v1/people/me"
+)
+
+var (
+	githubUserScopes = []string{"user:email", "repo", "read:org"}
+	qqUserScopes     = []string{"get_user_info"}
+	googleUserScopes = []string{"https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"}
+)
+
+// OAuth2UserInfo 第三方用户信息接口
+type OAuth2UserInfo interface {
+	GetID() string
+	GetName() string
+	GetEmail() string
+	GetAvatar() string
+}
 
 // GithubUserInfo Github用户信息结构体
 type GithubUserInfo struct {
@@ -38,23 +76,107 @@ type GithubUserInfo struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
+func (u *GithubUserInfo) GetID() string {
+	return strconv.FormatInt(u.ID, 10)
+}
+
+func (u *GithubUserInfo) GetName() string {
+	return u.Login
+}
+
+func (u *GithubUserInfo) GetEmail() string {
+	return u.Email
+}
+
+func (u *GithubUserInfo) GetAvatar() string {
+	return u.AvatarURL
+}
+
 // GithubEmail Github邮箱信息结构体
 type GithubEmail struct {
 	Email   string `json:"email"`
 	Primary bool   `json:"primary"`
 }
 
-// Oauth2Service OAuth2服务
-//
-//	author centonhuang
-//	update 2025-01-05 13:43:22
+// QQUserInfo QQ用户信息结构体
+type QQUserInfo struct {
+	OpenID   string `json:"openid"`
+	Nickname string `json:"nickname"`
+	Avatar   string `json:"figureurl_qq_1"`
+}
+
+func (u *QQUserInfo) GetID() string {
+	return u.OpenID
+}
+
+func (u *QQUserInfo) GetName() string {
+	return u.Nickname
+}
+
+func (u *QQUserInfo) GetEmail() string {
+	// QQ OAuth2默认不提供邮箱，使用openid@qq.oauth.placeholder格式
+	return fmt.Sprintf("%s@qq.oauth.placeholder", u.OpenID)
+}
+
+func (u *QQUserInfo) GetAvatar() string {
+	return u.Avatar
+}
+
+// QQOpenIDResponse QQ OpenID响应结构体
+type QQOpenIDResponse struct {
+	ClientID string `json:"client_id"`
+	OpenID   string `json:"openid"`
+}
+
+// GoogleUserInfo Google用户信息结构体
+type GoogleUserInfo struct {
+	ID       string `json:"resourceName"`
+	Name     string `json:"displayName"`
+	Email    string `json:"emailAddress"`
+	PhotoURL string `json:"photoUrl"`
+}
+
+func (u *GoogleUserInfo) GetID() string {
+	// resourceName格式为 "people/用户ID"，需要提取ID部分
+	if len(u.ID) > 7 && u.ID[:7] == "people/" {
+		return u.ID[7:]
+	}
+	return u.ID
+}
+
+func (u *GoogleUserInfo) GetName() string {
+	return u.Name
+}
+
+func (u *GoogleUserInfo) GetEmail() string {
+	return u.Email
+}
+
+func (u *GoogleUserInfo) GetAvatar() string {
+	return u.PhotoURL
+}
+
+// OAuth2Provider 第三方OAuth2提供商接口
+type OAuth2ProviderInterface interface {
+	// GetAuthURL 获取授权URL
+	GetAuthURL() string
+	// ExchangeToken 通过授权码获取Access Token
+	ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error)
+	// GetUserInfo 获取用户信息
+	GetUserInfo(ctx context.Context, token *oauth2.Token) (OAuth2UserInfo, error)
+	// GetBindField 获取绑定字段名
+	GetBindField() string
+}
+
+// Oauth2Service OAuth2服务接口
 type Oauth2Service interface {
 	Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error)
 	Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error)
 }
 
-type githubOauth2Service struct {
-	oauth2Config       *oauth2.Config
+// oauth2Service OAuth2服务基础实现
+type oauth2Service struct {
+	provider           OAuth2ProviderInterface
 	userDAO            *dao.UserDAO
 	imageObjDAO        objdao.ObjDAO
 	thumbnailObjDAO    objdao.ObjDAO
@@ -62,16 +184,13 @@ type githubOauth2Service struct {
 	refreshTokenSigner auth.JwtTokenSigner
 }
 
-// NewGithubOauth2Service 创建OAuth2服务
-//
-//	return Oauth2Service
-//	author centonhuang
-//	update 2025-01-05 13:43:24
-func NewGithubOauth2Service() Oauth2Service {
-	return &githubOauth2Service{
-		userDAO:         dao.GetUserDAO(),
-		imageObjDAO:     objdao.GetImageObjDAO(),
-		thumbnailObjDAO: objdao.GetThumbnailObjDAO(),
+// githubProvider GitHub OAuth2提供商实现
+type githubProvider struct {
+	oauth2Config *oauth2.Config
+}
+
+func newGithubProvider() OAuth2ProviderInterface {
+	return &githubProvider{
 		oauth2Config: &oauth2.Config{
 			Endpoint:     github.Endpoint,
 			Scopes:       githubUserScopes,
@@ -79,24 +198,251 @@ func NewGithubOauth2Service() Oauth2Service {
 			ClientSecret: config.Oauth2GithubClientSecret,
 			RedirectURL:  config.Oauth2GithubRedirectURL,
 		},
+	}
+}
+
+func (p *githubProvider) GetAuthURL() string {
+	return p.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
+}
+
+func (p *githubProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
+	return p.oauth2Config.Exchange(ctx, code)
+}
+
+func (p *githubProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (OAuth2UserInfo, error) {
+	client := p.oauth2Config.Client(ctx, token)
+
+	// 获取用户基本信息
+	resp, err := client.Get(githubUserURL)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	var userInfo GithubUserInfo
+	if err := sonic.ConfigDefault.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
+		return nil, err
+	}
+
+	// 获取用户邮箱信息
+	emailResp, err := client.Get(githubUserEmailURL)
+	if err != nil {
+		return nil, err
+	}
+	defer emailResp.Body.Close()
+
+	var emails []GithubEmail
+	if err := sonic.ConfigDefault.NewDecoder(emailResp.Body).Decode(&emails); err != nil {
+		return nil, err
+	}
+
+	// 选择主邮箱
+	for _, email := range emails {
+		if email.Primary {
+			userInfo.Email = email.Email
+			break
+		}
+	}
+
+	return &userInfo, nil
+}
+
+func (p *githubProvider) GetBindField() string {
+	return "github_bind_id"
+}
+
+// qqProvider QQ OAuth2提供商实现
+type qqProvider struct {
+	oauth2Config *oauth2.Config
+}
+
+func newQQProvider() OAuth2ProviderInterface {
+	return &qqProvider{
+		oauth2Config: &oauth2.Config{
+			Endpoint: oauth2.Endpoint{
+				AuthURL:  qqAuthorizeURL,
+				TokenURL: qqTokenURL,
+			},
+			Scopes:       qqUserScopes,
+			ClientID:     config.Oauth2QQClientID,
+			ClientSecret: config.Oauth2QQClientSecret,
+			RedirectURL:  config.Oauth2QQRedirectURL,
+		},
+	}
+}
+
+func (p *qqProvider) GetAuthURL() string {
+	return p.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
+}
+
+func (p *qqProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
+	return p.oauth2Config.Exchange(ctx, code)
+}
+
+func (p *qqProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (OAuth2UserInfo, error) {
+	client := p.oauth2Config.Client(ctx, token)
+
+	// 获取OpenID
+	openIDResp, err := client.Get(fmt.Sprintf("%s?access_token=%s&fmt=json", qqOpenIDURL, token.AccessToken))
+	if err != nil {
+		return nil, err
+	}
+	defer openIDResp.Body.Close()
+
+	var openIDData QQOpenIDResponse
+	if err := sonic.ConfigDefault.NewDecoder(openIDResp.Body).Decode(&openIDData); err != nil {
+		return nil, err
+	}
+
+	// 获取用户信息
+	userInfoURL := fmt.Sprintf("%s?access_token=%s&oauth_consumer_key=%s&openid=%s",
+		qqUserInfoURL, token.AccessToken, p.oauth2Config.ClientID, openIDData.OpenID)
+
+	userResp, err := client.Get(userInfoURL)
+	if err != nil {
+		return nil, err
+	}
+	defer userResp.Body.Close()
+
+	var userInfo QQUserInfo
+	if err := sonic.ConfigDefault.NewDecoder(userResp.Body).Decode(&userInfo); err != nil {
+		return nil, err
+	}
+
+	userInfo.OpenID = openIDData.OpenID
+	return &userInfo, nil
+}
+
+func (p *qqProvider) GetBindField() string {
+	return "qq_bind_id"
+}
+
+// googleProvider Google OAuth2提供商实现
+type googleProvider struct {
+	oauth2Config *oauth2.Config
+}
+
+func newGoogleProvider() OAuth2ProviderInterface {
+	return &googleProvider{
+		oauth2Config: &oauth2.Config{
+			Endpoint:     google.Endpoint,
+			Scopes:       googleUserScopes,
+			ClientID:     config.Oauth2GoogleClientID,
+			ClientSecret: config.Oauth2GoogleClientSecret,
+			RedirectURL:  config.Oauth2GoogleRedirectURL,
+		},
+	}
+}
+
+func (p *googleProvider) GetAuthURL() string {
+	return p.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
+}
+
+func (p *googleProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
+	return p.oauth2Config.Exchange(ctx, code)
+}
+
+func (p *googleProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (OAuth2UserInfo, error) {
+	// 使用Google People API获取用户信息
+	peopleService, err := people.New(p.oauth2Config.Client(ctx, token))
+	if err != nil {
+		return nil, err
+	}
+
+	person, err := peopleService.People.Get("people/me").
+		PersonFields("names,emailAddresses,photos").
+		Do()
+	if err != nil {
+		return nil, err
+	}
+
+	userInfo := &GoogleUserInfo{
+		ID: person.ResourceName,
+	}
+
+	// 获取显示名称
+	if len(person.Names) > 0 {
+		userInfo.Name = person.Names[0].DisplayName
+	}
+
+	// 获取主要邮箱
+	if len(person.EmailAddresses) > 0 {
+		for _, email := range person.EmailAddresses {
+			if email.Metadata.Primary {
+				userInfo.Email = email.Value
+				break
+			}
+		}
+		// 如果没有找到主邮箱，使用第一个邮箱
+		if userInfo.Email == "" {
+			userInfo.Email = person.EmailAddresses[0].Value
+		}
+	}
+
+	// 获取头像
+	if len(person.Photos) > 0 {
+		for _, photo := range person.Photos {
+			if photo.Metadata.Primary {
+				userInfo.PhotoURL = photo.Url
+				break
+			}
+		}
+		// 如果没有找到主头像，使用第一个头像
+		if userInfo.PhotoURL == "" {
+			userInfo.PhotoURL = person.Photos[0].Url
+		}
+	}
+
+	return userInfo, nil
+}
+
+func (p *googleProvider) GetBindField() string {
+	return "google_bind_id"
+}
+
+// NewGithubOauth2Service 创建Github OAuth2服务
+func NewGithubOauth2Service() Oauth2Service {
+	return &oauth2Service{
+		provider:           newGithubProvider(),
+		userDAO:            dao.GetUserDAO(),
+		imageObjDAO:        objdao.GetImageObjDAO(),
+		thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
+		accessTokenSigner:  auth.GetJwtAccessTokenSigner(),
+		refreshTokenSigner: auth.GetJwtRefreshTokenSigner(),
+	}
+}
+
+// NewQQOauth2Service 创建QQ OAuth2服务
+func NewQQOauth2Service() Oauth2Service {
+	return &oauth2Service{
+		provider:           newQQProvider(),
+		userDAO:            dao.GetUserDAO(),
+		imageObjDAO:        objdao.GetImageObjDAO(),
+		thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
+		accessTokenSigner:  auth.GetJwtAccessTokenSigner(),
+		refreshTokenSigner: auth.GetJwtRefreshTokenSigner(),
+	}
+}
+
+// NewGoogleOauth2Service 创建Google OAuth2服务
+func NewGoogleOauth2Service() Oauth2Service {
+	return &oauth2Service{
+		provider:           newGoogleProvider(),
+		userDAO:            dao.GetUserDAO(),
+		imageObjDAO:        objdao.GetImageObjDAO(),
+		thumbnailObjDAO:    objdao.GetThumbnailObjDAO(),
 		accessTokenSigner:  auth.GetJwtAccessTokenSigner(),
 		refreshTokenSigner: auth.GetJwtRefreshTokenSigner(),
 	}
 }
 
 // Login 登录
-//
-//	receiver s *oauth2Service
-//	return rsp *protocol.LoginResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 14:23:26
-func (s *githubOauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
+func (s *oauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
 	rsp = &protocol.LoginResponse{}
 
 	logger := logger.LoggerWithContext(ctx)
 
-	url := s.oauth2Config.AuthCodeURL(config.Oauth2StateString, oauth2.AccessTypeOffline)
+	url := s.provider.GetAuthURL()
 	rsp.RedirectURL = url
 
 	logger.Info("[Oauth2Service] login", zap.String("redirectURL", url))
@@ -105,14 +451,7 @@ func (s *githubOauth2Service) Login(ctx context.Context, req *protocol.LoginRequ
 }
 
 // Callback 回调
-//
-//	receiver s *oauth2Service
-//	param req *protocol.CallbackRequest
-//	return rsp *protocol.CallbackResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 14:23:26
-func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
+func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
 	rsp = &protocol.CallbackResponse{}
 
 	logger := logger.LoggerWithContext(ctx)
@@ -125,20 +464,20 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 		return nil, protocol.ErrUnauthorized
 	}
 
-	token, err := s.oauth2Config.Exchange(context.Background(), req.Code)
+	token, err := s.provider.ExchangeToken(ctx, req.Code)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to exchange token", zap.Error(err))
 		return nil, protocol.ErrUnauthorized
 	}
 
-	userInfo, err := s.getGithubUserInfo(token)
+	userInfo, err := s.provider.GetUserInfo(ctx, token)
 	if err != nil {
-		logger.Error("[Oauth2Service] failed to get github user info", zap.Error(err))
+		logger.Error("[Oauth2Service] failed to get user info", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	githubID := strconv.FormatInt(userInfo.ID, 10)
-	userName, email, avatar := userInfo.Login, userInfo.Email, userInfo.AvatarURL
+	thirdPartyID := userInfo.GetID()
+	userName, email, avatar := userInfo.GetName(), userInfo.GetEmail(), userInfo.GetAvatar()
 
 	user, err := s.userDAO.GetByEmail(db, email, []string{"id", "name", "avatar"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -149,7 +488,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	}
 
 	if user.ID != 0 {
-		// 更新已存在用户
+		// 更新已存在用户的登录时间
 		if err := s.userDAO.Update(db, user, map[string]interface{}{
 			"last_login": time.Now(),
 		}); err != nil {
@@ -188,6 +527,7 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 			return nil, protocol.ErrInternalError
 		}
 		logger.Info("[Oauth2Service] image dir created")
+
 		_, err = s.thumbnailObjDAO.CreateDir(user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create thumbnail dir",
@@ -197,15 +537,18 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 		logger.Info("[Oauth2Service] thumbnail dir created")
 	}
 
-	if user.GithubBindID == "" {
-		if err := s.userDAO.Update(db, user, map[string]interface{}{
-			"github_bind_id": githubID,
-		}); err != nil {
-			logger.Error("[Oauth2Service] failed to update github bind id",
-				zap.String("githubID", githubID),
-				zap.Error(err))
-			return nil, protocol.ErrInternalError
-		}
+	// 更新第三方平台绑定ID
+	bindField := s.provider.GetBindField()
+	updateData := map[string]interface{}{
+		bindField: thirdPartyID,
+	}
+
+	if err := s.userDAO.Update(db, user, updateData); err != nil {
+		logger.Error("[Oauth2Service] failed to update third party bind id",
+			zap.String("bindField", bindField),
+			zap.String("thirdPartyID", thirdPartyID),
+			zap.Error(err))
+		return nil, protocol.ErrInternalError
 	}
 
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
@@ -226,50 +569,4 @@ func (s *githubOauth2Service) Callback(ctx context.Context, req *protocol.Callba
 	rsp.RefreshToken = refreshToken
 
 	return rsp, nil
-}
-
-// getGithubUserInfo 获取Github用户信息
-//
-//	receiver s *oauth2Service
-//	param token *oauth2.Token
-//	return *GithubUserInfo
-//	return error
-//	author centonhuang
-//	update 2025-01-05 14:23:26
-func (s *githubOauth2Service) getGithubUserInfo(token *oauth2.Token) (*GithubUserInfo, error) {
-	client := s.oauth2Config.Client(context.Background(), token)
-
-	// 获取用户基本信息
-	resp, err := client.Get(githubUserURL)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	var userInfo GithubUserInfo
-	if err := sonic.ConfigDefault.NewDecoder(resp.Body).Decode(&userInfo); err != nil {
-		return nil, err
-	}
-
-	// 获取用户邮箱信息
-	emailResp, err := client.Get(githubUserEmailURL)
-	if err != nil {
-		return nil, err
-	}
-	defer emailResp.Body.Close()
-
-	var emails []GithubEmail
-	if err := sonic.ConfigDefault.NewDecoder(emailResp.Body).Decode(&emails); err != nil {
-		return nil, err
-	}
-
-	// 选择主邮箱
-	for _, email := range emails {
-		if email.Primary {
-			userInfo.Email = email.Email
-			break
-		}
-	}
-
-	return &userInfo, nil
 }
