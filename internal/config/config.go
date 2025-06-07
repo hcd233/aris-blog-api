@@ -46,6 +46,24 @@ var (
 	//	update 2024-06-22 08:59:07
 	Oauth2GithubRedirectURL string
 
+	// Oauth2QQClientID string QQ OAuth2 Client ID
+	Oauth2QQClientID string
+
+	// Oauth2QQClientSecret string QQ OAuth2 Client Secret
+	Oauth2QQClientSecret string
+
+	// Oauth2QQRedirectURL string QQ OAuth2 Redirect URL
+	Oauth2QQRedirectURL string
+
+	// Oauth2GoogleClientID string Google OAuth2 Client ID
+	Oauth2GoogleClientID string
+
+	// Oauth2GoogleClientSecret string Google OAuth2 Client Secret
+	Oauth2GoogleClientSecret string
+
+	// Oauth2GoogleRedirectURL string Google OAuth2 Redirect URL
+	Oauth2GoogleRedirectURL string
+
 	// PostgresUser string Postgres用户名
 	//	update 2024-06-22 09:00:30
 	PostgresUser string
@@ -163,7 +181,6 @@ func initEnvironment() {
 	config.SetDefault("log.dir", "./logs")
 
 	config.SetDefault("postgres.sslmode", "disable")
-	config.SetDefault("postgres.timezone", "UTC")
 
 	config.AutomaticEnv()
 
@@ -178,6 +195,14 @@ func initEnvironment() {
 	Oauth2GithubClientSecret = config.GetString("oauth2.github.client.secret")
 	Oauth2StateString = config.GetString("oauth2.state.string")
 	Oauth2GithubRedirectURL = config.GetString("oauth2.github.redirect.url")
+
+	Oauth2QQClientID = config.GetString("oauth2.qq.client.id")
+	Oauth2QQClientSecret = config.GetString("oauth2.qq.client.secret")
+	Oauth2QQRedirectURL = config.GetString("oauth2.qq.redirect.url")
+
+	Oauth2GoogleClientID = config.GetString("oauth2.google.client.id")
+	Oauth2GoogleClientSecret = config.GetString("oauth2.google.client.secret")
+	Oauth2GoogleRedirectURL = config.GetString("oauth2.google.redirect.url")
 
 	PostgresUser = config.GetString("postgres.user")
 	PostgresPassword = config.GetString("postgres.password")

@@ -33,6 +33,12 @@ const (
 	//	update 2024-06-22 10:05:13
 	PlatformGithub Platform = "github"
 
+	// PlatformQQ qq user
+	PlatformQQ Platform = "qq"
+
+	// PlatformGoogle google user
+	PlatformGoogle Platform = "google"
+
 	// PermissionReader general permission
 	//	update 2024-06-22 10:05:15
 	PermissionReader Permission = "reader"
@@ -88,6 +94,8 @@ type User struct {
 	Permission   Permission `json:"permission" gorm:"column:permission;not null;default:'reader';comment:权限"`
 	LastLogin    time.Time  `json:"last_login" gorm:"column:last_login;comment:最后登录时间"`
 	GithubBindID string     `json:"-" gorm:"unique;comment:Github绑定ID"`
+	QQBindID     string     `json:"-" gorm:"unique;comment:QQ绑定ID"`
+	GoogleBindID string     `json:"-" gorm:"unique;comment:Google绑定ID"`
 	LLMQuota     Quota      `json:"llm_quota" gorm:"column:llm_quota;not null;default:0;comment:LLM配额"`
 	Articles     []Article  `json:"articles" gorm:"foreignKey:UserID"`
 	Categories   []Category `json:"categories" gorm:"foreignKey:UserID"`
