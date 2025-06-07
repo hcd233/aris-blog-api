@@ -16,7 +16,6 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	objdao "github.com/hcd233/aris-blog-api/internal/resource/storage/obj_dao"
-	"google.golang.org/api/people/v1"
 
 	"github.com/hcd233/aris-blog-api/internal/util"
 	"go.uber.org/zap"
@@ -57,7 +56,13 @@ const (
 var (
 	githubUserScopes = []string{"user:email", "repo", "read:org"}
 	qqUserScopes     = []string{"get_user_info"}
-	googleUserScopes = []string{"https://www.googleapis.com/auth/userinfo.profile", "https://www.googleapis.com/auth/userinfo.email"}
+	googleUserScopes = []string{
+		"openid",
+		"profile",
+		"email",
+		"https://www.googleapis.com/auth/userinfo.profile",
+		"https://www.googleapis.com/auth/userinfo.email",
+	}
 )
 
 // OAuth2UserInfo 第三方用户信息接口
@@ -130,17 +135,13 @@ type QQOpenIDResponse struct {
 
 // GoogleUserInfo Google用户信息结构体
 type GoogleUserInfo struct {
-	ID       string `json:"resourceName"`
-	Name     string `json:"displayName"`
-	Email    string `json:"emailAddress"`
-	PhotoURL string `json:"photoUrl"`
+	ID       string `json:"id"`
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	PhotoURL string `json:"picture"`
 }
 
 func (u *GoogleUserInfo) GetID() string {
-	// resourceName格式为 "people/用户ID"，需要提取ID部分
-	if len(u.ID) > 7 && u.ID[:7] == "people/" {
-		return u.ID[7:]
-	}
 	return u.ID
 }
 
@@ -339,58 +340,64 @@ func (p *googleProvider) GetAuthURL() string {
 }
 
 func (p *googleProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
-	return p.oauth2Config.Exchange(ctx, code)
+	logger := logger.LoggerWithContext(ctx)
+
+	logger.Info("[GoogleOauth2] exchanging code for token",
+		zap.String("clientID", p.oauth2Config.ClientID),
+		zap.String("redirectURL", p.oauth2Config.RedirectURL),
+		zap.Strings("scopes", p.oauth2Config.Scopes))
+
+	token, err := p.oauth2Config.Exchange(ctx, code)
+	if err != nil {
+		logger.Error("[GoogleOauth2] token exchange failed", zap.Error(err))
+		return nil, err
+	}
+
+	logger.Info("[GoogleOauth2] token exchange successful")
+	return token, nil
 }
 
 func (p *googleProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (OAuth2UserInfo, error) {
-	// 使用Google People API获取用户信息
-	peopleService, err := people.New(p.oauth2Config.Client(ctx, token))
+	logger := logger.LoggerWithContext(ctx)
+
+	// 使用HTTP客户端直接调用Google OAuth2 UserInfo API
+	client := p.oauth2Config.Client(ctx, token)
+
+	logger.Info("[GoogleOauth2] calling Google UserInfo API")
+
+	// 调用Google UserInfo API
+	resp, err := client.Get("https://www.googleapis.com/oauth2/v2/userinfo")
 	if err != nil {
+		logger.Error("[GoogleOauth2] failed to call userinfo API", zap.Error(err))
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	logger.Info("[GoogleOauth2] userinfo API response",
+		zap.Int("statusCode", resp.StatusCode))
+
+	var userInfoResp struct {
+		ID      string `json:"id"`
+		Name    string `json:"name"`
+		Email   string `json:"email"`
+		Picture string `json:"picture"`
+	}
+
+	if err := sonic.ConfigDefault.NewDecoder(resp.Body).Decode(&userInfoResp); err != nil {
+		logger.Error("[GoogleOauth2] failed to decode userinfo response", zap.Error(err))
 		return nil, err
 	}
 
-	person, err := peopleService.People.Get("people/me").
-		PersonFields("names,emailAddresses,photos").
-		Do()
-	if err != nil {
-		return nil, err
-	}
+	logger.Info("[GoogleOauth2] successfully decoded user info",
+		zap.String("userID", userInfoResp.ID),
+		zap.String("userName", userInfoResp.Name),
+		zap.String("userEmail", userInfoResp.Email))
 
 	userInfo := &GoogleUserInfo{
-		ID: person.ResourceName,
-	}
-
-	// 获取显示名称
-	if len(person.Names) > 0 {
-		userInfo.Name = person.Names[0].DisplayName
-	}
-
-	// 获取主要邮箱
-	if len(person.EmailAddresses) > 0 {
-		for _, email := range person.EmailAddresses {
-			if email.Metadata.Primary {
-				userInfo.Email = email.Value
-				break
-			}
-		}
-		// 如果没有找到主邮箱，使用第一个邮箱
-		if userInfo.Email == "" {
-			userInfo.Email = person.EmailAddresses[0].Value
-		}
-	}
-
-	// 获取头像
-	if len(person.Photos) > 0 {
-		for _, photo := range person.Photos {
-			if photo.Metadata.Primary {
-				userInfo.PhotoURL = photo.Url
-				break
-			}
-		}
-		// 如果没有找到主头像，使用第一个头像
-		if userInfo.PhotoURL == "" {
-			userInfo.PhotoURL = person.Photos[0].Url
-		}
+		ID:       userInfoResp.ID,
+		Name:     userInfoResp.Name,
+		Email:    userInfoResp.Email,
+		PhotoURL: userInfoResp.Picture,
 	}
 
 	return userInfo, nil
@@ -464,11 +471,21 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 		return nil, protocol.ErrUnauthorized
 	}
 
+	logger.Info("[Oauth2Service] exchanging token",
+		zap.String("code", req.Code),
+		zap.String("state", req.State))
+
 	token, err := s.provider.ExchangeToken(ctx, req.Code)
 	if err != nil {
-		logger.Error("[Oauth2Service] failed to exchange token", zap.Error(err))
+		logger.Error("[Oauth2Service] failed to exchange token",
+			zap.String("code", req.Code),
+			zap.Error(err))
 		return nil, protocol.ErrUnauthorized
 	}
+
+	logger.Info("[Oauth2Service] token exchange successful",
+		zap.String("tokenType", token.TokenType),
+		zap.Bool("valid", token.Valid()))
 
 	userInfo, err := s.provider.GetUserInfo(ctx, token)
 	if err != nil {
