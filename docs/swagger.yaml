@@ -3691,11 +3691,11 @@ paths:
       summary: 列出文章一级评论
       tags:
       - comment
-  /v1/oauth2/github/callback:
+  /v1/oauth2/{provider}/callback:
     get:
       consumes:
       - application/json
-      description: Github OAuth2回调请求,验证code和state
+      description: OAuth2回调请求,验证code和state
       parameters:
       - description: 授权码
         in: query
@@ -3765,14 +3765,14 @@ paths:
                 error:
                   type: string
               type: object
-      summary: Github OAuth2回调
+      summary: OAuth2回调
       tags:
       - oauth2
-  /v1/oauth2/github/login:
+  /v1/oauth2/{provider}/login:
     get:
       consumes:
       - application/json
-      description: Github OAuth2登录请求,返回重定向URL
+      description: OAuth2登录请求,返回重定向URL
       produces:
       - application/json
       responses:
@@ -3831,7 +3831,7 @@ paths:
                 error:
                   type: string
               type: object
-      summary: Github OAuth2登录
+      summary: OAuth2登录
       tags:
       - oauth2
   /v1/operation/like/article:

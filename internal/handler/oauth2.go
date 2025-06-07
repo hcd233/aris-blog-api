@@ -54,6 +54,7 @@ func NewGoogleOauth2Handler() Oauth2Handler {
 //	@Failure		401	{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403	{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500	{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/oauth2/{provider}/login [get]
 //	receiver h *oauth2Handler
 //	param c *gin.Context
 //	author centonhuang
@@ -80,6 +81,7 @@ func (h *oauth2Handler) HandleLogin(c *gin.Context) {
 //	@Failure		401		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		403		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
+//	@Router			/v1/oauth2/{provider}/callback [get]
 //	receiver h *oauth2Handler
 //	param c *gin.Context
 //	author centonhuang

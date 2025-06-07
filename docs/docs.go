@@ -5454,9 +5454,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/oauth2/github/callback": {
+        "/v1/oauth2/{provider}/callback": {
             "get": {
-                "description": "Github OAuth2回调请求,验证code和state",
+                "description": "OAuth2回调请求,验证code和state",
                 "consumes": [
                     "application/json"
                 ],
@@ -5466,7 +5466,7 @@ const docTemplate = `{
                 "tags": [
                     "oauth2"
                 ],
-                "summary": "Github OAuth2回调",
+                "summary": "OAuth2回调",
                 "parameters": [
                     {
                         "type": "string",
@@ -5592,9 +5592,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/v1/oauth2/github/login": {
+        "/v1/oauth2/{provider}/login": {
             "get": {
-                "description": "Github OAuth2登录请求,返回重定向URL",
+                "description": "OAuth2登录请求,返回重定向URL",
                 "consumes": [
                     "application/json"
                 ],
@@ -5604,7 +5604,7 @@ const docTemplate = `{
                 "tags": [
                     "oauth2"
                 ],
-                "summary": "Github OAuth2登录",
+                "summary": "OAuth2登录",
                 "responses": {
                     "200": {
                         "description": "OK",
