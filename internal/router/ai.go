@@ -3,7 +3,7 @@ package router
 import (
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
@@ -11,7 +11,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initAIRouter(r *gin.RouterGroup) {
+func initAIRouter(r fiber.Router) {
 	aiService := handler.NewAIHandler()
 	aiRouter := r.Group("/ai", middleware.JwtMiddleware())
 	{
@@ -19,12 +19,12 @@ func initAIRouter(r *gin.RouterGroup) {
 		{
 			taskNameRouter := aiPromptRouter.Group("/:taskName", middleware.ValidateURIMiddleware(&protocol.TaskURI{}))
 			{
-				taskNameRouter.GET("", middleware.ValidateParamMiddleware(&protocol.PageParam{}), aiService.HandleListPrompt)
-				taskNameRouter.POST("", middleware.ValidateBodyMiddleware(&protocol.CreatePromptBody{}), aiService.HandleCreatePrompt)
-				taskNameRouter.GET("latest", aiService.HandleGetLatestPrompt)
-				promptVersionRouter := taskNameRouter.Group("v:version", middleware.ValidateURIMiddleware(&protocol.PromptVersionURI{}))
+				taskNameRouter.Get("/", middleware.ValidateParamMiddleware(&protocol.PageParam{}), aiService.HandleListPrompt)
+				taskNameRouter.Post("/", middleware.ValidateBodyMiddleware(&protocol.CreatePromptBody{}), aiService.HandleCreatePrompt)
+				taskNameRouter.Get("/latest", aiService.HandleGetLatestPrompt)
+				promptVersionRouter := taskNameRouter.Group("/v:version", middleware.ValidateURIMiddleware(&protocol.PromptVersionURI{}))
 				{
-					promptVersionRouter.GET("", aiService.HandleGetPrompt)
+					promptVersionRouter.Get("/", aiService.HandleGetPrompt)
 				}
 			}
 		}
@@ -32,31 +32,31 @@ func initAIRouter(r *gin.RouterGroup) {
 		{
 			creatorToolRouter := aiAppRouter.Group("/creator")
 			{
-				creatorToolRouter.POST(
-					"contentCompletion",
+				creatorToolRouter.Post(
+					"/contentCompletion",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateContentCompletionBody{}),
 					middleware.RedisLockMiddleware("contentCompletion", constant.CtxKeyUserID, 30*time.Second),
 					aiService.HandleGenerateContentCompletion,
 				)
-				creatorToolRouter.POST(
-					"articleSummary",
+				creatorToolRouter.Post(
+					"/articleSummary",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleSummaryBody{}),
 					middleware.RedisLockMiddleware("articleSummary", constant.CtxKeyUserID, 30*time.Second),
 					aiService.HandleGenerateArticleSummary,
 				)
-				// creatorToolRouter.POST("articleTranslation", aiService.GenerateArticleTranslationHandler)
+				// creatorToolRouter.Post("/articleTranslation", aiService.GenerateArticleTranslationHandler)
 
 			}
 			readerToolRouter := aiAppRouter.Group("/reader")
 			{
-				readerToolRouter.POST(
-					"articleQA",
+				readerToolRouter.Post(
+					"/articleQA",
 					middleware.ValidateBodyMiddleware(&protocol.GenerateArticleQABody{}),
 					middleware.RedisLockMiddleware("articleQA", constant.CtxKeyUserID, 30*time.Second),
 					aiService.HandleGenerateArticleQA,
 				)
-				// readerToolRouter.POST(
-				// 	"termExplaination",
+				// readerToolRouter.Post(
+				// 	"/termExplaination",
 				// 	middleware.ValidateBodyMiddleware(&protocol.GenerateTermExplainationBody{}),
 				// 	aiService.HandleGenerateTermExplaination,
 				// )

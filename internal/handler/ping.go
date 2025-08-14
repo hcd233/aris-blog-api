@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
@@ -11,7 +11,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 type PingHandler interface {
-	HandlePing(c *gin.Context)
+	HandlePing(c *fiber.Ctx) error
 }
 
 type pingHandler struct{}
@@ -35,13 +35,14 @@ func NewPingHandler() PingHandler {
 //	@Success		200		{object}	protocol.HTTPResponse{data=protocol.PingResponse,error=nil}
 //	@Router			/ [get]
 //	receiver h *pingHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 20:47:48
-func (h *pingHandler) HandlePing(c *gin.Context) {
+func (h *pingHandler) HandlePing(c *fiber.Ctx) error {
 	rsp := protocol.PingResponse{
 		Status: "ok",
 	}
 
 	util.SendHTTPResponse(c, rsp, nil)
+	return nil
 }

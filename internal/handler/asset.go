@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -17,15 +17,15 @@ import (
 //	author centonhuang
 //	update 2024-12-08 16:59:38
 type AssetHandler interface {
-	HandleListUserLikeArticles(c *gin.Context)
-	HandleListUserLikeComments(c *gin.Context)
-	HandleListUserLikeTags(c *gin.Context)
-	HandleListImages(c *gin.Context)
-	HandleUploadImage(c *gin.Context)
-	HandleGetImage(c *gin.Context)
-	HandleDeleteImage(c *gin.Context)
-	HandleListUserViewArticles(c *gin.Context)
-	HandleDeleteUserView(c *gin.Context)
+	HandleListUserLikeArticles(c *fiber.Ctx) error
+	HandleListUserLikeComments(c *fiber.Ctx) error
+	HandleListUserLikeTags(c *fiber.Ctx) error
+	HandleListImages(c *fiber.Ctx) error
+	HandleUploadImage(c *fiber.Ctx) error
+	HandleGetImage(c *fiber.Ctx) error
+	HandleDeleteImage(c *fiber.Ctx) error
+	HandleListUserViewArticles(c *fiber.Ctx) error
+	HandleDeleteUserView(c *fiber.Ctx) error
 }
 
 type assetHandler struct {
@@ -58,21 +58,22 @@ func NewAssetHandler() AssetHandler {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/like/articles [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-11-03 06:45:42
-func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *assetHandler) HandleListUserLikeArticles(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeArticlesRequest{
 		UserID:    userID,
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListUserLikeArticles(c, req)
+	rsp, err := h.svc.ListUserLikeArticles(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListUserLikeComments 列出用户喜欢的评论
@@ -90,21 +91,22 @@ func (h *assetHandler) HandleListUserLikeArticles(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/like/comments [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-11-03 06:47:41
-func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *assetHandler) HandleListUserLikeComments(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeCommentsRequest{
 		UserID:    userID,
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListUserLikeComments(c, req)
+	rsp, err := h.svc.ListUserLikeComments(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListUserLikeTags 列出用户喜欢的标签
@@ -122,21 +124,22 @@ func (h *assetHandler) HandleListUserLikeComments(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/like/tags [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-11-03 06:47:43
-func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *assetHandler) HandleListUserLikeTags(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeTagsRequest{
 		UserID:    userID,
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListUserLikeTags(c, req)
+	rsp, err := h.svc.ListUserLikeTags(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListImages 列出图片
@@ -153,19 +156,20 @@ func (h *assetHandler) HandleListUserLikeTags(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/object/images [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:02
-func (h *assetHandler) HandleListImages(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
+func (h *assetHandler) HandleListImages(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
 
 	req := &protocol.ListImagesRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.ListImages(c, req)
+	rsp, err := h.svc.ListImages(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleUploadImage 上传图片
@@ -183,16 +187,16 @@ func (h *assetHandler) HandleListImages(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/object/image [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:02
-func (h *assetHandler) HandleUploadImage(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
+func (h *assetHandler) HandleUploadImage(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
 	file, err := c.FormFile("file")
 	if err != nil {
-		logger.LoggerWithContext(c).Error("[HandleUploadImage] get file error", zap.Error(err))
+		logger.LoggerWithFiberContext(c).Error("[HandleUploadImage] get file error", zap.Error(err))
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-		return
+		return nil
 	}
 
 	contentType := file.Header.Get("Content-Type")
@@ -201,9 +205,9 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 
 	reader, err := file.Open()
 	if err != nil {
-		logger.LoggerWithContext(c).Error("[HandleUploadImage] open file error", zap.Error(err))
+		logger.LoggerWithFiberContext(c).Error("[HandleUploadImage] open file error", zap.Error(err))
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-		return
+		return nil
 	}
 	defer reader.Close()
 
@@ -215,9 +219,10 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 		ReadSeeker:  reader,
 	}
 
-	rsp, err := h.svc.UploadImage(c, req)
+	rsp, err := h.svc.UploadImage(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetImage 获取图片
@@ -236,13 +241,13 @@ func (h *assetHandler) HandleUploadImage(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/object/image/{objectName} [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:02
-func (h *assetHandler) HandleGetImage(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ObjectURI)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.ImageParam)
+func (h *assetHandler) HandleGetImage(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ObjectURI)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.ImageParam)
 
 	req := &protocol.GetImageRequest{
 		UserID:    userID,
@@ -250,14 +255,14 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 		Quality:   param.Quality,
 	}
 
-	rsp, err := h.svc.GetImage(c, req)
+	rsp, err := h.svc.GetImage(c.Context(), req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
-		return
+		return nil
 	}
 
-	c.Header("Content-Type", "image/jpeg")
-	c.Redirect(http.StatusFound, rsp.PresignedURL)
+	c.Set("Content-Type", "image/jpeg")
+	return c.Redirect(rsp.PresignedURL, http.StatusFound)
 }
 
 // HandleDeleteImage 删除图片
@@ -275,21 +280,22 @@ func (h *assetHandler) HandleGetImage(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/object/image/{objectName} [delete]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:02
-func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ObjectURI)
+func (h *assetHandler) HandleDeleteImage(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ObjectURI)
 
 	req := &protocol.DeleteImageRequest{
 		UserID:    userID,
 		ImageName: uri.ObjectName,
 	}
 
-	rsp, err := h.svc.DeleteImage(c, req)
+	rsp, err := h.svc.DeleteImage(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListUserViewArticles 列出用户浏览的文章
@@ -307,12 +313,12 @@ func (h *assetHandler) HandleDeleteImage(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/view/articles [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	pageParam := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *assetHandler) HandleListUserViewArticles(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	pageParam := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserViewArticlesRequest{
 		UserID:    userID,
@@ -322,6 +328,7 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 	rsp, err := h.svc.ListUserViewArticles(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleDeleteUserView 删除用户的文章浏览记录
@@ -339,12 +346,12 @@ func (h *assetHandler) HandleListUserViewArticles(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/asset/view/article/{viewID} [delete]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ViewURI)
+func (h *assetHandler) HandleDeleteUserView(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ViewURI)
 
 	req := &protocol.DeleteUserViewRequest{
 		UserID: userID,
@@ -354,4 +361,5 @@ func (h *assetHandler) HandleDeleteUserView(c *gin.Context) {
 	rsp, err := h.svc.DeleteUserView(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }

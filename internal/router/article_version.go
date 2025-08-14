@@ -3,7 +3,7 @@ package router
 import (
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
@@ -11,20 +11,20 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initArticleVersionRouter(r *gin.RouterGroup) {
+func initArticleVersionRouter(r fiber.Router) {
 	articleVersionHandler := handler.NewArticleVersionHandler()
 
-	r.GET("version/latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
+	r.Get("/version/latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
 	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware("articleVersionService", model.PermissionCreator))
 	{
-		articleVersionRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleVersionHandler.HandleListArticleVersions)
+		articleVersionRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleVersionHandler.HandleListArticleVersions)
 
-		articleVersionRouter.POST(
-			"",
+		articleVersionRouter.Post(
+			"/",
 			middleware.RateLimiterMiddleware("createArticleVersion", constant.CtxKeyUserID, 10*time.Second, 1),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
 			articleVersionHandler.HandleCreateArticleVersion,
 		)
-		articleVersionRouter.GET("v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}), articleVersionHandler.HandleGetArticleVersionInfo)
+		articleVersionRouter.Get("/v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}), articleVersionHandler.HandleGetArticleVersionInfo)
 	}
 }

@@ -4,7 +4,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -16,15 +16,15 @@ import (
 //	author centonhuang
 //	update 2024-12-08 16:45:29
 type AIHandler interface {
-	HandleGetPrompt(c *gin.Context)
-	HandleGetLatestPrompt(c *gin.Context)
-	HandleListPrompt(c *gin.Context)
-	HandleCreatePrompt(c *gin.Context)
-	HandleGenerateContentCompletion(c *gin.Context)
-	HandleGenerateArticleSummary(c *gin.Context)
-	HandleGenerateArticleTranslation(c *gin.Context)
-	HandleGenerateArticleQA(c *gin.Context)
-	HandleGenerateTermExplaination(c *gin.Context)
+	HandleGetPrompt(c *fiber.Ctx) error
+	HandleGetLatestPrompt(c *fiber.Ctx) error
+	HandleListPrompt(c *fiber.Ctx) error
+	HandleCreatePrompt(c *fiber.Ctx) error
+	HandleGenerateContentCompletion(c *fiber.Ctx) error
+	HandleGenerateArticleSummary(c *fiber.Ctx) error
+	HandleGenerateArticleTranslation(c *fiber.Ctx) error
+	HandleGenerateArticleQA(c *fiber.Ctx) error
+	HandleGenerateTermExplaination(c *fiber.Ctx) error
 }
 
 type aiHandler struct {
@@ -57,20 +57,22 @@ func NewAIHandler() AIHandler {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/prompt/{taskName}/v{version} [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.PromptVersionURI)
+func (h *aiHandler) HandleGetPrompt(c *fiber.Ctx) error {
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.PromptVersionURI)
 
 	req := &protocol.GetPromptRequest{
 		TaskName: string(uri.TaskName),
 		Version:  uri.Version,
 	}
 
-	rsp, err := h.svc.GetPrompt(c, req)
+	rsp, err := h.svc.GetPrompt(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
+	return nil
 }
 
 // HandleGetLatestPrompt 获取最新Prompt
@@ -88,19 +90,21 @@ func (h *aiHandler) HandleGetPrompt(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/prompt/{taskName}/latest [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
+func (h *aiHandler) HandleGetLatestPrompt(c *fiber.Ctx) error {
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.GetLatestPromptRequest{
 		TaskName: string(uri.TaskName),
 	}
 
-	rsp, err := h.svc.GetLatestPrompt(c, req)
+	rsp, err := h.svc.GetLatestPrompt(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
+	return nil
 }
 
 // HandleListPrompt 获取Prompt列表
@@ -119,21 +123,22 @@ func (h *aiHandler) HandleGetLatestPrompt(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/prompt/{taskName} [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleListPrompt(c *gin.Context) {
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
+func (h *aiHandler) HandleListPrompt(c *fiber.Ctx) error {
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.ListPromptRequest{
 		TaskName:  string(uri.TaskName),
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListPrompt(c, req)
+	rsp, err := h.svc.ListPrompt(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleCreatePrompt 创建Prompt
@@ -152,21 +157,22 @@ func (h *aiHandler) HandleListPrompt(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/prompt/{taskName} [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TaskURI)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreatePromptBody)
+func (h *aiHandler) HandleCreatePrompt(c *fiber.Ctx) error {
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.TaskURI)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.CreatePromptBody)
 
 	req := &protocol.CreatePromptRequest{
 		TaskName:  string(uri.TaskName),
 		Templates: body.Templates,
 	}
 
-	rsp, err := h.svc.CreatePrompt(c, req)
+	rsp, err := h.svc.CreatePrompt(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGenerateContentCompletion 生成内容补全
@@ -184,12 +190,12 @@ func (h *aiHandler) HandleCreatePrompt(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/app/creator/contentCompletion [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateContentCompletionBody)
+func (h *aiHandler) HandleGenerateContentCompletion(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateContentCompletionBody)
 
 	req := &protocol.GenerateContentCompletionRequest{
 		UserID:      userID,
@@ -199,13 +205,14 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateContentCompletion(c, req)
+	rsp, err := h.svc.GenerateContentCompletion(c.Context(), req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
-		return
+		return nil
 	}
 
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
+	return nil
 }
 
 // HandleGenerateArticleSummary 生成文章摘要
@@ -223,12 +230,12 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/app/creator/articleSummary [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateArticleSummaryBody)
+func (h *aiHandler) HandleGenerateArticleSummary(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateArticleSummaryBody)
 
 	req := &protocol.GenerateArticleSummaryRequest{
 		UserID:      userID,
@@ -237,13 +244,14 @@ func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateArticleSummary(c, req)
+	rsp, err := h.svc.GenerateArticleSummary(c.Context(), req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
-		return
+		return nil
 	}
 
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
+	return nil
 }
 
 // HandleGenerateArticleTranslation 生成文章翻译
@@ -260,20 +268,21 @@ func (h *aiHandler) HandleGenerateArticleSummary(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/app/creator/articleTranslation [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
+func (h *aiHandler) HandleGenerateArticleTranslation(c *fiber.Ctx) error {
 	// TODO: 实现
 	req := &protocol.GenerateArticleTranslationRequest{}
 
-	rsp, err := h.svc.GenerateArticleTranslation(c, req)
+	rsp, err := h.svc.GenerateArticleTranslation(c.Context(), req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
-		return
+		return nil
 	}
 
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
+	return nil
 }
 
 // HandleGenerateArticleQA 生成文章问答
@@ -291,12 +300,12 @@ func (h *aiHandler) HandleGenerateArticleTranslation(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/app/reader/articleQA [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateArticleQABody)
+func (h *aiHandler) HandleGenerateArticleQA(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateArticleQABody)
 
 	req := &protocol.GenerateArticleQARequest{
 		UserID:      userID,
@@ -305,13 +314,14 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateArticleQA(c, req)
+	rsp, err := h.svc.GenerateArticleQA(c.Context(), req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
-		return
+		return nil
 	}
 
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
+	return nil
 }
 
 // HandleGenerateTermExplaination 生成术语解释
@@ -329,12 +339,12 @@ func (h *aiHandler) HandleGenerateArticleQA(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/ai/app/reader/termExplaination [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:46:35
-func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.GenerateTermExplainationBody)
+func (h *aiHandler) HandleGenerateTermExplaination(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateTermExplainationBody)
 
 	req := &protocol.GenerateTermExplainationRequest{
 		UserID:      userID,
@@ -344,11 +354,12 @@ func (h *aiHandler) HandleGenerateTermExplaination(c *gin.Context) {
 		Temperature: body.Temperature,
 	}
 
-	rsp, err := h.svc.GenerateTermExplaination(c, req)
+	rsp, err := h.svc.GenerateTermExplaination(c.Context(), req)
 	if err != nil {
 		util.SendHTTPResponse(c, nil, err)
-		return
+		return nil
 	}
 
 	util.SendStreamEventResponses(c, rsp.TokenChan, rsp.ErrChan)
+	return nil
 }

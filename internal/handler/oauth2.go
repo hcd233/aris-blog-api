@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -9,8 +9,8 @@ import (
 
 // Oauth2Handler OAuth2处理器接口
 type Oauth2Handler interface {
-	HandleLogin(c *gin.Context)
-	HandleCallback(c *gin.Context)
+	HandleLogin(c *fiber.Ctx) error
+	HandleCallback(c *fiber.Ctx) error
 }
 
 type oauth2Handler struct {
@@ -56,15 +56,16 @@ func NewGoogleOauth2Handler() Oauth2Handler {
 //	@Failure		500	{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/oauth2/{provider}/login [get]
 //	receiver h *oauth2Handler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 13:43:42
-func (h *oauth2Handler) HandleLogin(c *gin.Context) {
+func (h *oauth2Handler) HandleLogin(c *fiber.Ctx) error {
 	req := &protocol.LoginRequest{}
 
 	rsp, err := h.svc.Login(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleCallback OAuth2回调
@@ -83,10 +84,10 @@ func (h *oauth2Handler) HandleLogin(c *gin.Context) {
 //	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/oauth2/{provider}/callback [get]
 //	receiver h *oauth2Handler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 13:43:36
-func (h *oauth2Handler) HandleCallback(c *gin.Context) {
+func (h *oauth2Handler) HandleCallback(c *fiber.Ctx) error {
 	params := protocol.OAuth2CallbackParam{}
 	if err := c.BindQuery(&params); err != nil {
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
@@ -101,4 +102,5 @@ func (h *oauth2Handler) HandleCallback(c *gin.Context) {
 	rsp, err := h.svc.Callback(c, req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }

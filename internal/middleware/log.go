@@ -3,7 +3,7 @@ package middleware
 import (
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"go.uber.org/zap"
 )
@@ -11,38 +11,40 @@ import (
 // LogMiddleware 日志中间件
 //
 //	param logger *zap.Logger
-//	return gin.HandlerFunc
+//	return fiber.Handler
 //	author centonhuang
 //	update 2025-01-05 21:21:46
-func LogMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
+func LogMiddleware() fiber.Handler {
+	return func(c *fiber.Ctx) error {
 		start := time.Now()
-		path := c.Request.URL.Path
-		query := c.Request.URL.RawQuery
+		path := c.Path()
+		query := string(c.Request().URI().QueryString())
 
-		c.Next()
+		err := c.Next()
 
-		logger := logger.LoggerWithContext(c)
+		logger := logger.LoggerWithFiberContext(c)
 
 		latency := time.Since(start)
 
 		fields := []zap.Field{
-			zap.Int("status", c.Writer.Status()),
-			zap.String("method", c.Request.Method),
+			zap.Int("status", c.Response().StatusCode()),
+			zap.String("method", c.Method()),
 			zap.String("path", path),
 			zap.String("query", query),
-			zap.String("ip", c.ClientIP()),
-			zap.String("user-agent", c.Request.UserAgent()),
+			zap.String("ip", c.IP()),
+			zap.String("user-agent", c.Get("User-Agent")),
 			zap.String("latency", latency.String()),
-			zap.String("req-content-type", c.Request.Header.Get("Content-Type")),
-			zap.String("rsp-content-type", c.Writer.Header().Get("Content-Type")),
+			zap.String("req-content-type", c.Get("Content-Type")),
+			zap.String("rsp-content-type", c.GetRespHeader("Content-Type")),
 		}
 
-		if len(c.Errors) > 0 {
-			fields = append([]zap.Field{zap.String("errors", c.Errors.String())}, fields...)
-			logger.Error("[GIN] error", fields...)
+		if err != nil {
+			fields = append([]zap.Field{zap.Error(err)}, fields...)
+			logger.Error("[FIBER] error", fields...)
 		} else {
-			logger.Info("[GIN] info", fields...)
+			logger.Info("[FIBER] info", fields...)
 		}
+
+		return err
 	}
 }

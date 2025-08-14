@@ -1,46 +1,46 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initArticleRouter(r *gin.RouterGroup) {
+func initArticleRouter(r fiber.Router) {
 	articleHandler := handler.NewArticleHandler()
 
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
-		articleRouter.GET("list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
+		articleRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
 
-		articleRouter.GET("/slug/:authorName/:articleSlug",
+		articleRouter.Get("/slug/:authorName/:articleSlug",
 			middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}),
 			articleHandler.HandleGetArticleInfoBySlug)
 
-		articleRouter.POST(
-			"",
+		articleRouter.Post(
+			"/",
 			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
 			articleHandler.HandleCreateArticle,
 		)
 		articleIDRouter := articleRouter.Group("/:articleID", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
 		{
-			articleIDRouter.GET("", articleHandler.HandleGetArticleInfo)
-			articleIDRouter.PATCH(
-				"",
+			articleIDRouter.Get("/", articleHandler.HandleGetArticleInfo)
+			articleIDRouter.Patch(
+				"/",
 				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 				middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}),
 				articleHandler.HandleUpdateArticle,
 			)
-			articleIDRouter.DELETE(
-				"",
+			articleIDRouter.Delete(
+				"/",
 				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 				articleHandler.HandleDeleteArticle,
 			)
-			articleIDRouter.PUT(
-				"status",
+			articleIDRouter.Put(
+				"/status",
 				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
 				middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}),
 				articleHandler.HandleUpdateArticleStatus,

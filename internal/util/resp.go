@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/samber/lo"
 )
@@ -22,51 +22,51 @@ const (
 
 // SendHTTPResponse 发送HTTP响应
 //
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	param data interface{}
 //	param err error
 //	author centonhuang
 //	update 2025-01-04 17:34:06
-func SendHTTPResponse(c *gin.Context, data interface{}, err error) {
+func SendHTTPResponse(c *fiber.Ctx, data interface{}, err error) {
 	switch err {
 	case protocol.ErrDataNotExists: // 404
-		c.JSON(http.StatusOK, protocol.HTTPResponse{
+		c.Status(http.StatusOK).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrDataExists: // 400
-		c.JSON(http.StatusOK, protocol.HTTPResponse{
+		c.Status(http.StatusOK).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrBadRequest: // 400
-		c.JSON(http.StatusBadRequest, protocol.HTTPResponse{
+		c.Status(http.StatusBadRequest).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrInsufficientQuota: // 400
-		c.JSON(http.StatusBadRequest, protocol.HTTPResponse{
+		c.Status(http.StatusBadRequest).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrUnauthorized: // 401
-		c.JSON(http.StatusUnauthorized, protocol.HTTPResponse{
+		c.Status(http.StatusUnauthorized).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrNoPermission: // 403
-		c.JSON(http.StatusForbidden, protocol.HTTPResponse{
+		c.Status(http.StatusForbidden).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrTooManyRequests: // 429
-		c.JSON(http.StatusTooManyRequests, protocol.HTTPResponse{
+		c.Status(http.StatusTooManyRequests).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrInternalError: // 500
-		c.JSON(http.StatusInternalServerError, protocol.HTTPResponse{
+		c.Status(http.StatusInternalServerError).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case protocol.ErrNoImplement: // 501
-		c.JSON(http.StatusNotImplemented, protocol.HTTPResponse{
+		c.Status(http.StatusNotImplemented).JSON(protocol.HTTPResponse{
 			Error: err.Error(),
 		})
 	case nil:
-		c.JSON(http.StatusOK, protocol.HTTPResponse{
+		c.Status(http.StatusOK).JSON(protocol.HTTPResponse{
 			Data: data,
 		})
 	}
@@ -74,17 +74,16 @@ func SendHTTPResponse(c *gin.Context, data interface{}, err error) {
 
 // SendStreamEventResponses 发送流式事件响应
 //
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	param streamChan <-chan string
 //	param errChan <-chan error
 //	return err error
 //	author centonhuang
 //	update 2024-12-09 17:18:12
-func SendStreamEventResponses(c *gin.Context, streamChan <-chan string, errChan <-chan error) (err error) {
-	c.Header("Content-Type", "text/event-stream")
-	c.Header("Cache-Control", "no-cache")
-	c.Header("Connection", "keep-alive")
-	c.Writer.Flush()
+func SendStreamEventResponses(c *fiber.Ctx, streamChan <-chan string, errChan <-chan error) (err error) {
+	c.Set("Content-Type", "text/event-stream")
+	c.Set("Cache-Control", "no-cache")
+	c.Set("Connection", "keep-alive")
 
 	var mu sync.Mutex
 	ticker := time.NewTicker(heartbeatInterval)
@@ -93,12 +92,12 @@ func SendStreamEventResponses(c *gin.Context, streamChan <-chan string, errChan 
 	go func() {
 		for range ticker.C {
 			mu.Lock()
-			c.SSEvent(heartbeatEvent, string(lo.Must1(json.Marshal(protocol.SSEResponse{
+			event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
 				Delta: "",
 				Stop:  false,
 				Error: "",
-			}))))
-			c.Writer.Flush()
+			}))) + "\n\n"
+			c.Write([]byte(event))
 			mu.Unlock()
 		}
 	}()
@@ -108,31 +107,31 @@ func SendStreamEventResponses(c *gin.Context, streamChan <-chan string, errChan 
 		case token, ok := <-streamChan:
 			mu.Lock()
 			if !ok {
-				c.SSEvent(doneEvent, string(lo.Must1(json.Marshal(protocol.SSEResponse{
+				event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
 					Delta: "",
 					Stop:  true,
 					Error: "",
-				}))))
-				c.Writer.Flush()
+				}))) + "\n\n"
+				c.Write([]byte(event))
 				mu.Unlock()
 				return
 			}
-			c.SSEvent(streamEvent, string(lo.Must1(json.Marshal(protocol.SSEResponse{
+			event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
 				Delta: token,
 				Stop:  false,
 				Error: "",
-			}))))
-			c.Writer.Flush()
+			}))) + "\n\n"
+			c.Write([]byte(event))
 			mu.Unlock()
 		case err = <-errChan:
 			mu.Lock()
 			if err != nil {
-				c.SSEvent(errorEvent, string(lo.Must1(json.Marshal(protocol.SSEResponse{
+				event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
 					Delta: "",
 					Stop:  true,
 					Error: err.Error(),
-				}))))
-				c.Writer.Flush()
+				}))) + "\n\n"
+				c.Write([]byte(event))
 				mu.Unlock()
 				return
 			}

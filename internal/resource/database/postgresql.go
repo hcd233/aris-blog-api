@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"go.uber.org/zap"
@@ -30,6 +31,15 @@ var db *gorm.DB
 //	update 2024-10-17 08:35:47
 func GetDBInstance(ctx context.Context) *gorm.DB {
 	return db.WithContext(ctx)
+}
+
+// GetDBInstanceFromFiber 从GoFiber上下文获取数据库实例
+//
+//	return *gorm.DB
+//	author centonhuang
+//	update 2024-10-17 08:35:47
+func GetDBInstanceFromFiber(c *fiber.Ctx) *gorm.DB {
+	return db.WithContext(c.Context())
 }
 
 // InitDatabase 初始化数据库

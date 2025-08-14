@@ -2,25 +2,24 @@
 package router
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"github.com/hcd233/aris-blog-api/internal/handler"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 // RegisterRouter 注册路由
 //
-//	param r *gin.Engine
+//	param app *fiber.App
 //	author centonhuang
 //	update 2025-01-04 15:32:40
-func RegisterRouter(r *gin.Engine) {
+func RegisterRouter(app *fiber.App) {
 	// swagger
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	pingService := handler.NewPingHandler()
-	r.GET("", pingService.HandlePing)
+	app.Get("/", pingService.HandlePing)
 
-	v1Router := r.Group("/v1")
+	v1Router := app.Group("/v1")
 	{
 		initTokenRouter(v1Router)
 		initOauth2Router(v1Router)
