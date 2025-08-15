@@ -5,5 +5,30 @@
 __debug*
 *dockerfile
 
-# dirs
-.vscode
+# Binary files
+aris-blog-api
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build artifacts
+bin/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+*.tmp
+*.temp
