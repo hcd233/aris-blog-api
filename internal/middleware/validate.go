@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -11,56 +11,59 @@ import (
 // ValidateURIMiddleware 验证URI中间件
 //
 //	param uri interface{}
-//	return gin.HandlerFunc
+//	return fiber.Handler
 //	author centonhuang
 //	update 2024-09-21 07:47:53
-func ValidateURIMiddleware(uri interface{}) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if err := c.ShouldBindUri(uri); err != nil {
-			logger.LoggerWithContext(c).Info("[ValidateURIMiddleware] failed to bind uri", zap.Error(err))
+func ValidateURIMiddleware(uri interface{}) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if err := c.ParamsParser(uri); err != nil {
+			logger.LoggerWithFiberContext(c).Info("[ValidateURIMiddleware] failed to bind uri", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
-			c.Abort()
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Bad Request",
+			})
 		}
-		c.Set("uri", uri)
-		c.Next()
+		c.Locals("uri", uri)
+		return c.Next()
 	}
 }
 
 // ValidateParamMiddleware 验证参数中间件
 //
 //	param param interface{}
-//	return gin.HandlerFunc
+//	return fiber.Handler
 //	author centonhuang
 //	update 2024-09-21 07:48:40
-func ValidateParamMiddleware(param interface{}) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if err := c.ShouldBindQuery(param); err != nil {
-			logger.LoggerWithContext(c).Info("[ValidateParamMiddleware] failed to bind param", zap.Error(err))
+func ValidateParamMiddleware(param interface{}) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if err := c.QueryParser(param); err != nil {
+			logger.LoggerWithFiberContext(c).Info("[ValidateParamMiddleware] failed to bind param", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
-			c.Abort()
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Bad Request",
+			})
 		}
-		c.Set("param", param)
-		c.Next()
+		c.Locals("param", param)
+		return c.Next()
 	}
 }
 
 // ValidateBodyMiddleware 验证请求体中间件
 //
 //	param body interface{}
-//	return gin.HandlerFunc
+//	return fiber.Handler
 //	author centonhuang
 //	update 2024-09-21 08:48:25
-func ValidateBodyMiddleware(body interface{}) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if err := c.ShouldBindJSON(body); err != nil {
-			logger.LoggerWithContext(c).Info("[ValidateBodyMiddleware] failed to bind body", zap.Error(err))
+func ValidateBodyMiddleware(body interface{}) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		if err := c.BodyParser(body); err != nil {
+			logger.LoggerWithFiberContext(c).Info("[ValidateBodyMiddleware] failed to bind body", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
-			c.Abort()
-			return
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"error": "Bad Request",
+			})
 		}
-		c.Set("body", body)
-		c.Next()
+		c.Locals("body", body)
+		return c.Next()
 	}
 }

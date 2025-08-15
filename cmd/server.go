@@ -2,15 +2,15 @@ package cmd
 
 import (
 	"fmt"
-	"net/http"
+	"time"
 
-	"github.com/gin-contrib/gzip"
-
-	ginzap "github.com/gin-contrib/zap"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/cron"
-	"github.com/hcd233/aris-blog-api/internal/logger"
+
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/resource/cache"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
@@ -40,28 +40,33 @@ var startServerCmd = &cobra.Command{
 		llm.InitOpenAIClient()
 		cron.InitCronJobs()
 
-		r := gin.New()
-		r.Use(
+		app := fiber.New(fiber.Config{
+			ReadTimeout:  config.ReadTimeout,
+			WriteTimeout: config.WriteTimeout,
+			IdleTimeout:  120 * time.Second,
+		})
+
+		// 中间件
+		app.Use(
 			middleware.TraceMiddleware(),
 			middleware.LogMiddleware(),
-			ginzap.RecoveryWithZap(logger.Logger(), true),
-			gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedExtensions(
-				[]string{".pdf", ".mp3", ".wav", ".ogg", ".mov", ".weba", ".mkv", ".mp4", ".webm", ".flac"},
-			)),
-			middleware.CORSMiddleware(),
+			recover.New(),
+			compress.New(compress.Config{
+				Level: compress.LevelDefault,
+			}),
+			cors.New(cors.Config{
+				AllowOrigins:     "http://localhost:3000",
+				AllowMethods:     "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS",
+				AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Requested-With,X-Trace-Id",
+				ExposeHeaders:    "Content-Length",
+				AllowCredentials: true,
+				MaxAge:           int(12 * time.Hour.Seconds()),
+			}),
 		)
 
-		router.RegisterRouter(r)
+		router.RegisterRouter(app)
 
-		s := &http.Server{
-			Addr:           fmt.Sprintf("%s:%s", host, port),
-			Handler:        r,
-			ReadTimeout:    config.ReadTimeout,
-			WriteTimeout:   config.WriteTimeout,
-			MaxHeaderBytes: config.MaxHeaderBytes,
-		}
-		defer s.Close()
-		lo.Must0(s.ListenAndServe())
+		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},
 }
 

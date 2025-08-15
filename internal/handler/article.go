@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -13,13 +13,13 @@ import (
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type ArticleHandler interface {
-	HandleCreateArticle(c *gin.Context)
-	HandleGetArticleInfo(c *gin.Context)
-	HandleUpdateArticle(c *gin.Context)
-	HandleUpdateArticleStatus(c *gin.Context)
-	HandleDeleteArticle(c *gin.Context)
-	HandleListArticles(c *gin.Context)
-	HandleGetArticleInfoBySlug(c *gin.Context)
+	HandleCreateArticle(c *fiber.Ctx) error
+	HandleGetArticleInfo(c *fiber.Ctx) error
+	HandleUpdateArticle(c *fiber.Ctx) error
+	HandleUpdateArticleStatus(c *fiber.Ctx) error
+	HandleDeleteArticle(c *fiber.Ctx) error
+	HandleListArticles(c *fiber.Ctx) error
+	HandleGetArticleInfoBySlug(c *fiber.Ctx) error
 }
 
 type articleHandler struct {
@@ -53,12 +53,12 @@ func NewArticleHandler() ArticleHandler {
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/article [post]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateArticleBody)
+func (h *articleHandler) HandleCreateArticle(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleBody)
 
 	req := &protocol.CreateArticleRequest{
 		UserID:     userID,
@@ -68,9 +68,10 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 		Tags:       body.Tags,
 	}
 
-	rsp, err := h.svc.CreateArticle(c, req)
+	rsp, err := h.svc.CreateArticle(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetArticleInfo 获取文章信息
@@ -89,21 +90,22 @@ func (h *articleHandler) HandleCreateArticle(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID} [get]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+func (h *articleHandler) HandleGetArticleInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.GetArticleInfoRequest{
 		UserID:    userID,
 		ArticleID: uri.ArticleID,
 	}
 
-	rsp, err := h.svc.GetArticleInfo(c, req)
+	rsp, err := h.svc.GetArticleInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetArticleInfoBySlug 获取文章信息
@@ -122,12 +124,12 @@ func (h *articleHandler) HandleGetArticleInfo(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/slug/{authorName}/{articleSlug} [get]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-19 15:23:26
-func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleSlugURI)
+func (h *articleHandler) HandleGetArticleInfoBySlug(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleSlugURI)
 
 	req := &protocol.GetArticleInfoBySlugRequest{
 		UserID:      userID,
@@ -135,9 +137,10 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
 		ArticleSlug: uri.ArticleSlug,
 	}
 
-	rsp, err := h.svc.GetArticleInfoBySlug(c, req)
+	rsp, err := h.svc.GetArticleInfoBySlug(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleUpdateArticle 更新文章
@@ -157,13 +160,13 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID} [patch]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateArticleBody)
+func (h *articleHandler) HandleUpdateArticle(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateArticleBody)
 
 	req := &protocol.UpdateArticleRequest{
 		UserID:            userID,
@@ -173,9 +176,10 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 		UpdatedCategoryID: body.CategoryID,
 	}
 
-	rsp, err := h.svc.UpdateArticle(c, req)
+	rsp, err := h.svc.UpdateArticle(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleUpdateArticleStatus 更新文章状态
@@ -195,13 +199,13 @@ func (h *articleHandler) HandleUpdateArticle(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID}/status [put]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateArticleStatusBody)
+func (h *articleHandler) HandleUpdateArticleStatus(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateArticleStatusBody)
 
 	req := &protocol.UpdateArticleStatusRequest{
 		UserID:    userID,
@@ -209,9 +213,10 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 		Status:    body.Status,
 	}
 
-	rsp, err := h.svc.UpdateArticleStatus(c, req)
+	rsp, err := h.svc.UpdateArticleStatus(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleDeleteArticle 删除文章
@@ -230,21 +235,22 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID} [delete]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+func (h *articleHandler) HandleDeleteArticle(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.DeleteArticleRequest{
 		UserID:    userID,
 		ArticleID: uri.ArticleID,
 	}
 
-	rsp, err := h.svc.DeleteArticle(c, req)
+	rsp, err := h.svc.DeleteArticle(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListArticles 列出文章
@@ -263,17 +269,18 @@ func (h *articleHandler) HandleDeleteArticle(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/list [get]
 //	receiver h *articleHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleListArticles(c *gin.Context) {
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *articleHandler) HandleListArticles(c *fiber.Ctx) error {
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListArticlesRequest{
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListArticles(c, req)
+	rsp, err := h.svc.ListArticles(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }

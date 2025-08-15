@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -13,7 +13,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:56:10
 type TokenHandler interface {
-	HandleRefreshToken(c *gin.Context)
+	HandleRefreshToken(c *fiber.Ctx) error
 }
 
 type tokenHandler struct {
@@ -44,17 +44,18 @@ func NewTokenHandler() TokenHandler {
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/token/refresh [post]
 //	receiver s *tokenHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:56:10
-func (h *tokenHandler) HandleRefreshToken(c *gin.Context) {
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.RefreshTokenBody)
+func (h *tokenHandler) HandleRefreshToken(c *fiber.Ctx) error {
+	body := c.Locals(constant.CtxKeyBody).(*protocol.RefreshTokenBody)
 
 	req := &protocol.RefreshTokenRequest{
 		RefreshToken: body.RefreshToken,
 	}
 
-	rsp, err := h.svc.RefreshToken(c, req)
+	rsp, err := h.svc.RefreshToken(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }

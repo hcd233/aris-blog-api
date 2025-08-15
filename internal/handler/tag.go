@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -13,11 +13,11 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 type TagHandler interface {
-	HandleCreateTag(c *gin.Context)
-	HandleGetTagInfo(c *gin.Context)
-	HandleUpdateTag(c *gin.Context)
-	HandleDeleteTag(c *gin.Context)
-	HandleListTags(c *gin.Context)
+	HandleCreateTag(c *fiber.Ctx) error
+	HandleGetTagInfo(c *fiber.Ctx) error
+	HandleUpdateTag(c *fiber.Ctx) error
+	HandleDeleteTag(c *fiber.Ctx) error
+	HandleListTags(c *fiber.Ctx) error
 }
 
 type tagHandler struct {
@@ -50,12 +50,12 @@ func NewTagHandler() TagHandler {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:52:48
-func (h *tagHandler) HandleCreateTag(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateTagBody)
+func (h *tagHandler) HandleCreateTag(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateTagBody)
 
 	req := protocol.CreateTagRequest{
 		UserID:      userID,
@@ -64,9 +64,10 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.CreateTag(c, &req)
+	rsp, err := h.svc.CreateTag(c.Context(), &req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetTagInfo 获取标签信息
@@ -84,19 +85,20 @@ func (h *tagHandler) HandleCreateTag(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagID} [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:52:48
-func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
+func (h *tagHandler) HandleGetTagInfo(c *fiber.Ctx) error {
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.TagURI)
 
 	req := &protocol.GetTagInfoRequest{
 		TagID: uri.TagID,
 	}
 
-	rsp, err := h.svc.GetTagInfo(c, req)
+	rsp, err := h.svc.GetTagInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleUpdateTag 更新标签
@@ -116,13 +118,13 @@ func (h *tagHandler) HandleGetTagInfo(c *gin.Context) {
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagID} [patch]
 //	receiver s *tagHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:55:16
-func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateTagBody)
+func (h *tagHandler) HandleUpdateTag(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.TagURI)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateTagBody)
 
 	req := &protocol.UpdateTagRequest{
 		UserID:      userID,
@@ -132,9 +134,10 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.UpdateTag(c, req)
+	rsp, err := h.svc.UpdateTag(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleDeleteTag 删除标签
@@ -152,21 +155,22 @@ func (h *tagHandler) HandleUpdateTag(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/{tagID} [delete]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:55:24
-func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.TagURI)
+func (h *tagHandler) HandleDeleteTag(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.TagURI)
 
 	req := &protocol.DeleteTagRequest{
 		UserID: userID,
 		TagID:  uri.TagID,
 	}
 
-	rsp, err := h.svc.DeleteTag(c, req)
+	rsp, err := h.svc.DeleteTag(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListTags 列出标签
@@ -184,17 +188,18 @@ func (h *tagHandler) HandleDeleteTag(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/tag/list [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-04 15:55:31
-func (h *tagHandler) HandleListTags(c *gin.Context) {
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *tagHandler) HandleListTags(c *fiber.Ctx) error {
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListTagsRequest{
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListTags(c, req)
+	rsp, err := h.svc.ListTags(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }

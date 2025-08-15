@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -13,13 +13,13 @@ import (
 //	author centonhuang
 //	update 2024-12-08 16:59:38
 type CategoryHandler interface {
-	HandleCreateCategory(c *gin.Context)
-	HandleGetCategoryInfo(c *gin.Context)
-	HandleUpdateCategoryInfo(c *gin.Context)
-	HandleDeleteCategory(c *gin.Context)
-	HandleGetRootCategories(c *gin.Context)
-	HandleListChildrenCategories(c *gin.Context)
-	HandleListChildrenArticles(c *gin.Context)
+	HandleCreateCategory(c *fiber.Ctx) error
+	HandleGetCategoryInfo(c *fiber.Ctx) error
+	HandleUpdateCategoryInfo(c *fiber.Ctx) error
+	HandleDeleteCategory(c *fiber.Ctx) error
+	HandleGetRootCategories(c *fiber.Ctx) error
+	HandleListChildrenCategories(c *fiber.Ctx) error
+	HandleListChildrenArticles(c *fiber.Ctx) error
 }
 
 type categoryHandler struct {
@@ -52,12 +52,12 @@ func NewCategoryHandler() CategoryHandler {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category [post]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-09-28 07:03:28
-func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateCategoryBody)
+func (h *categoryHandler) HandleCreateCategory(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateCategoryBody)
 
 	req := &protocol.CreateCategoryRequest{
 		UserID:   userID,
@@ -65,9 +65,10 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 		ParentID: body.ParentID,
 	}
 
-	rsp, err := h.svc.CreateCategory(c, req)
+	rsp, err := h.svc.CreateCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetCategoryInfo 获取分类信息
@@ -85,21 +86,22 @@ func (h *categoryHandler) HandleCreateCategory(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category/{categoryID} [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-10-01 04:58:27
-func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
+func (h *categoryHandler) HandleGetCategoryInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
 	req := &protocol.GetCategoryInfoRequest{
 		UserID:     userID,
 		CategoryID: uri.CategoryID,
 	}
 
-	rsp, err := h.svc.GetCategoryInfo(c, req)
+	rsp, err := h.svc.GetCategoryInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetRootCategories 获取根分类信息
@@ -116,18 +118,19 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category/root [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-10-23 03:56:26
-func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
+func (h *categoryHandler) HandleGetRootCategories(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	req := &protocol.GetRootCategoryRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetRootCategory(c, req)
+	rsp, err := h.svc.GetRootCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleUpdateCategoryInfo 更新分类信息
@@ -146,13 +149,13 @@ func (h *categoryHandler) HandleGetRootCategories(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category/{categoryID} [patch]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-10-02 03:45:55
-func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
+func (h *categoryHandler) HandleUpdateCategoryInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
 
 	req := &protocol.UpdateCategoryRequest{
 		UserID:     userID,
@@ -161,9 +164,10 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 		ParentID:   body.ParentID,
 	}
 
-	rsp, err := h.svc.UpdateCategory(c, req)
+	rsp, err := h.svc.UpdateCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleDeleteCategory 删除分类
@@ -181,21 +185,22 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category/{categoryID} [delete]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-10-02 04:55:08
-func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
+func (h *categoryHandler) HandleDeleteCategory(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
 
 	req := &protocol.DeleteCategoryRequest{
 		UserID:     userID,
 		CategoryID: uri.CategoryID,
 	}
 
-	rsp, err := h.svc.DeleteCategory(c, req)
+	rsp, err := h.svc.DeleteCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListChildrenCategories 列出子分类
@@ -214,13 +219,13 @@ func (h *categoryHandler) HandleDeleteCategory(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category/{categoryID}/subCategories [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-10-01 05:09:47
-func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *categoryHandler) HandleListChildrenCategories(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenCategoriesRequest{
 		UserID:     userID,
@@ -228,9 +233,10 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListChildrenCategories(c, req)
+	rsp, err := h.svc.ListChildrenCategories(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListChildrenArticles 列出子文章
@@ -249,13 +255,13 @@ func (h *categoryHandler) HandleListChildrenCategories(c *gin.Context) {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/category/{categoryID}/subArticles [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2024-10-02 01:38:12
-func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *categoryHandler) HandleListChildrenArticles(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListChildrenArticlesRequest{
 		UserID:     userID,
@@ -263,7 +269,8 @@ func (h *categoryHandler) HandleListChildrenArticles(c *gin.Context) {
 		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListChildrenArticles(c, req)
+	rsp, err := h.svc.ListChildrenArticles(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }

@@ -7,6 +7,7 @@ import (
 	"path"
 	"strings"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"go.uber.org/zap"
@@ -53,6 +54,21 @@ func LoggerWithContext(ctx context.Context) *zap.Logger {
 		logger = logger.With(zap.Uint(constant.CtxKeyUserID, userID.(uint)))
 	}
 	if userName := ctx.Value(constant.CtxKeyUserName); userName != nil {
+		logger = logger.With(zap.String(constant.CtxKeyUserName, userName.(string)))
+	}
+	return logger
+}
+
+// LoggerWithFiberContext 适配GoFiber上下文的日志函数
+func LoggerWithFiberContext(c *fiber.Ctx) *zap.Logger {
+	logger := defaultLogger
+	if traceID := c.Locals(constant.CtxKeyTraceID); traceID != nil {
+		logger = logger.With(zap.String(constant.CtxKeyTraceID, traceID.(string)))
+	}
+	if userID := c.Locals(constant.CtxKeyUserID); userID != nil {
+		logger = logger.With(zap.Uint(constant.CtxKeyUserID, userID.(uint)))
+	}
+	if userName := c.Locals(constant.CtxKeyUserName); userName != nil {
 		logger = logger.With(zap.String(constant.CtxKeyUserName, userName.(string)))
 	}
 	return logger

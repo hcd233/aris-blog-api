@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -13,9 +13,9 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:56:20
 type UserHandler interface {
-	HandleGetCurUserInfo(c *gin.Context)
-	HandleGetUserInfo(c *gin.Context)
-	HandleUpdateInfo(c *gin.Context)
+	HandleGetCurUserInfo(c *fiber.Ctx) error
+	HandleGetUserInfo(c *fiber.Ctx) error
+	HandleUpdateInfo(c *fiber.Ctx) error
 }
 
 type userHandler struct {
@@ -47,19 +47,21 @@ func NewUserHandler() UserHandler {
 //	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/user/current [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 15:56:30
-func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
+func (h *userHandler) HandleGetCurUserInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 
 	req := &protocol.GetCurUserInfoRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetCurUserInfo(c, req)
+	rsp, err := h.svc.GetCurUserInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
+	return nil
 }
 
 // GetUserInfoHandler 用户信息
@@ -77,19 +79,21 @@ func (h *userHandler) HandleGetCurUserInfo(c *gin.Context) {
 //	@Failure		403		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/user/{userID} [get]
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 15:56:30
-func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.UserURI)
+func (h *userHandler) HandleGetUserInfo(c *fiber.Ctx) error {
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.UserURI)
 
 	req := &protocol.GetUserInfoRequest{
 		UserID: uri.UserID,
 	}
 
-	rsp, err := h.svc.GetUserInfo(c, req)
+	rsp, err := h.svc.GetUserInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
+	return nil
 }
 
 // UpdateInfoHandler 更新用户信息
@@ -107,19 +111,21 @@ func (h *userHandler) HandleGetUserInfo(c *gin.Context) {
 //	@Failure		403		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
 //	@Router			/v1/user [patch]
-//	param c *gin.Context
+//	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 15:56:40
-func (h *userHandler) HandleUpdateInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.UpdateUserBody)
+func (h *userHandler) HandleUpdateInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateUserBody)
 
 	req := &protocol.UpdateUserInfoRequest{
 		UserID:          userID,
 		UpdatedUserName: body.UserName,
 	}
 
-	rsp, err := h.svc.UpdateUserInfo(c, req)
+	rsp, err := h.svc.UpdateUserInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
+	return nil
 }

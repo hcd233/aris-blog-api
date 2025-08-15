@@ -1,7 +1,7 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -10,10 +10,10 @@ import (
 
 // ArticleVersionHandler 文章版本处理器
 type ArticleVersionHandler interface {
-	HandleCreateArticleVersion(c *gin.Context)
-	HandleGetArticleVersionInfo(c *gin.Context)
-	HandleGetLatestArticleVersionInfo(c *gin.Context)
-	HandleListArticleVersions(c *gin.Context)
+	HandleCreateArticleVersion(c *fiber.Ctx) error
+	HandleGetArticleVersionInfo(c *fiber.Ctx) error
+	HandleGetLatestArticleVersionInfo(c *fiber.Ctx) error
+	HandleListArticleVersions(c *fiber.Ctx) error
 }
 
 type articleVersionHandler struct {
@@ -43,13 +43,13 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID}/version [post]
 //	receiver h *articleVersionHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
-	body := c.MustGet(constant.CtxKeyBody).(*protocol.CreateArticleVersionBody)
+func (h *articleVersionHandler) HandleCreateArticleVersion(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
+	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleVersionBody)
 
 	req := &protocol.CreateArticleVersionRequest{
 		UserID:    userID,
@@ -57,9 +57,10 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 		Content:   body.Content,
 	}
 
-	rsp, err := h.svc.CreateArticleVersion(c, req)
+	rsp, err := h.svc.CreateArticleVersion(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetArticleVersionInfo 获取文章版本信息
@@ -77,12 +78,12 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID}/version/v{version} [get]
 //	receiver h *articleVersionHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleVersionURI)
+func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleVersionURI)
 
 	req := &protocol.GetArticleVersionInfoRequest{
 		UserID:    userID,
@@ -90,9 +91,10 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 		VersionID: uri.Version,
 	}
 
-	rsp, err := h.svc.GetArticleVersionInfo(c, req)
+	rsp, err := h.svc.GetArticleVersionInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleGetLatestArticleVersionInfo 获取最新文章版本信息
@@ -110,21 +112,22 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *gin.Context) {
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID}/version/latest [get]
 //	receiver h *articleVersionHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
+func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *fiber.Ctx) error {
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.GetLatestArticleVersionInfoRequest{
 		UserID:    userID,
 		ArticleID: uri.ArticleID,
 	}
 
-	rsp, err := h.svc.GetLatestArticleVersionInfo(c, req)
+	rsp, err := h.svc.GetLatestArticleVersionInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
 
 // HandleListArticleVersions 列出文章版本
@@ -143,21 +146,22 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *gin.Context
 //	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
 //	@Router /v1/article/{articleID}/version/list [get]
 //	receiver h *articleVersionHandler
-//	param c *gin.Context
+//	param c *fiber.Ctx error
 //	author centonhuang
 //	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleListArticleVersions(c *gin.Context) {
-	userID := c.GetUint(constant.CtxKeyUserID)
-	uri := c.MustGet(constant.CtxKeyURI).(*protocol.ArticleURI)
-	param := c.MustGet(constant.CtxKeyParam).(*protocol.PageParam)
+func (h *articleVersionHandler) HandleListArticleVersions(c *fiber.Ctx) error {
+		userID := c.Locals(constant.CtxKeyUserID).(uint)
+	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListArticleVersionsRequest{
-		UserID:    userID,
-		ArticleID: uri.ArticleID,
-		PageParam: param,
+		UserID:     userID,
+		ArticleID:  uri.ArticleID,
+		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListArticleVersions(c, req)
+	rsp, err := h.svc.ListArticleVersions(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
+	return nil
 }
