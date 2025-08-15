@@ -47,7 +47,7 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleCreateArticleVersion(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleVersionBody)
 
@@ -82,7 +82,7 @@ func (h *articleVersionHandler) HandleCreateArticleVersion(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleVersionURI)
 
 	req := &protocol.GetArticleVersionInfoRequest{
@@ -116,7 +116,7 @@ func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *fiber.Ctx) error 
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.GetLatestArticleVersionInfoRequest{
@@ -150,7 +150,7 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *fiber.Ctx) 
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleListArticleVersions(c *fiber.Ctx) error {
-		userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+		userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 

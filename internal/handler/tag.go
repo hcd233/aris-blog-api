@@ -64,7 +64,7 @@ func (h *tagHandler) HandleCreateTag(c *fiber.Ctx) error {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.CreateTag(c, &req)
+	rsp, err := h.svc.CreateTag(c.Context(), &req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -95,7 +95,7 @@ func (h *tagHandler) HandleGetTagInfo(c *fiber.Ctx) error {
 		TagID: uri.TagID,
 	}
 
-	rsp, err := h.svc.GetTagInfo(c, req)
+	rsp, err := h.svc.GetTagInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -134,7 +134,7 @@ func (h *tagHandler) HandleUpdateTag(c *fiber.Ctx) error {
 		Description: body.Description,
 	}
 
-	rsp, err := h.svc.UpdateTag(c, req)
+	rsp, err := h.svc.UpdateTag(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -167,7 +167,7 @@ func (h *tagHandler) HandleDeleteTag(c *fiber.Ctx) error {
 		TagID:  uri.TagID,
 	}
 
-	rsp, err := h.svc.DeleteTag(c, req)
+	rsp, err := h.svc.DeleteTag(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -198,7 +198,7 @@ func (h *tagHandler) HandleListTags(c *fiber.Ctx) error {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListTags(c, req)
+	rsp, err := h.svc.ListTags(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil

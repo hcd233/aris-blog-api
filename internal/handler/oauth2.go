@@ -62,7 +62,7 @@ func NewGoogleOauth2Handler() Oauth2Handler {
 func (h *oauth2Handler) HandleLogin(c *fiber.Ctx) error {
 	req := &protocol.LoginRequest{}
 
-	rsp, err := h.svc.Login(c, req)
+	rsp, err := h.svc.Login(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -89,9 +89,9 @@ func (h *oauth2Handler) HandleLogin(c *fiber.Ctx) error {
 //	update 2025-01-05 13:43:36
 func (h *oauth2Handler) HandleCallback(c *fiber.Ctx) error {
 	params := protocol.OAuth2CallbackParam{}
-	if err := c.BindQuery(&params); err != nil {
+	if err := c.QueryParser(&params); err != nil {
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-		return
+		return nil
 	}
 
 	req := &protocol.CallbackRequest{
@@ -99,7 +99,7 @@ func (h *oauth2Handler) HandleCallback(c *fiber.Ctx) error {
 		State: params.State,
 	}
 
-	rsp, err := h.svc.Callback(c, req)
+	rsp, err := h.svc.Callback(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil

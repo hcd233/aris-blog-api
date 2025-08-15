@@ -54,7 +54,7 @@ func (h *tokenHandler) HandleRefreshToken(c *fiber.Ctx) error {
 		RefreshToken: body.RefreshToken,
 	}
 
-	rsp, err := h.svc.RefreshToken(c, req)
+	rsp, err := h.svc.RefreshToken(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil

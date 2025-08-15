@@ -194,7 +194,7 @@ func (h *aiHandler) HandleCreatePrompt(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateContentCompletion(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateContentCompletionBody)
 
 	req := &protocol.GenerateContentCompletionRequest{
@@ -234,7 +234,7 @@ func (h *aiHandler) HandleGenerateContentCompletion(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleSummary(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateArticleSummaryBody)
 
 	req := &protocol.GenerateArticleSummaryRequest{
@@ -304,7 +304,7 @@ func (h *aiHandler) HandleGenerateArticleTranslation(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateArticleQA(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateArticleQABody)
 
 	req := &protocol.GenerateArticleQARequest{
@@ -343,7 +343,7 @@ func (h *aiHandler) HandleGenerateArticleQA(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleGenerateTermExplaination(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.GenerateTermExplainationBody)
 
 	req := &protocol.GenerateTermExplainationRequest{

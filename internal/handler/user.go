@@ -51,7 +51,7 @@ func NewUserHandler() UserHandler {
 //	author centonhuang
 //	update 2025-01-04 15:56:30
 func (h *userHandler) HandleGetCurUserInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 
 	req := &protocol.GetCurUserInfoRequest{
 		UserID: userID,
@@ -115,7 +115,7 @@ func (h *userHandler) HandleGetUserInfo(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:56:40
 func (h *userHandler) HandleUpdateInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateUserBody)
 
 	req := &protocol.UpdateUserInfoRequest{

@@ -54,7 +54,7 @@ func (h *commentHandler) HandleCreateArticleComment(c *fiber.Ctx) error {
 		ReplyTo:   body.ReplyTo,
 	}
 
-	rsp, err := h.svc.CreateArticleComment(c, req)
+	rsp, err := h.svc.CreateArticleComment(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -84,7 +84,7 @@ func (h *commentHandler) HandleDeleteComment(c *fiber.Ctx) error {
 		CommentID: uri.CommentID,
 	}
 
-	rsp, err := h.svc.DeleteComment(c, req)
+	rsp, err := h.svc.DeleteComment(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -117,7 +117,7 @@ func (h *commentHandler) HandleListArticleComments(c *fiber.Ctx) error {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListArticleComments(c, req)
+	rsp, err := h.svc.ListArticleComments(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -150,7 +150,7 @@ func (h *commentHandler) HandleListChildrenComments(c *fiber.Ctx) error {
 		PageParam: param,
 	}
 
-	rsp, err := h.svc.ListChildrenComments(c, req)
+	rsp, err := h.svc.ListChildrenComments(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil

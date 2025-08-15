@@ -62,7 +62,7 @@ func NewAssetHandler() AssetHandler {
 //	author centonhuang
 //	update 2024-11-03 06:45:42
 func (h *assetHandler) HandleListUserLikeArticles(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeArticlesRequest{
@@ -95,7 +95,7 @@ func (h *assetHandler) HandleListUserLikeArticles(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2024-11-03 06:47:41
 func (h *assetHandler) HandleListUserLikeComments(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeCommentsRequest{
@@ -128,7 +128,7 @@ func (h *assetHandler) HandleListUserLikeComments(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2024-11-03 06:47:43
 func (h *assetHandler) HandleListUserLikeTags(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
 
 	req := &protocol.ListUserLikeTagsRequest{
@@ -160,7 +160,7 @@ func (h *assetHandler) HandleListUserLikeTags(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleListImages(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 
 	req := &protocol.ListImagesRequest{
 		UserID: userID,
@@ -191,7 +191,7 @@ func (h *assetHandler) HandleListImages(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleUploadImage(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	file, err := c.FormFile("file")
 	if err != nil {
 		logger.LoggerWithFiberContext(c).Error("[HandleUploadImage] get file error", zap.Error(err))
@@ -245,7 +245,7 @@ func (h *assetHandler) HandleUploadImage(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleGetImage(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ObjectURI)
 	param := c.Locals(constant.CtxKeyParam).(*protocol.ImageParam)
 
@@ -284,7 +284,7 @@ func (h *assetHandler) HandleGetImage(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:02
 func (h *assetHandler) HandleDeleteImage(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ObjectURI)
 
 	req := &protocol.DeleteImageRequest{
@@ -325,7 +325,7 @@ func (h *assetHandler) HandleListUserViewArticles(c *fiber.Ctx) error {
 		PageParam: pageParam,
 	}
 
-	rsp, err := h.svc.ListUserViewArticles(c, req)
+	rsp, err := h.svc.ListUserViewArticles(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -358,7 +358,7 @@ func (h *assetHandler) HandleDeleteUserView(c *fiber.Ctx) error {
 		ViewID: uri.ViewID,
 	}
 
-	rsp, err := h.svc.DeleteUserView(c, req)
+	rsp, err := h.svc.DeleteUserView(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil

@@ -7,12 +7,10 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/swagger"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/cron"
-	"github.com/hcd233/aris-blog-api/internal/logger"
+
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/resource/cache"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
@@ -62,7 +60,7 @@ var startServerCmd = &cobra.Command{
 				AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Requested-With,X-Trace-Id",
 				ExposeHeaders:    "Content-Length",
 				AllowCredentials: true,
-				MaxAge:           12 * time.Hour,
+				MaxAge:           int(12 * time.Hour.Seconds()),
 			}),
 		)
 

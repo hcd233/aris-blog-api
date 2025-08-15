@@ -65,7 +65,7 @@ func (h *categoryHandler) HandleCreateCategory(c *fiber.Ctx) error {
 		ParentID: body.ParentID,
 	}
 
-	rsp, err := h.svc.CreateCategory(c, req)
+	rsp, err := h.svc.CreateCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -98,7 +98,7 @@ func (h *categoryHandler) HandleGetCategoryInfo(c *fiber.Ctx) error {
 		CategoryID: uri.CategoryID,
 	}
 
-	rsp, err := h.svc.GetCategoryInfo(c, req)
+	rsp, err := h.svc.GetCategoryInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -127,7 +127,7 @@ func (h *categoryHandler) HandleGetRootCategories(c *fiber.Ctx) error {
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetRootCategory(c, req)
+	rsp, err := h.svc.GetRootCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -164,7 +164,7 @@ func (h *categoryHandler) HandleUpdateCategoryInfo(c *fiber.Ctx) error {
 		ParentID:   body.ParentID,
 	}
 
-	rsp, err := h.svc.UpdateCategory(c, req)
+	rsp, err := h.svc.UpdateCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -197,7 +197,7 @@ func (h *categoryHandler) HandleDeleteCategory(c *fiber.Ctx) error {
 		CategoryID: uri.CategoryID,
 	}
 
-	rsp, err := h.svc.DeleteCategory(c, req)
+	rsp, err := h.svc.DeleteCategory(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -233,7 +233,7 @@ func (h *categoryHandler) HandleListChildrenCategories(c *fiber.Ctx) error {
 		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListChildrenCategories(c, req)
+	rsp, err := h.svc.ListChildrenCategories(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -269,7 +269,7 @@ func (h *categoryHandler) HandleListChildrenArticles(c *fiber.Ctx) error {
 		PageParam:  param,
 	}
 
-	rsp, err := h.svc.ListChildrenArticles(c, req)
+	rsp, err := h.svc.ListChildrenArticles(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil

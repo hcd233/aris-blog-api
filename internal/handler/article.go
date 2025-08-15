@@ -57,7 +57,7 @@ func NewArticleHandler() ArticleHandler {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleCreateArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleBody)
 
 	req := &protocol.CreateArticleRequest{
@@ -94,7 +94,7 @@ func (h *articleHandler) HandleCreateArticle(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleGetArticleInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.GetArticleInfoRequest{
@@ -128,7 +128,7 @@ func (h *articleHandler) HandleGetArticleInfo(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-19 15:23:26
 func (h *articleHandler) HandleGetArticleInfoBySlug(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleSlugURI)
 
 	req := &protocol.GetArticleInfoBySlugRequest{
@@ -164,7 +164,7 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateArticleBody)
 
@@ -203,7 +203,7 @@ func (h *articleHandler) HandleUpdateArticle(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleUpdateArticleStatus(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateArticleStatusBody)
 
@@ -239,7 +239,7 @@ func (h *articleHandler) HandleUpdateArticleStatus(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleDeleteArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
 
 	req := &protocol.DeleteArticleRequest{

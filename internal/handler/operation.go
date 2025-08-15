@@ -55,7 +55,7 @@ func (h *operationHandler) HandleUserLikeArticle(c *fiber.Ctx) error {
 		Undo:      body.Undo,
 	}
 
-	rsp, err := h.svc.LikeArticle(c, req)
+	rsp, err := h.svc.LikeArticle(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -86,7 +86,7 @@ func (h *operationHandler) HandleUserLikeComment(c *fiber.Ctx) error {
 		Undo:      body.Undo,
 	}
 
-	rsp, err := h.svc.LikeComment(c, req)
+	rsp, err := h.svc.LikeComment(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -117,7 +117,7 @@ func (h *operationHandler) HandleUserLikeTag(c *fiber.Ctx) error {
 		Undo:   body.Undo,
 	}
 
-	rsp, err := h.svc.LikeTag(c, req)
+	rsp, err := h.svc.LikeTag(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
@@ -148,7 +148,7 @@ func (h *operationHandler) HandleLogUserViewArticle(c *fiber.Ctx) error {
 		Progress:  body.Progress,
 	}
 
-	rsp, err := h.svc.LogArticleView(c, req)
+	rsp, err := h.svc.LogArticleView(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
