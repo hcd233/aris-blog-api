@@ -13,4 +13,8 @@ var Models = []interface{}{
 	&UserLike{},
 	&UserView{},
 	&Prompt{},
+	// 推荐系统相关模型
+	&UserBehavior{},
+	&UserProfile{},
+	&RecommendationLog{},
 }
