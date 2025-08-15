@@ -14,6 +14,10 @@ var (
 	userLikeDAOSingleton       *UserLikeDAO
 	userViewDAOSingleton       *UserViewDAO
 	promptDAOSingleton         *PromptDAO
+	// 推荐系统相关DAO
+	userBehaviorDAOSingleton     *UserBehaviorDAO
+	userProfileDAOSingleton      *UserProfileDAO
+	recommendationLogDAOSingleton *RecommendationLogDAO
 
 	categoryOnce       sync.Once
 	userOnce           sync.Once
@@ -24,6 +28,10 @@ var (
 	userLikeOnce       sync.Once
 	userViewOnce       sync.Once
 	promptOnce         sync.Once
+	// 推荐系统相关Once
+	userBehaviorOnce     sync.Once
+	userProfileOnce      sync.Once
+	recommendationLogOnce sync.Once
 )
 
 // GetCategoryDAO 获取类别DAO
@@ -132,4 +140,40 @@ func GetPromptDAO() *PromptDAO {
 		promptDAOSingleton = &PromptDAO{}
 	})
 	return promptDAOSingleton
+}
+
+// GetUserBehaviorDAO 获取用户行为DAO
+//
+//	return *UserBehaviorDAO
+//	author system
+//	update 2025-01-19 12:00:00
+func GetUserBehaviorDAO() *UserBehaviorDAO {
+	userBehaviorOnce.Do(func() {
+		userBehaviorDAOSingleton = &UserBehaviorDAO{}
+	})
+	return userBehaviorDAOSingleton
+}
+
+// GetUserProfileDAO 获取用户画像DAO
+//
+//	return *UserProfileDAO
+//	author system
+//	update 2025-01-19 12:00:00
+func GetUserProfileDAO() *UserProfileDAO {
+	userProfileOnce.Do(func() {
+		userProfileDAOSingleton = &UserProfileDAO{}
+	})
+	return userProfileDAOSingleton
+}
+
+// GetRecommendationLogDAO 获取推荐日志DAO
+//
+//	return *RecommendationLogDAO
+//	author system
+//	update 2025-01-19 12:00:00
+func GetRecommendationLogDAO() *RecommendationLogDAO {
+	recommendationLogOnce.Do(func() {
+		recommendationLogDAOSingleton = &RecommendationLogDAO{}
+	})
+	return recommendationLogDAOSingleton
 }
