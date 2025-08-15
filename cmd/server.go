@@ -2,13 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"runtime/debug"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/compress"
 	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/gofiber/fiber/v2/middleware/recover"
+	rec "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/cron"
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -35,6 +36,13 @@ var startServerCmd = &cobra.Command{
 	Short: "启动API服务器",
 	Long:  `启动并运行API服务器，监听指定的主机和端口`,
 	Run: func(cmd *cobra.Command, _ []string) {
+		defer func() {
+			if r := recover(); r != nil {
+				logger.Logger().Error("[Server] Start server panic", zap.Any("error", r), zap.ByteString("stack", debug.Stack()))
+				os.Exit(1)
+			}
+			os.Exit(0)
+		}()
 		host, port := lo.Must1(cmd.Flags().GetString("host")), lo.Must1(cmd.Flags().GetString("port"))
 
 		database.InitDatabase()
@@ -44,7 +52,7 @@ var startServerCmd = &cobra.Command{
 		cron.InitCronJobs()
 
 		app := fiber.New(fiber.Config{
-			Prefork:      true,
+			Prefork:      false,
 			ReadTimeout:  config.ReadTimeout,
 			WriteTimeout: config.WriteTimeout,
 			IdleTimeout:  120 * time.Second,
@@ -54,7 +62,7 @@ var startServerCmd = &cobra.Command{
 		app.Use(
 			middleware.TraceMiddleware(),
 			middleware.LogMiddleware(),
-			recover.New(recover.Config{
+			rec.New(rec.Config{
 				EnableStackTrace: true,
 				StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
 					logger.LoggerWithFiberContext(c).Panic("[Panic Recovery] recovered panic",
