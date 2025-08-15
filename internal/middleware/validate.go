@@ -19,8 +19,8 @@ func ValidateURIMiddleware(uri interface{}) fiber.Handler {
 		if err := c.ParamsParser(uri); err != nil {
 			logger.LoggerWithFiberContext(c).Info("[ValidateURIMiddleware] failed to bind uri", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "Bad Request",
+			return c.Status(fiber.StatusBadRequest).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrBadRequest.Error(),
 			})
 		}
 		c.Locals("uri", uri)
@@ -39,8 +39,8 @@ func ValidateParamMiddleware(param interface{}) fiber.Handler {
 		if err := c.QueryParser(param); err != nil {
 			logger.LoggerWithFiberContext(c).Info("[ValidateParamMiddleware] failed to bind param", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "Bad Request",
+			return c.Status(fiber.StatusBadRequest).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrBadRequest.Error(),
 			})
 		}
 		c.Locals("param", param)
@@ -59,8 +59,8 @@ func ValidateBodyMiddleware(body interface{}) fiber.Handler {
 		if err := c.BodyParser(body); err != nil {
 			logger.LoggerWithFiberContext(c).Info("[ValidateBodyMiddleware] failed to bind body", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrBadRequest)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"error": "Bad Request",
+			return c.Status(fiber.StatusBadRequest).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrBadRequest.Error(),
 			})
 		}
 		c.Locals("body", body)

@@ -34,8 +34,8 @@ func JwtMiddleware() fiber.Handler {
 		if tokenString == "" {
 			logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] token is empty")
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Unauthorized",
+			return c.Status(fiber.StatusUnauthorized).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrUnauthorized.Error(),
 			})
 		}
 
@@ -43,8 +43,8 @@ func JwtMiddleware() fiber.Handler {
 		if err != nil {
 			logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] failed to decode token", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
-			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
-				"error": "Unauthorized",
+			return c.Status(fiber.StatusUnauthorized).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrUnauthorized.Error(),
 			})
 		}
 
@@ -57,8 +57,8 @@ func JwtMiddleware() fiber.Handler {
 				logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] failed to get user", zap.Uint("userID", userID), zap.Error(err))
 				util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 			}
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Internal Server Error",
+			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrInternalError.Error(),
 			})
 		}
 		c.Locals(constant.CtxKeyUserID, user.ID)

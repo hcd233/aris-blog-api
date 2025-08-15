@@ -37,8 +37,8 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 		if err != nil {
 			logger.LoggerWithFiberContext(c).Error("[RedisLockMiddleware] failed to get lock", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Internal Server Error",
+			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrInternalError.Error(),
 			})
 		}
 
@@ -47,14 +47,14 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 			if err != nil {
 				logger.LoggerWithFiberContext(c).Error("[RedisLockMiddleware] failed to get lock info", zap.String("lockKey", lockKey), zap.Error(err))
 				util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"error": "Internal Server Error",
+				return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+					Error: protocol.ErrInternalError.Error(),
 				})
 			}
 			logger.LoggerWithFiberContext(c).Info("[RedisLockMiddleware] resource is locked", zap.String("lockKey", lockKey), zap.String("lockValue", lockValue))
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Too Many Requests",
+			return c.Status(fiber.StatusTooManyRequests).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrTooManyRequests.Error(),
 			})
 		}
 
@@ -70,8 +70,8 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 		if err := redis.Eval(context.Background(), luaScript, []string{lockKey}, lockValue).Err(); err != nil {
 			logger.LoggerWithFiberContext(c).Error("[RedisLockMiddleware] failed to release lock", zap.String("lockKey", lockKey), zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Internal Server Error",
+			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrInternalError.Error(),
 			})
 		}
 

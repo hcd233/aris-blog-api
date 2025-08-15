@@ -58,8 +58,8 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 		context, err := instance.Get(c.Context(), limiterKey)
 		if err != nil {
 			logger.LoggerWithFiberContext(c).Error("[RateLimiterMiddleware] failed to get rate limit", zap.Error(err))
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"error": "Internal Server Error",
+			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrInternalError.Error(),
 			})
 		}
 
@@ -74,8 +74,8 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 
 			logger.LoggerWithFiberContext(c).Error("[RateLimiterMiddleware] rate limit reached", fields...)
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
-			return c.Status(fiber.StatusTooManyRequests).JSON(fiber.Map{
-				"error": "Too Many Requests",
+			return c.Status(fiber.StatusTooManyRequests).JSON(protocol.HTTPResponse{
+				Error: protocol.ErrTooManyRequests.Error(),
 			})
 		}
 
