@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"runtime/debug"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,6 +11,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/cron"
+	"github.com/hcd233/aris-blog-api/internal/logger"
+	"go.uber.org/zap"
 
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/resource/cache"
@@ -41,6 +44,7 @@ var startServerCmd = &cobra.Command{
 		cron.InitCronJobs()
 
 		app := fiber.New(fiber.Config{
+			Prefork:      true,
 			ReadTimeout:  config.ReadTimeout,
 			WriteTimeout: config.WriteTimeout,
 			IdleTimeout:  120 * time.Second,
@@ -50,7 +54,14 @@ var startServerCmd = &cobra.Command{
 		app.Use(
 			middleware.TraceMiddleware(),
 			middleware.LogMiddleware(),
-			recover.New(),
+			recover.New(recover.Config{
+				EnableStackTrace: true,
+				StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
+					logger.LoggerWithFiberContext(c).Panic("[Panic Recovery] recovered panic",
+						zap.Any("error", e),
+						zap.ByteString("stack", debug.Stack()))
+				},
+			}),
 			compress.New(compress.Config{
 				Level: compress.LevelDefault,
 			}),
