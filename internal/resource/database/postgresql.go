@@ -58,15 +58,16 @@ func InitDatabase() {
 
 	// 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
 	// 		config.MysqlUser, config.MysqlPassword, config.MysqlHost, config.MysqlPort, config.MysqlDatabase)
-	// 	dialector = mysql.New(mysql.Config{
-	// 		DSN:               dsn,
-	// 		DefaultStringSize: 256,
-	// 	})
-	// 	dbHost, dbPort, dbName = config.MysqlHost, config.MysqlPort, config.MysqlDatabase
+	// 	 dialector = mysql.New(mysql.Config{
+	// 		 DSN:               dsn,
+	// 		 DefaultStringSize: 256,
+	// 	 })
+	// 	 dbHost, dbPort, dbName = config.MysqlHost, config.MysqlPort, config.MysqlDatabase
 
 	db = lo.Must(gorm.Open(dialector, &gorm.Config{
 		DryRun:         false, // 只生成SQL不运行
 		TranslateError: true,
+		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger: &GormLoggerAdapter{
 			LogLevel: gormlogger.Info, // Info级别
 		},

@@ -21,6 +21,7 @@ var migrateDatabaseCmd = &cobra.Command{
 		database.InitDatabase()
 		db := database.GetDBInstance(cmd.Context())
 		lo.Must0(db.AutoMigrate(model.Models...))
+		lo.Must0(database.DropAllForeignKeys(cmd.Context()))
 	},
 }
 
