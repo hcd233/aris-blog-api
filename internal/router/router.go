@@ -35,5 +35,8 @@ func RegisterRouter(app *fiber.App) {
 		initOperationRouter(v1Router)
 
 		initAIRouter(v1Router)
+		
+		// 推荐系统路由
+		initRecommendationRouter(v1Router)
 	}
 }
