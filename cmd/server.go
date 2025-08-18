@@ -7,9 +7,6 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/compress"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	rec "github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/cron"
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -62,25 +59,9 @@ var startServerCmd = &cobra.Command{
 		app.Use(
 			middleware.TraceMiddleware(),
 			middleware.LogMiddleware(),
-			rec.New(rec.Config{
-				EnableStackTrace: true,
-				StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
-					logger.LoggerWithFiberContext(c).Panic("[Panic Recovery] recovered panic",
-						zap.Any("error", e),
-						zap.ByteString("stack", debug.Stack()))
-				},
-			}),
-			compress.New(compress.Config{
-				Level: compress.LevelDefault,
-			}),
-			cors.New(cors.Config{
-				AllowOrigins:     "http://localhost:3000",
-				AllowMethods:     "GET,POST,PUT,PATCH,DELETE,HEAD,OPTIONS",
-				AllowHeaders:     "Origin,Content-Type,Accept,Authorization,X-Requested-With,X-Trace-Id",
-				ExposeHeaders:    "Content-Length",
-				AllowCredentials: true,
-				MaxAge:           int(12 * time.Hour.Seconds()),
-			}),
+			middleware.CORSMiddleware(),
+			middleware.CompressMiddleware(),
+			middleware.RecoverMiddleware(),
 		)
 
 		router.RegisterRouter(app)
