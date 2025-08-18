@@ -30,7 +30,7 @@ const (
 type UserLike struct {
 	gorm.Model
 	UserID     uint           `json:"user_id" gorm:"not null;index:user_id_object_type;uniqueIndex:user_object;comment:用户ID"`
-	User       *User          `json:"user" gorm:"foreignKey:UserID;references:ID"`
+	User       *User          `json:"user" gorm:"foreignKey:UserID"`
 	ObjectID   uint           `json:"object_id" gorm:"not null;index:user_id_object_type;uniqueIndex:user_object;comment:对象ID"`
 	ObjectType LikeObjectType `json:"object_type" gorm:"not null;index:user_id_object_type;uniqueIndex:user_object;comment:对象类型"`
 }
