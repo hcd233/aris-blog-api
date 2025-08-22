@@ -45,7 +45,7 @@ func NewCategoryService() CategoryService {
 func (s *categoryService) CreateCategory(ctx context.Context, req *protocol.CreateCategoryRequest) (rsp *protocol.CreateCategoryResponse, err error) {
 	rsp = &protocol.CreateCategoryResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	var parentCategory *model.Category
@@ -101,7 +101,7 @@ func (s *categoryService) CreateCategory(ctx context.Context, req *protocol.Crea
 func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.GetCategoryInfoRequest) (rsp *protocol.GetCategoryInfoResponse, err error) {
 	rsp = &protocol.GetCategoryInfoResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "created_at", "updated_at"}, []string{})
@@ -135,7 +135,7 @@ func (s *categoryService) GetCategoryInfo(ctx context.Context, req *protocol.Get
 func (s *categoryService) GetRootCategory(ctx context.Context, req *protocol.GetRootCategoryRequest) (rsp *protocol.GetRootCategoryResponse, err error) {
 	rsp = &protocol.GetRootCategoryResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	rootCategory, err := s.categoryDAO.GetRootByUserID(db, req.UserID, []string{"id", "name", "user_id", "created_at", "updated_at"}, []string{})
@@ -163,7 +163,7 @@ func (s *categoryService) GetRootCategory(ctx context.Context, req *protocol.Get
 func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.UpdateCategoryRequest) (rsp *protocol.UpdateCategoryResponse, err error) {
 	rsp = &protocol.UpdateCategoryResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	updateFields := make(map[string]interface{})
@@ -219,7 +219,7 @@ func (s *categoryService) UpdateCategory(ctx context.Context, req *protocol.Upda
 func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.DeleteCategoryRequest) (rsp *protocol.DeleteCategoryResponse, err error) {
 	rsp = &protocol.DeleteCategoryResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
@@ -258,7 +258,7 @@ func (s *categoryService) DeleteCategory(ctx context.Context, req *protocol.Dele
 func (s *categoryService) ListChildrenCategories(ctx context.Context, req *protocol.ListChildrenCategoriesRequest) (rsp *protocol.ListChildrenCategoriesResponse, err error) {
 	rsp = &protocol.ListChildrenCategoriesResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	parentCategory, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})
@@ -310,7 +310,7 @@ func (s *categoryService) ListChildrenCategories(ctx context.Context, req *proto
 func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protocol.ListChildrenArticlesRequest) (rsp *protocol.ListChildrenArticlesResponse, err error) {
 	rsp = &protocol.ListChildrenArticlesResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	parentCategory, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id", "name", "user_id", "parent_id", "user_id"}, []string{})

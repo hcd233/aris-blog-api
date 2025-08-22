@@ -44,7 +44,7 @@ func NewTokenService() TokenService {
 func (s *tokenService) RefreshToken(ctx context.Context, req *protocol.RefreshTokenRequest) (rsp *protocol.RefreshTokenResponse, err error) {
 	rsp = &protocol.RefreshTokenResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	userID, err := s.refreshTokenSigner.DecodeToken(req.RefreshToken)

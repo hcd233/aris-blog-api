@@ -82,7 +82,7 @@ func NewAssetService() AssetService {
 func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.ListUserLikeArticlesRequest) (rsp *protocol.ListUserLikeArticlesResponse, err error) {
 	rsp = &protocol.ListUserLikeArticlesResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
@@ -157,7 +157,7 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.ListUserLikeCommentsRequest) (rsp *protocol.ListUserLikeCommentsResponse, err error) {
 	rsp = &protocol.ListUserLikeCommentsResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
@@ -221,7 +221,7 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListUserLikeTagsRequest) (rsp *protocol.ListUserLikeTagsResponse, err error) {
 	rsp = &protocol.ListUserLikeTagsResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
@@ -294,7 +294,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesRequest) (rsp *protocol.ListImagesResponse, err error) {
 	rsp = &protocol.ListImagesResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	objectInfos, err := s.imageObjDAO.ListObjects(req.UserID)
 	if err != nil {
@@ -324,7 +324,7 @@ func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesR
 func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImageRequest) (rsp *protocol.UploadImageResponse, err error) {
 	rsp = &protocol.UploadImageResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	if !util.IsValidImageFormat(req.FileName) {
 		logger.Error("[AssetService] invalid image format", zap.String("fileName", req.FileName))
@@ -419,7 +419,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImag
 func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageRequest) (rsp *protocol.GetImageResponse, err error) {
 	rsp = &protocol.GetImageResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	var presignedURL *url.URL
 	switch req.Quality {
@@ -452,7 +452,7 @@ func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageReque
 func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImageRequest) (rsp *protocol.DeleteImageResponse, err error) {
 	rsp = &protocol.DeleteImageResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	var wg sync.WaitGroup
 	var imageErr, thumbnailErr error
@@ -488,7 +488,7 @@ func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImag
 func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.ListUserViewArticlesRequest) (rsp *protocol.ListUserViewArticlesResponse, err error) {
 	rsp = &protocol.ListUserViewArticlesResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, req.PageParam.Page, req.PageParam.PageSize)
@@ -517,7 +517,7 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.L
 func (s *assetService) DeleteUserView(ctx context.Context, req *protocol.DeleteUserViewRequest) (rsp *protocol.DeleteUserViewResponse, err error) {
 	rsp = &protocol.DeleteUserViewResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	userView, err := s.userViewDAO.GetByID(db, req.ViewID, []string{"id", "user_id"}, []string{})

@@ -55,7 +55,7 @@ func NewUserService() UserService {
 func (s *userService) GetCurUserInfo(ctx context.Context, req *protocol.GetCurUserInfoRequest) (rsp *protocol.GetCurUserInfoResponse, err error) {
 	rsp = &protocol.GetCurUserInfoResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user, err := s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "email", "avatar", "created_at", "last_login", "permission"}, []string{})
@@ -100,7 +100,7 @@ func (s *userService) GetCurUserInfo(ctx context.Context, req *protocol.GetCurUs
 //	author centonhuang
 //	update 2025-01-04 21:09:04
 func (s *userService) GetUserInfo(ctx context.Context, req *protocol.GetUserInfoRequest) (rsp *protocol.GetUserInfoResponse, err error) {
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	rsp = &protocol.GetUserInfoResponse{}
 	db := database.GetDBInstance(ctx)
@@ -134,7 +134,7 @@ func (s *userService) GetUserInfo(ctx context.Context, req *protocol.GetUserInfo
 }
 
 func (s *userService) UpdateUserInfo(ctx context.Context, req *protocol.UpdateUserInfoRequest) (rsp *protocol.UpdateUserInfoResponse, err error) {
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	rsp = &protocol.UpdateUserInfoResponse{}
 	db := database.GetDBInstance(ctx)

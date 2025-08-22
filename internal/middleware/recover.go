@@ -18,7 +18,7 @@ func RecoverMiddleware() fiber.Handler {
 	return recover.New(recover.Config{
 		EnableStackTrace: true,
 		StackTraceHandler: func(c *fiber.Ctx, e interface{}) {
-			logger.LoggerWithFiberContext(c).Panic("[Panic Recovery] recovered panic",
+			logger.WithFCtx(c).Panic("[Panic Recovery] recovered panic",
 				zap.Any("error", e),
 				zap.ByteString("stack", debug.Stack()))
 		},

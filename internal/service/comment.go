@@ -42,7 +42,7 @@ func NewCommentService() CommentService {
 func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error) {
 	rsp = &protocol.CreateArticleCommentResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByIDAndStatus(db, req.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
@@ -107,7 +107,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 func (s *commentService) DeleteComment(ctx context.Context, req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error) {
 	rsp = &protocol.DeleteCommentResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	comment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "user_id", "article_id"}, []string{})
@@ -153,7 +153,7 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error) {
 	rsp = &protocol.ListArticleCommentsResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
@@ -208,7 +208,7 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error) {
 	rsp = &protocol.ListChildrenCommentsResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	parentComment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "article_id"}, []string{})

@@ -41,11 +41,22 @@ const (
 	stacktraceKey = "stacktrace"
 )
 
+// Logger 日志单例
+//
+//	return *zap.Logger
+//	author centonhuang
+//	update 2025-08-22 14:29:45
 func Logger() *zap.Logger {
 	return defaultLogger
 }
 
-func LoggerWithContext(ctx context.Context) *zap.Logger {
+// WithCtx 根据上下文获取日志
+//
+//	param ctx context.Context
+//	return *zap.Logger
+//	author centonhuang
+//	update 2025-08-22 14:29:58
+func WithCtx(ctx context.Context) *zap.Logger {
 	logger := defaultLogger
 	if traceID := ctx.Value(constant.CtxKeyTraceID); traceID != nil {
 		logger = logger.With(zap.String(constant.CtxKeyTraceID, traceID.(string)))
@@ -59,8 +70,13 @@ func LoggerWithContext(ctx context.Context) *zap.Logger {
 	return logger
 }
 
-// LoggerWithFiberContext 适配GoFiber上下文的日志函数
-func LoggerWithFiberContext(c *fiber.Ctx) *zap.Logger {
+// WithFCtx 适配GoFiber上下文的日志函数
+//
+//	@param c
+//	@return *zap.Logger
+//	@author centonhuang
+//	@update 2025-08-22 14:30:03
+func WithFCtx(c *fiber.Ctx) *zap.Logger {
 	logger := defaultLogger
 	if traceID := c.Locals(constant.CtxKeyTraceID); traceID != nil {
 		logger = logger.With(zap.String(constant.CtxKeyTraceID, traceID.(string)))

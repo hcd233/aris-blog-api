@@ -75,7 +75,7 @@ type aiService struct {
 func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error) {
 	rsp = &protocol.GetPromptResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	prompt, err := s.promptDAO.GetPromptByTaskAndVersion(db, model.Task(req.TaskName), req.Version, []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
@@ -116,7 +116,7 @@ func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptReques
 func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error) {
 	rsp = &protocol.GetLatestPromptResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	prompt, err := s.promptDAO.GetLatestPromptByTask(db, model.Task(req.TaskName), []string{"id", "created_at", "task", "version", "templates", "variables"}, []string{})
@@ -157,7 +157,7 @@ func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatest
 func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error) {
 	rsp = &protocol.ListPromptResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	prompts, pageInfo, err := s.promptDAO.PaginateByTask(db, model.Task(req.TaskName),
@@ -206,7 +206,7 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error) {
 	rsp = &protocol.CreatePromptResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	contents := lo.Map(req.Templates, func(tmplate protocol.Template, _ int) string {
@@ -274,7 +274,7 @@ func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePrompt
 func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
 	rsp = &protocol.GenerateContentCompletionResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
@@ -396,7 +396,7 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
 	rsp = &protocol.GenerateArticleSummaryResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
@@ -551,7 +551,7 @@ func (s *aiService) GenerateArticleTranslation(_ context.Context, _ *protocol.Ge
 func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
 	rsp = &protocol.GenerateArticleQAResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
@@ -703,7 +703,7 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
 	rsp = &protocol.GenerateTermExplainationResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))

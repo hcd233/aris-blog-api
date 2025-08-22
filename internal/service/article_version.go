@@ -43,7 +43,7 @@ func NewArticleVersionService() ArticleVersionService {
 func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *protocol.CreateArticleVersionRequest) (rsp *protocol.CreateArticleVersionResponse, err error) {
 	rsp = &protocol.CreateArticleVersionResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
@@ -117,7 +117,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *protocol.GetArticleVersionInfoRequest) (rsp *protocol.GetArticleVersionInfoResponse, err error) {
 	rsp = &protocol.GetArticleVersionInfoResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
@@ -165,7 +165,7 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *protocol.GetLatestArticleVersionInfoRequest) (rsp *protocol.GetLatestArticleVersionInfoResponse, err error) {
 	rsp = &protocol.GetLatestArticleVersionInfoResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
@@ -219,7 +219,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *protocol.ListArticleVersionsRequest) (rsp *protocol.ListArticleVersionsResponse, err error) {
 	rsp = &protocol.ListArticleVersionsResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})

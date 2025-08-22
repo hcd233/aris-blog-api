@@ -340,7 +340,7 @@ func (p *googleProvider) GetAuthURL() string {
 }
 
 func (p *googleProvider) ExchangeToken(ctx context.Context, code string) (*oauth2.Token, error) {
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	logger.Info("[GoogleOauth2] exchanging code for token",
 		zap.String("clientID", p.oauth2Config.ClientID),
@@ -358,7 +358,7 @@ func (p *googleProvider) ExchangeToken(ctx context.Context, code string) (*oauth
 }
 
 func (p *googleProvider) GetUserInfo(ctx context.Context, token *oauth2.Token) (OAuth2UserInfo, error) {
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	// 使用HTTP客户端直接调用Google OAuth2 UserInfo API
 	client := p.oauth2Config.Client(ctx, token)
@@ -447,7 +447,7 @@ func NewGoogleOauth2Service() Oauth2Service {
 func (s *oauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
 	rsp = &protocol.LoginResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 
 	url := s.provider.GetAuthURL()
 	rsp.RedirectURL = url
@@ -461,7 +461,7 @@ func (s *oauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (
 func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
 	rsp = &protocol.CallbackResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	if req.State != config.Oauth2StateString {

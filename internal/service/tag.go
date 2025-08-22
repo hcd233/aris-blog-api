@@ -55,7 +55,7 @@ func NewTagService() TagService {
 func (s *tagService) CreateTag(ctx context.Context, req *protocol.CreateTagRequest) (rsp *protocol.CreateTagResponse, err error) {
 	rsp = &protocol.CreateTagResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tag := &model.Tag{
@@ -99,7 +99,7 @@ func (s *tagService) CreateTag(ctx context.Context, req *protocol.CreateTagReque
 func (s *tagService) GetTagInfo(ctx context.Context, req *protocol.GetTagInfoRequest) (rsp *protocol.GetTagInfoResponse, err error) {
 	rsp = &protocol.GetTagInfoResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tag, err := s.tagDAO.GetByID(db, req.TagID,
@@ -139,7 +139,7 @@ func (s *tagService) GetTagInfo(ctx context.Context, req *protocol.GetTagInfoReq
 func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagRequest) (rsp *protocol.UpdateTagResponse, err error) {
 	rsp = &protocol.UpdateTagResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "user_id"}, []string{})
@@ -198,7 +198,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *protocol.UpdateTagReque
 func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagRequest) (rsp *protocol.DeleteTagResponse, err error) {
 	rsp = &protocol.DeleteTagResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "name", "slug", "user_id"}, []string{})
@@ -236,7 +236,7 @@ func (s *tagService) DeleteTag(ctx context.Context, req *protocol.DeleteTagReque
 func (s *tagService) ListTags(ctx context.Context, req *protocol.ListTagsRequest) (rsp *protocol.ListTagsResponse, err error) {
 	rsp = &protocol.ListTagsResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tags, pageInfo, err := s.tagDAO.Paginate(db,

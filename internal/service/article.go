@@ -64,7 +64,7 @@ func NewArticleService() ArticleService {
 func (s *articleService) CreateArticle(ctx context.Context, req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error) {
 	rsp = &protocol.CreateArticleResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tags := []model.Tag{}
@@ -170,7 +170,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error) {
 	rsp = &protocol.GetArticleInfoResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{
@@ -227,7 +227,7 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error) {
 	rsp = &protocol.GetArticleInfoBySlugResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user, err := s.userDAO.GetByName(db, req.AuthorName, []string{"id"}, []string{})
@@ -298,7 +298,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error) {
 	rsp = &protocol.UpdateArticleResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	updateFields := make(map[string]interface{})
@@ -361,7 +361,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
 	rsp = &protocol.UpdateArticleStatusResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, req.UserID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
@@ -422,7 +422,7 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
 	rsp = &protocol.DeleteArticleResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, req.UserID, []string{"id", "slug"}, []string{})
@@ -459,7 +459,7 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.Delete
 func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
 	rsp = &protocol.ListArticlesResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	articles, pageInfo, err := s.articleDAO.PaginateByStatus(

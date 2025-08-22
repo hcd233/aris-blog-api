@@ -194,7 +194,7 @@ func (h *assetHandler) HandleUploadImage(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	file, err := c.FormFile("file")
 	if err != nil {
-		logger.LoggerWithFiberContext(c).Error("[HandleUploadImage] get file error", zap.Error(err))
+		logger.WithFCtx(c).Error("[HandleUploadImage] get file error", zap.Error(err))
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 		return nil
 	}
@@ -205,7 +205,7 @@ func (h *assetHandler) HandleUploadImage(c *fiber.Ctx) error {
 
 	reader, err := file.Open()
 	if err != nil {
-		logger.LoggerWithFiberContext(c).Error("[HandleUploadImage] open file error", zap.Error(err))
+		logger.WithFCtx(c).Error("[HandleUploadImage] open file error", zap.Error(err))
 		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 		return nil
 	}

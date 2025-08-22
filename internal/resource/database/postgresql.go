@@ -114,7 +114,7 @@ func (l *GormLoggerAdapter) LogMode(level gormlogger.LogLevel) gormlogger.Interf
 //	author centonhuang
 //	update 2025-01-05 21:11:07
 func (l *GormLoggerAdapter) Info(ctx context.Context, msg string, data ...interface{}) {
-	logger.LoggerWithContext(ctx).Info("[GORM] info", zap.String("msg", fmt.Sprintf(msg, data...)))
+	logger.WithCtx(ctx).Info("[GORM] info", zap.String("msg", fmt.Sprintf(msg, data...)))
 }
 
 // Warn 打印warn级别的日志
@@ -126,7 +126,7 @@ func (l *GormLoggerAdapter) Info(ctx context.Context, msg string, data ...interf
 //	author centonhuang
 //	update 2025-01-05 21:11:08
 func (l *GormLoggerAdapter) Warn(ctx context.Context, msg string, data ...interface{}) {
-	logger.LoggerWithContext(ctx).Warn("[GORM] warn", zap.String("msg", fmt.Sprintf(msg, data...)))
+	logger.WithCtx(ctx).Warn("[GORM] warn", zap.String("msg", fmt.Sprintf(msg, data...)))
 }
 
 // Error 打印error级别的日志
@@ -139,7 +139,7 @@ func (l *GormLoggerAdapter) Warn(ctx context.Context, msg string, data ...interf
 //	author centonhuang
 //	update 2025-01-05 21:11:10
 func (l *GormLoggerAdapter) Error(ctx context.Context, msg string, data ...interface{}) {
-	logger.LoggerWithContext(ctx).Error("[GORM] error", zap.String("msg", fmt.Sprintf(msg, data...)))
+	logger.WithCtx(ctx).Error("[GORM] error", zap.String("msg", fmt.Sprintf(msg, data...)))
 }
 
 // Trace 打印trace级别的日志
@@ -162,9 +162,9 @@ func (l *GormLoggerAdapter) Trace(ctx context.Context, begin time.Time, fc func(
 	}
 	if err != nil {
 		fields = append(fields, zap.Error(err))
-		logger.LoggerWithContext(ctx).Error("[GORM] trace", fields...)
+		logger.WithCtx(ctx).Error("[GORM] trace", fields...)
 		return
 	}
 
-	logger.LoggerWithContext(ctx).Info("[GORM] trace", fields...)
+	logger.WithCtx(ctx).Info("[GORM] trace", fields...)
 }

@@ -32,7 +32,7 @@ func JwtMiddleware() fiber.Handler {
 
 		tokenString := c.Get("Authorization")
 		if tokenString == "" {
-			logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] token is empty")
+			logger.WithFCtx(c).Error("[JwtMiddleware] token is empty")
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
 			return c.Status(fiber.StatusUnauthorized).JSON(protocol.HTTPResponse{
 				Error: protocol.ErrUnauthorized.Error(),
@@ -41,7 +41,7 @@ func JwtMiddleware() fiber.Handler {
 
 		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
-			logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] failed to decode token", zap.Error(err))
+			logger.WithFCtx(c).Error("[JwtMiddleware] failed to decode token", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
 			return c.Status(fiber.StatusUnauthorized).JSON(protocol.HTTPResponse{
 				Error: protocol.ErrUnauthorized.Error(),
@@ -51,10 +51,10 @@ func JwtMiddleware() fiber.Handler {
 		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"}, []string{})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] user not found", zap.Uint("userID", userID))
+				logger.WithFCtx(c).Error("[JwtMiddleware] user not found", zap.Uint("userID", userID))
 				util.SendHTTPResponse(c, nil, protocol.ErrDataNotExists)
 			} else {
-				logger.LoggerWithFiberContext(c).Error("[JwtMiddleware] failed to get user", zap.Uint("userID", userID), zap.Error(err))
+				logger.WithFCtx(c).Error("[JwtMiddleware] failed to get user", zap.Uint("userID", userID), zap.Error(err))
 				util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 			}
 			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{

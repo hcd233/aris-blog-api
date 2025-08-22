@@ -47,7 +47,7 @@ func NewOperationService() OperationService {
 func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error) {
 	rsp = &protocol.LikeArticleResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
@@ -108,7 +108,7 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error) {
 	rsp = &protocol.LikeCommentResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	comment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "likes", "article_id"}, []string{})
@@ -177,7 +177,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error) {
 	rsp = &protocol.LikeTagResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "likes"}, []string{})
@@ -228,7 +228,7 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 func (s *operationService) LogArticleView(ctx context.Context, req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error) {
 	rsp = &protocol.LogArticleViewResponse{}
 
-	logger := logger.LoggerWithContext(ctx)
+	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "status"}, []string{})

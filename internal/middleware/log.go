@@ -22,7 +22,7 @@ func LogMiddleware() fiber.Handler {
 
 		err := c.Next()
 
-		logger := logger.LoggerWithFiberContext(c)
+		logger := logger.WithFCtx(c)
 
 		latency := time.Since(start)
 

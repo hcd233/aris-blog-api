@@ -21,7 +21,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.
 	return func(c *fiber.Ctx) error {
 		permission := c.Locals(constant.CtxKeyPermission).(model.Permission)
 		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
-			logger.LoggerWithFiberContext(c).Info("[LimitUserPermissionMiddleware] permission denied",
+			logger.WithFCtx(c).Info("[LimitUserPermissionMiddleware] permission denied",
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),
 				zap.String("permission", string(permission)))
