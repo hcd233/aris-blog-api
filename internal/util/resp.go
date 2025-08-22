@@ -1,11 +1,11 @@
 package util
 
 import (
-	"encoding/json"
 	"net/http"
 	"sync"
 	"time"
 
+	"github.com/bytedance/sonic"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/samber/lo"
@@ -92,7 +92,7 @@ func SendStreamEventResponses(c *fiber.Ctx, streamChan <-chan string, errChan <-
 	go func() {
 		for range ticker.C {
 			mu.Lock()
-			event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
+			event := "data: " + string(lo.Must1(sonic.Marshal(protocol.SSEResponse{
 				Delta: "",
 				Stop:  false,
 				Error: "",
@@ -107,7 +107,7 @@ func SendStreamEventResponses(c *fiber.Ctx, streamChan <-chan string, errChan <-
 		case token, ok := <-streamChan:
 			mu.Lock()
 			if !ok {
-				event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
+				event := "data: " + string(lo.Must1(sonic.Marshal(protocol.SSEResponse{
 					Delta: "",
 					Stop:  true,
 					Error: "",
@@ -116,7 +116,7 @@ func SendStreamEventResponses(c *fiber.Ctx, streamChan <-chan string, errChan <-
 				mu.Unlock()
 				return
 			}
-			event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
+			event := "data: " + string(lo.Must1(sonic.Marshal(protocol.SSEResponse{
 				Delta: token,
 				Stop:  false,
 				Error: "",
@@ -126,7 +126,7 @@ func SendStreamEventResponses(c *fiber.Ctx, streamChan <-chan string, errChan <-
 		case err = <-errChan:
 			mu.Lock()
 			if err != nil {
-				event := "data: " + string(lo.Must1(json.Marshal(protocol.SSEResponse{
+				event := "data: " + string(lo.Must1(sonic.Marshal(protocol.SSEResponse{
 					Delta: "",
 					Stop:  true,
 					Error: err.Error(),
