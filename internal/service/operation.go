@@ -271,7 +271,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 			UserID:       req.UserID,
 			ArticleID:    article.ID,
 			Progress:     req.Progress,
-			LastViewedAt: time.Now().UTC().UTC(),
+			LastViewedAt: time.Now().UTC(),
 		}
 
 		if err = s.userViewDAO.Create(db, userView); err != nil {

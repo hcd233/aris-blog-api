@@ -15,7 +15,11 @@ RUN go build -o /go/bin/aris-blog-api
 
 FROM alpine:latest
 
-RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+# RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+
+RUN apk add --no-cache tzdata \
+    && ln -sf /usr/share/zoneinfo/UTC /etc/localtime \
+    && apk del tzdata
 
 WORKDIR /app
 

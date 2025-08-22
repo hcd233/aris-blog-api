@@ -525,7 +525,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 			Email:      email,
 			Avatar:     avatar,
 			Permission: model.PermissionReader,
-			LastLogin:  time.Now().UTC().UTC(),
+			LastLogin:  time.Now().UTC(),
 			LLMQuota:   model.QuotaReader,
 			Categories: []model.Category{*defaultCategory},
 		}

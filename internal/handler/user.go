@@ -61,7 +61,6 @@ func (h *userHandler) HandleGetCurUserInfo(c *fiber.Ctx) error {
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
-	return nil
 }
 
 // GetUserInfoHandler 用户信息
@@ -126,6 +125,5 @@ func (h *userHandler) HandleUpdateInfo(c *fiber.Ctx) error {
 	rsp, err := h.svc.UpdateUserInfo(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
-	return nil
 	return nil
 }
