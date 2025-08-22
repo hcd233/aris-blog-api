@@ -545,24 +545,6 @@ type ListArticlesResponse struct {
 	PageInfo *PageInfo  `json:"pageInfo"`
 }
 
-// ListUserArticlesRequest 列出用户文章请求
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-type ListUserArticlesRequest struct {
-	UserName  string     `json:"userName"`
-	PageParam *PageParam `json:"pageParam"`
-}
-
-// ListUserArticlesResponse 列出用户文章响应
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-type ListUserArticlesResponse struct {
-	Articles []*Article `json:"articles"`
-	PageInfo *PageInfo  `json:"pageInfo"`
-}
-
 // ArticleVersion 文章版本
 type ArticleVersion struct {
 	ArticleVersionID uint   `json:"versionID"`

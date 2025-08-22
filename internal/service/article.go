@@ -462,9 +462,8 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	articles, pageInfo, err := s.articleDAO.PaginateByStatus(
+	articles, pageInfo, err := s.articleDAO.Paginate(
 		db,
-		model.ArticleStatusPublish,
 		[]string{
 			"id", "slug", "title", "status", "user_id",
 			"created_at", "updated_at", "published_at",
