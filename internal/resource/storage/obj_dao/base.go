@@ -2,6 +2,7 @@
 package objdao
 
 import (
+	"context"
 	"io"
 	"net/url"
 	"time"
@@ -12,14 +13,14 @@ import (
 //	author centonhuang
 //	update 2025-01-05 22:45:30
 type ObjDAO interface {
-	GetBucketName() string
-	CreateBucket() (err error)
-	CreateDir(userID uint) (objectInfo *ObjectInfo, err error)
-	ListObjects(userID uint) (objectInfos []ObjectInfo, err error)
-	UploadObject(userID uint, objectName string, size int64, reader io.Reader) (err error)
-	DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error)
-	PresignObject(userID uint, objectName string) (presignedURL *url.URL, err error)
-	DeleteObject(userID uint, objectName string) (err error)
+	GetBucketName(ctx context.Context) string
+	CreateBucket(ctx context.Context) (err error)
+	CreateDir(ctx context.Context, userID uint) (objectInfo *ObjectInfo, err error)
+	ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error)
+	UploadObject(ctx context.Context, userID uint, objectName string, size int64, reader io.Reader) (err error)
+	DownloadObject(ctx context.Context, userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error)
+	PresignObject(ctx context.Context, userID uint, objectName string) (presignedURL *url.URL, err error)
+	DeleteObject(ctx context.Context, userID uint, objectName string) (err error)
 }
 
 // ObjectType 对象类型

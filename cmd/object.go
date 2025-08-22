@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/resource/storage"
 	objdao "github.com/hcd233/aris-blog-api/internal/resource/storage/obj_dao"
@@ -26,20 +28,21 @@ var createBucketCmd = &cobra.Command{
 	Short: "创建桶",
 	Long:  `创建桶。`,
 	Run: func(_ *cobra.Command, _ []string) {
+		ctx := context.Background()
 		logger := logger.Logger()
 		storage.InitObjectStorage()
 
 		imageObjDAO := objdao.GetImageObjDAO()
-		lo.Must0(imageObjDAO.CreateBucket())
+		lo.Must0(imageObjDAO.CreateBucket(ctx))
 
 		logger.Info("[Object Storage] Bucket created",
-			zap.String("bucket", imageObjDAO.GetBucketName()))
+			zap.String("bucket", imageObjDAO.GetBucketName(ctx)))
 
 		thumbnailObjDAO := objdao.GetThumbnailObjDAO()
-		lo.Must0(thumbnailObjDAO.CreateBucket())
+		lo.Must0(thumbnailObjDAO.CreateBucket(ctx))
 
 		logger.Info("[Object Storage] Bucket created",
-			zap.String("bucket", thumbnailObjDAO.GetBucketName()))
+			zap.String("bucket", thumbnailObjDAO.GetBucketName(ctx)))
 	},
 }
 

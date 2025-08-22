@@ -33,13 +33,13 @@ func (dao *CosObjDAO) composeDirName(userID uint) string {
 //	return bucketName string
 //	author centonhuang
 //	update 2025-01-19 14:13:22
-func (dao *CosObjDAO) GetBucketName() string {
+func (dao *CosObjDAO) GetBucketName(ctx context.Context) string {
 	return dao.BucketName
 }
 
 // CreateBucket 创建桶
-func (dao *CosObjDAO) CreateBucket() (err error) {
-	ctx, cancel := context.WithTimeout(context.Background(), createBucketTimeout)
+func (dao *CosObjDAO) CreateBucket(ctx context.Context) (err error) {
+	ctx, cancel := context.WithTimeout(ctx, createBucketTimeout)
 	defer cancel()
 
 	_, err = dao.client.Bucket.Put(ctx, nil)
@@ -47,11 +47,11 @@ func (dao *CosObjDAO) CreateBucket() (err error) {
 }
 
 // CreateDir 创建目录
-func (dao *CosObjDAO) CreateDir(userID uint) (objectInfo *ObjectInfo, err error) {
+func (dao *CosObjDAO) CreateDir(ctx context.Context, userID uint) (objectInfo *ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	dirName += "/"
 
-	ctx, cancel := context.WithTimeout(context.Background(), createBucketTimeout)
+	ctx, cancel := context.WithTimeout(ctx, createBucketTimeout)
 	defer cancel()
 
 	_, err = dao.client.Object.Put(ctx, dirName, strings.NewReader(""), nil)
@@ -79,11 +79,11 @@ func (dao *CosObjDAO) CreateDir(userID uint) (objectInfo *ObjectInfo, err error)
 }
 
 // ListObjects 列出桶中的对象
-func (dao *CosObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, err error) {
+func (dao *CosObjDAO) ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	dirName += "/"
 
-	ctx, cancel := context.WithTimeout(context.Background(), listObjectsTimeout)
+	ctx, cancel := context.WithTimeout(ctx, listObjectsTimeout)
 	defer cancel()
 
 	opt := &cos.BucketGetOptions{
@@ -103,7 +103,7 @@ func (dao *CosObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, err er
 			continue
 		}
 
-		lastModified, _ := time.Parse(time.RFC3339, object.LastModified)
+		lastModified, _ := time.ParseInLocation(time.RFC3339, object.LastModified, time.Local)
 
 		objectInfos = append(objectInfos, ObjectInfo{
 			ObjectName:   strings.TrimPrefix(object.Key, dirName),
@@ -119,11 +119,11 @@ func (dao *CosObjDAO) ListObjects(userID uint) (objectInfos []ObjectInfo, err er
 }
 
 // UploadObject 上传对象
-func (dao *CosObjDAO) UploadObject(userID uint, objectName string, _ int64, reader io.Reader) (err error) {
+func (dao *CosObjDAO) UploadObject(ctx context.Context, userID uint, objectName string, _ int64, reader io.Reader) (err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), uploadObjectTimeout)
+	ctx, cancel := context.WithTimeout(ctx, uploadObjectTimeout)
 	defer cancel()
 
 	_, err = dao.client.Object.Put(ctx, objectName, reader, nil)
@@ -131,11 +131,11 @@ func (dao *CosObjDAO) UploadObject(userID uint, objectName string, _ int64, read
 }
 
 // DownloadObject 下载对象
-func (dao *CosObjDAO) DownloadObject(userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
+func (dao *CosObjDAO) DownloadObject(ctx context.Context, userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), downloadObjectTimeout)
+	ctx, cancel := context.WithTimeout(ctx, downloadObjectTimeout)
 	defer cancel()
 
 	resp, err := dao.client.Object.Get(ctx, objectName, nil)
@@ -165,11 +165,11 @@ func (dao *CosObjDAO) DownloadObject(userID uint, objectName string, writer io.W
 }
 
 // PresignObject 生成对象的预签名URL
-func (dao *CosObjDAO) PresignObject(userID uint, objectName string) (presignedURL *url.URL, err error) {
+func (dao *CosObjDAO) PresignObject(ctx context.Context, userID uint, objectName string) (presignedURL *url.URL, err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), presignObjectTimeout)
+	ctx, cancel := context.WithTimeout(ctx, presignObjectTimeout)
 	defer cancel()
 
 	presignedURL, err = dao.client.Object.GetPresignedURL(ctx,
@@ -184,11 +184,11 @@ func (dao *CosObjDAO) PresignObject(userID uint, objectName string) (presignedUR
 }
 
 // DeleteObject 删除对象
-func (dao *CosObjDAO) DeleteObject(userID uint, objectName string) (err error) {
+func (dao *CosObjDAO) DeleteObject(ctx context.Context, userID uint, objectName string) (err error) {
 	dirName := dao.composeDirName(userID)
 	objectName = path.Join(dirName, objectName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), deleteObjectTimeout)
+	ctx, cancel := context.WithTimeout(ctx, deleteObjectTimeout)
 	defer cancel()
 
 	_, err = dao.client.Object.Delete(ctx, objectName)

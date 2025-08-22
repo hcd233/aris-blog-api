@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"context"
 	"fmt"
 	"time"
 
@@ -26,7 +25,7 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 	redis := cache.GetRedisClient()
 
 	return func(c *fiber.Ctx) error {
-		ctx := context.Background()
+		ctx := c.Context()
 
 		value := c.Locals(key)
 
@@ -67,7 +66,7 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 				return 0
 			end
 		`
-		if err := redis.Eval(context.Background(), luaScript, []string{lockKey}, lockValue).Err(); err != nil {
+		if err := redis.Eval(ctx, luaScript, []string{lockKey}, lockValue).Err(); err != nil {
 			logger.WithFCtx(c).Error("[RedisLockMiddleware] failed to release lock", zap.String("lockKey", lockKey), zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
 			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{

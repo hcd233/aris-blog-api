@@ -537,7 +537,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 			return nil, protocol.ErrInternalError
 		}
 
-		_, err = s.imageObjDAO.CreateDir(user.ID)
+		_, err = s.imageObjDAO.CreateDir(ctx, user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create image dir",
 				zap.Error(err))
@@ -545,7 +545,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 		}
 		logger.Info("[Oauth2Service] image dir created")
 
-		_, err = s.thumbnailObjDAO.CreateDir(user.ID)
+		_, err = s.thumbnailObjDAO.CreateDir(ctx, user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create thumbnail dir",
 				zap.Error(err))

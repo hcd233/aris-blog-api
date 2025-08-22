@@ -296,7 +296,7 @@ func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesR
 
 	logger := logger.WithCtx(ctx)
 
-	objectInfos, err := s.imageObjDAO.ListObjects(req.UserID)
+	objectInfos, err := s.imageObjDAO.ListObjects(ctx, req.UserID)
 	if err != nil {
 		logger.Error("[AssetService] failed to list images", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -382,12 +382,12 @@ func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImag
 
 	go func() {
 		defer wg.Done()
-		imageErr = s.imageObjDAO.UploadObject(req.UserID, req.FileName, int64(req.Size), req.ReadSeeker)
+		imageErr = s.imageObjDAO.UploadObject(ctx, req.UserID, req.FileName, int64(req.Size), req.ReadSeeker)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailErr = s.thumbnailObjDAO.UploadObject(req.UserID, req.FileName, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
+		thumbnailErr = s.thumbnailObjDAO.UploadObject(ctx, req.UserID, req.FileName, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
 	}()
 
 	wg.Wait()
@@ -424,9 +424,9 @@ func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageReque
 	var presignedURL *url.URL
 	switch req.Quality {
 	case "raw":
-		presignedURL, err = s.imageObjDAO.PresignObject(req.UserID, req.ImageName)
+		presignedURL, err = s.imageObjDAO.PresignObject(ctx, req.UserID, req.ImageName)
 	case "thumb":
-		presignedURL, err = s.thumbnailObjDAO.PresignObject(req.UserID, req.ImageName)
+		presignedURL, err = s.thumbnailObjDAO.PresignObject(ctx, req.UserID, req.ImageName)
 	}
 	if err != nil {
 		logger.Error("[AssetService] failed to presign object",
@@ -461,12 +461,12 @@ func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImag
 
 	go func() {
 		defer wg.Done()
-		imageErr = s.imageObjDAO.DeleteObject(req.UserID, req.ImageName)
+		imageErr = s.imageObjDAO.DeleteObject(ctx, req.UserID, req.ImageName)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailErr = s.thumbnailObjDAO.DeleteObject(req.UserID, req.ImageName)
+		thumbnailErr = s.thumbnailObjDAO.DeleteObject(ctx, req.UserID, req.ImageName)
 	}()
 
 	wg.Wait()
