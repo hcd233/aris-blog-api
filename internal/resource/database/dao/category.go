@@ -27,7 +27,7 @@ type CategoryDAO struct {
 //	update 2024-10-17 02:59:11
 func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error) {
 	UUID := uuid.New().String()
-	err = db.Model(category).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", category.Name, UUID), "deleted_at": time.Now()}).Error
+	err = db.Model(category).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", category.Name, UUID), "deleted_at": time.Now().UTC()}).Error
 	return
 }
 

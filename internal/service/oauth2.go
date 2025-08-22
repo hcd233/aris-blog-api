@@ -507,7 +507,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 	if user.ID != 0 {
 		// 更新已存在用户的登录时间
 		if err := s.userDAO.Update(db, user, map[string]interface{}{
-			"last_login": time.Now(),
+			"last_login": time.Now().UTC(),
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update user login time",
 				zap.Error(err))
@@ -516,7 +516,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 	} else {
 		// 创建新用户
 		if validateErr := util.ValidateUserName(userName); validateErr != nil {
-			userName = "ArisUser" + strconv.FormatInt(time.Now().Unix(), 10)
+			userName = "ArisUser" + strconv.FormatInt(time.Now().UTC().Unix(), 10)
 		}
 		defaultCategory := &model.Category{Name: userName}
 
@@ -525,7 +525,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 			Email:      email,
 			Avatar:     avatar,
 			Permission: model.PermissionReader,
-			LastLogin:  time.Now(),
+			LastLogin:  time.Now().UTC().UTC(),
 			LLMQuota:   model.QuotaReader,
 			Categories: []model.Category{*defaultCategory},
 		}

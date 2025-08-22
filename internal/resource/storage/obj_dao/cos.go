@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/samber/lo"
 	"github.com/tencentyun/cos-go-sdk-v5"
 )
 
@@ -103,7 +104,7 @@ func (dao *CosObjDAO) ListObjects(ctx context.Context, userID uint) (objectInfos
 			continue
 		}
 
-		lastModified, _ := time.ParseInLocation(time.RFC3339, object.LastModified, time.Local)
+		lastModified := lo.Must1(time.ParseInLocation(time.RFC3339, object.LastModified, time.UTC))
 
 		objectInfos = append(objectInfos, ObjectInfo{
 			ObjectName:   strings.TrimPrefix(object.Key, dirName),

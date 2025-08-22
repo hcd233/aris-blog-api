@@ -45,7 +45,7 @@ func (s *jwtTokenSigner) EncodeToken(userID uint) (token string, err error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(s.JwtTokenExpired)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().UTC().Add(s.JwtTokenExpired)),
 		},
 	}
 

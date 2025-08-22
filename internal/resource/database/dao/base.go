@@ -43,7 +43,7 @@ func (dao *baseDAO[ModelT]) Create(db *gorm.DB, data *ModelT) (err error) {
 //	author centonhuang
 //	update 2024-10-17 02:52:18
 func (dao *baseDAO[ModelT]) Update(db *gorm.DB, data *ModelT, info map[string]interface{}) (err error) {
-	info["updated_at"] = time.Now()
+	info["updated_at"] = time.Now().UTC()
 	err = db.Model(&data).Updates(info).Error
 	return
 }

@@ -387,7 +387,7 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 	if req.Status == model.ArticleStatusPublish {
 		if err := s.articleDAO.Update(db, article, map[string]interface{}{
 			"status":       req.Status,
-			"published_at": time.Now(),
+			"published_at": time.Now().UTC().UTC(),
 		}); err != nil {
 			logger.Error("[ArticleService] failed to update article status",
 				zap.Uint("articleID", article.ID),

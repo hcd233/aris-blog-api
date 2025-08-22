@@ -16,7 +16,7 @@ import (
 //	update 2025-01-05 21:21:46
 func LogMiddleware() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-		start := time.Now()
+		start := time.Now().UTC()
 		path := c.Path()
 		query := string(c.Request().URI().QueryString())
 

@@ -27,7 +27,7 @@ type TagDAO struct {
 //	update 2024-10-17 06:58:14
 func (dao *TagDAO) Delete(db *gorm.DB, tag *model.Tag) (err error) {
 	UUID := uuid.New().String()
-	err = db.Model(tag).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", tag.Name, UUID), "slug": fmt.Sprintf("%s-%s", tag.Slug, UUID), "deleted_at": time.Now()}).Error
+	err = db.Model(tag).Updates(map[string]interface{}{"name": fmt.Sprintf("%s-%s", tag.Name, UUID), "slug": fmt.Sprintf("%s-%s", tag.Slug, UUID), "deleted_at": time.Now().UTC()}).Error
 	return
 }
 

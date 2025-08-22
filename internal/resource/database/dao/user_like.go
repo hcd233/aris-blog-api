@@ -27,7 +27,7 @@ type UserLikeDAO struct {
 //	update 2024-10-30 05:21:20
 func (dao *UserLikeDAO) Delete(db *gorm.DB, userLike *model.UserLike) (err error) {
 	UUID := uuid.New().String()
-	err = db.Model(userLike).Updates(map[string]interface{}{"object_type": fmt.Sprintf("%s-%s", userLike.ObjectType, UUID), "deleted_at": time.Now()}).Error
+	err = db.Model(userLike).Updates(map[string]interface{}{"object_type": fmt.Sprintf("%s-%s", userLike.ObjectType, UUID), "deleted_at": time.Now().UTC()}).Error
 	return
 }
 

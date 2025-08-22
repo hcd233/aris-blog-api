@@ -271,7 +271,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 			UserID:       req.UserID,
 			ArticleID:    article.ID,
 			Progress:     req.Progress,
-			LastViewedAt: time.Now(),
+			LastViewedAt: time.Now().UTC().UTC(),
 		}
 
 		if err = s.userViewDAO.Create(db, userView); err != nil {
@@ -291,7 +291,7 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 
 		if err = s.userViewDAO.Update(db, userView, map[string]interface{}{
 			"progress":       req.Progress,
-			"last_viewed_at": time.Now(),
+			"last_viewed_at": time.Now().UTC(),
 		}); err != nil {
 			logger.Error("[OperationService] failed to update user view",
 				zap.Uint("articleID", article.ID),
