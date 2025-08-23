@@ -47,7 +47,7 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 			keyValue = "ip"
 			value = c.IP() // 如果没有指定的参数，则使用 IP 地址作为 key
 		} else {
-			value = c.Locals(key).(string)
+			value = fmt.Sprintf("%v", c.Locals(key))
 		}
 
 		// 设置限频 key
