@@ -260,6 +260,7 @@ type Article struct {
 	Slug        string   `json:"slug"`
 	Status      string   `json:"status"`
 	UserID      uint     `json:"userID"`
+	CategoryID  uint     `json:"categoryID"`
 	CreatedAt   string   `json:"createdAt"`
 	UpdatedAt   string   `json:"updatedAt"`
 	PublishedAt string   `json:"publishedAt"`

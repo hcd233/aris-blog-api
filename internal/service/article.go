@@ -465,7 +465,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 	articles, pageInfo, err := s.articleDAO.Paginate(
 		db,
 		[]string{
-			"id", "slug", "title", "status", "user_id",
+			"id", "slug", "title", "status", "user_id", "category_id",
 			"created_at", "updated_at", "published_at",
 			"likes", "views",
 		},
@@ -484,6 +484,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 			Slug:        article.Slug,
 			Status:      string(article.Status),
 			UserID:      article.UserID,
+			CategoryID:  article.CategoryID,
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
