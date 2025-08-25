@@ -17,7 +17,7 @@ func initArticleVersionRouter(r fiber.Router) {
 	r.Get("/version/latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
 	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware("articleVersionService", model.PermissionCreator))
 	{
-		articleVersionRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleVersionHandler.HandleListArticleVersions)
+		articleVersionRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), articleVersionHandler.HandleListArticleVersions)
 
 		articleVersionRouter.Post(
 			"/",

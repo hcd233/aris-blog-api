@@ -63,11 +63,11 @@ func NewAssetHandler() AssetHandler {
 //	update 2024-11-03 06:45:42
 func (h *assetHandler) HandleListUserLikeArticles(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListUserLikeArticlesRequest{
-		UserID:    userID,
-		PageParam: param,
+		UserID:         userID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListUserLikeArticles(c.Context(), req)
@@ -96,11 +96,11 @@ func (h *assetHandler) HandleListUserLikeArticles(c *fiber.Ctx) error {
 //	update 2024-11-03 06:47:41
 func (h *assetHandler) HandleListUserLikeComments(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListUserLikeCommentsRequest{
-		UserID:    userID,
-		PageParam: param,
+		UserID:         userID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListUserLikeComments(c.Context(), req)
@@ -129,11 +129,11 @@ func (h *assetHandler) HandleListUserLikeComments(c *fiber.Ctx) error {
 //	update 2024-11-03 06:47:43
 func (h *assetHandler) HandleListUserLikeTags(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListUserLikeTagsRequest{
-		UserID:    userID,
-		PageParam: param,
+		UserID:         userID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListUserLikeTags(c.Context(), req)
@@ -318,11 +318,11 @@ func (h *assetHandler) HandleDeleteImage(c *fiber.Ctx) error {
 //	update 2025-01-04 15:46:35
 func (h *assetHandler) HandleListUserViewArticles(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	pageParam := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	pageParam := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListUserViewArticlesRequest{
-		UserID:    userID,
-		PageParam: pageParam,
+		UserID:         userID,
+		PaginateParam:  pageParam,
 	}
 
 	rsp, err := h.svc.ListUserViewArticles(c.Context(), req)

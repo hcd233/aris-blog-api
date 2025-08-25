@@ -150,14 +150,14 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *fiber.Ctx) 
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleVersionHandler) HandleListArticleVersions(c *fiber.Ctx) error {
-		userID := c.Locals(constant.CtxKeyUserID).(uint)
+	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListArticleVersionsRequest{
-		UserID:     userID,
-		ArticleID:  uri.ArticleID,
-		PageParam:  param,
+		UserID:         userID,
+		ArticleID:      uri.ArticleID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListArticleVersions(c.Context(), req)

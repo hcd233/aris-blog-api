@@ -64,21 +64,29 @@ func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields, preloads []string
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:10:06
-func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, page, pageSize int) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *PaginateParam) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+
 	err = sql.Where(model.Tag{UserID: userID}).Limit(limit).Offset(offset).Find(&tags).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&tags).Where(model.Tag{UserID: userID}).Count(&pageInfo.Total).Error

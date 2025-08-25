@@ -225,12 +225,12 @@ func (h *categoryHandler) HandleDeleteCategory(c *fiber.Ctx) error {
 func (h *categoryHandler) HandleListChildrenCategories(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListChildrenCategoriesRequest{
-		UserID:     userID,
-		CategoryID: uri.CategoryID,
-		PageParam:  param,
+		UserID:         userID,
+		CategoryID:     uri.CategoryID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListChildrenCategories(c.Context(), req)
@@ -261,12 +261,12 @@ func (h *categoryHandler) HandleListChildrenCategories(c *fiber.Ctx) error {
 func (h *categoryHandler) HandleListChildrenArticles(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListChildrenArticlesRequest{
-		UserID:     userID,
-		CategoryID: uri.CategoryID,
-		PageParam:  param,
+		UserID:         userID,
+		CategoryID:     uri.CategoryID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListChildrenArticles(c.Context(), req)

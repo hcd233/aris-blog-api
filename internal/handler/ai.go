@@ -126,12 +126,12 @@ func (h *aiHandler) HandleGetLatestPrompt(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:46:35
 func (h *aiHandler) HandleListPrompt(c *fiber.Ctx) error {
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.TaskURI)
 
 	req := &protocol.ListPromptRequest{
-		TaskName:  string(uri.TaskName),
-		PageParam: param,
+		TaskName:       string(uri.TaskName),
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListPrompt(c.Context(), req)

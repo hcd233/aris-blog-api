@@ -23,21 +23,29 @@ func (dao *UserViewDAO) GetLatestViewByUserIDAndArticleID(db *gorm.DB, userID ui
 	return
 }
 
-func (dao *UserViewDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, page, pageSize int) (userViews *[]model.UserView, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *UserViewDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *PaginateParam) (userViews *[]model.UserView, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+
 	err = sql.Where(model.UserView{UserID: userID}).Limit(limit).Offset(offset).Find(&userViews).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&userViews).Where(model.UserView{UserID: userID}).Count(&pageInfo.Total).Error

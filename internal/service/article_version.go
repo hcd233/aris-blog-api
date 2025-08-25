@@ -242,9 +242,19 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *pr
 		return nil, protocol.ErrNoPermission
 	}
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"version", "content"},
+		},
+	}
 	versions, pageInfo, err := s.articleVersionDAO.PaginateByArticleID(db, article.ID,
 		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{},
-		req.PageParam.Page, req.PageParam.PageSize)
+		param)
 	if err != nil {
 		logger.Error("[ArticleVersionService] failed to paginate versions",
 			zap.Uint("articleID", article.ID),

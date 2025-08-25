@@ -44,21 +44,29 @@ func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:09:50
-func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields, preloads []string, page, pageSize int) (children *[]model.Category, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields, preloads []string, param *PaginateParam) (children *[]model.Category, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+
 	err = sql.Where(&model.Category{ParentID: category.ID}).Limit(limit).Offset(offset).Find(&children).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&children).Where(&model.Category{ParentID: category.ID}).Count(&pageInfo.Total).Error
@@ -144,7 +152,13 @@ func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint, fields, preloa
 }
 
 func (dao *CategoryDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, categoryID uint, fields, preloads []string) (categories *[]model.Category, err error) {
-	categories, _, err = dao.PaginateChildren(db, &model.Category{ID: categoryID}, fields, preloads, 2, -1)
+	param := &PaginateParam{
+		PageParam: &PageParam{
+			Page:     2,
+			PageSize: -1,
+		},
+	}
+	categories, _, err = dao.PaginateChildren(db, &model.Category{ID: categoryID}, fields, preloads, param)
 	if err != nil {
 		return
 	}

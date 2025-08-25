@@ -16,7 +16,7 @@ func initCommentRouter(r fiber.Router) {
 	commentRouter := r.Group("/comment", middleware.JwtMiddleware())
 	{
 		commentRouter.Get("/article/:articleID/list",
-			middleware.ValidateParamMiddleware(&protocol.PageParam{}),
+			middleware.ValidateParamMiddleware(&protocol.PaginateParam{}),
 			middleware.ValidateURIMiddleware(&protocol.ArticleURI{}),
 			commentHandler.HandleListArticleComments,
 		)
@@ -29,7 +29,7 @@ func initCommentRouter(r fiber.Router) {
 		commentIDRouter := commentRouter.Group("/:commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
 		{
 			commentIDRouter.Delete("/", commentHandler.HandleDeleteComment)
-			commentIDRouter.Get("/subComments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListChildrenComments)
+			commentIDRouter.Get("/subComments", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), commentHandler.HandleListChildrenComments)
 		}
 	}
 }

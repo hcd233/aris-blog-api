@@ -85,7 +85,17 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"object_id"},
+		},
+	}
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeArticle, []string{"object_id"}, []string{}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -160,7 +170,17 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"object_id"},
+		},
+	}
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -224,7 +244,17 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"object_id"},
+		},
+	}
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -491,7 +521,17 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.L
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, req.PageParam.Page, req.PageParam.PageSize)
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"article_id"},
+		},
+	}
+	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to list user view articles", zap.Error(err))
 		return nil, protocol.ErrInternalError

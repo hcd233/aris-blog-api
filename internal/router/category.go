@@ -23,8 +23,8 @@ func initCategoryRouter(r fiber.Router) {
 			categoryIDRouter.Get("/", categoryHandler.HandleGetCategoryInfo)
 			categoryIDRouter.Delete("/", categoryHandler.HandleDeleteCategory)
 			categoryIDRouter.Patch("/", middleware.ValidateBodyMiddleware(&protocol.UpdateCategoryBody{}), categoryHandler.HandleUpdateCategoryInfo)
-			categoryIDRouter.Get("/subCategories", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenCategories)
-			categoryIDRouter.Get("/subArticles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), categoryHandler.HandleListChildrenArticles)
+					categoryIDRouter.Get("/subCategories", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), categoryHandler.HandleListChildrenCategories)
+		categoryIDRouter.Get("/subArticles", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), categoryHandler.HandleListChildrenArticles)
 		}
 	}
 }

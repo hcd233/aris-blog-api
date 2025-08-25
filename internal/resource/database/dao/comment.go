@@ -28,21 +28,29 @@ type CommentDAO struct {
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:09:55
-func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fields, preloads []string, page, pageSize int) (children *[]model.Comment, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fields, preloads []string, param *PaginateParam) (children *[]model.Comment, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+
 	err = sql.Where(&model.Comment{ParentID: comment.ID}).Limit(limit).Offset(offset).Find(&children).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&children).Where(&model.Comment{ParentID: comment.ID}).Count(&pageInfo.Total).Error
@@ -81,21 +89,29 @@ func (dao *CommentDAO) GetParent(db *gorm.DB, comment *model.Comment, fields, pr
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:10:00
-func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, page, pageSize int) (comments *[]model.Comment, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, param *PaginateParam) (comments *[]model.Comment, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+
 	err = sql.Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Limit(limit).Offset(offset).Find(&comments).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&comments).Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Count(&pageInfo.Total).Error
@@ -144,7 +160,13 @@ func (dao *CommentDAO) DeleteReclusiveByID(db *gorm.DB, id uint, fields, preload
 }
 
 func (dao *CommentDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, commentID uint, fields, preloads []string) (categories *[]model.Comment, err error) {
-	categories, _, err = dao.PaginateChildren(db, &model.Comment{ID: commentID}, fields, preloads, 2, -1)
+	param := &PaginateParam{
+		PageParam: &PageParam{
+			Page:     2,
+			PageSize: -1,
+		},
+	}
+	categories, _, err = dao.PaginateChildren(db, &model.Comment{ID: commentID}, fields, preloads, param)
 	if err != nil {
 		return
 	}
