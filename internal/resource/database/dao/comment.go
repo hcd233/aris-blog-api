@@ -35,15 +35,14 @@ func (dao *CommentDAO) PaginateChildren(db *gorm.DB, comment *model.Comment, fie
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.Comment{ParentID: comment.ID}).Limit(limit).Offset(offset).Find(&children).Error
 	if err != nil {
 		return
@@ -97,15 +96,14 @@ func (dao *CommentDAO) PaginateRootsByArticleID(db *gorm.DB, articleID uint, fie
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.Comment{ArticleID: articleID}).Where("parent_id IS NULL").Limit(limit).Offset(offset).Find(&comments).Error
 	if err != nil {
 		return

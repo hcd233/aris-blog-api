@@ -72,15 +72,14 @@ func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, f
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&articleVersions).Error
 	if err != nil {
 		return

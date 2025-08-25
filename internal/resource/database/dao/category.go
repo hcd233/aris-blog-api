@@ -51,15 +51,14 @@ func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, 
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.Category{ParentID: category.ID}).Limit(limit).Offset(offset).Find(&children).Error
 	if err != nil {
 		return

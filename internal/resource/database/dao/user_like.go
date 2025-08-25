@@ -73,15 +73,14 @@ func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, 
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(model.UserLike{UserID: userID, ObjectType: objectType}).Limit(limit).Offset(offset).Find(&userLikes).Error
 	if err != nil {
 		return

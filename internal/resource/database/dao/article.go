@@ -113,15 +113,14 @@ func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloa
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.Article{UserID: userID}).Limit(limit).Offset(offset).Find(&articles).Error
 	if err != nil {
 		return
@@ -156,15 +155,14 @@ func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.Article{CategoryID: categoryID}).Limit(limit).Offset(offset).Find(&articles).Error
 	if err != nil {
 		return
@@ -201,15 +199,14 @@ func (dao *ArticleDAO) PaginateByStatus(db *gorm.DB, status model.ArticleStatus,
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
-	
-	// 添加模糊查询支持
+
 	if param.Query != "" && len(param.QueryFields) > 0 {
 		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
 		for _, field := range param.QueryFields[1:] {
 			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
 		}
 	}
-	
+
 	err = sql.Where(&model.Article{Status: status}).Limit(limit).Offset(offset).Find(&articles).Error
 	if err != nil {
 		return
