@@ -7451,6 +7451,9 @@ const docTemplate = `{
                 "articleID": {
                     "type": "integer"
                 },
+                "categoryID": {
+                    "type": "integer"
+                },
                 "comments": {
                     "type": "integer"
                 },

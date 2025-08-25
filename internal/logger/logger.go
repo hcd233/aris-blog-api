@@ -72,10 +72,10 @@ func WithCtx(ctx context.Context) *zap.Logger {
 
 // WithFCtx 适配GoFiber上下文的日志函数
 //
-//	@param c
-//	@return *zap.Logger
-//	@author centonhuang
-//	@update 2025-08-22 14:30:03
+//	param c *fiber.Ctx
+//	return *zap.Logger
+//	author centonhuang
+//	update 2025-08-22 14:30:03
 func WithFCtx(c *fiber.Ctx) *zap.Logger {
 	logger := defaultLogger
 	if traceID := c.Locals(constant.CtxKeyTraceID); traceID != nil {
