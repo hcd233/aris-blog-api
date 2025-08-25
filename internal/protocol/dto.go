@@ -16,16 +16,6 @@ type PageInfo struct {
 	Total    int64 `json:"total"`
 }
 
-// QueryInfo 查询信息
-//
-//	author centonhuang
-//	update 2025-01-05 12:32:25
-type QueryInfo struct {
-	PageInfo
-	Query  string   `json:"query"`
-	Filter []string `json:"filter"`
-}
-
 // PingResponse 健康检查响应
 //
 //	author centonhuang
@@ -208,7 +198,7 @@ type DeleteTagResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 11:48:36
 type ListTagsRequest struct {
-	PageParam *PageParam
+	PaginateParam *PaginateParam
 }
 
 // ListTagsResponse 列出标签响应
@@ -534,7 +524,7 @@ type DeleteArticleResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type ListArticlesRequest struct {
-	PageParam *PageParam `json:"pageParam"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListArticlesResponse 列出文章响应

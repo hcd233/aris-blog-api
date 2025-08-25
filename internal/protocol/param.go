@@ -35,9 +35,16 @@ type PageParam struct {
 //	author centonhuang
 //	update 2024-09-18 02:56:39
 type QueryParam struct {
-	PageParam
-	Query  string   `form:"query" binding:"required,min=2"`
-	Filter []string `form:"filter"`
+	Query string `form:"query"`
+}
+
+// PaginateParam 分页查询参数
+//
+//	@author centonhuang
+//	@update 2025-08-25 12:30:17
+type PaginateParam struct {
+	*PageParam
+	*QueryParam
 }
 
 // ArticleParam 文章参数

@@ -72,7 +72,6 @@ func (h *aiHandler) HandleGetPrompt(c *fiber.Ctx) error {
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
-	return nil
 }
 
 // HandleGetLatestPrompt 获取最新Prompt
@@ -103,7 +102,7 @@ func (h *aiHandler) HandleGetLatestPrompt(c *fiber.Ctx) error {
 	rsp, err := h.svc.GetLatestPrompt(c.Context(), req)
 
 	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	
 	return nil
 }
 

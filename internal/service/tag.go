@@ -239,10 +239,21 @@ func (s *tagService) ListTags(ctx context.Context, req *protocol.ListTagsRequest
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"name", "description"},
+		},
+	}
 	tags, pageInfo, err := s.tagDAO.Paginate(db,
 		[]string{"id", "slug", "name", "description", "user_id", "created_at", "updated_at", "likes"},
 		[]string{},
-		req.PageParam.Page, req.PageParam.PageSize)
+		param,
+	)
 	if err != nil {
 		logger.Error("[TagService] List tags failed", zap.Error(err))
 		return nil, protocol.ErrInternalError

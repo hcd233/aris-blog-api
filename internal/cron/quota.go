@@ -42,7 +42,14 @@ func (c *QuotaCron) Start() {
 
 func (c *QuotaCron) deliverQuotas() {
 	logger := logger.Logger()
-	users, pageInfo, err := c.userDAO.Paginate(c.db, []string{"id", "permission", "llm_quota"}, []string{}, 2, -1)
+
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     2,
+			PageSize: -1,
+		},
+	}
+	users, pageInfo, err := c.userDAO.Paginate(c.db, []string{"id", "permission", "llm_quota"}, []string{}, param)
 	if err != nil {
 		logger.Error("[QuotaCron] deliverQuotas get users error", zap.Error(err))
 		return

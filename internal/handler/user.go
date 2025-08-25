@@ -92,7 +92,6 @@ func (h *userHandler) HandleGetUserInfo(c *fiber.Ctx) error {
 
 	util.SendHTTPResponse(c, rsp, err)
 	return nil
-	return nil
 }
 
 // UpdateInfoHandler 更新用户信息

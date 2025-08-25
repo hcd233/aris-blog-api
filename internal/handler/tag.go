@@ -192,10 +192,10 @@ func (h *tagHandler) HandleDeleteTag(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-04 15:55:31
 func (h *tagHandler) HandleListTags(c *fiber.Ctx) error {
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListTagsRequest{
-		PageParam: param,
+		PaginateParam: param,
 	}
 
 	rsp, err := h.svc.ListTags(c.Context(), req)

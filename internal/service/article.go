@@ -384,30 +384,24 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 		return rsp, nil
 	}
 
-	if req.Status == model.ArticleStatusPublish {
-		if err := s.articleDAO.Update(db, article, map[string]interface{}{
-			"status":       req.Status,
-			"published_at": time.Now().UTC(),
-		}); err != nil {
-			logger.Error("[ArticleService] failed to update article status",
-				zap.Uint("articleID", article.ID),
-				zap.String("status", string(req.Status)),
-				zap.Error(err))
-			return nil, protocol.ErrInternalError
-		}
-	} else if req.Status == model.ArticleStatusDraft {
-		if err := s.articleDAO.Update(db, article, map[string]interface{}{
-			"status":       req.Status,
-			"published_at": nil,
-		}); err != nil {
-			logger.Error("[ArticleService] failed to update article status",
-				zap.Uint("articleID", article.ID),
-				zap.String("status", string(req.Status)),
-				zap.Error(err))
-			return nil, protocol.ErrInternalError
-		}
+	updateFields := map[string]interface{}{
+		"status": req.Status,
+	}
+	switch req.Status {
+	case model.ArticleStatusPublish:
+		updateFields["published_at"] = time.Now().UTC()
+
+	case model.ArticleStatusDraft:
+		updateFields["published_at"] = nil
 	}
 
+	if err := s.articleDAO.Update(db, article, updateFields); err != nil {
+		logger.Error("[ArticleService] failed to update article status",
+			zap.Uint("articleID", article.ID),
+			zap.String("status", string(req.Status)),
+			zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
 	return rsp, nil
 }
 
@@ -462,6 +456,16 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"title"},
+		},
+	}
 	articles, pageInfo, err := s.articleDAO.Paginate(
 		db,
 		[]string{
@@ -470,7 +474,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 			"likes", "views",
 		},
 		[]string{"Comments", "Tags"},
-		req.PageParam.Page, req.PageParam.PageSize,
+		param,
 	)
 	if err != nil {
 		logger.Error("[ArticleService] failed to paginate articles", zap.Error(err))

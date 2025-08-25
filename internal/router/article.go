@@ -13,7 +13,7 @@ func initArticleRouter(r fiber.Router) {
 
 	articleRouter := r.Group("/article", middleware.JwtMiddleware())
 	{
-		articleRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), articleHandler.HandleListArticles)
+		articleRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), articleHandler.HandleListArticles)
 
 		articleRouter.Get("/slug/:authorName/:articleSlug",
 			middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}),

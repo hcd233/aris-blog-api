@@ -25,6 +25,34 @@ type PageInfo struct {
 	Total    int64 `json:"total"`
 }
 
+// PageParam 列表参数
+//
+//	author centonhuang
+//	update 2024-09-21 09:00:57
+type PageParam struct {
+	Page     int `form:"page" binding:"required,gte=1"`
+	PageSize int `form:"pageSize" binding:"min=1,max=50"`
+}
+
+
+// QueryParam 查询参数
+//
+//	author centonhuang
+//	update 2024-09-18 02:56:39
+type QueryParam struct {
+	Query string `form:"query"`
+	QueryFields []string `form:"queryFields"`
+}
+
+// PaginateParam 分页查询参数
+//
+//	@author centonhuang
+//	@update 2025-08-25 12:30:17
+type PaginateParam struct {
+	*PageParam
+	*QueryParam
+}
+
 // Create 创建数据
 //
 //	param dao *BaseDAO[T]
@@ -101,12 +129,19 @@ func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []stri
 //	return Paginate
 //	author centonhuang
 //	update 2024-10-17 03:09:11
-func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, page, pageSize int) (data *[]ModelT, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, param *PaginateParam) (data *[]ModelT, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
+	}
+
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
 	}
 	err = sql.Limit(limit).Offset(offset).Find(&data).Error
 	if err != nil {
@@ -114,8 +149,8 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []st
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&data).Count(&pageInfo.Total).Error

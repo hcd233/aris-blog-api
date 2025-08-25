@@ -273,10 +273,10 @@ func (h *articleHandler) HandleDeleteArticle(c *fiber.Ctx) error {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 func (h *articleHandler) HandleListArticles(c *fiber.Ctx) error {
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListArticlesRequest{
-		PageParam: param,
+		PaginateParam: param,
 	}
 
 	rsp, err := h.svc.ListArticles(c.Context(), req)

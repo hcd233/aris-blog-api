@@ -81,18 +81,39 @@ type GithubUserInfo struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
+// GetID 
+//	@receiver u *GithubUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:36 
 func (u *GithubUserInfo) GetID() string {
 	return strconv.FormatInt(u.ID, 10)
 }
 
+// GetName 
+//	@receiver u *GithubUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:38 
 func (u *GithubUserInfo) GetName() string {
 	return u.Login
 }
 
+
+// GetEmail 
+//	@receiver u *GithubUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:41 
 func (u *GithubUserInfo) GetEmail() string {
 	return u.Email
 }
 
+// GetAvatar 
+//	@receiver u *GithubUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:43 
 func (u *GithubUserInfo) GetAvatar() string {
 	return u.AvatarURL
 }
@@ -110,19 +131,39 @@ type QQUserInfo struct {
 	Avatar   string `json:"figureurl_qq_1"`
 }
 
+// GetID 
+//	@receiver u *QQUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:45 
 func (u *QQUserInfo) GetID() string {
 	return u.OpenID
 }
 
+// GetName 
+//	@receiver u *QQUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:52 
 func (u *QQUserInfo) GetName() string {
 	return u.Nickname
 }
 
+// GetEmail 
+//	@receiver u *QQUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:54 
 func (u *QQUserInfo) GetEmail() string {
 	// QQ OAuth2默认不提供邮箱，使用openid@qq.oauth.placeholder格式
 	return fmt.Sprintf("%s@qq.oauth.placeholder", u.OpenID)
 }
 
+// GetAvatar 
+//	@receiver u *QQUserInfo 
+//	@return string 
+//	@author centonhuang 
+//	@update 2025-08-25 12:45:56 
 func (u *QQUserInfo) GetAvatar() string {
 	return u.Avatar
 }
