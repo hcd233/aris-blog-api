@@ -13,7 +13,7 @@ func initTagRouter(r fiber.Router) {
 
 	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
 	{
-		tagRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PageParam{}), tagHandler.HandleListTags)
+		tagRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), tagHandler.HandleListTags)
 		tagRouter.Post(
 			"/",
 			middleware.LimitUserPermissionMiddleware("createTag", model.PermissionCreator),

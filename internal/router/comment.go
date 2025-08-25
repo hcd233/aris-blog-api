@@ -16,7 +16,7 @@ func initCommentRouter(r fiber.Router) {
 	commentRouter := r.Group("/comment", middleware.JwtMiddleware())
 	{
 		commentRouter.Get("/article/:articleID/list",
-			middleware.ValidateParamMiddleware(&protocol.PageParam{}),
+			middleware.ValidateParamMiddleware(&protocol.PaginateParam{}),
 			middleware.ValidateURIMiddleware(&protocol.ArticleURI{}),
 			commentHandler.HandleListArticleComments,
 		)
