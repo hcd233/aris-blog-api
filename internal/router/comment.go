@@ -29,7 +29,7 @@ func initCommentRouter(r fiber.Router) {
 		commentIDRouter := commentRouter.Group("/:commentID", middleware.ValidateURIMiddleware(&protocol.CommentURI{}))
 		{
 			commentIDRouter.Delete("/", commentHandler.HandleDeleteComment)
-			commentIDRouter.Get("/subComments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), commentHandler.HandleListChildrenComments)
+			commentIDRouter.Get("/subComments", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), commentHandler.HandleListChildrenComments)
 		}
 	}
 }

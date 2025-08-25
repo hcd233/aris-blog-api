@@ -19,7 +19,7 @@ func initAIRouter(r fiber.Router) {
 		{
 			taskNameRouter := aiPromptRouter.Group("/:taskName", middleware.ValidateURIMiddleware(&protocol.TaskURI{}))
 			{
-				taskNameRouter.Get("/", middleware.ValidateParamMiddleware(&protocol.PageParam{}), aiService.HandleListPrompt)
+				taskNameRouter.Get("/", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), aiService.HandleListPrompt)
 				taskNameRouter.Post("/", middleware.ValidateBodyMiddleware(&protocol.CreatePromptBody{}), aiService.HandleCreatePrompt)
 				taskNameRouter.Get("/latest", aiService.HandleGetLatestPrompt)
 				promptVersionRouter := taskNameRouter.Group("/v:version", middleware.ValidateURIMiddleware(&protocol.PromptVersionURI{}))

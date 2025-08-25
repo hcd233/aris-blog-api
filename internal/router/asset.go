@@ -18,13 +18,13 @@ func initAssetRouter(r fiber.Router) {
 	{
 		likeRouter := assetRouter.Group("/like")
 		{
-			likeRouter.Get("/articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), assetHandler.HandleListUserLikeArticles)
-			likeRouter.Get("/comments", middleware.ValidateParamMiddleware(&protocol.PageParam{}), assetHandler.HandleListUserLikeComments)
-			likeRouter.Get("/tags", middleware.ValidateParamMiddleware(&protocol.PageParam{}), assetHandler.HandleListUserLikeTags)
+					likeRouter.Get("/articles", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), assetHandler.HandleListUserLikeArticles)
+		likeRouter.Get("/comments", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), assetHandler.HandleListUserLikeComments)
+		likeRouter.Get("/tags", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), assetHandler.HandleListUserLikeTags)
 		}
 		viewRouter := assetRouter.Group("/view")
 		{
-			viewRouter.Get("/articles", middleware.ValidateParamMiddleware(&protocol.PageParam{}), assetHandler.HandleListUserViewArticles)
+			viewRouter.Get("/articles", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), assetHandler.HandleListUserViewArticles)
 			viewRouter.Delete("/:viewID", middleware.ValidateURIMiddleware(&protocol.ViewURI{}), assetHandler.HandleDeleteUserView)
 		}
 		objectRouter := assetRouter.Group("/object")

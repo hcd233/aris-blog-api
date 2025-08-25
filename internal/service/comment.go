@@ -176,7 +176,17 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 		return nil, protocol.ErrNoPermission
 	}
 
-	comments, pageInfo, err := s.commentDAO.PaginateRootsByArticleID(db, article.ID, []string{"id", "content", "created_at", "user_id", "likes"}, []string{}, req.PageParam.Page, req.PageParam.PageSize)
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"content"},
+		},
+	}
+	comments, pageInfo, err := s.commentDAO.PaginateRootsByArticleID(db, article.ID, []string{"id", "content", "created_at", "user_id", "likes"}, []string{}, param)
 	if err != nil {
 		logger.Error("[CommentService] failed to paginate article comments",
 			zap.Uint("articleID", article.ID),
@@ -234,10 +244,20 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 		return nil, protocol.ErrNoPermission
 	}
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"content"},
+		},
+	}
 	comments, pageInfo, err := s.commentDAO.PaginateChildren(db, parentComment,
 		[]string{"id", "content", "created_at", "likes", "user_id", "parent_id"},
 		[]string{},
-		req.PageParam.Page, req.PageParam.PageSize)
+		param)
 	if err != nil {
 		logger.Error("[CommentService] failed to paginate children comments",
 			zap.Uint("parentID", parentComment.ID),

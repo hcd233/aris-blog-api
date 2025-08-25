@@ -66,21 +66,30 @@ func (dao *UserLikeDAO) GetByUserIDAndObject(db *gorm.DB, userID uint, objectID 
 //	return err error
 //	author centonhuang
 //	update 2024-11-03 06:57:34
-func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, fields, preloads []string, page, pageSize int) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, fields, preloads []string, param *PaginateParam) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+	
+	// 添加模糊查询支持
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+	
 	err = sql.Where(model.UserLike{UserID: userID, ObjectType: objectType}).Limit(limit).Offset(offset).Find(&userLikes).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&userLikes).Where(model.UserLike{UserID: userID, ObjectType: objectType}).Count(&pageInfo.Total).Error

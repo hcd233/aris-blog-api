@@ -160,10 +160,20 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"task", "version"},
+		},
+	}
 	prompts, pageInfo, err := s.promptDAO.PaginateByTask(db, model.Task(req.TaskName),
 		[]string{"id", "created_at", "task", "version", "templates", "variables"},
 		[]string{},
-		req.PageParam.Page, req.PageParam.PageSize,
+		param,
 	)
 	if err != nil {
 		logger.Error("[AIService] failed to list prompt", zap.String("taskName", req.TaskName), zap.Error(err))

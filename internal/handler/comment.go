@@ -109,12 +109,12 @@ func (h *commentHandler) HandleDeleteComment(c *fiber.Ctx) error {
 func (h *commentHandler) HandleListArticleComments(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListArticleCommentsRequest{
-		UserID:    userID,
-		ArticleID: uri.ArticleID,
-		PageParam: param,
+		UserID:         userID,
+		ArticleID:      uri.ArticleID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListArticleComments(c.Context(), req)
@@ -142,12 +142,12 @@ func (h *commentHandler) HandleListArticleComments(c *fiber.Ctx) error {
 func (h *commentHandler) HandleListChildrenComments(c *fiber.Ctx) error {
 	userID := c.Locals(constant.CtxKeyUserID).(uint)
 	uri := c.Locals(constant.CtxKeyURI).(*protocol.CommentURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PageParam)
+	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
 
 	req := &protocol.ListChildrenCommentsRequest{
-		UserID:    userID,
-		CommentID: uri.CommentID,
-		PageParam: param,
+		UserID:         userID,
+		CommentID:      uri.CommentID,
+		PaginateParam:  param,
 	}
 
 	rsp, err := h.svc.ListChildrenComments(c.Context(), req)

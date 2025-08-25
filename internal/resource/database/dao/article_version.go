@@ -65,21 +65,30 @@ func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, v
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:08:50
-func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, page, pageSize int) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
-	limit, offset := pageSize, (page-1)*pageSize
+func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, param *PaginateParam) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
+	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
 	for _, preload := range preloads {
 		sql = sql.Preload(preload)
 	}
+	
+	// 添加模糊查询支持
+	if param.Query != "" && len(param.QueryFields) > 0 {
+		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
+		for _, field := range param.QueryFields[1:] {
+			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		}
+	}
+	
 	err = sql.Where(&model.ArticleVersion{ArticleID: articleID}).Limit(limit).Offset(offset).Find(&articleVersions).Error
 	if err != nil {
 		return
 	}
 
 	pageInfo = &PageInfo{
-		Page:     page,
-		PageSize: pageSize,
+		Page:     param.Page,
+		PageSize: param.PageSize,
 	}
 
 	err = db.Model(&articleVersions).Where(&model.ArticleVersion{ArticleID: articleID}).Count(&pageInfo.Total).Error

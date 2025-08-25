@@ -271,9 +271,19 @@ func (s *categoryService) ListChildrenCategories(ctx context.Context, req *proto
 		return nil, protocol.ErrInternalError
 	}
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"name"},
+		},
+	}
 	categories, pageInfo, err := s.categoryDAO.PaginateChildren(db, parentCategory,
 		[]string{"id", "name", "parent_id", "created_at", "updated_at"}, []string{},
-		req.PageParam.Page, req.PageParam.PageSize)
+		param)
 	if err != nil {
 		logger.Error("[CategoryService] failed to paginate children categories",
 			zap.Uint("parentID", parentCategory.ID),
@@ -329,6 +339,16 @@ func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protoco
 		return nil, protocol.ErrNoPermission
 	}
 
+	param := &dao.PaginateParam{
+		PageParam: &dao.PageParam{
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
+		},
+		QueryParam: &dao.QueryParam{
+			Query:       req.PaginateParam.Query,
+			QueryFields: []string{"title", "slug"},
+		},
+	}
 	articles, pageInfo, err := s.articleDAO.PaginateByCategoryID(db, parentCategory.ID,
 		[]string{
 			"id", "slug", "title", "status", "user_id",
@@ -336,7 +356,7 @@ func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protoco
 			"likes", "views",
 		},
 		[]string{"Tags", "Comments"},
-		req.PageParam.Page, req.PageParam.PageSize)
+		param)
 	if err != nil {
 		logger.Error("[CategoryService] failed to paginate children articles",
 			zap.Uint("categoryID", parentCategory.ID),
