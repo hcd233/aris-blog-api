@@ -48,10 +48,10 @@ type RefreshTokenResponse struct {
 type User struct {
 	UserID    uint   `json:"userID"`
 	Name      string `json:"name"`
-	Email     string `json:"email;omitempty"`
+	Email     string `json:"email,omitempty"`
 	Avatar    string `json:"avatar"`
-	CreatedAt string `json:"createdAt;omitempty"`
-	LastLogin string `json:"lastLogin;omitempty"`
+	CreatedAt string `json:"createdAt,omitempty"`
+	LastLogin string `json:"lastLogin,omitempty"`
 }
 
 // CurUser 当前用户
@@ -118,11 +118,11 @@ type Tag struct {
 	TagID       uint   `json:"tagID"`
 	Name        string `json:"name"`
 	Slug        string `json:"slug"`
-	Description string `json:"description;omitempty"`
-	UserID      uint   `json:"userID;omitempty"`
-	CreatedAt   string `json:"createdAt;omitempty"`
-	UpdatedAt   string `json:"updatedAt;omitempty"`
-	Likes       uint   `json:"likes;omitempty"`
+	Description string `json:"description,omitempty"`
+	UserID      uint   `json:"userID,omitempty"`
+	CreatedAt   string `json:"createdAt,omitempty"`
+	UpdatedAt   string `json:"updatedAt,omitempty"`
+	Likes       uint   `json:"likes,omitempty"`
 }
 
 // CreateTagRequest 创建标签请求
@@ -235,9 +235,9 @@ type ListUserTagsResponse struct {
 type Category struct {
 	CategoryID uint   `json:"categoryID"`
 	Name       string `json:"name"`
-	ParentID   uint   `json:"parentID;omitempty"`
-	CreatedAt  string `json:"createdAt;omitempty"`
-	UpdatedAt  string `json:"updatedAt;omitempty"`
+	ParentID   uint   `json:"parentID,omitempty"`
+	CreatedAt  string `json:"createdAt,omitempty"`
+	UpdatedAt  string `json:"updatedAt,omitempty"`
 }
 
 // Article 文章
@@ -245,19 +245,19 @@ type Category struct {
 //	author centonhuang
 //	update 2025-01-05 15:23:26
 type Article struct {
-	ArticleID   uint     `json:"articleID"`
-	Title       string   `json:"title"`
-	Slug        string   `json:"slug"`
-	Status      string   `json:"status"`
+	ArticleID   uint      `json:"articleID"`
+	Title       string    `json:"title"`
+	Slug        string    `json:"slug"`
+	Status      string    `json:"status"`
 	User        *User     `json:"userID"`
 	Category    *Category `json:"category"`
-	CreatedAt   string   `json:"createdAt"`
-	UpdatedAt   string   `json:"updatedAt"`
-	PublishedAt string   `json:"publishedAt"`
-	Likes       uint     `json:"likes"`
-	Views       uint     `json:"views"`
+	CreatedAt   string    `json:"createdAt"`
+	UpdatedAt   string    `json:"updatedAt"`
+	PublishedAt string    `json:"publishedAt"`
+	Likes       uint      `json:"likes"`
+	Views       uint      `json:"views"`
 	Tags        []*Tag    `json:"tags"`
-	Comments    int      `json:"comments"`
+	Comments    int       `json:"comments"`
 }
 
 // CreateCategoryRequest 创建分类请求

@@ -7532,16 +7532,16 @@ const docTemplate = `{
                 "categoryID": {
                     "type": "integer"
                 },
-                "createdAt;omitempty": {
+                "createdAt": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "parentID;omitempty": {
+                "parentID": {
                     "type": "integer"
                 },
-                "updatedAt;omitempty": {
+                "updatedAt": {
                     "type": "string"
                 }
             }
@@ -7724,13 +7724,13 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
-                "createdAt;omitempty": {
+                "createdAt": {
                     "type": "string"
                 },
-                "email;omitempty": {
+                "email": {
                     "type": "string"
                 },
-                "lastLogin;omitempty": {
+                "lastLogin": {
                     "type": "string"
                 },
                 "name": {
@@ -8296,13 +8296,13 @@ const docTemplate = `{
         "protocol.Tag": {
             "type": "object",
             "properties": {
-                "createdAt;omitempty": {
+                "createdAt": {
                     "type": "string"
                 },
-                "description;omitempty": {
+                "description": {
                     "type": "string"
                 },
-                "likes;omitempty": {
+                "likes": {
                     "type": "integer"
                 },
                 "name": {
@@ -8314,10 +8314,10 @@ const docTemplate = `{
                 "tagID": {
                     "type": "integer"
                 },
-                "updatedAt;omitempty": {
+                "updatedAt": {
                     "type": "string"
                 },
-                "userID;omitempty": {
+                "userID": {
                     "type": "integer"
                 }
             }
@@ -8439,13 +8439,13 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
-                "createdAt;omitempty": {
+                "createdAt": {
                     "type": "string"
                 },
-                "email;omitempty": {
+                "email": {
                     "type": "string"
                 },
-                "lastLogin;omitempty": {
+                "lastLogin": {
                     "type": "string"
                 },
                 "name": {

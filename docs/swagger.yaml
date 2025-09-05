@@ -65,13 +65,13 @@ definitions:
     properties:
       categoryID:
         type: integer
-      createdAt;omitempty:
+      createdAt:
         type: string
       name:
         type: string
-      parentID;omitempty:
+      parentID:
         type: integer
-      updatedAt;omitempty:
+      updatedAt:
         type: string
     type: object
   protocol.Comment:
@@ -192,11 +192,11 @@ definitions:
     properties:
       avatar:
         type: string
-      createdAt;omitempty:
+      createdAt:
         type: string
-      email;omitempty:
+      email:
         type: string
-      lastLogin;omitempty:
+      lastLogin:
         type: string
       name:
         type: string
@@ -565,11 +565,11 @@ definitions:
     type: object
   protocol.Tag:
     properties:
-      createdAt;omitempty:
+      createdAt:
         type: string
-      description;omitempty:
+      description:
         type: string
-      likes;omitempty:
+      likes:
         type: integer
       name:
         type: string
@@ -577,9 +577,9 @@ definitions:
         type: string
       tagID:
         type: integer
-      updatedAt;omitempty:
+      updatedAt:
         type: string
-      userID;omitempty:
+      userID:
         type: integer
     type: object
   protocol.Template:
@@ -657,11 +657,11 @@ definitions:
     properties:
       avatar:
         type: string
-      createdAt;omitempty:
+      createdAt:
         type: string
-      email;omitempty:
+      email:
         type: string
-      lastLogin;omitempty:
+      lastLogin:
         type: string
       name:
         type: string
