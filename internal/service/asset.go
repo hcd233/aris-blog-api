@@ -141,18 +141,32 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 
 	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *protocol.Article {
 		return &protocol.Article{
-			ArticleID:   article.ID,
-			Title:       article.Title,
-			Slug:        article.Slug,
-			Status:      string(article.Status),
-			UserID:      article.UserID,
+			ArticleID: article.ID,
+			Title:     article.Title,
+			Slug:      article.Slug,
+			Status:    string(article.Status),
+			User: &protocol.User{
+				UserID: article.User.ID,
+				Name:   article.User.Name,
+				Avatar: article.User.Avatar,
+			},
+			Category: &protocol.Category{
+				CategoryID: article.CategoryID,
+				Name:       article.Category.Name,
+			},
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
 			Likes:       article.Likes,
 			Views:       article.Views,
-			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
-			Comments:    len(article.Comments),
+			Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
+				return &protocol.Tag{
+					TagID: tag.ID,
+					Name:  tag.Name,
+					Slug:  tag.Slug,
+				}
+			}),
+			Comments: len(article.Comments),
 		}
 	})
 	rsp.PageInfo = &protocol.PageInfo{

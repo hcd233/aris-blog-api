@@ -12,6 +12,8 @@ definitions:
     properties:
       articleID:
         type: integer
+      category:
+        $ref: '#/definitions/protocol.Category'
       comments:
         type: integer
       createdAt:
@@ -26,14 +28,14 @@ definitions:
         type: string
       tags:
         items:
-          type: string
+          $ref: '#/definitions/protocol.Tag'
         type: array
       title:
         type: string
       updatedAt:
         type: string
       userID:
-        type: integer
+        $ref: '#/definitions/protocol.User'
       views:
         type: integer
     type: object
@@ -63,13 +65,13 @@ definitions:
     properties:
       categoryID:
         type: integer
-      createdAt:
+      createdAt;omitempty:
         type: string
       name:
         type: string
-      parentID:
+      parentID;omitempty:
         type: integer
-      updatedAt:
+      updatedAt;omitempty:
         type: string
     type: object
   protocol.Comment:
@@ -190,11 +192,11 @@ definitions:
     properties:
       avatar:
         type: string
-      createdAt:
+      createdAt;omitempty:
         type: string
-      email:
+      email;omitempty:
         type: string
-      lastLogin:
+      lastLogin;omitempty:
         type: string
       name:
         type: string
@@ -563,11 +565,11 @@ definitions:
     type: object
   protocol.Tag:
     properties:
-      createdAt:
+      createdAt;omitempty:
         type: string
-      description:
+      description;omitempty:
         type: string
-      likes:
+      likes;omitempty:
         type: integer
       name:
         type: string
@@ -575,9 +577,9 @@ definitions:
         type: string
       tagID:
         type: integer
-      updatedAt:
+      updatedAt;omitempty:
         type: string
-      userID:
+      userID;omitempty:
         type: integer
     type: object
   protocol.Template:
@@ -655,11 +657,11 @@ definitions:
     properties:
       avatar:
         type: string
-      createdAt:
+      createdAt;omitempty:
         type: string
-      email:
+      email;omitempty:
         type: string
-      lastLogin:
+      lastLogin;omitempty:
         type: string
       name:
         type: string

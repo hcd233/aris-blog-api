@@ -370,14 +370,21 @@ func (s *categoryService) ListChildrenArticles(ctx context.Context, req *protoco
 			Title:       article.Title,
 			Slug:        article.Slug,
 			Status:      string(article.Status),
-			UserID:      article.UserID,
+			User:        nil,
+			Category:    nil,
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
 			Likes:       article.Likes,
 			Views:       article.Views,
-			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
-			Comments:    int(len(article.Comments)),
+			Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
+				return &protocol.Tag{
+					TagID: tag.ID,
+					Name:  tag.Name,
+					Slug:  tag.Slug,
+				}
+			}),
+			Comments: int(len(article.Comments)),
 		}
 	})
 

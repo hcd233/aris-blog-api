@@ -48,10 +48,10 @@ type RefreshTokenResponse struct {
 type User struct {
 	UserID    uint   `json:"userID"`
 	Name      string `json:"name"`
-	Email     string `json:"email"`
+	Email     string `json:"email;omitempty"`
 	Avatar    string `json:"avatar"`
-	CreatedAt string `json:"createdAt"`
-	LastLogin string `json:"lastLogin"`
+	CreatedAt string `json:"createdAt;omitempty"`
+	LastLogin string `json:"lastLogin;omitempty"`
 }
 
 // CurUser 当前用户
@@ -118,11 +118,11 @@ type Tag struct {
 	TagID       uint   `json:"tagID"`
 	Name        string `json:"name"`
 	Slug        string `json:"slug"`
-	Description string `json:"description"`
-	UserID      uint   `json:"userID"`
-	CreatedAt   string `json:"createdAt"`
-	UpdatedAt   string `json:"updatedAt"`
-	Likes       uint   `json:"likes"`
+	Description string `json:"description;omitempty"`
+	UserID      uint   `json:"userID;omitempty"`
+	CreatedAt   string `json:"createdAt;omitempty"`
+	UpdatedAt   string `json:"updatedAt;omitempty"`
+	Likes       uint   `json:"likes;omitempty"`
 }
 
 // CreateTagRequest 创建标签请求
@@ -215,8 +215,8 @@ type ListTagsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:35
 type ListUserTagsRequest struct {
-	UserName       string
-	PaginateParam  *PaginateParam
+	UserName      string
+	PaginateParam *PaginateParam
 }
 
 // ListUserTagsResponse 列出用户标签响应
@@ -235,9 +235,9 @@ type ListUserTagsResponse struct {
 type Category struct {
 	CategoryID uint   `json:"categoryID"`
 	Name       string `json:"name"`
-	ParentID   uint   `json:"parentID"`
-	CreatedAt  string `json:"createdAt"`
-	UpdatedAt  string `json:"updatedAt"`
+	ParentID   uint   `json:"parentID;omitempty"`
+	CreatedAt  string `json:"createdAt;omitempty"`
+	UpdatedAt  string `json:"updatedAt;omitempty"`
 }
 
 // Article 文章
@@ -249,14 +249,14 @@ type Article struct {
 	Title       string   `json:"title"`
 	Slug        string   `json:"slug"`
 	Status      string   `json:"status"`
-	UserID      uint     `json:"userID"`
-	CategoryID  uint     `json:"categoryID"`
+	User        *User     `json:"userID"`
+	Category    *Category `json:"category"`
 	CreatedAt   string   `json:"createdAt"`
 	UpdatedAt   string   `json:"updatedAt"`
 	PublishedAt string   `json:"publishedAt"`
 	Likes       uint     `json:"likes"`
 	Views       uint     `json:"views"`
-	Tags        []string `json:"tags"`
+	Tags        []*Tag    `json:"tags"`
 	Comments    int      `json:"comments"`
 }
 
@@ -350,9 +350,9 @@ type DeleteCategoryResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 13:23:21
 type ListChildrenCategoriesRequest struct {
-	UserID         uint            `json:"userID"`
-	CategoryID     uint            `json:"categoryID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	CategoryID    uint           `json:"categoryID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListChildrenCategoriesResponse 列出子分类响应
@@ -369,9 +369,9 @@ type ListChildrenCategoriesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 13:23:25
 type ListChildrenArticlesRequest struct {
-	UserID         uint            `json:"userID"`
-	CategoryID     uint            `json:"categoryID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	CategoryID    uint           `json:"categoryID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListChildrenArticlesResponse 列出子文章响应
@@ -604,9 +604,9 @@ type GetLatestArticleVersionInfoResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:42:48
 type ListArticleVersionsRequest struct {
-	UserID         uint            `json:"userID"`
-	ArticleID      uint            `json:"articleID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	ArticleID     uint           `json:"articleID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListArticleVersionsResponse 列出文章版本响应
@@ -752,9 +752,9 @@ type DeleteCommentResponse struct{}
 //	author centonhuang
 //	update 2025-01-05 16:43:41
 type ListArticleCommentsRequest struct {
-	UserID         uint            `json:"userID"`
-	ArticleID      uint            `json:"articleID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	ArticleID     uint           `json:"articleID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListArticleCommentsResponse 列出文章评论响应
@@ -771,9 +771,9 @@ type ListArticleCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:44
 type ListChildrenCommentsRequest struct {
-	UserID         uint            `json:"userID"`
-	CommentID      uint            `json:"commentID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	CommentID     uint           `json:"commentID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListChildrenCommentsResponse 列出子评论响应
@@ -790,8 +790,8 @@ type ListChildrenCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:48
 type ListUserLikeArticlesRequest struct {
-	UserID         uint            `json:"userID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListUserLikeArticlesResponse 列出用户喜欢的文章响应
@@ -808,8 +808,8 @@ type ListUserLikeArticlesResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:52
 type ListUserLikeCommentsRequest struct {
-	UserID         uint            `json:"userID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListUserLikeCommentsResponse 列出用户喜欢的评论响应
@@ -826,8 +826,8 @@ type ListUserLikeCommentsResponse struct {
 //	author centonhuang
 //	update 2025-01-05 16:43:56
 type ListUserLikeTagsRequest struct {
-	UserID         uint            `json:"userID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListUserLikeTagsResponse 列出用户喜欢的标签响应
@@ -947,8 +947,8 @@ type UserView struct {
 //	author centonhuang
 //	update 2025-01-05 17:03:38
 type ListUserViewArticlesRequest struct {
-	UserID         uint            `json:"userID"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	UserID        uint           `json:"userID"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListUserViewArticlesResponse 列出用户浏览的文章响应
@@ -1026,8 +1026,8 @@ type GetLatestPromptResponse struct {
 //	author centonhuang
 //	update 2025-01-05 18:13:20
 type ListPromptRequest struct {
-	TaskName       string          `json:"taskName"`
-	PaginateParam  *PaginateParam  `json:"paginateParam"`
+	TaskName      string         `json:"taskName"`
+	PaginateParam *PaginateParam `json:"paginateParam"`
 }
 
 // ListPromptResponse 列出提示词响应

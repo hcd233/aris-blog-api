@@ -146,13 +146,14 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 		Title:       article.Title,
 		Slug:        article.Slug,
 		Status:      string(article.Status),
-		UserID:      article.UserID,
+		User:        nil,
+		Category:    nil,
 		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 		PublishedAt: article.PublishedAt.Format(time.DateTime),
 		Likes:       article.Likes,
 		Views:       article.Views,
-		Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
+		Tags:        nil,
 		Comments:    len(article.Comments),
 	}
 
@@ -174,10 +175,10 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{
-		"id", "slug", "title", "status", "user_id",
+		"id", "slug", "title", "status", "user_id", "category_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
-	}, []string{"Comments", "Tags"})
+	}, []string{"User", "Category", "Tags", "Comments"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
@@ -199,18 +200,32 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 	}
 
 	rsp.Article = &protocol.Article{
-		ArticleID:   article.ID,
-		Title:       article.Title,
-		Slug:        article.Slug,
-		Status:      string(article.Status),
-		UserID:      article.UserID,
+		ArticleID: article.ID,
+		Title:     article.Title,
+		Slug:      article.Slug,
+		Status:    string(article.Status),
+		User: &protocol.User{
+			UserID: article.User.ID,
+			Name:   article.User.Name,
+			Avatar: article.User.Avatar,
+		},
+		Category: &protocol.Category{
+			CategoryID: article.CategoryID,
+			Name:       article.Category.Name,
+		},
 		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 		PublishedAt: article.PublishedAt.Format(time.DateTime),
 		Likes:       article.Likes,
 		Views:       article.Views,
-		Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
-		Comments:    len(article.Comments),
+		Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
+			return &protocol.Tag{
+				TagID: tag.ID,
+				Name:  tag.Name,
+				Slug:  tag.Slug,
+			}
+		}),
+		Comments: len(article.Comments),
 	}
 
 	return rsp, nil
@@ -244,10 +259,10 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 	}
 
 	article, err := s.articleDAO.GetBySlugAndUserID(db, req.ArticleSlug, user.ID, []string{
-		"id", "slug", "title", "status", "user_id",
+		"id", "slug", "title", "status", "user_id", "category_id",
 		"created_at", "updated_at", "published_at",
 		"likes", "views",
-	}, []string{"Comments", "Tags"})
+	}, []string{"User", "Category", "Tags", "Comments"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
@@ -270,18 +285,32 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 	}
 
 	rsp.Article = &protocol.Article{
-		ArticleID:   article.ID,
-		Title:       article.Title,
-		Slug:        article.Slug,
-		Status:      string(article.Status),
-		UserID:      article.UserID,
+		ArticleID: article.ID,
+		Title:     article.Title,
+		Slug:      article.Slug,
+		Status:    string(article.Status),
+		User: &protocol.User{
+			UserID: article.User.ID,
+			Name:   article.User.Name,
+			Avatar: article.User.Avatar,
+		},
+		Category: &protocol.Category{
+			CategoryID: article.CategoryID,
+			Name:       article.Category.Name,
+		},
 		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 		PublishedAt: article.PublishedAt.Format(time.DateTime),
 		Likes:       article.Likes,
 		Views:       article.Views,
-		Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
-		Comments:    len(article.Comments),
+		Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
+			return &protocol.Tag{
+				TagID: tag.ID,
+				Name:  tag.Name,
+				Slug:  tag.Slug,
+			}
+		}),
+		Comments: len(article.Comments),
 	}
 
 	return rsp, nil
@@ -473,7 +502,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 			"created_at", "updated_at", "published_at",
 			"likes", "views",
 		},
-		[]string{"Comments", "Tags"},
+		[]string{"User", "Category", "Tags", "Comments"},
 		param,
 	)
 	if err != nil {
@@ -483,19 +512,32 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 
 	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *protocol.Article {
 		return &protocol.Article{
-			ArticleID:   article.ID,
-			Title:       article.Title,
-			Slug:        article.Slug,
-			Status:      string(article.Status),
-			UserID:      article.UserID,
-			CategoryID:  article.CategoryID,
+			ArticleID: article.ID,
+			Title:     article.Title,
+			Slug:      article.Slug,
+			Status:    string(article.Status),
+			User: &protocol.User{
+				UserID: article.User.ID,
+				Name:   article.User.Name,
+				Avatar: article.User.Avatar,
+			},
+			Category: &protocol.Category{
+				CategoryID: article.CategoryID,
+				Name:       article.Category.Name,
+			},
 			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
 			Likes:       article.Likes,
 			Views:       article.Views,
-			Tags:        lo.Map(article.Tags, func(tag model.Tag, _ int) string { return tag.Slug }),
-			Comments:    len(article.Comments),
+			Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
+				return &protocol.Tag{
+					TagID: tag.ID,
+					Name:  tag.Name,
+					Slug:  tag.Slug,
+				}
+			}),
+			Comments: len(article.Comments),
 		}
 	})
 

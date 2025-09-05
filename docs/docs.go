@@ -7451,6 +7451,9 @@ const docTemplate = `{
                 "articleID": {
                     "type": "integer"
                 },
+                "category": {
+                    "$ref": "#/definitions/protocol.Category"
+                },
                 "comments": {
                     "type": "integer"
                 },
@@ -7472,7 +7475,7 @@ const docTemplate = `{
                 "tags": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/protocol.Tag"
                     }
                 },
                 "title": {
@@ -7482,7 +7485,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "userID": {
-                    "type": "integer"
+                    "$ref": "#/definitions/protocol.User"
                 },
                 "views": {
                     "type": "integer"
@@ -7529,16 +7532,16 @@ const docTemplate = `{
                 "categoryID": {
                     "type": "integer"
                 },
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "parentID": {
+                "parentID;omitempty": {
                     "type": "integer"
                 },
-                "updatedAt": {
+                "updatedAt;omitempty": {
                     "type": "string"
                 }
             }
@@ -7721,13 +7724,13 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
-                "email": {
+                "email;omitempty": {
                     "type": "string"
                 },
-                "lastLogin": {
+                "lastLogin;omitempty": {
                     "type": "string"
                 },
                 "name": {
@@ -8293,13 +8296,13 @@ const docTemplate = `{
         "protocol.Tag": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
-                "description": {
+                "description;omitempty": {
                     "type": "string"
                 },
-                "likes": {
+                "likes;omitempty": {
                     "type": "integer"
                 },
                 "name": {
@@ -8311,10 +8314,10 @@ const docTemplate = `{
                 "tagID": {
                     "type": "integer"
                 },
-                "updatedAt": {
+                "updatedAt;omitempty": {
                     "type": "string"
                 },
-                "userID": {
+                "userID;omitempty": {
                     "type": "integer"
                 }
             }
@@ -8436,13 +8439,13 @@ const docTemplate = `{
                 "avatar": {
                     "type": "string"
                 },
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
-                "email": {
+                "email;omitempty": {
                     "type": "string"
                 },
-                "lastLogin": {
+                "lastLogin;omitempty": {
                     "type": "string"
                 },
                 "name": {

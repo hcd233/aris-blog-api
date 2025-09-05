@@ -7445,6 +7445,9 @@
                 "articleID": {
                     "type": "integer"
                 },
+                "category": {
+                    "$ref": "#/definitions/protocol.Category"
+                },
                 "comments": {
                     "type": "integer"
                 },
@@ -7466,7 +7469,7 @@
                 "tags": {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "#/definitions/protocol.Tag"
                     }
                 },
                 "title": {
@@ -7476,7 +7479,7 @@
                     "type": "string"
                 },
                 "userID": {
-                    "type": "integer"
+                    "$ref": "#/definitions/protocol.User"
                 },
                 "views": {
                     "type": "integer"
@@ -7523,16 +7526,16 @@
                 "categoryID": {
                     "type": "integer"
                 },
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
-                "parentID": {
+                "parentID;omitempty": {
                     "type": "integer"
                 },
-                "updatedAt": {
+                "updatedAt;omitempty": {
                     "type": "string"
                 }
             }
@@ -7715,13 +7718,13 @@
                 "avatar": {
                     "type": "string"
                 },
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
-                "email": {
+                "email;omitempty": {
                     "type": "string"
                 },
-                "lastLogin": {
+                "lastLogin;omitempty": {
                     "type": "string"
                 },
                 "name": {
@@ -8287,13 +8290,13 @@
         "protocol.Tag": {
             "type": "object",
             "properties": {
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
-                "description": {
+                "description;omitempty": {
                     "type": "string"
                 },
-                "likes": {
+                "likes;omitempty": {
                     "type": "integer"
                 },
                 "name": {
@@ -8305,10 +8308,10 @@
                 "tagID": {
                     "type": "integer"
                 },
-                "updatedAt": {
+                "updatedAt;omitempty": {
                     "type": "string"
                 },
-                "userID": {
+                "userID;omitempty": {
                     "type": "integer"
                 }
             }
@@ -8430,13 +8433,13 @@
                 "avatar": {
                     "type": "string"
                 },
-                "createdAt": {
+                "createdAt;omitempty": {
                     "type": "string"
                 },
-                "email": {
+                "email;omitempty": {
                     "type": "string"
                 },
-                "lastLogin": {
+                "lastLogin;omitempty": {
                     "type": "string"
                 },
                 "name": {
