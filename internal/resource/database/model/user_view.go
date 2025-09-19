@@ -13,9 +13,9 @@ import (
 type UserView struct {
 	gorm.Model
 	UserID       uint      `json:"user_id" gorm:"not null;index:user_id_object_type;uniqueIndex:user_object;comment:用户ID"`
-	User         *User     `json:"user" gorm:"foreignKey:UserID;references:ID"`
+	User         *User     `json:"user" gorm:"foreignKey:UserID"`
 	ArticleID    uint      `json:"article_id" gorm:"not null;index:user_id_object_type;uniqueIndex:user_object;comment:文章ID"`
-	Article      *Article  `json:"article" gorm:"foreignKey:ArticleID;references:ID"`
+	Article      *Article  `json:"article" gorm:"foreignKey:ArticleID"`
 	LastViewedAt time.Time `json:"last_viewed_at" gorm:"not null;comment:最后浏览时间"`
 	Progress     int8      `json:"progress" gorm:"not null;comment:浏览进度"`
 }
