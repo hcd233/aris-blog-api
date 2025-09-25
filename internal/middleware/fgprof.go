@@ -11,7 +11,5 @@ import (
 //	@author centonhuang
 //	@update 2025-09-25 21:17:02
 func FgprofMiddleware() fiber.Handler {
-	return fgprof.New(fgprof.Config{
-		Prefix: "/fgprof",
-	})
+	return fgprof.New()
 }
