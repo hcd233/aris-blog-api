@@ -60,6 +60,7 @@ var startServerCmd = &cobra.Command{
 
 		// 中间件
 		app.Use(
+			middleware.FgprofMiddleware(),
 			middleware.TraceMiddleware(),
 			middleware.LogMiddleware(),
 			middleware.CORSMiddleware(),
