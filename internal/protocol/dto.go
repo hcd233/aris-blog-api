@@ -1150,3 +1150,145 @@ type GenerateTermExplainationResponse struct {
 	TokenChan <-chan string
 	ErrChan   <-chan error
 }
+
+// ============= 推荐系统相关 DTO =============
+
+// UserBehaviorRequest 用户行为上报请求
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type UserBehaviorRequest struct {
+	UserID     uint   `json:"userId" binding:"required"`
+	ItemID     uint   `json:"itemId" binding:"required"`
+	ItemType   string `json:"itemType" binding:"required,oneof=article tag"`
+	BehaviorType string `json:"behaviorType" binding:"required,oneof=view like share comment collect"`
+	Score      float64 `json:"score,omitempty"` // 评分，可选
+	Context    map[string]interface{} `json:"context,omitempty"` // 上下文信息
+}
+
+// UserBehaviorResponse 用户行为上报响应
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type UserBehaviorResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+}
+
+// RecommendationRequest 推荐请求
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type RecommendationRequest struct {
+	UserID      uint   `json:"userId" binding:"required"`
+	Type        string `json:"type" binding:"required,oneof=article tag"`
+	Limit       int    `json:"limit,omitempty"`
+	ExcludeIDs  []uint `json:"excludeIds,omitempty"` // 排除的物品ID
+	IncludeTags []string `json:"includeTags,omitempty"` // 包含的标签
+}
+
+// RecommendationItem 推荐物品
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type RecommendationItem struct {
+	ID          uint                   `json:"id"`
+	Type        string                 `json:"type"`
+	Score       float64                `json:"score"`
+	Reason      string                 `json:"reason"`
+	Title       string                 `json:"title,omitempty"`
+	Description string                 `json:"description,omitempty"`
+	Tags        []string               `json:"tags,omitempty"`
+	Metadata    map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// RecommendationResponse 推荐响应
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type RecommendationResponse struct {
+	Items     []RecommendationItem `json:"items"`
+	Total     int                  `json:"total"`
+	Algorithm string               `json:"algorithm"`
+	Timestamp int64                `json:"timestamp"`
+}
+
+// UserProfile 用户画像
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type UserProfile struct {
+	UserID        uint                   `json:"userId"`
+	Preferences   map[string]float64     `json:"preferences"`   // 偏好标签及权重
+	Interests     []string               `json:"interests"`     // 兴趣类别
+	BehaviorStats map[string]int         `json:"behaviorStats"` // 行为统计
+	LastUpdated   int64                  `json:"lastUpdated"`
+	Metadata      map[string]interface{} `json:"metadata,omitempty"`
+}
+
+// UserProfileRequest 用户画像请求
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type UserProfileRequest struct {
+	UserID uint `json:"userId" binding:"required"`
+}
+
+// UserProfileResponse 用户画像响应
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type UserProfileResponse struct {
+	Profile *UserProfile `json:"profile"`
+}
+
+// SimilarityRequest 相似度计算请求
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type SimilarityRequest struct {
+	UserID       uint   `json:"userId" binding:"required"`
+	TargetUserID uint   `json:"targetUserId,omitempty"`
+	Type         string `json:"type" binding:"required,oneof=user item"`
+	Limit        int    `json:"limit,omitempty"`
+}
+
+// SimilarityItem 相似度物品
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type SimilarityItem struct {
+	ID         uint    `json:"id"`
+	Type       string  `json:"type"`
+	Similarity float64 `json:"similarity"`
+	Name       string  `json:"name,omitempty"`
+}
+
+// SimilarityResponse 相似度响应
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type SimilarityResponse struct {
+	Items []SimilarityItem `json:"items"`
+	Total int              `json:"total"`
+}
+
+// RecommendationStats 推荐统计
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type RecommendationStats struct {
+	TotalRecommendations int64              `json:"totalRecommendations"`
+	SuccessfulClicks    int64              `json:"successfulClicks"`
+	ClickThroughRate    float64            `json:"clickThroughRate"`
+	AlgorithmStats      map[string]int64   `json:"algorithmStats"`
+	CategoryStats       map[string]int64   `json:"categoryStats"`
+}
+
+// RecommendationStatsResponse 推荐统计响应
+//
+//	author system
+//	update 2025-01-19 12:00:00
+type RecommendationStatsResponse struct {
+	Stats *RecommendationStats `json:"stats"`
+}
