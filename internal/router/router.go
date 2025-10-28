@@ -3,6 +3,7 @@ package router
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 )
 
@@ -12,6 +13,9 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:32:40
 func RegisterRouter(app *fiber.App) {
+	// swagger
+	app.Get("/swagger/*", swagger.HandlerDefault)
+
 	pingService := handler.NewPingHandler()
 	app.Get("/", pingService.HandlePing)
 
