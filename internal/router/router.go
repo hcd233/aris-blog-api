@@ -13,13 +13,18 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:32:40
 func RegisterRouter(app *fiber.App) {
-	// swagger
+	// 注册 Huma 路由 (新的 OpenAPI 集成)
+	RegisterHumaRouter(app)
+
+	// 保留原有的 Swagger 路由用于向后兼容
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
+	// 原有的健康检查路由
 	pingService := handler.NewPingHandler()
-	app.Get("/", pingService.HandlePing)
+	app.Get("/ping", pingService.HandlePing) // 改为 /ping 避免与 Huma 的根路径冲突
 
-	v1Router := app.Group("/v1")
+	// 原有的 API 路由 - 逐步迁移到 Huma
+	v1Router := app.Group("/v1/legacy") // 添加 legacy 前缀来区分
 	{
 		initTokenRouter(v1Router)
 		initOauth2Router(v1Router)
