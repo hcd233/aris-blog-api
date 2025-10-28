@@ -18,7 +18,7 @@ func RegisterHumaRouter(app *fiber.App) {
 
 	// Ping 路由
 	pingHandler := func(ctx context.Context, input *struct{}) (*protocol.PingResponse, error) {
-		return &protocol.PingResponse{Message: "ok"}, nil
+		return &protocol.PingResponse{Status: "ok"}, nil
 	}
 	huma.Get(api, "/", pingHandler)
 
