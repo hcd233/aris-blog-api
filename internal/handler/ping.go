@@ -40,7 +40,7 @@ func NewPingHandler() PingHandler {
 //	update 2025-01-04 20:47:48
 func (h *pingHandler) HandlePing(c *fiber.Ctx) error {
 	rsp := protocol.PingResponse{
-		Status: "ok",
+        Message: "ok",
 	}
 
 	util.SendHTTPResponse(c, rsp, nil)
