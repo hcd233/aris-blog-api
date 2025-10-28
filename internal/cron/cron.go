@@ -7,17 +7,8 @@ import (
 	"fmt"
 
 	"github.com/hcd233/aris-blog-api/internal/logger"
-	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
-
-// Cron 定时任务
-//
-//	@author centonhuang
-//	@update 2025-09-30 16:04:39
-type Cron interface {
-	Start() error
-}
 
 // InitCronJobs 初始化定时任务
 //
@@ -25,7 +16,7 @@ type Cron interface {
 //	update 2024-12-09 15:55:20
 func InitCronJobs() {
 	quotaCron := NewQuotaCron()
-	lo.Must0(quotaCron.Start())
+	quotaCron.Start()
 
 	logger.Logger().Info("[Cron] Init cron jobs")
 }

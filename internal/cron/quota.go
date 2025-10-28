@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/google/uuid"
-	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
@@ -15,21 +13,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// QuotaCron 配额定时任务
-//
-//	@author centonhuang
-//	@update 2025-09-30 16:04:21
+type Cron interface {
+	Start()
+}
+
 type QuotaCron struct {
 	cron    *cron.Cron
 	db      *gorm.DB
 	userDAO *dao.UserDAO
 }
 
-// NewQuotaCron 创建配额定时任务
-//
-//	@return Cron
-//	@author centonhuang
-//	@update 2025-09-30 16:04:27
 func NewQuotaCron() Cron {
 	return &QuotaCron{
 		cron: cron.New(
@@ -40,31 +33,15 @@ func NewQuotaCron() Cron {
 	}
 }
 
-// Start 启动定时任务
-//
-//	@receiver c *QuotaCron
-//	@return error
-//	@author centonhuang
-//	@update 2025-09-30 16:03:59
-func (c *QuotaCron) Start() error {
+func (c *QuotaCron) Start() {
 	// debug set 10 seconds
 	// c.cron.AddFunc("every 10s", c.deliverQuotas)
-	entryID, err := c.cron.AddFunc("daily", c.deliverQuotas)
-	if err != nil {
-		logger.Logger().Error("[QuotaCron] add func error", zap.Error(err))
-		return err
-	}
-
-	logger.Logger().Info("[QuotaCron] add func success", zap.Int("entryID", int(entryID)))
-
+	c.cron.AddFunc("daily", c.deliverQuotas)
 	c.cron.Start()
-
-	return nil
 }
 
 func (c *QuotaCron) deliverQuotas() {
-	ctx := context.WithValue(context.Background(), constant.CtxKeyTraceID, uuid.New().String())
-	logger := logger.WithCtx(ctx)
+	logger := logger.Logger()
 
 	param := &dao.PaginateParam{
 		PageParam: &dao.PageParam{
