@@ -7,6 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
+    "github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
 
@@ -22,7 +23,10 @@ func RegisterHumaRouter(app *fiber.App) {
 	}
 	huma.Get(api, "/", pingHandler)
 
-	// v1 路由组
+    // 保护 v1 路由（需要 JWT）
+    app.Use("/v1/*", middleware.JwtMiddleware())
+
+    // v1 路由组
 	v1 := huma.NewGroup(api, "/v1")
 
 	// 用户路由

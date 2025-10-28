@@ -4,18 +4,20 @@
 package middleware
 
 import (
-	"errors"
+    "context"
+    "errors"
+    "strings"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/auth"
-	"github.com/hcd233/aris-blog-api/internal/constant"
-	"github.com/hcd233/aris-blog-api/internal/logger"
-	"github.com/hcd233/aris-blog-api/internal/protocol"
-	"github.com/hcd233/aris-blog-api/internal/resource/database"
-	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
-	"github.com/hcd233/aris-blog-api/internal/util"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
+    "github.com/gofiber/fiber/v2"
+    "github.com/hcd233/aris-blog-api/internal/auth"
+    "github.com/hcd233/aris-blog-api/internal/constant"
+    "github.com/hcd233/aris-blog-api/internal/logger"
+    "github.com/hcd233/aris-blog-api/internal/protocol"
+    "github.com/hcd233/aris-blog-api/internal/resource/database"
+    "github.com/hcd233/aris-blog-api/internal/resource/database/dao"
+    "github.com/hcd233/aris-blog-api/internal/util"
+    "go.uber.org/zap"
+    "gorm.io/gorm"
 )
 
 // JwtMiddleware JWT 中间件
@@ -28,6 +30,11 @@ func JwtMiddleware() fiber.Handler {
 	jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
 
 	return func(c *fiber.Ctx) error {
+        // 放行无需鉴权的路径
+        path := c.Path()
+        if strings.HasPrefix(path, "/v1/token") || strings.HasPrefix(path, "/v1/oauth2") {
+            return c.Next()
+        }
 		db := database.GetDBInstanceFromFiber(c)
 
 		tokenString := c.Get("Authorization")
@@ -61,9 +68,16 @@ func JwtMiddleware() fiber.Handler {
 				Error: protocol.ErrInternalError.Error(),
 			})
 		}
-		c.Locals(constant.CtxKeyUserID, user.ID)
-		c.Locals(constant.CtxKeyUserName, user.Name)
-		c.Locals(constant.CtxKeyPermission, user.Permission)
+        c.Locals(constant.CtxKeyUserID, user.ID)
+        c.Locals(constant.CtxKeyUserName, user.Name)
+        c.Locals(constant.CtxKeyPermission, user.Permission)
+
+        // 将用户信息注入到 request context，供 Huma handler 使用
+        uctx := c.UserContext()
+        uctx = context.WithValue(uctx, constant.CtxKeyUserID, user.ID)
+        uctx = context.WithValue(uctx, constant.CtxKeyUserName, user.Name)
+        uctx = context.WithValue(uctx, constant.CtxKeyPermission, user.Permission)
+        c.SetUserContext(uctx)
 		return c.Next()
 	}
 }
