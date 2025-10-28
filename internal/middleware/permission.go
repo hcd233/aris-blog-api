@@ -26,7 +26,7 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.
 				zap.String("requiredPermission", string(requiredPermission)),
 				zap.String("permission", string(permission)))
 			util.SendHTTPResponse(c, nil, protocol.ErrNoPermission)
-			return c.Status(fiber.StatusForbidden).JSON(protocol.HTTPResponse{
+			return c.Status(fiber.StatusForbidden).JSON(protocol.HTTPResponse[any]{
 				Error: protocol.ErrNoPermission.Error(),
 			})
 		}

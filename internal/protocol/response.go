@@ -4,9 +4,9 @@ package protocol
 //
 //	author centonhuang
 //	update 2024-09-16 03:41:34
-type HTTPResponse struct {
-	Data  interface{} `json:"data"`
-	Error string      `json:"error,omitempty"`
+type HTTPResponse[T any] struct {
+	Data  T      `json:"data"`
+	Error string `json:"error,omitempty"`
 }
 
 // SSEResponse SSE响应

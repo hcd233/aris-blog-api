@@ -23,50 +23,50 @@ const (
 // SendHTTPResponse 发送HTTP响应
 //
 //	param c *fiber.Ctx
-//	param data interface{}
+//	param data T
 //	param err error
 //	author centonhuang
 //	update 2025-01-04 17:34:06
 func SendHTTPResponse(c *fiber.Ctx, data interface{}, err error) {
 	switch err {
 	case protocol.ErrDataNotExists: // 404
-		c.Status(http.StatusOK).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusOK).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrDataExists: // 400
-		c.Status(http.StatusOK).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusOK).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrBadRequest: // 400
-		c.Status(http.StatusBadRequest).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusBadRequest).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrInsufficientQuota: // 400
-		c.Status(http.StatusBadRequest).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusBadRequest).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrUnauthorized: // 401
-		c.Status(http.StatusUnauthorized).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusUnauthorized).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrNoPermission: // 403
-		c.Status(http.StatusForbidden).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusForbidden).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrTooManyRequests: // 429
-		c.Status(http.StatusTooManyRequests).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusTooManyRequests).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrInternalError: // 500
-		c.Status(http.StatusInternalServerError).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusInternalServerError).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case protocol.ErrNoImplement: // 501
-		c.Status(http.StatusNotImplemented).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusNotImplemented).JSON(protocol.HTTPResponse[any]{
 			Error: err.Error(),
 		})
 	case nil:
-		c.Status(http.StatusOK).JSON(protocol.HTTPResponse{
+		c.Status(http.StatusOK).JSON(protocol.HTTPResponse[any]{
 			Data: data,
 		})
 	}

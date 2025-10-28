@@ -3,7 +3,6 @@ package router
 
 import (
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/swagger"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 )
 
@@ -13,8 +12,8 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:32:40
 func RegisterRouter(app *fiber.App) {
-	// swagger
-	app.Get("/swagger/*", swagger.HandlerDefault)
+	// 注册 Huma router（用于 OpenAPI 文档生成）
+	RegisterHumaRouter(app)
 
 	pingService := handler.NewPingHandler()
 	app.Get("/", pingService.HandlePing)

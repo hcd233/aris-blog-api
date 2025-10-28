@@ -36,7 +36,7 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 		if err != nil {
 			logger.WithFCtx(c).Error("[RedisLockMiddleware] failed to get lock", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse[any]{
 				Error: protocol.ErrInternalError.Error(),
 			})
 		}
@@ -46,13 +46,13 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 			if err != nil {
 				logger.WithFCtx(c).Error("[RedisLockMiddleware] failed to get lock info", zap.String("lockKey", lockKey), zap.Error(err))
 				util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-				return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+				return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse[any]{
 					Error: protocol.ErrInternalError.Error(),
 				})
 			}
 			logger.WithFCtx(c).Info("[RedisLockMiddleware] resource is locked", zap.String("lockKey", lockKey), zap.String("lockValue", lockValue))
 			util.SendHTTPResponse(c, nil, protocol.ErrTooManyRequests)
-			return c.Status(fiber.StatusTooManyRequests).JSON(protocol.HTTPResponse{
+			return c.Status(fiber.StatusTooManyRequests).JSON(protocol.HTTPResponse[any]{
 				Error: protocol.ErrTooManyRequests.Error(),
 			})
 		}
@@ -69,7 +69,7 @@ func RedisLockMiddleware(serviceName, key string, expire time.Duration) fiber.Ha
 		if err := redis.Eval(ctx, luaScript, []string{lockKey}, lockValue).Err(); err != nil {
 			logger.WithFCtx(c).Error("[RedisLockMiddleware] failed to release lock", zap.String("lockKey", lockKey), zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse{
+			return c.Status(fiber.StatusInternalServerError).JSON(protocol.HTTPResponse[any]{
 				Error: protocol.ErrInternalError.Error(),
 			})
 		}
