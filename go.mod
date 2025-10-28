@@ -6,15 +6,16 @@ require (
 	github.com/cloudwego/eino v0.4.5
 	github.com/cloudwego/eino-ext/callbacks/langfuse v0.0.0-20250822023757-dbf41c9449b9
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250822023757-dbf41c9449b9
+	github.com/danielgtaylor/huma/v2 v2.34.1
 	github.com/disintegration/imaging v1.6.2
+	github.com/gofiber/adaptor/v2 v2.2.1
 	github.com/gofiber/contrib/fgprof v1.0.4
 	github.com/gofiber/fiber/v2 v2.52.9
-	github.com/gofiber/swagger v1.0.0
 	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/minio/minio-go/v7 v7.0.80
 	github.com/samber/lo v1.39.0
-	github.com/spf13/cobra v1.8.1
+	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
 	github.com/swaggo/swag v1.16.4
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.60
@@ -65,7 +66,6 @@ require (
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/slongfield/pyfmt v0.0.0-20220222012616-ea85ff4c361f // indirect
 	github.com/stretchr/testify v1.11.0 // indirect
-	github.com/swaggo/files/v2 v2.0.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
@@ -106,7 +106,7 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.66.0 // indirect

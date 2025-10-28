@@ -68,7 +68,8 @@ var startServerCmd = &cobra.Command{
 			middleware.RecoverMiddleware(),
 		)
 
-		router.RegisterRouter(app)
+		// router.RegisterRouter(app)
+		router.RegisterHumaRoutes(app)
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},
