@@ -21,7 +21,7 @@ type PageInfo struct {
 //	author centonhuang
 //	update 2025-01-04 20:47:11
 type PingResponse struct {
-	Message string `json:"message"`
+	Status string `json:"status"`
 }
 
 // RefreshTokenRequest 刷新令牌请求
