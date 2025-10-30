@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/constant"
+	"context"
+
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -11,15 +12,15 @@ import (
 // ArticleHandler 文章处理器
 //
 //	author centonhuang
-//	update 2025-01-05 15:23:26
+//	update 2025-10-31 04:50:00
 type ArticleHandler interface {
-	HandleCreateArticle(c *fiber.Ctx) error
-	HandleGetArticleInfo(c *fiber.Ctx) error
-	HandleUpdateArticle(c *fiber.Ctx) error
-	HandleUpdateArticleStatus(c *fiber.Ctx) error
-	HandleDeleteArticle(c *fiber.Ctx) error
-	HandleListArticles(c *fiber.Ctx) error
-	HandleGetArticleInfoBySlug(c *fiber.Ctx) error
+	HandleCreateArticle(ctx context.Context, req *ArticleCreateRequest) (*protocol.HumaHTTPResponse[*protocol.CreateArticleResponse], error)
+	HandleGetArticleInfo(ctx context.Context, req *ArticleGetRequest) (*protocol.HumaHTTPResponse[*protocol.GetArticleInfoResponse], error)
+	HandleGetArticleInfoBySlug(ctx context.Context, req *ArticleGetBySlugRequest) (*protocol.HumaHTTPResponse[*protocol.GetArticleInfoBySlugResponse], error)
+	HandleUpdateArticle(ctx context.Context, req *ArticleUpdateRequest) (*protocol.HumaHTTPResponse[*protocol.UpdateArticleResponse], error)
+	HandleUpdateArticleStatus(ctx context.Context, req *ArticleUpdateStatusRequest) (*protocol.HumaHTTPResponse[*protocol.UpdateArticleStatusResponse], error)
+	HandleDeleteArticle(ctx context.Context, req *ArticleDeleteRequest) (*protocol.HumaHTTPResponse[*protocol.DeleteArticleResponse], error)
+	HandleListArticles(ctx context.Context, req *ArticleListRequest) (*protocol.HumaHTTPResponse[*protocol.ListArticlesResponse], error)
 }
 
 type articleHandler struct {
@@ -30,257 +31,232 @@ type articleHandler struct {
 //
 //	return ArticleHandler
 //	author centonhuang
-//	update 2025-01-05 15:23:26
+//	update 2025-10-31 04:50:00
 func NewArticleHandler() ArticleHandler {
 	return &articleHandler{
 		svc: service.NewArticleService(),
 	}
 }
 
+// ArticlePathParam 文章路径参数
+type ArticlePathParam struct {
+	ArticleID uint `path:"articleID" doc:"文章 ID"`
+}
+
+// ArticleSlugPathParam 文章别名路径参数
+type ArticleSlugPathParam struct {
+	AuthorName  string `path:"authorName" doc:"作者名称"`
+	ArticleSlug string `path:"articleSlug" doc:"文章别名"`
+}
+
+// ArticleCreateRequest 创建文章请求
+type ArticleCreateRequest struct {
+	Body *protocol.CreateArticleBody `json:"body" doc:"创建文章请求体"`
+}
+
+// ArticleGetRequest 获取文章请求
+type ArticleGetRequest struct {
+	ArticlePathParam
+}
+
+// ArticleGetBySlugRequest 按别名获取文章请求
+type ArticleGetBySlugRequest struct {
+	ArticleSlugPathParam
+}
+
+// ArticleUpdateRequest 更新文章请求
+type ArticleUpdateRequest struct {
+	ArticlePathParam
+	Body *protocol.UpdateArticleBody `json:"body" doc:"更新文章请求体"`
+}
+
+// ArticleUpdateStatusRequest 更新文章状态请求
+type ArticleUpdateStatusRequest struct {
+	ArticlePathParam
+	Body *protocol.UpdateArticleStatusBody `json:"body" doc:"更新文章状态请求体"`
+}
+
+// ArticleDeleteRequest 删除文章请求
+type ArticleDeleteRequest struct {
+	ArticlePathParam
+}
+
+// ArticleListRequest 列出文章请求
+type ArticleListRequest struct {
+	PaginationQuery
+}
+
 // HandleCreateArticle 创建文章
 //
-//	@Summary 创建文章
-//	@Description 创建文章
-//	@Tags article
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.CreateArticleBody	true	"创建文章请求"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateArticleResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/article [post]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleCreateRequest
+//	return *protocol.HumaHTTPResponse[*protocol.CreateArticleResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleCreateArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleBody)
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleCreateArticle(ctx context.Context, req *ArticleCreateRequest) (*protocol.HumaHTTPResponse[*protocol.CreateArticleResponse], error) {
+	if req == nil || req.Body == nil {
+		return nil, huma.Error400BadRequest("请求体不能为空")
+	}
 
-	req := &protocol.CreateArticleRequest{
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
+
+	serviceReq := &protocol.CreateArticleRequest{
 		UserID:     userID,
-		Title:      body.Title,
-		Slug:       body.Slug,
-		CategoryID: body.CategoryID,
-		Tags:       body.Tags,
+		Title:      req.Body.Title,
+		Slug:       req.Body.Slug,
+		CategoryID: req.Body.CategoryID,
+		Tags:       req.Body.Tags,
 	}
 
-	rsp, err := h.svc.CreateArticle(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.CreateArticle(ctx, serviceReq))
 }
 
-// HandleGetArticleInfo 获取文章信息
+// HandleGetArticleInfo 获取文章详情
 //
-//	@Summary 获取文章信息
-//	@Description 获取文章信息
-//	@Tags article
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.ArticleURI true "文章ID"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.GetArticleInfoResponse "获取文章信息响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID} [get]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleGetRequest
+//	return *protocol.HumaHTTPResponse[*protocol.GetArticleInfoResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleGetArticleInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleGetArticleInfo(ctx context.Context, req *ArticleGetRequest) (*protocol.HumaHTTPResponse[*protocol.GetArticleInfoResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
 
-	req := &protocol.GetArticleInfoRequest{
+	serviceReq := &protocol.GetArticleInfoRequest{
 		UserID:    userID,
-		ArticleID: uri.ArticleID,
+		ArticleID: req.ArticleID,
 	}
 
-	rsp, err := h.svc.GetArticleInfo(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.GetArticleInfo(ctx, serviceReq))
 }
 
-// HandleGetArticleInfoBySlug 获取文章信息
+// HandleGetArticleInfoBySlug 通过别名获取文章详情
 //
-//	@Summary 获取文章信息
-//	@Description 获取文章信息
-//	@Tags article
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.ArticleSlugURI true "作者名和文章别名"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.GetArticleInfoResponse "获取文章信息响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/slug/{authorName}/{articleSlug} [get]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleGetBySlugRequest
+//	return *protocol.HumaHTTPResponse[*protocol.GetArticleInfoBySlugResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-19 15:23:26
-func (h *articleHandler) HandleGetArticleInfoBySlug(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleSlugURI)
-
-	req := &protocol.GetArticleInfoBySlugRequest{
-		UserID:      userID,
-		AuthorName:  uri.AuthorName,
-		ArticleSlug: uri.ArticleSlug,
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleGetArticleInfoBySlug(ctx context.Context, req *ArticleGetBySlugRequest) (*protocol.HumaHTTPResponse[*protocol.GetArticleInfoBySlugResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
 	}
 
-	rsp, err := h.svc.GetArticleInfoBySlug(c.Context(), req)
+	serviceReq := &protocol.GetArticleInfoBySlugRequest{
+		UserID:      userID,
+		AuthorName:  req.AuthorName,
+		ArticleSlug: req.ArticleSlug,
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.GetArticleInfoBySlug(ctx, serviceReq))
 }
 
 // HandleUpdateArticle 更新文章
 //
-//	@Summary 更新文章
-//	@Description 更新文章
-//	@Tags article
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.ArticleURI true "文章ID"
-//	@Param body body protocol.UpdateArticleBody true "更新文章请求"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.UpdateArticleResponse "更新文章响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID} [patch]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleUpdateRequest
+//	return *protocol.HumaHTTPResponse[*protocol.UpdateArticleResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleUpdateArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateArticleBody)
-
-	req := &protocol.UpdateArticleRequest{
-		UserID:            userID,
-		ArticleID:         uri.ArticleID,
-		UpdatedTitle:      body.Title,
-		UpdatedSlug:       body.Slug,
-		UpdatedCategoryID: body.CategoryID,
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleUpdateArticle(ctx context.Context, req *ArticleUpdateRequest) (*protocol.HumaHTTPResponse[*protocol.UpdateArticleResponse], error) {
+	if req == nil || req.Body == nil {
+		return nil, huma.Error400BadRequest("请求体不能为空")
 	}
 
-	rsp, err := h.svc.UpdateArticle(c.Context(), req)
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	serviceReq := &protocol.UpdateArticleRequest{
+		UserID:            userID,
+		ArticleID:         req.ArticleID,
+		UpdatedTitle:      req.Body.Title,
+		UpdatedSlug:       req.Body.Slug,
+		UpdatedCategoryID: req.Body.CategoryID,
+	}
+
+	return util.WrapHTTPResponse(h.svc.UpdateArticle(ctx, serviceReq))
 }
 
 // HandleUpdateArticleStatus 更新文章状态
 //
-//	@Summary 更新文章状态
-//	@Description 更新文章状态
-//	@Tags article
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.ArticleURI true "文章ID"
-//	@Param body body protocol.UpdateArticleStatusBody true "更新文章状态请求"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.UpdateArticleStatusResponse "更新文章状态响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID}/status [put]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleUpdateStatusRequest
+//	return *protocol.HumaHTTPResponse[*protocol.UpdateArticleStatusResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleUpdateArticleStatus(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateArticleStatusBody)
-
-	req := &protocol.UpdateArticleStatusRequest{
-		UserID:    userID,
-		ArticleID: uri.ArticleID,
-		Status:    body.Status,
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleUpdateArticleStatus(ctx context.Context, req *ArticleUpdateStatusRequest) (*protocol.HumaHTTPResponse[*protocol.UpdateArticleStatusResponse], error) {
+	if req == nil || req.Body == nil {
+		return nil, huma.Error400BadRequest("请求体不能为空")
 	}
 
-	rsp, err := h.svc.UpdateArticleStatus(c.Context(), req)
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	serviceReq := &protocol.UpdateArticleStatusRequest{
+		UserID:    userID,
+		ArticleID: req.ArticleID,
+		Status:    req.Body.Status,
+	}
+
+	return util.WrapHTTPResponse(h.svc.UpdateArticleStatus(ctx, serviceReq))
 }
 
 // HandleDeleteArticle 删除文章
 //
-//	@Summary 删除文章
-//	@Description 删除文章
-//	@Tags article
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.ArticleURI true "文章ID"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.DeleteArticleResponse "删除文章响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID} [delete]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleDeleteRequest
+//	return *protocol.HumaHTTPResponse[*protocol.DeleteArticleResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleDeleteArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-
-	req := &protocol.DeleteArticleRequest{
-		UserID:    userID,
-		ArticleID: uri.ArticleID,
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleDeleteArticle(ctx context.Context, req *ArticleDeleteRequest) (*protocol.HumaHTTPResponse[*protocol.DeleteArticleResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
 	}
 
-	rsp, err := h.svc.DeleteArticle(c.Context(), req)
+	serviceReq := &protocol.DeleteArticleRequest{
+		UserID:    userID,
+		ArticleID: req.ArticleID,
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.DeleteArticle(ctx, serviceReq))
 }
 
 // HandleListArticles 列出文章
 //
-//	@Summary 列出文章
-//	@Description 列出文章
-//	@Tags article
-//	@Accept json
-//	@Produce json
-//	@Param param query protocol.PageParam true "分页参数"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.ListArticlesResponse "列出文章响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/list [get]
 //	receiver h *articleHandler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *ArticleListRequest
+//	return *protocol.HumaHTTPResponse[*protocol.ListArticlesResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleHandler) HandleListArticles(c *fiber.Ctx) error {
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
-
-	req := &protocol.ListArticlesRequest{
-		PaginateParam: param,
+//	update 2025-10-31 04:50:00
+func (h *articleHandler) HandleListArticles(ctx context.Context, req *ArticleListRequest) (*protocol.HumaHTTPResponse[*protocol.ListArticlesResponse], error) {
+	serviceReq := &protocol.ListArticlesRequest{
+		PaginateParam: req.PaginationQuery.ToPaginateParam(),
 	}
 
-	rsp, err := h.svc.ListArticles(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.ListArticles(ctx, serviceReq))
 }

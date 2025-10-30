@@ -1,8 +1,9 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/constant"
+	"context"
+
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
@@ -11,15 +12,15 @@ import (
 // CategoryHandler 分类服务
 //
 //	author centonhuang
-//	update 2024-12-08 16:59:38
+//	update 2025-10-31 04:20:00
 type CategoryHandler interface {
-	HandleCreateCategory(c *fiber.Ctx) error
-	HandleGetCategoryInfo(c *fiber.Ctx) error
-	HandleUpdateCategoryInfo(c *fiber.Ctx) error
-	HandleDeleteCategory(c *fiber.Ctx) error
-	HandleGetRootCategories(c *fiber.Ctx) error
-	HandleListChildrenCategories(c *fiber.Ctx) error
-	HandleListChildrenArticles(c *fiber.Ctx) error
+	HandleCreateCategory(ctx context.Context, req *CategoryCreateRequest) (*protocol.HumaHTTPResponse[*protocol.CreateCategoryResponse], error)
+	HandleGetCategoryInfo(ctx context.Context, req *CategoryGetRequest) (*protocol.HumaHTTPResponse[*protocol.GetCategoryInfoResponse], error)
+	HandleUpdateCategoryInfo(ctx context.Context, req *CategoryUpdateRequest) (*protocol.HumaHTTPResponse[*protocol.UpdateCategoryResponse], error)
+	HandleDeleteCategory(ctx context.Context, req *CategoryDeleteRequest) (*protocol.HumaHTTPResponse[*protocol.DeleteCategoryResponse], error)
+	HandleGetRootCategories(ctx context.Context, req *CategoryGetRootRequest) (*protocol.HumaHTTPResponse[*protocol.GetRootCategoryResponse], error)
+	HandleListChildrenCategories(ctx context.Context, req *CategoryListChildrenCategoriesRequest) (*protocol.HumaHTTPResponse[*protocol.ListChildrenCategoriesResponse], error)
+	HandleListChildrenArticles(ctx context.Context, req *CategoryListChildrenArticlesRequest) (*protocol.HumaHTTPResponse[*protocol.ListChildrenArticlesResponse], error)
 }
 
 type categoryHandler struct {
@@ -30,247 +31,223 @@ type categoryHandler struct {
 //
 //	return CategoryHandler
 //	author centonhuang
-//	update 2024-12-08 16:5CategoryHandler
+//	update 2025-10-31 04:20:00
 func NewCategoryHandler() CategoryHandler {
 	return &categoryHandler{
 		svc: service.NewCategoryService(),
 	}
 }
 
-// CreateCategoryHandler 创建分类
-//
-//	@Summary		创建分类
-//	@Description	创建分类
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.CreateCategoryBody	true	"创建分类请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category [post]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-09-28 07:03:28
-func (h *categoryHandler) HandleCreateCategory(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateCategoryBody)
+// CategoryPathParam 分类路径参数
+type CategoryPathParam struct {
+	CategoryID uint `path:"categoryID" doc:"分类 ID"`
+}
 
-	req := &protocol.CreateCategoryRequest{
+// CategoryCreateRequest 创建分类请求
+type CategoryCreateRequest struct {
+	Body *protocol.CreateCategoryBody `json:"body" doc:"创建分类所需字段"`
+}
+
+// CategoryGetRequest 获取分类详情请求
+type CategoryGetRequest struct {
+	CategoryPathParam
+}
+
+// CategoryUpdateRequest 更新分类请求
+type CategoryUpdateRequest struct {
+	CategoryPathParam
+	Body *protocol.UpdateCategoryBody `json:"body" doc:"更新分类所需字段"`
+}
+
+// CategoryDeleteRequest 删除分类请求
+type CategoryDeleteRequest struct {
+	CategoryPathParam
+}
+
+// CategoryGetRootRequest 获取根分类请求
+type CategoryGetRootRequest struct{}
+
+// CategoryListChildrenCategoriesRequest 列出子分类请求
+type CategoryListChildrenCategoriesRequest struct {
+	CategoryPathParam
+	PaginationQuery
+}
+
+// CategoryListChildrenArticlesRequest 列出子文章请求
+type CategoryListChildrenArticlesRequest struct {
+	CategoryPathParam
+	PaginationQuery
+}
+
+// HandleCreateCategory 创建分类
+//
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param req *CategoryCreateRequest
+//	return *protocol.HumaHTTPResponse[*protocol.CreateCategoryResponse]
+//	return error
+//	author centonhuang
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleCreateCategory(ctx context.Context, req *CategoryCreateRequest) (*protocol.HumaHTTPResponse[*protocol.CreateCategoryResponse], error) {
+	if req == nil || req.Body == nil {
+		return nil, huma.Error400BadRequest("请求体不能为空")
+	}
+
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
+
+	serviceReq := &protocol.CreateCategoryRequest{
 		UserID:   userID,
-		Name:     body.Name,
-		ParentID: body.ParentID,
+		Name:     req.Body.Name,
+		ParentID: req.Body.ParentID,
 	}
 
-	rsp, err := h.svc.CreateCategory(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.CreateCategory(ctx, serviceReq))
 }
 
-// HandleGetCategoryInfo 获取分类信息
+// HandleGetCategoryInfo 获取分类详情
 //
-//	@Summary		获取分类信息
-//	@Description	根据分类ID获取分类详细信息
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			categoryID	path		uint	true	"分类ID"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetCategoryInfoResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [get]
-//	param c *fiber.Ctx error
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param req *CategoryGetRequest
+//	return *protocol.HumaHTTPResponse[*protocol.GetCategoryInfoResponse]
+//	return error
 //	author centonhuang
-//	update 2024-10-01 04:58:27
-func (h *categoryHandler) HandleGetCategoryInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleGetCategoryInfo(ctx context.Context, req *CategoryGetRequest) (*protocol.HumaHTTPResponse[*protocol.GetCategoryInfoResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
 
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	req := &protocol.GetCategoryInfoRequest{
+	serviceReq := &protocol.GetCategoryInfoRequest{
 		UserID:     userID,
-		CategoryID: uri.CategoryID,
+		CategoryID: req.CategoryID,
 	}
 
-	rsp, err := h.svc.GetCategoryInfo(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.GetCategoryInfo(ctx, serviceReq))
 }
 
-// HandleGetRootCategories 获取根分类信息
+// HandleGetRootCategories 获取根分类
 //
-//	@Summary		获取根分类信息
-//	@Description	获取根分类信息
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetRootCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/root [get]
-//	param c *fiber.Ctx error
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param _ *CategoryGetRootRequest
+//	return *protocol.HumaHTTPResponse[*protocol.GetRootCategoryResponse]
+//	return error
 //	author centonhuang
-//	update 2024-10-23 03:56:26
-func (h *categoryHandler) HandleGetRootCategories(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	req := &protocol.GetRootCategoryRequest{
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleGetRootCategories(ctx context.Context, _ *CategoryGetRootRequest) (*protocol.HumaHTTPResponse[*protocol.GetRootCategoryResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
+
+	serviceReq := &protocol.GetRootCategoryRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetRootCategory(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.GetRootCategory(ctx, serviceReq))
 }
 
-// HandleUpdateCategoryInfo 更新分类信息
+// HandleUpdateCategoryInfo 更新分类
 //
-//	@Summary		更新分类信息
-//	@Description	更新分类信息
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Param			body	body		protocol.UpdateCategoryBody	true	"更新分类请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [patch]
-//	param c *fiber.Ctx error
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param req *CategoryUpdateRequest
+//	return *protocol.HumaHTTPResponse[*protocol.UpdateCategoryResponse]
+//	return error
 //	author centonhuang
-//	update 2024-10-02 03:45:55
-func (h *categoryHandler) HandleUpdateCategoryInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
-
-	req := &protocol.UpdateCategoryRequest{
-		UserID:     userID,
-		CategoryID: uri.CategoryID,
-		Name:       body.Name,
-		ParentID:   body.ParentID,
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleUpdateCategoryInfo(ctx context.Context, req *CategoryUpdateRequest) (*protocol.HumaHTTPResponse[*protocol.UpdateCategoryResponse], error) {
+	if req == nil || req.Body == nil {
+		return nil, huma.Error400BadRequest("请求体不能为空")
 	}
 
-	rsp, err := h.svc.UpdateCategory(c.Context(), req)
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	serviceReq := &protocol.UpdateCategoryRequest{
+		UserID:     userID,
+		CategoryID: req.CategoryID,
+		Name:       req.Body.Name,
+		ParentID:   req.Body.ParentID,
+	}
+
+	return util.WrapHTTPResponse(h.svc.UpdateCategory(ctx, serviceReq))
 }
 
 // HandleDeleteCategory 删除分类
 //
-//	@Summary		删除分类
-//	@Description	删除分类
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [delete]
-//	param c *fiber.Ctx error
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param req *CategoryDeleteRequest
+//	return *protocol.HumaHTTPResponse[*protocol.DeleteCategoryResponse]
+//	return error
 //	author centonhuang
-//	update 2024-10-02 04:55:08
-func (h *categoryHandler) HandleDeleteCategory(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-
-	req := &protocol.DeleteCategoryRequest{
-		UserID:     userID,
-		CategoryID: uri.CategoryID,
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleDeleteCategory(ctx context.Context, req *CategoryDeleteRequest) (*protocol.HumaHTTPResponse[*protocol.DeleteCategoryResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
 	}
 
-	rsp, err := h.svc.DeleteCategory(c.Context(), req)
+	serviceReq := &protocol.DeleteCategoryRequest{
+		UserID:     userID,
+		CategoryID: req.CategoryID,
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.DeleteCategory(ctx, serviceReq))
 }
 
 // HandleListChildrenCategories 列出子分类
 //
-//	@Summary		列出子分类
-//	@Description	列出子分类
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Param			param	query		protocol.PageParam	    true	"分页参数"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenCategoriesResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID}/subCategories [get]
-//	param c *fiber.Ctx error
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param req *CategoryListChildrenCategoriesRequest
+//	return *protocol.HumaHTTPResponse[*protocol.ListChildrenCategoriesResponse]
+//	return error
 //	author centonhuang
-//	update 2024-10-01 05:09:47
-func (h *categoryHandler) HandleListChildrenCategories(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
-
-	req := &protocol.ListChildrenCategoriesRequest{
-		UserID:         userID,
-		CategoryID:     uri.CategoryID,
-		PaginateParam:  param,
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleListChildrenCategories(ctx context.Context, req *CategoryListChildrenCategoriesRequest) (*protocol.HumaHTTPResponse[*protocol.ListChildrenCategoriesResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
 	}
 
-	rsp, err := h.svc.ListChildrenCategories(c.Context(), req)
+	serviceReq := &protocol.ListChildrenCategoriesRequest{
+		UserID:        userID,
+		CategoryID:    req.CategoryID,
+		PaginateParam: req.PaginationQuery.ToPaginateParam(),
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.ListChildrenCategories(ctx, serviceReq))
 }
 
 // HandleListChildrenArticles 列出子文章
 //
-//	@Summary		列出子文章
-//	@Description	列出子文章
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Param			param	query		protocol.PageParam	    true	"分页参数"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenArticlesResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID}/subArticles [get]
-//	param c *fiber.Ctx error
+//	receiver h *categoryHandler
+//	param ctx context.Context
+//	param req *CategoryListChildrenArticlesRequest
+//	return *protocol.HumaHTTPResponse[*protocol.ListChildrenArticlesResponse]
+//	return error
 //	author centonhuang
-//	update 2024-10-02 01:38:12
-func (h *categoryHandler) HandleListChildrenArticles(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
-
-	req := &protocol.ListChildrenArticlesRequest{
-		UserID:         userID,
-		CategoryID:     uri.CategoryID,
-		PaginateParam:  param,
+//	update 2025-10-31 04:20:00
+func (h *categoryHandler) HandleListChildrenArticles(ctx context.Context, req *CategoryListChildrenArticlesRequest) (*protocol.HumaHTTPResponse[*protocol.ListChildrenArticlesResponse], error) {
+	userID, ok := UserIDFromCtx(ctx)
+	if !ok {
+		return nil, huma.Error401Unauthorized("未登录或令牌无效")
 	}
 
-	rsp, err := h.svc.ListChildrenArticles(c.Context(), req)
+	serviceReq := &protocol.ListChildrenArticlesRequest{
+		UserID:        userID,
+		CategoryID:    req.CategoryID,
+		PaginateParam: req.PaginationQuery.ToPaginateParam(),
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(h.svc.ListChildrenArticles(ctx, serviceReq))
 }
