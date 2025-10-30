@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
@@ -32,6 +33,7 @@ func (h *pingHandler) HandlePing(_ context.Context, _ *struct{}) (*protocol.Huma
 	}
 
 	return &protocol.HumaResponse[protocol.PingResponse]{
-		Data: rsp,
+		Status: http.StatusOK,
+		Data:   rsp,
 	}, nil
 }

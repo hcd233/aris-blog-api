@@ -12,6 +12,7 @@ import (
 //	update 2025-10-31 01:18:05
 //	param BodyT any
 type HumaResponse[BodyT any] struct {
+	Status int
 	Data BodyT `json:"data"`
 }
 
