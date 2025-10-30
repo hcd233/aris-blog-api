@@ -30,11 +30,11 @@ func RegisterRouter(app *fiber.App) {
 			Components: &huma.Components{
 				Schemas: huma.NewMapRegistry("#/components/schemas/", huma.DefaultSchemaNamer),
 				SecuritySchemes: map[string]*huma.SecurityScheme{
-					"bearerAuth": {
-						Type:         "http",
-						Scheme:       "bearer",
-						BearerFormat: "JWT",
-						Description:  "JWT认证，请在Authorization头中传递Bearer Token。格式: Bearer <token>",
+					"jwtAuth": {
+						Type:        "apiKey",
+						Name:        "Authorization",
+						In:          "header",
+						Description: "JWT Authentication，Please pass the JWT token in the Authorization header.",
 					},
 				},
 			},

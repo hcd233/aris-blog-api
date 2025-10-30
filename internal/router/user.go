@@ -22,7 +22,7 @@ func initUserRouter(userGroup *huma.Group) {
 		Description: "Get the current user's detailed information, including user ID, username, email, avatar, and permission information",
 		Tags:        []string{"user"},
 		Security: []map[string][]string{
-			{"bearerAuth": {}},
+			{"jwtAuth": {}},
 		},
 	}, userHandler.HandleGetCurUserInfo)
 
@@ -35,7 +35,7 @@ func initUserRouter(userGroup *huma.Group) {
 		Description: "Update the current user's information, including the username and other fields",
 		Tags:        []string{"user"},
 		Security: []map[string][]string{
-			{"bearerAuth": {}},
+			{"jwtAuth": {}},
 		},
 	}, userHandler.HandleUpdateInfo)
 
@@ -48,7 +48,7 @@ func initUserRouter(userGroup *huma.Group) {
 		Description: "Get the public information of the specified user by user ID, including user ID, username, and avatar",
 		Tags:        []string{"user"},
 		Security: []map[string][]string{
-			{"bearerAuth": {}},
+			{"jwtAuth": {}},
 		},
 	}, userHandler.HandleGetUserInfo)
 }
