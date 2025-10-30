@@ -48,8 +48,8 @@ func NewQuotaCron() Cron {
 //	@update 2025-09-30 16:03:59
 func (c *QuotaCron) Start() error {
 	// debug set 10 seconds
-	// c.cron.AddFunc("every 10s", c.deliverQuotas)
-	entryID, err := c.cron.AddFunc("daily", c.deliverQuotas)
+	// c.cron.AddFunc("*/10 * * * * *", c.deliverQuotas)
+	entryID, err := c.cron.AddFunc("0 0 * * *", c.deliverQuotas)
 	if err != nil {
 		logger.Logger().Error("[QuotaCron] add func error", zap.Error(err))
 		return err

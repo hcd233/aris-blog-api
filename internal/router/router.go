@@ -7,6 +7,7 @@ import (
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/swagger"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 )
 
@@ -20,7 +21,7 @@ func RegisterRouter(app *fiber.App) {
 
 	rootRouter := app.Group("")
 
-	v1Router := rootRouter.Group("/v1")
+	v1Router := app.Group("/v1")
 	{
 		initTokenRouter(v1Router)
 		initOauth2Router(v1Router)

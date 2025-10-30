@@ -5,6 +5,7 @@ package main
 
 import (
 	"github.com/hcd233/aris-blog-api/cmd"
+	_ "github.com/hcd233/aris-blog-api/docs"
 )
 
 func main() {
