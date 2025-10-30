@@ -49,8 +49,7 @@ func NewQuotaCron() Cron {
 func (c *QuotaCron) Start() error {
 	// debug set 10 seconds
 	// c.cron.AddFunc("every 10s", c.deliverQuotas)
-	// 每天午夜 00:00 执行 (标准 cron 表达式: 分钟 小时 日 月 星期)
-	entryID, err := c.cron.AddFunc("0 0 * * *", c.deliverQuotas)
+	entryID, err := c.cron.AddFunc("daily", c.deliverQuotas)
 	if err != nil {
 		logger.Logger().Error("[QuotaCron] add func error", zap.Error(err))
 		return err

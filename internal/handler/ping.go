@@ -1,9 +1,9 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/protocol"
-	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // PingHandler 健康检查处理器
@@ -11,7 +11,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 type PingHandler interface {
-	HandlePing(c *fiber.Ctx) error
+	HandlePing(ctx context.Context, _ *struct{}) (*protocol.PingResponse, error)
 }
 
 type pingHandler struct{}
@@ -38,11 +38,10 @@ func NewPingHandler() PingHandler {
 //	param c *fiber.Ctx
 //	author centonhuang
 //	update 2025-01-04 20:47:48
-func (h *pingHandler) HandlePing(c *fiber.Ctx) error {
-	rsp := protocol.PingResponse{
+func (h *pingHandler) HandlePing(ctx context.Context, _ *struct{}) (*protocol.PingResponse, error) {
+	rsp := &protocol.PingResponse{
 		Status: "ok",
 	}
 
-	util.SendHTTPResponse(c, rsp, nil)
-	return nil
+	return rsp, nil
 }

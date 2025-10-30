@@ -2,6 +2,10 @@
 package router
 
 import (
+	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 )
@@ -11,12 +15,10 @@ import (
 //	param app *fiber.App
 //	author centonhuang
 //	update 2025-01-04 15:32:40
-func RegisterRouter(app *fiber.App) fiber.Router {
+func RegisterRouter(app *fiber.App) {
 	pingService := handler.NewPingHandler()
 
 	rootRouter := app.Group("")
-
-	rootRouter.Get("/", pingService.HandlePing)
 
 	v1Router := rootRouter.Group("/v1")
 	{
@@ -36,5 +38,14 @@ func RegisterRouter(app *fiber.App) fiber.Router {
 		initAIRouter(v1Router)
 	}
 
-	return rootRouter
+	api := humafiber.NewWithGroup(app, rootRouter, huma.DefaultConfig("Aris-blog", "1.0"))
+
+	huma.Register(api, huma.Operation{
+		OperationID: "ping",
+		Method:      http.MethodGet,
+		Path:        "/",
+		Summary:     "Ping Pong!",
+		Description: "Check service if available.",
+		Tags:        []string{"ping"},
+	}, pingService.HandlePing)
 }

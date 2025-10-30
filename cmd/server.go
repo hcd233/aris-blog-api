@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/bytedance/sonic"
-	"github.com/danielgtaylor/huma/v2"
-	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/cron"
@@ -70,9 +68,7 @@ var startServerCmd = &cobra.Command{
 			middleware.RecoverMiddleware(),
 		)
 
-		rootRouter := router.RegisterRouter(app)
-
-		_ = humafiber.NewWithGroup(app, rootRouter, huma.DefaultConfig("Aris-blog", "1.0"))
+		router.RegisterRouter(app)
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},
