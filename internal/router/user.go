@@ -1,6 +1,8 @@
 package router
 
 import (
+	"net/http"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 )
@@ -11,27 +13,30 @@ func initUserRouter(userGroup *huma.Group) {
 	// 获取当前用户信息
 	huma.Register(userGroup, huma.Operation{
 		OperationID: "getCurrentUserInfo",
+		Method:      http.MethodGet,
 		Path:        "/current",
-		Summary:     "获取当前用户信息",
-		Description: "获取当前登录用户的详细信息，包括用户ID、用户名、邮箱、头像、权限等信息",
+		Summary:     "GetCurrentUserInfo",
+		Description: "Get the current user's detailed information, including user ID, username, email, avatar, and permission information",
 		Tags:        []string{"user"},
 	}, userHandler.HandleGetCurUserInfo)
 
 	// 更新用户信息
 	huma.Register(userGroup, huma.Operation{
 		OperationID: "updateUserInfo",
+		Method:      http.MethodPatch,
 		Path:        "/",
-		Summary:     "更新用户信息",
-		Description: "更新当前登录用户的信息，包括用户名等字段",
+		Summary:     "UpdateUserInfo",
+		Description: "Update the current user's information, including the username and other fields",
 		Tags:        []string{"user"},
 	}, userHandler.HandleUpdateInfo)
 
 	// 获取指定用户信息
 	huma.Register(userGroup, huma.Operation{
 		OperationID: "getUserInfo",
+		Method:      http.MethodGet,
 		Path:        "/{userID}",
-		Summary:     "获取用户信息",
-		Description: "根据用户ID获取指定用户的公开信息，包括用户ID、用户名、头像等",
+		Summary:     "GetUserInfo",
+		Description: "Get the public information of the specified user by user ID, including user ID, username, and avatar",
 		Tags:        []string{"user"},
 	}, userHandler.HandleGetUserInfo)
 }
