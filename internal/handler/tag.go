@@ -1,9 +1,11 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
@@ -11,13 +13,13 @@ import (
 // TagHandler 标签处理器
 //
 //	author centonhuang
-//	update 2025-01-04 15:52:48
+//	update 2025-10-30
 type TagHandler interface {
-	HandleCreateTag(c *fiber.Ctx) error
-	HandleGetTagInfo(c *fiber.Ctx) error
-	HandleUpdateTag(c *fiber.Ctx) error
-	HandleDeleteTag(c *fiber.Ctx) error
-	HandleListTags(c *fiber.Ctx) error
+	HandleCreateTag(ctx context.Context, req *dto.CreateTagRequest) (*protocol.HumaHTTPResponse[*dto.CreateTagResponse], error)
+	HandleGetTagInfo(ctx context.Context, req *dto.GetTagInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetTagInfoResponse], error)
+	HandleUpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (*protocol.HumaHTTPResponse[*dto.UpdateTagResponse], error)
+	HandleDeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (*protocol.HumaHTTPResponse[*dto.DeleteTagResponse], error)
+	HandleListTags(ctx context.Context, req *dto.ListTagsRequest) (*protocol.HumaHTTPResponse[*dto.ListTagsResponse], error)
 }
 
 type tagHandler struct {
@@ -28,7 +30,7 @@ type tagHandler struct {
 //
 //	return TagHandler
 //	author centonhuang
-//	update 2025-01-04 15:52:48
+//	update 2025-10-30
 func NewTagHandler() TagHandler {
 	return &tagHandler{
 		svc: service.NewTagService(),
@@ -37,169 +39,187 @@ func NewTagHandler() TagHandler {
 
 // HandleCreateTag 创建标签
 //
-//	@Summary		创建标签
-//	@Description	创建标签
-//	@Tags			tag
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.CreateTagBody	true	"创建标签请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateTagResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag [post]
-//	param c *fiber.Ctx error
+//	receiver h *tagHandler
+//	param ctx context.Context
+//	param req *dto.CreateTagRequest
+//	return *protocol.HumaHTTPResponse[*dto.CreateTagResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-04 15:52:48
-func (h *tagHandler) HandleCreateTag(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateTagBody)
+//	update 2025-10-30
+func (h *tagHandler) HandleCreateTag(ctx context.Context, req *dto.CreateTagRequest) (*protocol.HumaHTTPResponse[*dto.CreateTagResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := protocol.CreateTagRequest{
+	svcReq := &protocol.CreateTagRequest{
 		UserID:      userID,
-		Name:        body.Name,
-		Slug:        body.Slug,
-		Description: body.Description,
+		Name:        req.Body.Name,
+		Slug:        req.Body.Slug,
+		Description: req.Body.Description,
 	}
 
-	rsp, err := h.svc.CreateTag(c.Context(), &req)
+	svcRsp, err := h.svc.CreateTag(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.CreateTagResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.CreateTagResponse{
+		Tag: &dto.Tag{
+			TagID:       svcRsp.Tag.TagID,
+			Name:        svcRsp.Tag.Name,
+			Slug:        svcRsp.Tag.Slug,
+			Description: svcRsp.Tag.Description,
+			UserID:      svcRsp.Tag.UserID,
+			CreatedAt:   svcRsp.Tag.CreatedAt,
+			UpdatedAt:   svcRsp.Tag.UpdatedAt,
+			Likes:       svcRsp.Tag.Likes,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
 // HandleGetTagInfo 获取标签信息
 //
-//	@Summary		获取标签信息
-//	@Description	根据标签slug获取标签详细信息
-//	@Tags			tag
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path	protocol.TagURI	true	"标签ID"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetTagInfoResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagID} [get]
-//	param c *fiber.Ctx error
+//	receiver h *tagHandler
+//	param ctx context.Context
+//	param req *dto.GetTagInfoRequest
+//	return *protocol.HumaHTTPResponse[*dto.GetTagInfoResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-04 15:52:48
-func (h *tagHandler) HandleGetTagInfo(c *fiber.Ctx) error {
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.TagURI)
-
-	req := &protocol.GetTagInfoRequest{
-		TagID: uri.TagID,
+//	update 2025-10-30
+func (h *tagHandler) HandleGetTagInfo(ctx context.Context, req *dto.GetTagInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetTagInfoResponse], error) {
+	svcReq := &protocol.GetTagInfoRequest{
+		TagID: req.TagID,
 	}
 
-	rsp, err := h.svc.GetTagInfo(c.Context(), req)
+	svcRsp, err := h.svc.GetTagInfo(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.GetTagInfoResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.GetTagInfoResponse{
+		Tag: &dto.Tag{
+			TagID:       svcRsp.Tag.TagID,
+			Name:        svcRsp.Tag.Name,
+			Slug:        svcRsp.Tag.Slug,
+			Description: svcRsp.Tag.Description,
+			UserID:      svcRsp.Tag.UserID,
+			CreatedAt:   svcRsp.Tag.CreatedAt,
+			UpdatedAt:   svcRsp.Tag.UpdatedAt,
+			Likes:       svcRsp.Tag.Likes,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
 // HandleUpdateTag 更新标签
 //
-//	@Summary		更新标签
-//	@Description	更新标签
-//	@Tags			tag
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path	protocol.TagURI         true	"标签ID"
-//	@Param			body	body	protocol.UpdateTagBody	true	"更新标签请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateTagResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagID} [patch]
-//	receiver s *tagHandler
-//	param c *fiber.Ctx error
+//	receiver h *tagHandler
+//	param ctx context.Context
+//	param req *dto.UpdateTagRequest
+//	return *protocol.HumaHTTPResponse[*dto.UpdateTagResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-04 15:55:16
-func (h *tagHandler) HandleUpdateTag(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.TagURI)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateTagBody)
+//	update 2025-10-30
+func (h *tagHandler) HandleUpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (*protocol.HumaHTTPResponse[*dto.UpdateTagResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.UpdateTagRequest{
+	svcReq := &protocol.UpdateTagRequest{
 		UserID:      userID,
-		TagID:       uri.TagID,
-		Name:        body.Name,
-		Slug:        body.Slug,
-		Description: body.Description,
+		TagID:       req.TagID,
+		Name:        req.Body.Name,
+		Slug:        req.Body.Slug,
+		Description: req.Body.Description,
 	}
 
-	rsp, err := h.svc.UpdateTag(c.Context(), req)
+	_, err := h.svc.UpdateTag(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.UpdateTagResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(&dto.UpdateTagResponse{}, nil)
 }
 
 // HandleDeleteTag 删除标签
 //
-//	@Summary		删除标签
-//	@Description	删除标签
-//	@Tags			tag
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path	protocol.TagURI	true	"标签ID"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteTagResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/{tagID} [delete]
-//	param c *fiber.Ctx error
+//	receiver h *tagHandler
+//	param ctx context.Context
+//	param req *dto.DeleteTagRequest
+//	return *protocol.HumaHTTPResponse[*dto.DeleteTagResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-04 15:55:24
-func (h *tagHandler) HandleDeleteTag(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.TagURI)
+//	update 2025-10-30
+func (h *tagHandler) HandleDeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (*protocol.HumaHTTPResponse[*dto.DeleteTagResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.DeleteTagRequest{
+	svcReq := &protocol.DeleteTagRequest{
 		UserID: userID,
-		TagID:  uri.TagID,
+		TagID:  req.TagID,
 	}
 
-	rsp, err := h.svc.DeleteTag(c.Context(), req)
+	_, err := h.svc.DeleteTag(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.DeleteTagResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(&dto.DeleteTagResponse{}, nil)
 }
 
 // HandleListTags 列出标签
 //
-//	@Summary		列出标签
-//	@Description	获取标签列表
-//	@Tags			tag
-//	@Accept			json
-//	@Produce		json
-//	@Param			param	query		protocol.PageParam	true	"分页参数"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListTagsResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/tag/list [get]
-//	param c *fiber.Ctx error
+//	receiver h *tagHandler
+//	param ctx context.Context
+//	param req *dto.ListTagsRequest
+//	return *protocol.HumaHTTPResponse[*dto.ListTagsResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-04 15:55:31
-func (h *tagHandler) HandleListTags(c *fiber.Ctx) error {
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
-
-	req := &protocol.ListTagsRequest{
-		PaginateParam: param,
+//	update 2025-10-30
+func (h *tagHandler) HandleListTags(ctx context.Context, req *dto.ListTagsRequest) (*protocol.HumaHTTPResponse[*dto.ListTagsResponse], error) {
+	page := 1
+	pageSize := 10
+	if req.Page != nil {
+		page = *req.Page
+	}
+	if req.PageSize != nil {
+		pageSize = *req.PageSize
 	}
 
-	rsp, err := h.svc.ListTags(c.Context(), req)
+	svcReq := &protocol.ListTagsRequest{
+		PaginateParam: &protocol.PaginateParam{
+			PageParam: &protocol.PageParam{
+				Page:     page,
+				PageSize: pageSize,
+			},
+		},
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	svcRsp, err := h.svc.ListTags(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.ListTagsResponse](nil, err)
+	}
+
+	tags := make([]*dto.Tag, len(svcRsp.Tags))
+	for i, tag := range svcRsp.Tags {
+		tags[i] = &dto.Tag{
+			TagID:       tag.TagID,
+			Name:        tag.Name,
+			Slug:        tag.Slug,
+			Description: tag.Description,
+			UserID:      tag.UserID,
+			CreatedAt:   tag.CreatedAt,
+			UpdatedAt:   tag.UpdatedAt,
+			Likes:       tag.Likes,
+		}
+	}
+
+	rsp := &dto.ListTagsResponse{
+		Tags: tags,
+		PageInfo: &dto.PageInfo{
+			Page:     svcRsp.PageInfo.Page,
+			PageSize: svcRsp.PageInfo.PageSize,
+			Total:    svcRsp.PageInfo.Total,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
