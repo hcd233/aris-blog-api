@@ -1,23 +1,22 @@
 package router
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/config"
+	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
-	"github.com/hcd233/aris-blog-api/internal/middleware"
-	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
 
-func initTokenRouter(r fiber.Router) {
+func initTokenRouter(tokenGroup *huma.Group) {
 	tokenHandler := handler.NewTokenHandler()
 
-	tokenRouter := r.Group("/token")
-	{
-		tokenRouter.Post(
-			"/refresh",
-			middleware.RateLimiterMiddleware("refreshToken", "", config.JwtAccessTokenExpired/4, 2),
-			middleware.ValidateBodyMiddleware(&protocol.RefreshTokenBody{}),
-			tokenHandler.HandleRefreshToken,
-		)
-	}
+	// 刷新令牌
+	huma.Register(tokenGroup, huma.Operation{
+		OperationID: "refreshToken",
+		Method:      http.MethodPost,
+		Path:        "/refresh",
+		Summary:     "RefreshToken",
+		Description: "Refresh the access token using a refresh token",
+		Tags:        []string{"token"},
+	}, tokenHandler.HandleRefreshToken)
 }

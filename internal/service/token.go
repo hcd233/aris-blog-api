@@ -5,21 +5,24 @@ package service
 
 import (
 	"context"
+	"errors"
 
 	"github.com/hcd233/aris-blog-api/internal/auth"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 // TokenService 令牌服务
 //
 //	author centonhuang
-//	update 2025-01-04 17:16:27
+//	update 2025-01-05 21:00:00
 type TokenService interface {
-	RefreshToken(ctx context.Context, req *protocol.RefreshTokenRequest) (rsp *protocol.RefreshTokenResponse, err error)
+	RefreshToken(ctx context.Context, req *dto.RefreshTokenRequest) (rsp *dto.RefreshTokenResponse, err error)
 }
 
 type tokenService struct {
@@ -32,7 +35,7 @@ type tokenService struct {
 //
 //	return TokenService
 //	author centonhuang
-//	update 2025-01-04 17:18:59
+//	update 2025-01-05 21:00:00
 func NewTokenService() TokenService {
 	return &tokenService{
 		userDAO:            dao.GetUserDAO(),
@@ -41,20 +44,33 @@ func NewTokenService() TokenService {
 	}
 }
 
-func (s *tokenService) RefreshToken(ctx context.Context, req *protocol.RefreshTokenRequest) (rsp *protocol.RefreshTokenResponse, err error) {
-	rsp = &protocol.RefreshTokenResponse{}
+// RefreshToken 刷新令牌
+//
+//	receiver s *tokenService
+//	param ctx context.Context
+//	param req *dto.RefreshTokenRequest
+//	return rsp *dto.RefreshTokenResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 21:00:00
+func (s *tokenService) RefreshToken(ctx context.Context, req *dto.RefreshTokenRequest) (rsp *dto.RefreshTokenResponse, err error) {
+	rsp = &dto.RefreshTokenResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userID, err := s.refreshTokenSigner.DecodeToken(req.RefreshToken)
+	userID, err := s.refreshTokenSigner.DecodeToken(req.Body.RefreshToken)
 	if err != nil {
-		logger.Error("[TokenService] failed to decode refresh token", zap.String("refreshToken", req.RefreshToken), zap.Error(err))
-		return nil, protocol.ErrInternalError
+		logger.Error("[TokenService] failed to decode refresh token", zap.String("refreshToken", req.Body.RefreshToken), zap.Error(err))
+		return nil, protocol.ErrUnauthorized
 	}
 
 	_, err = s.userDAO.GetByID(db, userID, []string{"id"}, []string{})
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Error("[TokenService] user not found", zap.Uint("userID", userID))
+			return nil, protocol.ErrDataNotExists
+		}
 		logger.Error("[TokenService] failed to get user by id", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -71,7 +87,7 @@ func (s *tokenService) RefreshToken(ctx context.Context, req *protocol.RefreshTo
 		return nil, protocol.ErrInternalError
 	}
 
-	logger.Info("[TokenService] refresh token success", zap.String("accessToken", accessToken), zap.String("refreshToken", refreshToken))
+	logger.Info("[TokenService] refresh token success", zap.Uint("userID", userID))
 
 	rsp.AccessToken = accessToken
 	rsp.RefreshToken = refreshToken

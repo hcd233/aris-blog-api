@@ -12,6 +12,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/config"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -81,39 +82,42 @@ type GithubUserInfo struct {
 	AvatarURL string `json:"avatar_url"`
 }
 
-// GetID 
-//	@receiver u *GithubUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:36 
+// GetID
+//
+//	@receiver u *GithubUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:36
 func (u *GithubUserInfo) GetID() string {
 	return strconv.FormatInt(u.ID, 10)
 }
 
-// GetName 
-//	@receiver u *GithubUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:38 
+// GetName
+//
+//	@receiver u *GithubUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:38
 func (u *GithubUserInfo) GetName() string {
 	return u.Login
 }
 
-
-// GetEmail 
-//	@receiver u *GithubUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:41 
+// GetEmail
+//
+//	@receiver u *GithubUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:41
 func (u *GithubUserInfo) GetEmail() string {
 	return u.Email
 }
 
-// GetAvatar 
-//	@receiver u *GithubUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:43 
+// GetAvatar
+//
+//	@receiver u *GithubUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:43
 func (u *GithubUserInfo) GetAvatar() string {
 	return u.AvatarURL
 }
@@ -131,39 +135,43 @@ type QQUserInfo struct {
 	Avatar   string `json:"figureurl_qq_1"`
 }
 
-// GetID 
-//	@receiver u *QQUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:45 
+// GetID
+//
+//	@receiver u *QQUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:45
 func (u *QQUserInfo) GetID() string {
 	return u.OpenID
 }
 
-// GetName 
-//	@receiver u *QQUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:52 
+// GetName
+//
+//	@receiver u *QQUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:52
 func (u *QQUserInfo) GetName() string {
 	return u.Nickname
 }
 
-// GetEmail 
-//	@receiver u *QQUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:54 
+// GetEmail
+//
+//	@receiver u *QQUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:54
 func (u *QQUserInfo) GetEmail() string {
 	// QQ OAuth2默认不提供邮箱，使用openid@qq.oauth.placeholder格式
 	return fmt.Sprintf("%s@qq.oauth.placeholder", u.OpenID)
 }
 
-// GetAvatar 
-//	@receiver u *QQUserInfo 
-//	@return string 
-//	@author centonhuang 
-//	@update 2025-08-25 12:45:56 
+// GetAvatar
+//
+//	@receiver u *QQUserInfo
+//	@return string
+//	@author centonhuang
+//	@update 2025-08-25 12:45:56
 func (u *QQUserInfo) GetAvatar() string {
 	return u.Avatar
 }
@@ -211,9 +219,12 @@ type OAuth2ProviderInterface interface {
 }
 
 // Oauth2Service OAuth2服务接口
+//
+//	author centonhuang
+//	update 2025-01-05 21:00:00
 type Oauth2Service interface {
-	Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error)
-	Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error)
+	Login(ctx context.Context, req *dto.LoginRequest) (rsp *dto.LoginResponse, err error)
+	Callback(ctx context.Context, req *dto.CallbackRequest) (rsp *dto.CallbackResponse, err error)
 }
 
 // oauth2Service OAuth2服务基础实现
@@ -485,52 +496,74 @@ func NewGoogleOauth2Service() Oauth2Service {
 }
 
 // Login 登录
-func (s *oauth2Service) Login(ctx context.Context, req *protocol.LoginRequest) (rsp *protocol.LoginResponse, err error) {
-	rsp = &protocol.LoginResponse{}
+//
+//	receiver s *oauth2Service
+//	param ctx context.Context
+//	param req *dto.LoginRequest
+//	return rsp *dto.LoginResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 21:00:00
+func (s *oauth2Service) Login(ctx context.Context, req *dto.LoginRequest) (rsp *dto.LoginResponse, err error) {
+	rsp = &dto.LoginResponse{}
 
 	logger := logger.WithCtx(ctx)
 
 	url := s.provider.GetAuthURL()
 	rsp.RedirectURL = url
 
-	logger.Info("[Oauth2Service] login", zap.String("redirectURL", url))
+	logger.Info("[Oauth2Service] login", zap.String("provider", req.Provider), zap.String("redirectURL", url))
 
 	return rsp, nil
 }
 
 // Callback 回调
-func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequest) (rsp *protocol.CallbackResponse, err error) {
-	rsp = &protocol.CallbackResponse{}
+//
+//	receiver s *oauth2Service
+//	param ctx context.Context
+//	param req *dto.CallbackRequest
+//	return rsp *dto.CallbackResponse
+//	return err error
+//	author centonhuang
+//	update 2025-01-05 21:00:00
+func (s *oauth2Service) Callback(ctx context.Context, req *dto.CallbackRequest) (rsp *dto.CallbackResponse, err error) {
+	rsp = &dto.CallbackResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	if req.State != config.Oauth2StateString {
 		logger.Error("[Oauth2Service] invalid state",
+			zap.String("provider", req.Provider),
 			zap.String("state", req.State),
 			zap.String("expectedState", config.Oauth2StateString))
 		return nil, protocol.ErrUnauthorized
 	}
 
 	logger.Info("[Oauth2Service] exchanging token",
+		zap.String("provider", req.Provider),
 		zap.String("code", req.Code),
 		zap.String("state", req.State))
 
 	token, err := s.provider.ExchangeToken(ctx, req.Code)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to exchange token",
+			zap.String("provider", req.Provider),
 			zap.String("code", req.Code),
 			zap.Error(err))
 		return nil, protocol.ErrUnauthorized
 	}
 
 	logger.Info("[Oauth2Service] token exchange successful",
+		zap.String("provider", req.Provider),
 		zap.String("tokenType", token.TokenType),
 		zap.Bool("valid", token.Valid()))
 
 	userInfo, err := s.provider.GetUserInfo(ctx, token)
 	if err != nil {
-		logger.Error("[Oauth2Service] failed to get user info", zap.Error(err))
+		logger.Error("[Oauth2Service] failed to get user info",
+			zap.String("provider", req.Provider),
+			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -540,6 +573,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 	user, err := s.userDAO.GetByEmail(db, email, []string{"id", "name", "avatar"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[Oauth2Service] failed to get user by email",
+			zap.String("provider", req.Provider),
 			zap.String("email", email),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -551,6 +585,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 			"last_login": time.Now().UTC(),
 		}); err != nil {
 			logger.Error("[Oauth2Service] failed to update user login time",
+				zap.String("provider", req.Provider),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
@@ -573,6 +608,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 
 		if err := s.userDAO.Create(db, user); err != nil {
 			logger.Error("[Oauth2Service] failed to create user",
+				zap.String("provider", req.Provider),
 				zap.String("userName", userName),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
@@ -581,18 +617,20 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 		_, err = s.imageObjDAO.CreateDir(ctx, user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create image dir",
+				zap.String("provider", req.Provider),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
-		logger.Info("[Oauth2Service] image dir created")
+		logger.Info("[Oauth2Service] image dir created", zap.String("provider", req.Provider))
 
 		_, err = s.thumbnailObjDAO.CreateDir(ctx, user.ID)
 		if err != nil {
 			logger.Error("[Oauth2Service] failed to create thumbnail dir",
+				zap.String("provider", req.Provider),
 				zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
-		logger.Info("[Oauth2Service] thumbnail dir created")
+		logger.Info("[Oauth2Service] thumbnail dir created", zap.String("provider", req.Provider))
 	}
 
 	// 更新第三方平台绑定ID
@@ -603,6 +641,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 
 	if err := s.userDAO.Update(db, user, updateData); err != nil {
 		logger.Error("[Oauth2Service] failed to update third party bind id",
+			zap.String("provider", req.Provider),
 			zap.String("bindField", bindField),
 			zap.String("thirdPartyID", thirdPartyID),
 			zap.Error(err))
@@ -612,6 +651,7 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 	accessToken, err := s.accessTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode access token",
+			zap.String("provider", req.Provider),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -619,9 +659,14 @@ func (s *oauth2Service) Callback(ctx context.Context, req *protocol.CallbackRequ
 	refreshToken, err := s.refreshTokenSigner.EncodeToken(user.ID)
 	if err != nil {
 		logger.Error("[Oauth2Service] failed to encode refresh token",
+			zap.String("provider", req.Provider),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
+
+	logger.Info("[Oauth2Service] callback success",
+		zap.String("provider", req.Provider),
+		zap.Uint("userID", user.ID))
 
 	rsp.AccessToken = accessToken
 	rsp.RefreshToken = refreshToken

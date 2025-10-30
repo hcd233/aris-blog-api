@@ -1,106 +1,78 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // Oauth2Handler OAuth2处理器接口
+//
+//	author centonhuang
+//	update 2025-01-05 21:00:00
 type Oauth2Handler interface {
-	HandleLogin(c *fiber.Ctx) error
-	HandleCallback(c *fiber.Ctx) error
+	HandleLogin(ctx context.Context, req *dto.LoginRequest) (*protocol.HumaHTTPResponse[*dto.LoginResponse], error)
+	HandleCallback(ctx context.Context, req *dto.CallbackRequest) (*protocol.HumaHTTPResponse[*dto.CallbackResponse], error)
 }
 
-type oauth2Handler struct {
-	svc service.Oauth2Service
-}
+type oauth2Handler struct{}
 
-// NewGithubOauth2Handler 创建Github OAuth2处理器
+// NewOauth2Handler 创建OAuth2处理器
 //
 //	return Oauth2Handler
 //	author centonhuang
-//	update 2025-01-05 13:43:43
-func NewGithubOauth2Handler() Oauth2Handler {
-	return &oauth2Handler{
-		svc: service.NewGithubOauth2Service(),
-	}
-}
-
-// NewQQOauth2Handler 创建QQ OAuth2处理器
-func NewQQOauth2Handler() Oauth2Handler {
-	return &oauth2Handler{
-		svc: service.NewQQOauth2Service(),
-	}
-}
-
-// NewGoogleOauth2Handler 创建Google OAuth2处理器
-func NewGoogleOauth2Handler() Oauth2Handler {
-	return &oauth2Handler{
-		svc: service.NewGoogleOauth2Service(),
-	}
+//	update 2025-01-05 21:00:00
+func NewOauth2Handler() Oauth2Handler {
+	return &oauth2Handler{}
 }
 
 // HandleLogin OAuth2登录
 //
-//	@Summary		OAuth2登录
-//	@Description	OAuth2登录请求,返回重定向URL
-//	@Tags			oauth2
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	protocol.HTTPResponse{data=protocol.LoginResponse,error=nil}
-//	@Failure		400	{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401	{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403	{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500	{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/oauth2/{provider}/login [get]
 //	receiver h *oauth2Handler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *dto.LoginRequest
+//	return *protocol.HumaHTTPResponse[*dto.LoginResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 13:43:42
-func (h *oauth2Handler) HandleLogin(c *fiber.Ctx) error {
-	req := &protocol.LoginRequest{}
-
-	rsp, err := h.svc.Login(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+//	update 2025-01-05 21:00:00
+func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginRequest) (*protocol.HumaHTTPResponse[*dto.LoginResponse], error) {
+	svc := h.getService(req.Provider)
+	return util.WrapHTTPResponse(svc.Login(ctx, req))
 }
 
 // HandleCallback OAuth2回调
 //
-//	@Summary		OAuth2回调
-//	@Description	OAuth2回调请求,验证code和state
-//	@Tags			oauth2
-//	@Accept			json
-//	@Produce		json
-//	@Param			code	query		string	true	"授权码"
-//	@Param			state	query		string	true	"状态码"
-//	@Success		200		{object}	protocol.HTTPResponse{data=protocol.CallbackResponse,error=nil}
-//	@Failure		400		{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401		{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403		{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500		{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/oauth2/{provider}/callback [get]
 //	receiver h *oauth2Handler
-//	param c *fiber.Ctx error
+//	param ctx context.Context
+//	param req *dto.CallbackRequest
+//	return *protocol.HumaHTTPResponse[*dto.CallbackResponse]
+//	return error
 //	author centonhuang
-//	update 2025-01-05 13:43:36
-func (h *oauth2Handler) HandleCallback(c *fiber.Ctx) error {
-	params := protocol.OAuth2CallbackParam{}
-	if err := c.QueryParser(&params); err != nil {
-		util.SendHTTPResponse(c, nil, protocol.ErrInternalError)
-		return nil
+//	update 2025-01-05 21:00:00
+func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackRequest) (*protocol.HumaHTTPResponse[*dto.CallbackResponse], error) {
+	svc := h.getService(req.Provider)
+	return util.WrapHTTPResponse(svc.Callback(ctx, req))
+}
+
+// getService 根据provider获取对应的service
+//
+//	receiver h *oauth2Handler
+//	param provider string
+//	return service.Oauth2Service
+//	author centonhuang
+//	update 2025-01-05 21:00:00
+func (h *oauth2Handler) getService(provider string) service.Oauth2Service {
+	switch provider {
+	case "github":
+		return service.NewGithubOauth2Service()
+	case "google":
+		return service.NewGoogleOauth2Service()
+	case "qq":
+		return service.NewQQOauth2Service()
+	default:
+		return service.NewGithubOauth2Service() // 默认返回 github
 	}
-
-	req := &protocol.CallbackRequest{
-		Code:  params.Code,
-		State: params.State,
-	}
-
-	rsp, err := h.svc.Callback(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
 }
