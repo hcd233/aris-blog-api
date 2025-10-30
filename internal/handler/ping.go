@@ -34,6 +34,6 @@ func (h *pingHandler) HandlePing(_ context.Context, _ *struct{}) (*protocol.Huma
 
 	return &protocol.HumaResponse[*protocol.PingResponse]{
 		Status: http.StatusOK,
-		Data:   rsp,
+		Body:   rsp,
 	}, nil
 }

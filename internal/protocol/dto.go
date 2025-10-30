@@ -13,7 +13,7 @@ import (
 //	param BodyT any
 type HumaResponse[BodyT any] struct {
 	Status int
-	Data BodyT `json:"data"`
+	Body BodyT `json:"data"`
 }
 
 // PageInfo 分页信息
