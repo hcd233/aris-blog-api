@@ -8,6 +8,7 @@ import (
 
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -204,7 +205,7 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 		Title:     article.Title,
 		Slug:      article.Slug,
 		Status:    string(article.Status),
-		User: &protocol.User{
+		User: &dto.User{
 			UserID: article.User.ID,
 			Name:   article.User.Name,
 			Avatar: article.User.Avatar,
@@ -289,7 +290,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 		Title:     article.Title,
 		Slug:      article.Slug,
 		Status:    string(article.Status),
-		User: &protocol.User{
+		User: &dto.User{
 			UserID: article.User.ID,
 			Name:   article.User.Name,
 			Avatar: article.User.Avatar,
@@ -516,7 +517,7 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 			Title:     article.Title,
 			Slug:      article.Slug,
 			Status:    string(article.Status),
-			User: &protocol.User{
+			User: &dto.User{
 				UserID: article.User.ID,
 				Name:   article.User.Name,
 				Avatar: article.User.Avatar,

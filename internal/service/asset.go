@@ -15,6 +15,7 @@ import (
 	"github.com/disintegration/imaging"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -145,7 +146,7 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 			Title:     article.Title,
 			Slug:      article.Slug,
 			Status:    string(article.Status),
-			User: &protocol.User{
+			User: &dto.User{
 				UserID: article.User.ID,
 				Name:   article.User.Name,
 				Avatar: article.User.Avatar,

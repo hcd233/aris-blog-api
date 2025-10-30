@@ -20,24 +20,6 @@ func RegisterRouter(app *fiber.App) {
 
 	rootRouter := app.Group("")
 
-	v1Router := app.Group("/v1")
-	{
-		initTokenRouter(v1Router)
-		initOauth2Router(v1Router)
-
-		initUserRouter(v1Router)
-
-		initCategoryRouter(v1Router)
-		initTagRouter(v1Router)
-		initArticleRouter(v1Router)
-		initCommentRouter(v1Router)
-
-		initAssetRouter(v1Router)
-		initOperationRouter(v1Router)
-
-		initAIRouter(v1Router)
-	}
-
 	api := humafiber.NewWithGroup(app, rootRouter, huma.Config{
 		OpenAPI: &huma.OpenAPI{
 			OpenAPI: "3.1.0",
@@ -55,6 +37,27 @@ func RegisterRouter(app *fiber.App) {
 		Formats:       huma.DefaultFormats,
 		DefaultFormat: "application/json",
 	})
+
+	v1Router := app.Group("/v1")
+	{
+		initTokenRouter(v1Router)
+		initOauth2Router(v1Router)
+
+
+		initCategoryRouter(v1Router)
+		initTagRouter(v1Router)
+		initArticleRouter(v1Router)
+		initCommentRouter(v1Router)
+
+		initAssetRouter(v1Router)
+		initOperationRouter(v1Router)
+
+		initAIRouter(v1Router)
+	}
+
+	v1Group := huma.NewGroup(api, "/v1")
+	userGroup := huma.NewGroup(v1Group, "/user")
+	initUserRouter(userGroup)
 
 	huma.Register(api, huma.Operation{
 		OperationID: "ping",

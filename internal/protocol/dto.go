@@ -3,6 +3,7 @@ package protocol
 import (
 	"io"
 
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
@@ -40,75 +41,6 @@ type RefreshTokenResponse struct {
 	AccessToken  string `json:"accessToken"`
 	RefreshToken string `json:"refreshToken"`
 }
-
-// User 用户
-//
-//	author centonhuang
-//	update 2025-01-05 11:37:01
-type User struct {
-	UserID    uint   `json:"userID"`
-	Name      string `json:"name"`
-	Email     string `json:"email,omitempty"`
-	Avatar    string `json:"avatar"`
-	CreatedAt string `json:"createdAt,omitempty"`
-	LastLogin string `json:"lastLogin,omitempty"`
-}
-
-// CurUser 当前用户
-//
-//	author centonhuang
-//	update 2025-01-05 11:37:32
-type CurUser struct {
-	User
-	Permission string `json:"permission"`
-}
-
-// GetCurUserInfoRequest 获取当前用户信息请求
-//
-//	author centonhuang
-//	update 2025-01-04 21:00:54
-type GetCurUserInfoRequest struct {
-	UserID uint `json:"userID"`
-}
-
-// GetCurUserInfoResponse 获取当前用户信息响应
-//
-//	author centonhuang
-//	update 2025-01-04 21:00:59
-type GetCurUserInfoResponse struct {
-	User *CurUser `json:"user"`
-}
-
-// GetUserInfoRequest 获取用户信息请求
-//
-//	author centonhuang
-//	update 2025-01-04 21:19:41
-type GetUserInfoRequest struct {
-	UserID uint `json:"userID"`
-}
-
-// GetUserInfoResponse 获取用户信息响应
-//
-//	author centonhuang
-//	update 2025-01-04 21:19:44
-type GetUserInfoResponse struct {
-	User *User `json:"user"`
-}
-
-// UpdateUserInfoRequest 更新用户信息请求
-//
-//	author centonhuang
-//	update 2025-01-04 21:19:47
-type UpdateUserInfoRequest struct {
-	UserID          uint   `json:"userID"`
-	UpdatedUserName string `json:"updatedUserName"`
-}
-
-// UpdateUserInfoResponse 更新用户信息响应
-//
-//	author centonhuang
-//	update 2025-01-05 11:35:18
-type UpdateUserInfoResponse struct{}
 
 // Tag 标签
 //
@@ -249,7 +181,7 @@ type Article struct {
 	Title       string    `json:"title"`
 	Slug        string    `json:"slug"`
 	Status      string    `json:"status"`
-	User        *User     `json:"userID"`
+	User        *dto.User `json:"userID"`
 	Category    *Category `json:"category"`
 	CreatedAt   string    `json:"createdAt"`
 	UpdatedAt   string    `json:"updatedAt"`
