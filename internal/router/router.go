@@ -38,13 +38,29 @@ func RegisterRouter(app *fiber.App) {
 		initAIRouter(v1Router)
 	}
 
-	api := humafiber.NewWithGroup(app, rootRouter, huma.DefaultConfig("Aris-blog", "1.0"))
+	api := humafiber.NewWithGroup(app, rootRouter, huma.Config{
+		OpenAPI: &huma.OpenAPI{
+			OpenAPI: "3.1.0",
+			Info: &huma.Info{
+				Title:   "Aris-blog",
+				Version: "1.0",
+			},
+			Components: &huma.Components{
+				Schemas: huma.NewMapRegistry("#/components/schemas/", huma.DefaultSchemaNamer),
+			},
+		},
+		OpenAPIPath:   "/openapi",
+		DocsPath:      "/docs",
+		SchemasPath:   "/schemas",
+		Formats:       huma.DefaultFormats,
+		DefaultFormat: "application/json",
+	})
 
 	huma.Register(api, huma.Operation{
 		OperationID: "ping",
 		Method:      http.MethodGet,
 		Path:        "/",
-		Summary:     "Ping Pong!",
+		Summary:     "Ping",
 		Description: "Check service if available.",
 		Tags:        []string{"ping"},
 	}, pingService.HandlePing)

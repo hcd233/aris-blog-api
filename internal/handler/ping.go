@@ -2,9 +2,9 @@ package handler
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // PingHandler 健康检查处理器
@@ -12,7 +12,7 @@ import (
 //	author centonhuang
 //	update 2025-01-04 15:52:48
 type PingHandler interface {
-	HandlePing(ctx context.Context, _ *struct{}) (*protocol.HumaResponse[*protocol.PingResponse], error)
+	HandlePing(ctx context.Context, _ *struct{}) (*protocol.HumaHTTPResponse[*protocol.PingResponse], error)
 }
 
 type pingHandler struct{}
@@ -27,13 +27,10 @@ func NewPingHandler() PingHandler {
 }
 
 // HandlePing 健康检查处理器
-func (h *pingHandler) HandlePing(_ context.Context, _ *struct{}) (*protocol.HumaResponse[*protocol.PingResponse], error) {
+func (h *pingHandler) HandlePing(_ context.Context, _ *struct{}) (*protocol.HumaHTTPResponse[*protocol.PingResponse], error) {
 	rsp := &protocol.PingResponse{
 		Status: "ok",
 	}
 
-	return &protocol.HumaResponse[*protocol.PingResponse]{
-		Status: http.StatusOK,
-		Body:   rsp,
-	}, nil
+	return util.WrapHTTPResponse(rsp, nil)
 }

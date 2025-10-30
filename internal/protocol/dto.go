@@ -6,16 +6,6 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-// HumaResponse
-//
-//	author centonhuang
-//	update 2025-10-31 01:18:05
-//	param BodyT any
-type HumaResponse[BodyT any] struct {
-	Status int
-	Body BodyT `json:"data"`
-}
-
 // PageInfo 分页信息
 //
 //	author centonhuang
