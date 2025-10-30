@@ -8,6 +8,7 @@ import (
 	"github.com/danielgtaylor/huma/v2/adapters/humafiber"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
+	"github.com/hcd233/aris-blog-api/internal/middleware"
 )
 
 // RegisterRouter 注册路由
@@ -43,7 +44,6 @@ func RegisterRouter(app *fiber.App) {
 		initTokenRouter(v1Router)
 		initOauth2Router(v1Router)
 
-
 		initCategoryRouter(v1Router)
 		initTagRouter(v1Router)
 		initArticleRouter(v1Router)
@@ -57,6 +57,7 @@ func RegisterRouter(app *fiber.App) {
 
 	v1Group := huma.NewGroup(api, "/v1")
 	userGroup := huma.NewGroup(v1Group, "/user")
+	userGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
 	initUserRouter(userGroup)
 
 	huma.Register(api, huma.Operation{
