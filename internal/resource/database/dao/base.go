@@ -34,21 +34,20 @@ type PageParam struct {
 	PageSize int `form:"pageSize" binding:"min=1,max=50"`
 }
 
-
 // QueryParam 查询参数
 //
 //	author centonhuang
 //	update 2024-09-18 02:56:39
 type QueryParam struct {
-	Query string `form:"query"`
+	Query       string   `form:"query"`
 	QueryFields []string `form:"queryFields"`
 }
 
-// PaginateParam 分页查询参数
+// CommonParam 分页查询参数
 //
 //	@author centonhuang
 //	@update 2025-08-25 12:30:17
-type PaginateParam struct {
+type CommonParam struct {
 	*PageParam
 	*QueryParam
 }
@@ -129,7 +128,7 @@ func (dao *baseDAO[ModelT]) BatchGetByIDs(db *gorm.DB, ids []uint, fields []stri
 //	return Paginate
 //	author centonhuang
 //	update 2024-10-17 03:09:11
-func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, param *PaginateParam) (data *[]ModelT, pageInfo *PageInfo, err error) {
+func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []string, param *CommonParam) (data *[]ModelT, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)

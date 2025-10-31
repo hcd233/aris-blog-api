@@ -66,7 +66,7 @@ func (c *QuotaCron) deliverQuotas() {
 	ctx := context.WithValue(context.Background(), constant.CtxKeyTraceID, uuid.New().String())
 	logger := logger.WithCtx(ctx)
 
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
 			Page:     2,
 			PageSize: -1,

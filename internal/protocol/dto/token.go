@@ -6,14 +6,14 @@ package dto
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 type RefreshTokenRequest struct {
-	Body *RefreshTokenBody `json:"body" doc:"Request body containing the refresh token"`
+	Body *RefreshTokenRequestBody `json:"body" doc:"Request body containing the refresh token"`
 }
 
-// RefreshTokenBody contains the refresh token used to obtain a new access token
+// RefreshTokenRequestBody contains the refresh token used to obtain a new access token
 //
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-type RefreshTokenBody struct {
+type RefreshTokenRequestBody struct {
 	RefreshToken string `json:"refreshToken" doc:"JWT refresh token used to obtain a new access token"`
 }
 

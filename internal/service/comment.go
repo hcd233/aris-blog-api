@@ -190,14 +190,13 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *dto.Comme
 		return nil, protocol.ErrNoPermission
 	}
 
-	paginate := req.PaginationQuery.ToPaginateParam()
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     paginate.PageParam.Page,
-			PageSize: paginate.PageParam.PageSize,
+			Page:     req.PageParam.Page,
+			PageSize: req.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       paginate.QueryParam.Query,
+			Query:       req.QueryParam.Query,
 			QueryFields: []string{"content"},
 		},
 	}
@@ -261,14 +260,13 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.Comm
 		return nil, protocol.ErrNoPermission
 	}
 
-	paginate := req.PaginationQuery.ToPaginateParam()
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     paginate.PageParam.Page,
-			PageSize: paginate.PageParam.PageSize,
+			Page:     req.PageParam.Page,
+			PageSize: req.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       paginate.QueryParam.Query,
+			Query:       req.QueryParam.Query,
 			QueryFields: []string{"content"},
 		},
 	}

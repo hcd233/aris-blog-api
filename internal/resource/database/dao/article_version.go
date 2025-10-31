@@ -65,7 +65,7 @@ func (dao *ArticleVersionDAO) GetByArticleIDAndVersion(db *gorm.DB, articleID, v
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:08:50
-func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, param *PaginateParam) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
+func (dao *ArticleVersionDAO) PaginateByArticleID(db *gorm.DB, articleID uint, fields, preloads []string, param *CommonParam) (articleVersions *[]model.ArticleVersion, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)

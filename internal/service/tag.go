@@ -24,8 +24,8 @@ import (
 type TagService interface {
 	CreateTag(ctx context.Context, req *dto.TagCreateRequest) (rsp *dto.TagCreateResponse, err error)
 	GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rsp *dto.TagGetResponse, err error)
-	UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.TagUpdateResponse, err error)
-	DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (rsp *dto.TagDeleteResponse, err error)
+	UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.EmptyResponse, err error)
+	DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (rsp *dto.EmptyResponse, err error)
 	ListTags(ctx context.Context, req *dto.TagListRequest) (rsp *dto.TagListResponse, err error)
 }
 
@@ -118,7 +118,7 @@ func (s *tagService) GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rs
 }
 
 // UpdateTag 更新标签
-func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.TagUpdateResponse, err error) {
+func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -126,7 +126,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (
 		return nil, protocol.ErrBadRequest
 	}
 
-	rsp = &dto.TagUpdateResponse{}
+	rsp = &dto.EmptyResponse{}
 	db := database.GetDBInstance(ctx)
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
@@ -176,8 +176,8 @@ func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (
 }
 
 // DeleteTag 删除标签
-func (s *tagService) DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (rsp *dto.TagDeleteResponse, err error) {
-	rsp = &dto.TagDeleteResponse{}
+func (s *tagService) DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (rsp *dto.EmptyResponse, err error) {
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -215,14 +215,13 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.TagListRequest) (rsp
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	paginate := req.PaginationQuery.ToPaginateParam()
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     paginate.PageParam.Page,
-			PageSize: paginate.PageParam.PageSize,
+			Page:     req.PageParam.Page,
+			PageSize: req.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       paginate.QueryParam.Query,
+			Query:       req.QueryParam.Query,
 			QueryFields: []string{"name", "description"},
 		},
 	}

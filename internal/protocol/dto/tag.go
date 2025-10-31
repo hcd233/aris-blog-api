@@ -1,18 +1,6 @@
 package dto
 
-// Tag 标签信息
-//
-//	author centonhuang
-//	update 2025-10-31 05:32:00
-type Tag struct {
-	TagID       uint   `json:"tagID" doc:"Tag ID"`
-	Name        string `json:"name" doc:"Tag name"`
-	Slug        string `json:"slug" doc:"Tag slug"`
-	Description string `json:"description,omitempty" doc:"Tag description"`
-	CreatedAt   string `json:"createdAt,omitempty" doc:"Creation timestamp"`
-	UpdatedAt   string `json:"updatedAt,omitempty" doc:"Update timestamp"`
-	Likes       uint   `json:"likes,omitempty" doc:"Number of likes"`
-}
+
 
 // TagPathParam 标签路径参数
 type TagPathParam struct {
@@ -59,20 +47,16 @@ type TagUpdateRequest struct {
 	Body *TagUpdateRequestBody `json:"body" doc:"Updatable tag fields"`
 }
 
-// TagUpdateResponse 更新标签响应
-type TagUpdateResponse struct{}
 
 // TagDeleteRequest 删除标签请求
 type TagDeleteRequest struct {
 	TagPathParam
 }
 
-// TagDeleteResponse 删除标签响应
-type TagDeleteResponse struct{}
 
 // TagListRequest 标签列表请求
 type TagListRequest struct {
-	PaginationQuery
+	CommonParam
 }
 
 // TagListResponse 标签列表响应

@@ -44,7 +44,7 @@ func (dao *CategoryDAO) Delete(db *gorm.DB, category *model.Category) (err error
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:09:50
-func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields, preloads []string, param *PaginateParam) (children *[]model.Category, pageInfo *PageInfo, err error) {
+func (dao *CategoryDAO) PaginateChildren(db *gorm.DB, category *model.Category, fields, preloads []string, param *CommonParam) (children *[]model.Category, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
@@ -152,7 +152,7 @@ func (dao *CategoryDAO) DeleteReclusiveByID(db *gorm.DB, id uint, fields, preloa
 }
 
 func (dao *CategoryDAO) reclusiveFindChildrenIDsByID(db *gorm.DB, categoryID uint, fields, preloads []string) (categories *[]model.Category, err error) {
-	param := &PaginateParam{
+	param := &CommonParam{
 		PageParam: &PageParam{
 			Page:     2,
 			PageSize: -1,

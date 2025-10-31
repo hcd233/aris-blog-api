@@ -43,7 +43,7 @@ type CommentDeleteRequest struct {
 // CommentListArticleRequest 列出文章评论请求
 type CommentListArticleRequest struct {
 	ArticlePathParam
-	PaginationQuery
+	CommonParam
 }
 
 // CommentListArticleResponse 列出文章评论响应
@@ -55,7 +55,7 @@ type CommentListArticleResponse struct {
 // CommentListChildrenRequest 列出子评论请求
 type CommentListChildrenRequest struct {
 	CommentPathParam
-	PaginationQuery
+	CommonParam
 }
 
 // CommentListChildrenResponse 列出子评论响应

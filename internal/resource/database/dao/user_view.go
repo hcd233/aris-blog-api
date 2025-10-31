@@ -23,7 +23,7 @@ func (dao *UserViewDAO) GetLatestViewByUserIDAndArticleID(db *gorm.DB, userID ui
 	return
 }
 
-func (dao *UserViewDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *PaginateParam) (userViews *[]model.UserView, pageInfo *PageInfo, err error) {
+func (dao *UserViewDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *CommonParam) (userViews *[]model.UserView, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)

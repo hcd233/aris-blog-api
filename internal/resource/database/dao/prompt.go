@@ -14,15 +14,16 @@ type PromptDAO struct {
 }
 
 // GetLatestPromptByTask 获取最新提示词
-//	receiver dao *PromptDAO 
-//	param db 
-//	param task 
-//	param fields 
-//	param preloads 
-//	return prompt 
-//	return err 
-//	author centonhuang 
-//	update 2025-08-25 14:17:49 
+//
+//	receiver dao *PromptDAO
+//	param db
+//	param task
+//	param fields
+//	param preloads
+//	return prompt
+//	return err
+//	author centonhuang
+//	update 2025-08-25 14:17:49
 func (dao *PromptDAO) GetLatestPromptByTask(db *gorm.DB, task model.Task, fields, preloads []string) (prompt *model.Prompt, err error) {
 	sql := db.Select(fields)
 	for _, preload := range preloads {
@@ -32,22 +33,22 @@ func (dao *PromptDAO) GetLatestPromptByTask(db *gorm.DB, task model.Task, fields
 	return
 }
 
-// PaginateByTask 分页查询提示词 
-// 
-//	author centonhuang 
+// PaginateByTask 分页查询提示词
+//
+//	author centonhuang
 //	update 2024-10-23 05:22:38
-//	receiver dao *PromptDAO 
-//	param db 
-//	param task 
-//	param fields 
-//	param preloads 
-//	param param 
-//	return prompts 
-//	return pageInfo 
-//	return err 
-//	author centonhuang 
-//	update 2025-08-25 14:17:57 
-func (dao *PromptDAO) PaginateByTask(db *gorm.DB, task model.Task, fields, preloads []string, param *PaginateParam) (prompts []*model.Prompt, pageInfo *PageInfo, err error) {
+//	receiver dao *PromptDAO
+//	param db
+//	param task
+//	param fields
+//	param preloads
+//	param param
+//	return prompts
+//	return pageInfo
+//	return err
+//	author centonhuang
+//	update 2025-08-25 14:17:57
+func (dao *PromptDAO) PaginateByTask(db *gorm.DB, task model.Task, fields, preloads []string, param *CommonParam) (prompts []*model.Prompt, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
@@ -76,20 +77,20 @@ func (dao *PromptDAO) PaginateByTask(db *gorm.DB, task model.Task, fields, prelo
 	return
 }
 
-// GetPromptByTaskAndVersion 获取指定任务和版本的提示词 
-// 
-//	author centonhuang 
+// GetPromptByTaskAndVersion 获取指定任务和版本的提示词
+//
+//	author centonhuang
 //	update 2024-10-23 05:22:38
-//	receiver dao *PromptDAO 
-//	param db 
-//	param task 
-//	param version 
-//	param fields 
-//	param preloads 
-//	return prompt 
-//	return err 
-//	author centonhuang 
-//	update 2025-08-25 14:18:05 
+//	receiver dao *PromptDAO
+//	param db
+//	param task
+//	param version
+//	param fields
+//	param preloads
+//	return prompt
+//	return err
+//	author centonhuang
+//	update 2025-08-25 14:18:05
 func (dao *PromptDAO) GetPromptByTaskAndVersion(db *gorm.DB, task model.Task, version uint, fields, preloads []string) (prompt *model.Prompt, err error) {
 	sql := db.Select(fields)
 	for _, preload := range preloads {

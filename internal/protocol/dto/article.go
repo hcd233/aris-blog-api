@@ -2,24 +2,7 @@ package dto
 
 import "github.com/hcd233/aris-blog-api/internal/resource/database/model"
 
-// Article 文章信息
-//
-//	author centonhuang
-//	update 2025-10-31 05:36:00
-type Article struct {
-	ArticleID   uint   `json:"articleID" doc:"Article ID"`
-	Title       string `json:"title" doc:"Article title"`
-	Slug        string `json:"slug" doc:"Article slug"`
-	Status      string `json:"status" doc:"Article status"`
-	User        *User  `json:"user" doc:"Author information"`
-	CreatedAt   string `json:"createdAt" doc:"Creation timestamp"`
-	UpdatedAt   string `json:"updatedAt" doc:"Update timestamp"`
-	PublishedAt string `json:"publishedAt" doc:"Publication timestamp"`
-	Likes       uint   `json:"likes" doc:"Number of likes"`
-	Views       uint   `json:"views" doc:"Number of views"`
-	Tags        []*Tag `json:"tags" doc:"List of tags"`
-	Comments    int    `json:"comments" doc:"Number of comments"`
-}
+
 
 // ArticleCreateRequestBody 创建文章请求体
 type ArticleCreateRequestBody struct {
@@ -101,7 +84,7 @@ type ArticleDeleteRequest struct {
 
 // ArticleListRequest 列出文章请求
 type ArticleListRequest struct {
-	PaginationQuery
+	CommonParam
 }
 
 // ArticleListResponse 列出文章响应

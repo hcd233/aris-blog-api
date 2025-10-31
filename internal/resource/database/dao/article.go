@@ -106,7 +106,7 @@ func (dao *ArticleDAO) GetBySlugAndUserID(db *gorm.DB, slug string, userID uint,
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:09:20
-func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *PaginateParam) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *CommonParam) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
@@ -148,7 +148,7 @@ func (dao *ArticleDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloa
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:09:26
-func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields []string, preloads []string, param *PaginateParam) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields []string, preloads []string, param *CommonParam) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)
@@ -192,7 +192,7 @@ func (dao *ArticleDAO) PaginateByCategoryID(db *gorm.DB, categoryID uint, fields
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 05:33:37
-func (dao *ArticleDAO) PaginateByStatus(db *gorm.DB, status model.ArticleStatus, fields []string, preloads []string, param *PaginateParam) (articles *[]model.Article, pageInfo *PageInfo, err error) {
+func (dao *ArticleDAO) PaginateByStatus(db *gorm.DB, status model.ArticleStatus, fields []string, preloads []string, param *CommonParam) (articles *[]model.Article, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)

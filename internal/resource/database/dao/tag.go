@@ -64,7 +64,7 @@ func (dao *TagDAO) GetBySlug(db *gorm.DB, slug string, fields, preloads []string
 //	return err error
 //	author centonhuang
 //	update 2024-11-01 07:10:06
-func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *PaginateParam) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
+func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads []string, param *CommonParam) (tags *[]model.Tag, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)

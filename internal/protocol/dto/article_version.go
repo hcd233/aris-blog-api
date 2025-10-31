@@ -1,17 +1,5 @@
 package dto
 
-// ArticleVersion 文章版本信息
-//
-//	author centonhuang
-//	update 2025-10-31 05:38:00
-type ArticleVersion struct {
-	ArticleVersionID uint   `json:"versionID" doc:"Version ID"`
-	ArticleID        uint   `json:"articleID" doc:"Article ID"`
-	VersionID        uint   `json:"version" doc:"Version number"`
-	Content          string `json:"content" doc:"Version content"`
-	CreatedAt        string `json:"createdAt" doc:"Creation timestamp"`
-	UpdatedAt        string `json:"updatedAt" doc:"Update timestamp"`
-}
 
 // ArticleVersionArticlePathParam 文章路径参数
 type ArticleVersionArticlePathParam struct {
@@ -63,7 +51,7 @@ type ArticleVersionGetLatestResponse struct {
 // ArticleVersionListRequest 列出文章版本请求
 type ArticleVersionListRequest struct {
 	ArticleVersionArticlePathParam
-	PaginationQuery
+	CommonParam
 }
 
 // ArticleVersionListResponse 列出文章版本响应

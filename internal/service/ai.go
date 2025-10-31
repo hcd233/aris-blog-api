@@ -160,7 +160,7 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
 			Page:     req.PaginateParam.Page,
 			PageSize: req.PaginateParam.PageSize,

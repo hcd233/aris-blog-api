@@ -66,7 +66,7 @@ func (dao *UserLikeDAO) GetByUserIDAndObject(db *gorm.DB, userID uint, objectID 
 //	return err error
 //	author centonhuang
 //	update 2024-11-03 06:57:34
-func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, fields, preloads []string, param *PaginateParam) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
+func (dao *UserLikeDAO) PaginateByUserIDAndObjectType(db *gorm.DB, userID uint, objectType model.LikeObjectType, fields, preloads []string, param *CommonParam) (userLikes *[]model.UserLike, pageInfo *PageInfo, err error) {
 	limit, offset := param.PageSize, (param.Page-1)*param.PageSize
 
 	sql := db.Select(fields)

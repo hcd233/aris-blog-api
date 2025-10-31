@@ -412,14 +412,13 @@ func (s *articleService) ListArticles(ctx context.Context, req *dto.ArticleListR
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	paginate := req.PaginationQuery.ToPaginateParam()
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     paginate.PageParam.Page,
-			PageSize: paginate.PageParam.PageSize,
+			Page:     req.PageParam.Page,
+			PageSize: req.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       paginate.QueryParam.Query,
+			Query:       req.QueryParam.Query,
 			QueryFields: []string{"title", "slug"},
 		},
 	}

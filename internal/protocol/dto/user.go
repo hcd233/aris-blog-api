@@ -14,7 +14,7 @@ type GetCurUserInfoRequest struct {
 //	author centonhuang
 //	update 2025-01-04 21:00:59
 type GetCurUserInfoResponse struct {
-	User *CurUser `json:"user" doc:"Complete user information including permissions"`
+	User *User `json:"user" doc:"Complete user information including permissions"`
 }
 
 // GetUserInfoRequest represents a request to get a specific user's public information
@@ -25,26 +25,26 @@ type GetUserInfoRequest struct {
 	UserID uint `json:"userID" path:"userID" doc:"Unique identifier of the user to retrieve"`
 }
 
-// GetUserInfoResponse represents the response containing a user's public information
+// GetUserResponse represents the response containing a user's public information
 //
 //	author centonhuang
 //	update 2025-01-04 21:19:44
-type GetUserInfoResponse struct {
+type GetUserResponse struct {
 	User *User `json:"user" doc:"Public user information"`
 }
 
-// UpdateUserInfoRequest represents a request to update the current user's information
+// UpdateUserRequest represents a request to update the current user's information
 //
 //	author centonhuang
 //	update 2025-01-04 21:19:47
-type UpdateUserInfoRequest struct {
-	Body *UpdateUserInfoBody `json:"body" doc:"Request body containing fields to update"`
+type UpdateUserRequest struct {
+	Body *UpdateUserRequestBody `json:"body" doc:"Request body containing fields to update"`
 }
 
-// UpdateUserInfoBody contains the fields that can be updated for a user
+// UpdateUserRequestBody contains the fields that can be updated for a user
 //
 //	author centonhuang
 //	update 2025-10-31 02:33:48
-type UpdateUserInfoBody struct {
+type UpdateUserRequestBody struct {
 	UserName string `json:"userName" doc:"New display name for the user"`
 }

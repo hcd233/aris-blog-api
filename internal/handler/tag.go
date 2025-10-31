@@ -13,8 +13,8 @@ import (
 type TagHandler interface {
 	HandleCreateTag(ctx context.Context, req *dto.TagCreateRequest) (*protocol.HumaHTTPResponse[*dto.TagCreateResponse], error)
 	HandleGetTagInfo(ctx context.Context, req *dto.TagGetRequest) (*protocol.HumaHTTPResponse[*dto.TagGetResponse], error)
-	HandleUpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (*protocol.HumaHTTPResponse[*dto.TagUpdateResponse], error)
-	HandleDeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (*protocol.HumaHTTPResponse[*dto.TagDeleteResponse], error)
+	HandleUpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
+	HandleDeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
 	HandleListTags(ctx context.Context, req *dto.TagListRequest) (*protocol.HumaHTTPResponse[*dto.TagListResponse], error)
 }
 
@@ -37,11 +37,11 @@ func (h *tagHandler) HandleGetTagInfo(ctx context.Context, req *dto.TagGetReques
 	return util.WrapHTTPResponse(h.svc.GetTagInfo(ctx, req))
 }
 
-func (h *tagHandler) HandleUpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (*protocol.HumaHTTPResponse[*dto.TagUpdateResponse], error) {
+func (h *tagHandler) HandleUpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.UpdateTag(ctx, req))
 }
 
-func (h *tagHandler) HandleDeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (*protocol.HumaHTTPResponse[*dto.TagDeleteResponse], error) {
+func (h *tagHandler) HandleDeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteTag(ctx, req))
 }
 

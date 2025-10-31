@@ -86,7 +86,7 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *protocol.L
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
 			Page:     req.PaginateParam.Page,
 			PageSize: req.PaginateParam.PageSize,
@@ -185,7 +185,7 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.L
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
 			Page:     req.PaginateParam.Page,
 			PageSize: req.PaginateParam.PageSize,
@@ -259,7 +259,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListU
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
 			Page:     req.PaginateParam.Page,
 			PageSize: req.PaginateParam.PageSize,
@@ -536,7 +536,7 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.L
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	param := &dao.PaginateParam{
+	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
 			Page:     req.PaginateParam.Page,
 			PageSize: req.PaginateParam.PageSize,
