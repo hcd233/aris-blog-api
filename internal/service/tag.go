@@ -217,11 +217,11 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.ListTagRequest) (rsp
 
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PageParam.Page,
-			PageSize: req.PageParam.PageSize,
+			Page:     req.Page,
+			PageSize: req.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.QueryParam.Query,
+			Query:       req.Query,
 			QueryFields: []string{"name", "description"},
 		},
 	}

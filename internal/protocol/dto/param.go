@@ -5,7 +5,7 @@ package dto
 //	author centonhuang
 //	update 2025-10-31 05:30:00
 type PageParam struct {
-	Page     int `json:"page" query:"page" doc:"Page number, minimum is 1" minimum:"1" default:"1"`
+	Page     int `json:"page" query:"page" doc:"Page number, minimum is 1" default:"1"`
 	PageSize int `json:"pageSize" query:"pageSize" doc:"Items per page, range 1-50" minimum:"1" maximum:"50" default:"10"`
 }
 
@@ -22,8 +22,8 @@ type QueryParam struct {
 //	author centonhuang
 //	update 2025-10-31 05:30:00
 type CommonParam struct {
-	*PageParam  `json:"page"`
-	*QueryParam `json:"query,omitempty"`
+	PageParam
+	QueryParam
 }
 
 // PageInfo 分页信息
@@ -31,7 +31,7 @@ type CommonParam struct {
 //	author centonhuang
 //	update 2025-10-31 05:30:00
 type PageInfo struct {
-	Page     int   `json:"page"`
-	PageSize int   `json:"pageSize"`
-	Total    int64 `json:"total"`
+	Page     int   `json:"page" doc:"Page number"`
+	PageSize int   `json:"pageSize" doc:"Items per page"`
+	Total    int64 `json:"total" doc:"Total items"`
 }

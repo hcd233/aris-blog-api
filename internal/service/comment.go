@@ -192,11 +192,11 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *dto.ListA
 
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PageParam.Page,
-			PageSize: req.PageParam.PageSize,
+			Page:     req.Page,
+			PageSize: req.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.QueryParam.Query,
+			Query:       req.Query,
 			QueryFields: []string{"content"},
 		},
 	}
@@ -262,11 +262,11 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.List
 
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PageParam.Page,
-			PageSize: req.PageParam.PageSize,
+			Page:     req.Page,
+			PageSize: req.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.QueryParam.Query,
+			Query:       req.Query,
 			QueryFields: []string{"content"},
 		},
 	}

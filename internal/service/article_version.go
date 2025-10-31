@@ -254,11 +254,11 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dt
 
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PageParam.Page,
-			PageSize: req.PageParam.PageSize,
+			Page:     req.Page,
+			PageSize: req.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.QueryParam.Query,
+			Query:       req.Query,
 			QueryFields: []string{"version", "content"},
 		},
 	}
