@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // baseDAO 基础DAO
@@ -137,9 +138,20 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []st
 	}
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
-		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
-		for _, field := range param.QueryFields[1:] {
-			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		like := "%" + param.Query + "%"
+		expressions := make([]clause.Expression, 0, len(param.QueryFields))
+		for _, field := range param.QueryFields {
+			if field == "" {
+				continue
+			}
+			expressions = append(expressions, clause.Like{Column: clause.Column{Name: field}, Value: like})
+		}
+
+		if len(expressions) > 0 {
+			sql = sql.Where(expressions[0])
+			for _, expr := range expressions[1:] {
+				sql = sql.Or(expr)
+			}
 		}
 	}
 	err = sql.Limit(limit).Offset(offset).Find(&data).Error
