@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -80,5 +81,67 @@ func RateLimiterMiddleware(serviceName, key string, period time.Duration, limit 
 		}
 
 		return c.Next()
+	}
+}
+
+// RateLimiterMiddlewareForHuma 限频中间件 for Huma
+func RateLimiterMiddlewareForHuma(serviceName, key string, period time.Duration, limit int64) func(ctx huma.Context, next func(huma.Context)) {
+	rate := limiter.Rate{
+		Period: period,
+		Limit:  limit,
+	}
+
+	redisClient := cache.GetRedisClient()
+	store := lo.Must1(redis.NewStoreWithOptions(redisClient, limiter.StoreOptions{
+		Prefix: serviceName,
+	}))
+
+	instance := limiter.New(store, rate)
+
+	return func(ctx huma.Context, next func(huma.Context)) {
+		var keyValue, value string
+		if key == "" {
+			keyValue = "ip"
+			value = ctx.Header("X-Forwarded-For")
+			if value == "" {
+				value = ctx.Header("X-Real-IP")
+			}
+			if value == "" {
+				value = "unknown"
+			}
+		} else {
+			if ctxValue := ctx.Context().Value(key); ctxValue != nil {
+				keyValue = key
+				value = fmt.Sprintf("%v", ctxValue)
+			} else {
+				ctx.SetStatus(fiber.StatusUnauthorized)
+				return
+			}
+		}
+
+		limiterKey := fmt.Sprintf("%s:%v", keyValue, value)
+		ctx = huma.WithValue(ctx, constant.CtxKeyLimiter, limiterKey)
+
+		result, err := instance.Get(ctx.Context(), limiterKey)
+		if err != nil {
+			logger.WithCtx(ctx.Context()).Error("[RateLimiterMiddlewareForHuma] failed to get rate limit", zap.Error(err))
+			ctx.SetStatus(fiber.StatusInternalServerError)
+			return
+		}
+
+		if result.Reached {
+			fields := []zap.Field{zap.String("serviceName", serviceName)}
+			if key == "" {
+				fields = append(fields, zap.String("key", keyValue), zap.String("value", value))
+			} else {
+				fields = append(fields, zap.String("key", key), zap.String("value", value))
+			}
+
+			logger.WithCtx(ctx.Context()).Error("[RateLimiterMiddlewareForHuma] rate limit reached", fields...)
+			ctx.SetStatus(fiber.StatusTooManyRequests)
+			return
+		}
+
+		next(ctx)
 	}
 }

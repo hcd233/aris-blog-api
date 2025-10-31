@@ -7,6 +7,7 @@ import (
 
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -17,10 +18,10 @@ import (
 
 // CommentService 评论服务
 type CommentService interface {
-	CreateArticleComment(ctx context.Context, req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error)
-	DeleteComment(ctx context.Context, req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error)
-	ListArticleComments(ctx context.Context, req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error)
-	ListChildrenComments(ctx context.Context, req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error)
+	CreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (rsp *dto.CommentCreateResponse, err error)
+	DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.CommentDeleteResponse, err error)
+	ListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (rsp *dto.CommentListArticleResponse, err error)
+	ListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (rsp *dto.CommentListChildrenResponse, err error)
 }
 
 type commentService struct {
@@ -39,40 +40,44 @@ func NewCommentService() CommentService {
 }
 
 // CreateArticleComment 创建文章评论
-func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol.CreateArticleCommentRequest) (rsp *protocol.CreateArticleCommentResponse, err error) {
-	rsp = &protocol.CreateArticleCommentResponse{}
+func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (rsp *dto.CommentCreateResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.CommentCreateResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	article, err := s.articleDAO.GetByIDAndStatus(db, req.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
+	article, err := s.articleDAO.GetByIDAndStatus(db, req.Body.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[CommentService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+				zap.Uint("articleID", req.Body.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Error("[CommentService] failed to get article",
-			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("articleID", req.Body.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	var parent *model.Comment
-	if req.ReplyTo != 0 {
-		parent, err = s.commentDAO.GetByID(db, req.ReplyTo, []string{"id", "article_id"}, []string{})
+	if req.Body.ReplyTo != 0 {
+		parent, err = s.commentDAO.GetByID(db, req.Body.ReplyTo, []string{"id", "article_id"}, []string{})
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
-				logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.ReplyTo))
+				logger.Error("[CommentService] parent comment not found", zap.Uint("commentID", req.Body.ReplyTo))
 				return nil, protocol.ErrDataNotExists
 			}
-			logger.Error("[CommentService] failed to get parent comment", zap.Uint("commentID", req.ReplyTo), zap.Error(err))
+			logger.Error("[CommentService] failed to get parent comment", zap.Uint("commentID", req.Body.ReplyTo), zap.Error(err))
 			return nil, protocol.ErrInternalError
 		}
 
 		if parent.ArticleID != article.ID {
 			logger.Info("[CommentService] parent comment not belong to article",
-				zap.Uint("commentID", req.ReplyTo),
+				zap.Uint("commentID", req.Body.ReplyTo),
 				zap.Uint("articleID", article.ID))
 			return nil, protocol.ErrBadRequest
 		}
@@ -82,7 +87,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 		UserID:    req.UserID,
 		ArticleID: article.ID,
 		Parent:    parent,
-		Content:   req.Content,
+		Content:   req.Body.Content,
 	}
 
 	if err := s.commentDAO.Create(db, comment); err != nil {
@@ -92,20 +97,21 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *protocol
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Comment = &protocol.Comment{
+	rsp.Comment = &dto.Comment{
 		CommentID: comment.ID,
 		Content:   comment.Content,
 		UserID:    comment.UserID,
 		ReplyTo:   comment.ParentID,
 		CreatedAt: comment.CreatedAt.Format(time.DateTime),
+		Likes:     comment.Likes,
 	}
 
 	return rsp, nil
 }
 
 // DeleteComment 删除评论
-func (s *commentService) DeleteComment(ctx context.Context, req *protocol.DeleteCommentRequest) (rsp *protocol.DeleteCommentResponse, err error) {
-	rsp = &protocol.DeleteCommentResponse{}
+func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.CommentDeleteResponse, err error) {
+	rsp = &dto.CommentDeleteResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -131,11 +137,9 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 		return nil, protocol.ErrInternalError
 	}
 
-	// 只有文章作者和评论作者可以删除评论
 	if article.UserID != req.UserID && comment.UserID != req.UserID {
 		logger.Error("[CommentService] no permission to delete comment",
-			zap.Uint("commentUserID", comment.UserID),
-		)
+			zap.Uint("commentUserID", comment.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -150,8 +154,8 @@ func (s *commentService) DeleteComment(ctx context.Context, req *protocol.Delete
 }
 
 // ListArticleComments 列出文章评论
-func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.ListArticleCommentsRequest) (rsp *protocol.ListArticleCommentsResponse, err error) {
-	rsp = &protocol.ListArticleCommentsResponse{}
+func (s *commentService) ListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (rsp *dto.CommentListArticleResponse, err error) {
+	rsp = &dto.CommentListArticleResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -171,18 +175,18 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[CommentService] no permission to list article comments",
-			zap.Uint("articleUserID", article.UserID),
-		)
+			zap.Uint("articleUserID", article.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
+	paginate := req.PaginationQuery.ToPaginateParam()
 	param := &dao.PaginateParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PaginateParam.Page,
-			PageSize: req.PaginateParam.PageSize,
+			Page:     paginate.PageParam.Page,
+			PageSize: paginate.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.PaginateParam.Query,
+			Query:       paginate.QueryParam.Query,
 			QueryFields: []string{"content"},
 		},
 	}
@@ -194,8 +198,8 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Comments = lo.Map(*comments, func(comment model.Comment, _ int) *protocol.Comment {
-		return &protocol.Comment{
+	rsp.Comments = lo.Map(*comments, func(comment model.Comment, _ int) *dto.Comment {
+		return &dto.Comment{
 			CommentID: comment.ID,
 			Content:   comment.Content,
 			UserID:    comment.UserID,
@@ -205,7 +209,7 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 		}
 	})
 
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
@@ -215,8 +219,8 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *protocol.
 }
 
 // ListChildrenComments 列出子评论
-func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol.ListChildrenCommentsRequest) (rsp *protocol.ListChildrenCommentsResponse, err error) {
-	rsp = &protocol.ListChildrenCommentsResponse{}
+func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (rsp *dto.CommentListChildrenResponse, err error) {
+	rsp = &dto.CommentListChildrenResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -239,21 +243,22 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[CommentService] no permission to list children comments",
-			zap.Uint("articleUserID", article.UserID),
-		)
+			zap.Uint("articleUserID", article.UserID))
 		return nil, protocol.ErrNoPermission
 	}
 
+	paginate := req.PaginationQuery.ToPaginateParam()
 	param := &dao.PaginateParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PaginateParam.Page,
-			PageSize: req.PaginateParam.PageSize,
+			Page:     paginate.PageParam.Page,
+			PageSize: paginate.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.PaginateParam.Query,
+			Query:       paginate.QueryParam.Query,
 			QueryFields: []string{"content"},
 		},
 	}
+
 	comments, pageInfo, err := s.commentDAO.PaginateChildren(db, parentComment,
 		[]string{"id", "content", "created_at", "likes", "user_id", "parent_id"},
 		[]string{},
@@ -265,8 +270,8 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Comments = lo.Map(*comments, func(comment model.Comment, _ int) *protocol.Comment {
-		return &protocol.Comment{
+	rsp.Comments = lo.Map(*comments, func(comment model.Comment, _ int) *dto.Comment {
+		return &dto.Comment{
 			CommentID: comment.ID,
 			Content:   comment.Content,
 			UserID:    comment.UserID,
@@ -276,7 +281,7 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *protocol
 		}
 	})
 
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,

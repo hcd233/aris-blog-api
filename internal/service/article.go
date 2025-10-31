@@ -8,7 +8,7 @@ import (
 
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
-	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
+	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -18,17 +18,14 @@ import (
 )
 
 // ArticleService 文章服务
-//
-//	author centonhuang
-//	update 2025-01-05 15:23:26
 type ArticleService interface {
-	CreateArticle(ctx context.Context, req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error)
-	GetArticleInfo(ctx context.Context, req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error)
-	GetArticleInfoBySlug(ctx context.Context, req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error)
-	UpdateArticle(ctx context.Context, req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error)
-	UpdateArticleStatus(ctx context.Context, req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error)
-	DeleteArticle(ctx context.Context, req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error)
-	ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error)
+	CreateArticle(ctx context.Context, req *dto.ArticleCreateRequest) (rsp *dto.ArticleCreateResponse, err error)
+	GetArticleInfo(ctx context.Context, req *dto.ArticleGetRequest) (rsp *dto.ArticleGetResponse, err error)
+	GetArticleInfoBySlug(ctx context.Context, req *dto.ArticleGetBySlugRequest) (rsp *dto.ArticleGetBySlugResponse, err error)
+	UpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (rsp *dto.ArticleUpdateResponse, err error)
+	UpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (rsp *dto.ArticleUpdateStatusResponse, err error)
+	DeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (rsp *dto.ArticleDeleteResponse, err error)
+	ListArticles(ctx context.Context, req *dto.ArticleListRequest) (rsp *dto.ArticleListResponse, err error)
 }
 
 type articleService struct {
@@ -40,10 +37,6 @@ type articleService struct {
 }
 
 // NewArticleService 创建文章服务
-//
-//	return ArticleService
-//	author centonhuang
-//	update 2025-01-05 15:23:26
 func NewArticleService() ArticleService {
 	return &articleService{
 		userDAO:           dao.GetUserDAO(),
@@ -55,24 +48,21 @@ func NewArticleService() ArticleService {
 }
 
 // CreateArticle 创建文章
-//
-//	receiver s *articleService
-//	param req *protocol.CreateArticleRequest
-//	return rsp *protocol.CreateArticleResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) CreateArticle(ctx context.Context, req *protocol.CreateArticleRequest) (rsp *protocol.CreateArticleResponse, err error) {
-	rsp = &protocol.CreateArticleResponse{}
+func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCreateRequest) (rsp *dto.ArticleCreateResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.ArticleCreateResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tags := []model.Tag{}
-	tagChan, errChan := make(chan *model.Tag, len(req.Tags)), make(chan error, len(req.Tags))
+	tagChan, errChan := make(chan *model.Tag, len(req.Body.Tags)), make(chan error, len(req.Body.Tags))
 
 	var wg sync.WaitGroup
-	wg.Add(len(req.Tags))
+	wg.Add(len(req.Body.Tags))
 
 	getTagFunc := func(tagSlug string) {
 		defer wg.Done()
@@ -84,7 +74,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 		tagChan <- tag
 	}
 
-	for _, tagSlug := range req.Tags {
+	for _, tagSlug := range req.Body.Tags {
 		go getTagFunc(tagSlug)
 	}
 
@@ -106,22 +96,22 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 		tags = append(tags, *tag)
 	}
 
-	category, err := s.categoryDAO.GetByID(db, req.CategoryID, []string{"id"}, []string{})
+	category, err := s.categoryDAO.GetByID(db, req.Body.CategoryID, []string{"id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] category not found",
-				zap.Uint("categoryID", req.CategoryID))
+				zap.Uint("categoryID", req.Body.CategoryID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[ArticleService] failed to get category", zap.Uint("categoryID", req.CategoryID), zap.Error(err))
+		logger.Error("[ArticleService] failed to get category", zap.Uint("categoryID", req.Body.CategoryID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	article := &model.Article{
 		UserID:   req.UserID,
 		Status:   model.ArticleStatusDraft,
-		Title:    req.Title,
-		Slug:     req.Slug,
+		Title:    req.Body.Title,
+		Slug:     req.Body.Slug,
 		Tags:     tags,
 		Category: category,
 		Comments: []model.Comment{},
@@ -142,7 +132,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Article = &protocol.Article{
+	rsp.Article = &dto.Article{
 		ArticleID:   article.ID,
 		Title:       article.Title,
 		Slug:        article.Slug,
@@ -162,15 +152,8 @@ func (s *articleService) CreateArticle(ctx context.Context, req *protocol.Create
 }
 
 // GetArticleInfo 获取文章信息
-//
-//	receiver s *articleService
-//	param req *protocol.GetArticleInfoRequest
-//	return rsp *protocol.GetArticleInfoResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetArticleInfoRequest) (rsp *protocol.GetArticleInfoResponse, err error) {
-	rsp = &protocol.GetArticleInfoResponse{}
+func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGetRequest) (rsp *dto.ArticleGetResponse, err error) {
+	rsp = &dto.ArticleGetResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -192,56 +175,20 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *protocol.GetAr
 		return nil, protocol.ErrInternalError
 	}
 
-	// 如果文章不是公开的，则只有作者本人可以查看
 	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleService] no permission to get article",
-			zap.Uint("articleID", req.ArticleID),
-		)
+			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
 	}
 
-	rsp.Article = &protocol.Article{
-		ArticleID: article.ID,
-		Title:     article.Title,
-		Slug:      article.Slug,
-		Status:    string(article.Status),
-		User: &dto.User{
-			UserID: article.User.ID,
-			Name:   article.User.Name,
-			Avatar: article.User.Avatar,
-		},
-		Category: &protocol.Category{
-			CategoryID: article.CategoryID,
-			Name:       article.Category.Name,
-		},
-		CreatedAt:   article.CreatedAt.Format(time.DateTime),
-		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
-		PublishedAt: article.PublishedAt.Format(time.DateTime),
-		Likes:       article.Likes,
-		Views:       article.Views,
-		Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
-			return &protocol.Tag{
-				TagID: tag.ID,
-				Name:  tag.Name,
-				Slug:  tag.Slug,
-			}
-		}),
-		Comments: len(article.Comments),
-	}
+	rsp.Article = s.buildArticleDTO(article)
 
 	return rsp, nil
 }
 
-// GetArticleInfoBySlug 获取文章信息
-//
-//	receiver s *articleService
-//	param req *protocol.GetArticleInfoBySlugRequest
-//	return rsp *protocol.GetArticleInfoBySlugResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-19 15:23:26
-func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol.GetArticleInfoBySlugRequest) (rsp *protocol.GetArticleInfoBySlugResponse, err error) {
-	rsp = &protocol.GetArticleInfoBySlugResponse{}
+// GetArticleInfoBySlug 通过别名获取文章信息
+func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.ArticleGetBySlugRequest) (rsp *dto.ArticleGetBySlugResponse, err error) {
+	rsp = &dto.ArticleGetBySlugResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -276,76 +223,43 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *protocol
 		return nil, protocol.ErrInternalError
 	}
 
-	// 如果文章不是公开的，则只有作者本人可以查看
 	if article.UserID != user.ID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleService] no permission to get article",
 			zap.String("ArticleSlug", req.ArticleSlug),
-			zap.String("AuthorName", req.AuthorName),
-		)
+			zap.String("AuthorName", req.AuthorName))
 		return nil, protocol.ErrNoPermission
 	}
 
-	rsp.Article = &protocol.Article{
-		ArticleID: article.ID,
-		Title:     article.Title,
-		Slug:      article.Slug,
-		Status:    string(article.Status),
-		User: &dto.User{
-			UserID: article.User.ID,
-			Name:   article.User.Name,
-			Avatar: article.User.Avatar,
-		},
-		Category: &protocol.Category{
-			CategoryID: article.CategoryID,
-			Name:       article.Category.Name,
-		},
-		CreatedAt:   article.CreatedAt.Format(time.DateTime),
-		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
-		PublishedAt: article.PublishedAt.Format(time.DateTime),
-		Likes:       article.Likes,
-		Views:       article.Views,
-		Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
-			return &protocol.Tag{
-				TagID: tag.ID,
-				Name:  tag.Name,
-				Slug:  tag.Slug,
-			}
-		}),
-		Comments: len(article.Comments),
-	}
+	rsp.Article = s.buildArticleDTO(article)
 
 	return rsp, nil
 }
 
 // UpdateArticle 更新文章
-//
-//	receiver s *articleService
-//	param req *protocol.UpdateArticleRequest
-//	return rsp *protocol.UpdateArticleResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.UpdateArticleRequest) (rsp *protocol.UpdateArticleResponse, err error) {
-	rsp = &protocol.UpdateArticleResponse{}
+func (s *articleService) UpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (rsp *dto.ArticleUpdateResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.ArticleUpdateResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	updateFields := make(map[string]interface{})
-	if req.UpdatedTitle != "" {
-		updateFields["title"] = req.UpdatedTitle
+	if req.Body.Title != "" {
+		updateFields["title"] = req.Body.Title
 	}
-	if req.UpdatedSlug != "" {
-		updateFields["slug"] = req.UpdatedSlug
+	if req.Body.Slug != "" {
+		updateFields["slug"] = req.Body.Slug
 	}
-	if req.UpdatedCategoryID != 0 {
-		updateFields["category_id"] = req.UpdatedCategoryID
+	if req.Body.CategoryID != 0 {
+		updateFields["category_id"] = req.Body.CategoryID
 	}
 
 	if len(updateFields) == 0 {
 		logger.Warn("[ArticleService] no fields to update",
-			zap.Uint("articleID", req.ArticleID),
-			zap.Any("updateFields", updateFields))
+			zap.Uint("articleID", req.ArticleID))
 		return rsp, nil
 	}
 
@@ -364,8 +278,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 
 	if article.UserID != req.UserID {
 		logger.Error("[ArticleService] no permission to update article",
-			zap.Uint("articleID", req.ArticleID),
-		)
+			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -381,15 +294,12 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *protocol.Update
 }
 
 // UpdateArticleStatus 更新文章状态
-//
-//	receiver s *articleService
-//	param req *protocol.UpdateArticleStatusRequest
-//	return rsp *protocol.UpdateArticleStatusResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.UpdateArticleStatusRequest) (rsp *protocol.UpdateArticleStatusResponse, err error) {
-	rsp = &protocol.UpdateArticleStatusResponse{}
+func (s *articleService) UpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (rsp *dto.ArticleUpdateStatusResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.ArticleUpdateStatusResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -398,58 +308,40 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *protocol.
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+				zap.Uint("articleID", req.ArticleID),
+				zap.Uint("userID", req.UserID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Error("[ArticleService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("userID", req.UserID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.Status == req.Status {
-		logger.Warn("[ArticleService] article status not changed",
-			zap.Uint("articleID", req.ArticleID),
-			zap.String("status", string(req.Status)))
-		return rsp, nil
-	}
-
 	updateFields := map[string]interface{}{
-		"status": req.Status,
-	}
-	switch req.Status {
-	case model.ArticleStatusPublish:
-		updateFields["published_at"] = time.Now().UTC()
-
-	case model.ArticleStatusDraft:
-		updateFields["published_at"] = nil
+		"status": req.Body.Status,
 	}
 
 	if err := s.articleDAO.Update(db, article, updateFields); err != nil {
 		logger.Error("[ArticleService] failed to update article status",
-			zap.Uint("articleID", article.ID),
-			zap.String("status", string(req.Status)),
+			zap.Uint("articleID", req.ArticleID),
+			zap.String("status", string(req.Body.Status)),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
+
 	return rsp, nil
 }
 
 // DeleteArticle 删除文章
-//
-//	receiver s *articleService
-//	param req *protocol.DeleteArticleRequest
-//	return rsp *protocol.DeleteArticleResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.DeleteArticleRequest) (rsp *protocol.DeleteArticleResponse, err error) {
-	rsp = &protocol.DeleteArticleResponse{}
+func (s *articleService) DeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (rsp *dto.ArticleDeleteResponse, err error) {
+	rsp = &dto.ArticleDeleteResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, req.UserID, []string{"id", "slug"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
@@ -460,6 +352,12 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.Delete
 			zap.Uint("articleID", req.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
+	}
+
+	if article.UserID != req.UserID {
+		logger.Error("[ArticleService] no permission to delete article",
+			zap.Uint("articleID", req.ArticleID))
+		return nil, protocol.ErrNoPermission
 	}
 
 	if err := s.articleDAO.Delete(db, article); err != nil {
@@ -473,31 +371,25 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *protocol.Delete
 }
 
 // ListArticles 列出文章
-//
-//	receiver s *articleService
-//	param req *protocol.ListArticlesRequest
-//	return rsp *protocol.ListArticlesResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArticlesRequest) (rsp *protocol.ListArticlesResponse, err error) {
-	rsp = &protocol.ListArticlesResponse{}
+func (s *articleService) ListArticles(ctx context.Context, req *dto.ArticleListRequest) (rsp *dto.ArticleListResponse, err error) {
+	rsp = &dto.ArticleListResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
+	paginate := req.PaginationQuery.ToPaginateParam()
 	param := &dao.PaginateParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PaginateParam.Page,
-			PageSize: req.PaginateParam.PageSize,
+			Page:     paginate.PageParam.Page,
+			PageSize: paginate.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.PaginateParam.Query,
-			QueryFields: []string{"title"},
+			Query:       paginate.QueryParam.Query,
+			QueryFields: []string{"title", "slug"},
 		},
 	}
-	articles, pageInfo, err := s.articleDAO.Paginate(
-		db,
+
+	articles, pageInfo, err := s.articleDAO.Paginate(db,
 		[]string{
 			"id", "slug", "title", "status", "user_id", "category_id",
 			"created_at", "updated_at", "published_at",
@@ -507,46 +399,50 @@ func (s *articleService) ListArticles(ctx context.Context, req *protocol.ListArt
 		param,
 	)
 	if err != nil {
-		logger.Error("[ArticleService] failed to paginate articles", zap.Error(err))
+		logger.Error("[ArticleService] failed to list articles", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *protocol.Article {
-		return &protocol.Article{
-			ArticleID: article.ID,
-			Title:     article.Title,
-			Slug:      article.Slug,
-			Status:    string(article.Status),
-			User: &dto.User{
-				UserID: article.User.ID,
-				Name:   article.User.Name,
-				Avatar: article.User.Avatar,
-			},
-			Category: &protocol.Category{
-				CategoryID: article.CategoryID,
-				Name:       article.Category.Name,
-			},
-			CreatedAt:   article.CreatedAt.Format(time.DateTime),
-			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
-			PublishedAt: article.PublishedAt.Format(time.DateTime),
-			Likes:       article.Likes,
-			Views:       article.Views,
-			Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
-				return &protocol.Tag{
-					TagID: tag.ID,
-					Name:  tag.Name,
-					Slug:  tag.Slug,
-				}
-			}),
-			Comments: len(article.Comments),
-		}
+	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *dto.Article {
+		return s.buildArticleDTO(&article)
 	})
 
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
 	}
 
 	return rsp, nil
+}
+
+func (s *articleService) buildArticleDTO(article *model.Article) *dto.Article {
+	return &dto.Article{
+		ArticleID: article.ID,
+		Title:     article.Title,
+		Slug:      article.Slug,
+		Status:    string(article.Status),
+		User: &dto.User{
+			UserID: article.User.ID,
+			Name:   article.User.Name,
+			Avatar: article.User.Avatar,
+		},
+		Category: &dto.Category{
+			CategoryID: article.CategoryID,
+			Name:       article.Category.Name,
+		},
+		CreatedAt:   article.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
+		PublishedAt: article.PublishedAt.Format(time.DateTime),
+		Likes:       article.Likes,
+		Views:       article.Views,
+		Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *dto.Tag {
+			return &dto.Tag{
+				TagID: tag.ID,
+				Name:  tag.Name,
+				Slug:  tag.Slug,
+			}
+		}),
+		Comments: len(article.Comments),
+	}
 }

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -32,5 +33,27 @@ func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.
 		}
 
 		return c.Next()
+	}
+}
+
+// LimitUserPermissionMiddlewareForHuma 限制用户权限中间件 for Huma
+func LimitUserPermissionMiddlewareForHuma(serviceName string, requiredPermission model.Permission) func(ctx huma.Context, next func(huma.Context)) {
+	return func(ctx huma.Context, next func(huma.Context)) {
+		permission, ok := ctx.Context().Value(constant.CtxKeyPermission).(model.Permission)
+		if !ok {
+			ctx.SetStatus(fiber.StatusUnauthorized)
+			return
+		}
+
+		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
+			logger.WithCtx(ctx.Context()).Info("[LimitUserPermissionMiddlewareForHuma] permission denied",
+				zap.String("serviceName", serviceName),
+				zap.String("requiredPermission", string(requiredPermission)),
+				zap.String("permission", string(permission)))
+			ctx.SetStatus(fiber.StatusForbidden)
+			return
+		}
+
+		next(ctx)
 	}
 }
