@@ -22,11 +22,11 @@ import (
 //	author centonhuang
 //	update 2025-10-31 05:45:00
 type TagService interface {
-	CreateTag(ctx context.Context, req *dto.TagCreateRequest) (rsp *dto.TagCreateResponse, err error)
-	GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rsp *dto.TagGetResponse, err error)
-	UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.EmptyResponse, err error)
-	DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (rsp *dto.EmptyResponse, err error)
-	ListTags(ctx context.Context, req *dto.TagListRequest) (rsp *dto.TagListResponse, err error)
+	CreateTag(ctx context.Context, req *dto.CreateTagRequest) (rsp *dto.CreateTagResponse, err error)
+	GetTagInfo(ctx context.Context, req *dto.GetTagRequest) (rsp *dto.GetTagResponse, err error)
+	UpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (rsp *dto.EmptyResponse, err error)
+	DeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (rsp *dto.EmptyResponse, err error)
+	ListTags(ctx context.Context, req *dto.ListTagRequest) (rsp *dto.ListTagResponse, err error)
 }
 
 type tagService struct {
@@ -43,7 +43,7 @@ func NewTagService() TagService {
 }
 
 // CreateTag 创建标签
-func (s *tagService) CreateTag(ctx context.Context, req *dto.TagCreateRequest) (rsp *dto.TagCreateResponse, err error) {
+func (s *tagService) CreateTag(ctx context.Context, req *dto.CreateTagRequest) (rsp *dto.CreateTagResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -51,7 +51,7 @@ func (s *tagService) CreateTag(ctx context.Context, req *dto.TagCreateRequest) (
 		return nil, protocol.ErrBadRequest
 	}
 
-	rsp = &dto.TagCreateResponse{}
+	rsp = &dto.CreateTagResponse{}
 	db := database.GetDBInstance(ctx)
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
@@ -86,8 +86,8 @@ func (s *tagService) CreateTag(ctx context.Context, req *dto.TagCreateRequest) (
 }
 
 // GetTagInfo 获取标签信息
-func (s *tagService) GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rsp *dto.TagGetResponse, err error) {
-	rsp = &dto.TagGetResponse{}
+func (s *tagService) GetTagInfo(ctx context.Context, req *dto.GetTagRequest) (rsp *dto.GetTagResponse, err error) {
+	rsp = &dto.GetTagResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -118,7 +118,7 @@ func (s *tagService) GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rs
 }
 
 // UpdateTag 更新标签
-func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *tagService) UpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -176,7 +176,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (
 }
 
 // DeleteTag 删除标签
-func (s *tagService) DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *tagService) DeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (rsp *dto.EmptyResponse, err error) {
 	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
@@ -209,8 +209,8 @@ func (s *tagService) DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (
 }
 
 // ListTags 列出标签
-func (s *tagService) ListTags(ctx context.Context, req *dto.TagListRequest) (rsp *dto.TagListResponse, err error) {
-	rsp = &dto.TagListResponse{}
+func (s *tagService) ListTags(ctx context.Context, req *dto.ListTagRequest) (rsp *dto.ListTagResponse, err error) {
+	rsp = &dto.ListTagResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)

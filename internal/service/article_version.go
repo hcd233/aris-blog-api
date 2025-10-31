@@ -22,7 +22,7 @@ type ArticleVersionService interface {
 	CreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (rsp *dto.ArticleVersionCreateResponse, err error)
 	GetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (rsp *dto.ArticleVersionGetResponse, err error)
 	GetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (rsp *dto.ArticleVersionGetLatestResponse, err error)
-	ListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (rsp *dto.ArticleVersionListResponse, err error)
+	ListArticleVersions(ctx context.Context, req *dto.ListArticleVersionRequest) (rsp *dto.ListArticleVersionResponse, err error)
 }
 
 type articleVersionService struct {
@@ -224,10 +224,10 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 }
 
 // ListArticleVersions 列出文章版本
-func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (rsp *dto.ArticleVersionListResponse, err error) {
+func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dto.ListArticleVersionRequest) (rsp *dto.ListArticleVersionResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.ArticleVersionListResponse{}
+	rsp = &dto.ListArticleVersionResponse{}
 
 	db := database.GetDBInstance(ctx)
 

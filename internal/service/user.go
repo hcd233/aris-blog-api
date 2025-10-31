@@ -21,8 +21,8 @@ import (
 //	author centonhuang
 //	update 2025-01-04 21:04:00
 type UserService interface {
-	GetCurUserInfo(ctx context.Context, req *dto.EmptyRequest) (rsp *dto.GetCurUserInfoResponse, err error)
-	GetUserInfo(ctx context.Context, req *dto.GetUserInfoRequest) (rsp *dto.GetUserResponse, err error)
+	GetCurUserInfo(ctx context.Context, req *dto.EmptyRequest) (rsp *dto.GetCurrentUserResponse, err error)
+	GetUserInfo(ctx context.Context, req *dto.GetUserRequest) (rsp *dto.GetUserResponse, err error)
 	UpdateUserInfo(ctx context.Context, req *dto.UpdateUserRequest) (rsp *dto.EmptyResponse, err error)
 }
 
@@ -54,8 +54,8 @@ func NewUserService() UserService {
 //	return err error
 //	author centonhuang
 //	update 2025-01-04 21:04:03
-func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyRequest) (rsp *dto.GetCurUserInfoResponse, err error) {
-	rsp = &dto.GetCurUserInfoResponse{}
+func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyRequest) (rsp *dto.GetCurrentUserResponse, err error) {
+	rsp = &dto.GetCurrentUserResponse{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
@@ -101,7 +101,7 @@ func (s *userService) GetCurUserInfo(ctx context.Context, _ *dto.EmptyRequest) (
 //	return error
 //	author centonhuang
 //	update 2025-01-04 21:09:04
-func (s *userService) GetUserInfo(ctx context.Context, req *dto.GetUserInfoRequest) (rsp *dto.GetUserResponse, err error) {
+func (s *userService) GetUserInfo(ctx context.Context, req *dto.GetUserRequest) (rsp *dto.GetUserResponse, err error) {
 	rsp = &dto.GetUserResponse{}
 
 	logger := logger.WithCtx(ctx)

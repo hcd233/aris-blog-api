@@ -16,7 +16,6 @@ require (
 	github.com/samber/lo v1.39.0
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/viper v1.19.0
-	github.com/swaggo/swag v1.16.3
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.60
 	github.com/ulule/limiter/v3 v3.11.2
 	go.uber.org/zap v1.27.0
@@ -29,9 +28,6 @@ require (
 
 require (
 	cloud.google.com/go/compute/metadata v0.7.0 // indirect
-	github.com/KyleBanks/depth v1.2.1 // indirect
-	github.com/PuerkitoBio/purell v1.1.1 // indirect
-	github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/eino-ext/libs/acl/langfuse v0.0.0-20250409060521-ba8646352e4b // indirect
@@ -40,8 +36,6 @@ require (
 	github.com/felixge/fgprof v0.9.5 // indirect
 	github.com/getkin/kin-openapi v0.118.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.0 // indirect
-	github.com/go-openapi/jsonreference v0.19.6 // indirect
-	github.com/go-openapi/spec v0.20.4 // indirect
 	github.com/go-openapi/swag v0.23.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -71,7 +65,6 @@ require (
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
-	golang.org/x/tools v0.36.0 // indirect
 )
 
 require (

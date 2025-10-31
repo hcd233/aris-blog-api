@@ -24,7 +24,7 @@ func initUserRouter(userGroup *huma.Group) {
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
-	}, userHandler.HandleGetCurUserInfo)
+	}, userHandler.HandleGetCurrentUser)
 
 	// 更新用户信息
 	huma.Register(userGroup, huma.Operation{
@@ -37,7 +37,7 @@ func initUserRouter(userGroup *huma.Group) {
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
-	}, userHandler.HandleUpdateInfo)
+	}, userHandler.HandleUpdateUser)
 
 	// 获取指定用户信息
 	huma.Register(userGroup, huma.Operation{
@@ -50,5 +50,5 @@ func initUserRouter(userGroup *huma.Group) {
 		Security: []map[string][]string{
 			{"jwtAuth": {}},
 		},
-	}, userHandler.HandleGetUserInfo)
+	}, userHandler.HandleGetUser)
 }

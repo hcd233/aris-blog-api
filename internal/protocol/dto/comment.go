@@ -18,48 +18,48 @@ type CommentPathParam struct {
 	CommentID uint `path:"commentID" doc:"Comment ID"`
 }
 
-// CommentCreateRequestBody 创建评论请求体
-type CommentCreateRequestBody struct {
+// CreateCommentRequestBody 创建评论请求体
+type CreateCommentRequestBody struct {
 	ArticleID uint   `json:"articleID" doc:"Article ID"`
 	ReplyTo   uint   `json:"replyTo" doc:"Parent comment ID if this is a reply"`
 	Content   string `json:"content" doc:"Comment content"`
 }
 
-// CommentCreateRequest 创建评论请求
-type CommentCreateRequest struct {
-	Body *CommentCreateRequestBody `json:"body" doc:"Fields for creating comment"`
+// CreateCommentRequest 创建评论请求
+type CreateCommentRequest struct {
+	Body *CreateCommentRequestBody `json:"body" doc:"Fields for creating comment"`
 }
 
-// CommentCreateResponse 创建评论响应
-type CommentCreateResponse struct {
+// CreateCommentResponse 创建评论响应
+type CreateCommentResponse struct {
 	Comment *Comment `json:"comment" doc:"Comment details"`
 }
 
-// CommentDeleteRequest 删除评论请求
-type CommentDeleteRequest struct {
+// DeleteCommentRequest 删除评论请求
+type DeleteCommentRequest struct {
 	CommentPathParam
 }
 
-// CommentListArticleRequest 列出文章评论请求
-type CommentListArticleRequest struct {
+// ListArticleCommentRequest 列出文章评论请求
+type ListArticleCommentRequest struct {
 	ArticlePathParam
 	CommonParam
 }
 
-// CommentListArticleResponse 列出文章评论响应
-type CommentListArticleResponse struct {
+// ListArticleCommentResponse 列出文章评论响应
+type ListArticleCommentResponse struct {
 	Comments []*Comment `json:"comments" doc:"List of comments"`
 	PageInfo *PageInfo  `json:"pageInfo" doc:"Pagination information"`
 }
 
-// CommentListChildrenRequest 列出子评论请求
-type CommentListChildrenRequest struct {
+// ListChildrenCommentRequest 列出子评论请求
+type ListChildrenCommentRequest struct {
 	CommentPathParam
 	CommonParam
 }
 
-// CommentListChildrenResponse 列出子评论响应
-type CommentListChildrenResponse struct {
+// ListChildrenCommentResponse 列出子评论响应
+type ListChildrenCommentResponse struct {
 	Comments []*Comment `json:"comments" doc:"List of child comments"`
 	PageInfo *PageInfo  `json:"pageInfo" doc:"Pagination information"`
 }

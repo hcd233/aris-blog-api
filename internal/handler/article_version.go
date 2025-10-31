@@ -14,7 +14,7 @@ type ArticleVersionHandler interface {
 	HandleCreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (*protocol.HumaHTTPResponse[*dto.ArticleVersionCreateResponse], error)
 	HandleGetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (*protocol.HumaHTTPResponse[*dto.ArticleVersionGetResponse], error)
 	HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (*protocol.HumaHTTPResponse[*dto.ArticleVersionGetLatestResponse], error)
-	HandleListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (*protocol.HumaHTTPResponse[*dto.ArticleVersionListResponse], error)
+	HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleVersionResponse], error)
 }
 
 type articleVersionHandler struct {
@@ -40,6 +40,6 @@ func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(ctx context.Co
 	return util.WrapHTTPResponse(h.svc.GetLatestArticleVersionInfo(ctx, req))
 }
 
-func (h *articleVersionHandler) HandleListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (*protocol.HumaHTTPResponse[*dto.ArticleVersionListResponse], error) {
+func (h *articleVersionHandler) HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleVersionResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListArticleVersions(ctx, req))
 }

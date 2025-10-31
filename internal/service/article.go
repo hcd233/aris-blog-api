@@ -20,13 +20,13 @@ import (
 
 // ArticleService 文章服务
 type ArticleService interface {
-	CreateArticle(ctx context.Context, req *dto.ArticleCreateRequest) (rsp *dto.ArticleCreateResponse, err error)
-	GetArticleInfo(ctx context.Context, req *dto.ArticleGetRequest) (rsp *dto.ArticleGetResponse, err error)
-	GetArticleInfoBySlug(ctx context.Context, req *dto.ArticleGetBySlugRequest) (rsp *dto.ArticleGetBySlugResponse, err error)
-	UpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (rsp *dto.EmptyResponse, err error)
-	UpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (rsp *dto.EmptyResponse, err error)
-	DeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (rsp *dto.EmptyResponse, err error)
-	ListArticles(ctx context.Context, req *dto.ArticleListRequest) (rsp *dto.ArticleListResponse, err error)
+	CreateArticle(ctx context.Context, req *dto.CreateArticleRequest) (rsp *dto.CreateArticleResponse, err error)
+	GetArticleInfo(ctx context.Context, req *dto.GetArticleRequest) (rsp *dto.GetArticleResponse, err error)
+	GetArticleInfoBySlug(ctx context.Context, req *dto.GetArticleBySlugRequest) (rsp *dto.GetArticleBySlugResponse, err error)
+	UpdateArticle(ctx context.Context, req *dto.UpdateArticleRequest) (rsp *dto.EmptyResponse, err error)
+	UpdateArticleStatus(ctx context.Context, req *dto.UpdateArticleStatusRequest) (rsp *dto.EmptyResponse, err error)
+	DeleteArticle(ctx context.Context, req *dto.DeleteArticleRequest) (rsp *dto.EmptyResponse, err error)
+	ListArticles(ctx context.Context, req *dto.ListArticleRequest) (rsp *dto.ListArticleResponse, err error)
 }
 
 type articleService struct {
@@ -49,7 +49,7 @@ func NewArticleService() ArticleService {
 }
 
 // CreateArticle 创建文章
-func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCreateRequest) (rsp *dto.ArticleCreateResponse, err error) {
+func (s *articleService) CreateArticle(ctx context.Context, req *dto.CreateArticleRequest) (rsp *dto.CreateArticleResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -59,7 +59,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCrea
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	rsp = &dto.ArticleCreateResponse{}
+	rsp = &dto.CreateArticleResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -156,7 +156,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCrea
 }
 
 // GetArticleInfo 获取文章信息
-func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGetRequest) (rsp *dto.ArticleGetResponse, err error) {
+func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.GetArticleRequest) (rsp *dto.GetArticleResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil {
@@ -166,7 +166,7 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGet
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	rsp = &dto.ArticleGetResponse{}
+	rsp = &dto.GetArticleResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -199,7 +199,7 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGet
 }
 
 // GetArticleInfoBySlug 通过别名获取文章信息
-func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.ArticleGetBySlugRequest) (rsp *dto.ArticleGetBySlugResponse, err error) {
+func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.GetArticleBySlugRequest) (rsp *dto.GetArticleBySlugResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil {
@@ -209,7 +209,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.Arti
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	rsp = &dto.ArticleGetBySlugResponse{}
+	rsp = &dto.GetArticleBySlugResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -256,7 +256,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.Arti
 }
 
 // UpdateArticle 更新文章
-func (s *articleService) UpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *articleService) UpdateArticle(ctx context.Context, req *dto.UpdateArticleRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -318,7 +318,7 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.ArticleUpda
 }
 
 // UpdateArticleStatus 更新文章状态
-func (s *articleService) UpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *articleService) UpdateArticleStatus(ctx context.Context, req *dto.UpdateArticleStatusRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -362,7 +362,7 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *dto.Artic
 }
 
 // DeleteArticle 删除文章
-func (s *articleService) DeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *articleService) DeleteArticle(ctx context.Context, req *dto.DeleteArticleRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil {
@@ -406,8 +406,8 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.ArticleDele
 }
 
 // ListArticles 列出文章
-func (s *articleService) ListArticles(ctx context.Context, req *dto.ArticleListRequest) (rsp *dto.ArticleListResponse, err error) {
-	rsp = &dto.ArticleListResponse{}
+func (s *articleService) ListArticles(ctx context.Context, req *dto.ListArticleRequest) (rsp *dto.ListArticleResponse, err error) {
+	rsp = &dto.ListArticleResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)

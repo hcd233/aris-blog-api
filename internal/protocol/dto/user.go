@@ -1,19 +1,19 @@
 // Package dto 用户DTO
 package dto
 
-// GetCurUserInfoRequest represents a request to get the current authenticated user's information
+// GetCurrentUserRequest represents a request to get the current authenticated user's information
 //
 //	author centonhuang
 //	update 2025-01-04 21:00:54
-type GetCurUserInfoRequest struct {
+type GetCurrentUserRequest struct {
 	UserID uint `json:"userID" doc:"User ID extracted from the JWT token"`
 }
 
-// GetCurUserInfoResponse represents the response containing the current user's detailed information
+// GetCurrentUserResponse represents the response containing the current user's detailed information
 //
 //	author centonhuang
 //	update 2025-01-04 21:00:59
-type GetCurUserInfoResponse struct {
+type GetCurrentUserResponse struct {
 	User *User `json:"user" doc:"Complete user information including permissions"`
 }
 
@@ -21,7 +21,7 @@ type GetCurUserInfoResponse struct {
 //
 //	author centonhuang
 //	update 2025-01-04 21:19:41
-type GetUserInfoRequest struct {
+type GetUserRequest struct {
 	UserID uint `json:"userID" path:"userID" doc:"Unique identifier of the user to retrieve"`
 }
 

@@ -19,10 +19,10 @@ import (
 
 // CommentService 评论服务
 type CommentService interface {
-	CreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (rsp *dto.CommentCreateResponse, err error)
-	DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.EmptyResponse, err error)
-	ListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (rsp *dto.CommentListArticleResponse, err error)
-	ListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (rsp *dto.CommentListChildrenResponse, err error)
+	CreateArticleComment(ctx context.Context, req *dto.CreateCommentRequest) (rsp *dto.CreateCommentResponse, err error)
+	DeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (rsp *dto.EmptyResponse, err error)
+	ListArticleComments(ctx context.Context, req *dto.ListArticleCommentRequest) (rsp *dto.ListArticleCommentResponse, err error)
+	ListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentRequest) (rsp *dto.ListChildrenCommentResponse, err error)
 }
 
 type commentService struct {
@@ -41,7 +41,7 @@ func NewCommentService() CommentService {
 }
 
 // CreateArticleComment 创建文章评论
-func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (rsp *dto.CommentCreateResponse, err error) {
+func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.CreateCommentRequest) (rsp *dto.CreateCommentResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -51,7 +51,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.Comm
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	rsp = &dto.CommentCreateResponse{}
+	rsp = &dto.CreateCommentResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -115,7 +115,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.Comm
 }
 
 // DeleteComment 删除评论
-func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *commentService) DeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	rsp = &dto.EmptyResponse{}
@@ -162,10 +162,10 @@ func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDele
 }
 
 // ListArticleComments 列出文章评论
-func (s *commentService) ListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (rsp *dto.CommentListArticleResponse, err error) {
+func (s *commentService) ListArticleComments(ctx context.Context, req *dto.ListArticleCommentRequest) (rsp *dto.ListArticleCommentResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.CommentListArticleResponse{}
+	rsp = &dto.ListArticleCommentResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -229,10 +229,10 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *dto.Comme
 }
 
 // ListChildrenComments 列出子评论
-func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (rsp *dto.CommentListChildrenResponse, err error) {
+func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentRequest) (rsp *dto.ListChildrenCommentResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.CommentListChildrenResponse{}
+	rsp = &dto.ListChildrenCommentResponse{}
 
 	db := database.GetDBInstance(ctx)
 

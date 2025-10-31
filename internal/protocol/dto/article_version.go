@@ -48,14 +48,14 @@ type ArticleVersionGetLatestResponse struct {
 	Version *ArticleVersion `json:"version" doc:"Latest article version"`
 }
 
-// ArticleVersionListRequest 列出文章版本请求
-type ArticleVersionListRequest struct {
+// ListArticleVersionRequest 列出文章版本请求
+type ListArticleVersionRequest struct {
 	ArticleVersionArticlePathParam
 	CommonParam
 }
 
-// ArticleVersionListResponse 列出文章版本响应
-type ArticleVersionListResponse struct {
+// ListArticleVersionResponse 列出文章版本响应
+type ListArticleVersionResponse struct {
 	Versions []*ArticleVersion `json:"versions" doc:"List of article versions"`
 	PageInfo *PageInfo         `json:"pageInfo" doc:"Pagination information"`
 }
