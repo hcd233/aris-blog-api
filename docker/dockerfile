@@ -6,7 +6,6 @@ ENV CGO_ENABLED=0
 WORKDIR /app
 
 COPY cmd ./cmd
-COPY docs ./docs
 COPY internal ./internal
 COPY go.mod go.sum main.go ./
 
