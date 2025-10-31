@@ -15,6 +15,9 @@ env:
 
 jobs:
   build:
+    env:
+      BRANCH_TAG: ""
+      PLATFORM_PAIR: ""
     strategy:
       fail-fast: false
       matrix:
@@ -38,25 +41,17 @@ jobs:
         run: |
           echo "PLATFORM_PAIR=${{ matrix.platform-pair }}" >> $GITHUB_ENV 
 
+      - name: Set branch tag
+        run: |
+          ref="${GITHUB_REF_NAME}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ref="${GITHUB_HEAD_REF}"
+          fi
+          ref="${ref//\//-}"
+          echo "BRANCH_TAG=${ref}" >> $GITHUB_ENV
+
       - name: Prepare Docker File
         run: cp docker/dockerfile dockerfile
-
-      - name: Derive PR branch tag
-        if: ${{ github.event_name == 'pull_request' }}
-        id: pr_tag
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-        run: |
-          branch="$HEAD_REF"
-          sanitized=$(echo "$branch" | tr '[:upper:]' '[:lower:]')
-          sanitized=$(echo "$sanitized" | sed 's#[^a-z0-9._-]#-#g')
-          sanitized=$(echo "$sanitized" | sed 's#-+#-#g; s#^-##; s#-$##')
-          if [ -z "$sanitized" ]; then
-            echo "Cannot generate a valid tag from the branch name" >&2
-            exit 1
-          fi
-          echo "tag=$sanitized" >> "$GITHUB_OUTPUT"
-          echo "PR_BRANCH_TAG=$sanitized" >> $GITHUB_ENV
 
       - name: Install cosign
         uses: sigstore/cosign-installer@v3.5.0
@@ -85,10 +80,11 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=raw,event=pr,value=${{ steps.pr_tag.outputs.tag }}
+            type=raw,event=pr,value={{head_ref}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
+            type=raw,value=${{ env.BRANCH_TAG }}
 
       - name: Build and push by digest
         id: build
@@ -116,6 +112,8 @@ jobs:
 
   merge:
     runs-on: ubuntu-latest
+    env:
+      BRANCH_TAG: ""
     needs:
       - build
     steps:
@@ -136,22 +134,14 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Derive PR branch tag
-        if: ${{ github.event_name == 'pull_request' }}
-        id: pr_tag
-        env:
-          HEAD_REF: ${{ github.head_ref }}
+      - name: Set branch tag
         run: |
-          branch="$HEAD_REF"
-          sanitized=$(echo "$branch" | tr '[:upper:]' '[:lower:]')
-          sanitized=$(echo "$sanitized" | sed 's#[^a-z0-9._-]#-#g')
-          sanitized=$(echo "$sanitized" | sed 's#-+#-#g; s#^-##; s#-$##')
-          if [ -z "$sanitized" ]; then
-            echo "Cannot generate a valid tag from the branch name" >&2
-            exit 1
+          ref="${GITHUB_REF_NAME}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            ref="${GITHUB_HEAD_REF}"
           fi
-          echo "tag=$sanitized" >> "$GITHUB_OUTPUT"
-          echo "PR_BRANCH_TAG=$sanitized" >> $GITHUB_ENV
+          ref="${ref//\//-}"
+          echo "BRANCH_TAG=${ref}" >> $GITHUB_ENV
 
       - name: Extract Docker metadata
         id: meta
@@ -160,10 +150,11 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           tags: |
             type=ref,event=branch
-            type=raw,event=pr,value=${{ steps.pr_tag.outputs.tag }}
+            type=raw,event=pr,value={{head_ref}}
             type=semver,pattern={{version}}
             type=semver,pattern={{major}}.{{minor}}
             type=sha
+            type=raw,value=${{ env.BRANCH_TAG }}
 
       - name: Create manifest list and push
         working-directory: /tmp/digests
@@ -173,9 +164,4 @@ jobs:
 
       - name: Inspect image
         run: |
-          primary_tag=$(jq -r '.tags[0] // empty' <<< "$DOCKER_METADATA_OUTPUT_JSON")
-          if [ -z "$primary_tag" ]; then
-            echo "No tags generated from metadata" >&2
-            exit 1
-          fi
-          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:$primary_tag
+          docker buildx imagetools inspect ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.version }}
