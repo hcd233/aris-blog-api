@@ -19,10 +19,10 @@ import (
 
 // ArticleVersionService 文章版本服务
 type ArticleVersionService interface {
-	CreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (rsp *dto.ArticleVersionCreateResponse, err error)
-	GetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (rsp *dto.ArticleVersionGetResponse, err error)
-	GetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (rsp *dto.ArticleVersionGetLatestResponse, err error)
-	ListArticleVersions(ctx context.Context, req *dto.ListArticleVersionRequest) (rsp *dto.ListArticleVersionResponse, err error)
+	CreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (rsp *dto.CreateArticleVersionResponse, err error)
+	GetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionRequest) (rsp *dto.GetArticleVersionResponse, err error)
+	GetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionRequest) (rsp *dto.GetLatestArticleVersionResponse, err error)
+	ListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (rsp *dto.ListArticleVersionsResponse, err error)
 }
 
 type articleVersionService struct {
@@ -41,7 +41,7 @@ func NewArticleVersionService() ArticleVersionService {
 }
 
 // CreateArticleVersion 创建文章版本
-func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (rsp *dto.ArticleVersionCreateResponse, err error) {
+func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (rsp *dto.CreateArticleVersionResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
 	if req == nil || req.Body == nil {
@@ -49,7 +49,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *d
 		return nil, protocol.ErrBadRequest
 	}
 
-	rsp = &dto.ArticleVersionCreateResponse{}
+	rsp = &dto.CreateArticleVersionResponse{}
 
 	db := database.GetDBInstance(ctx)
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
@@ -120,10 +120,10 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *d
 }
 
 // GetArticleVersionInfo 获取文章版本信息
-func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (rsp *dto.ArticleVersionGetResponse, err error) {
+func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionRequest) (rsp *dto.GetArticleVersionResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.ArticleVersionGetResponse{}
+	rsp = &dto.GetArticleVersionResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -170,10 +170,10 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 }
 
 // GetLatestArticleVersionInfo 获取最新文章版本信息
-func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (rsp *dto.ArticleVersionGetLatestResponse, err error) {
+func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionRequest) (rsp *dto.GetLatestArticleVersionResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.ArticleVersionGetLatestResponse{}
+	rsp = &dto.GetLatestArticleVersionResponse{}
 
 	db := database.GetDBInstance(ctx)
 
@@ -224,10 +224,10 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 }
 
 // ListArticleVersions 列出文章版本
-func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dto.ListArticleVersionRequest) (rsp *dto.ListArticleVersionResponse, err error) {
+func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (rsp *dto.ListArticleVersionsResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.ListArticleVersionResponse{}
+	rsp = &dto.ListArticleVersionsResponse{}
 
 	db := database.GetDBInstance(ctx)
 
