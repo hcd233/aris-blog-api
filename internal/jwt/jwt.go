@@ -1,7 +1,7 @@
-// Package auth 鉴权
+// Package jwt JWT
 //
 //	update 2024-06-22 11:05:33
-package auth
+package jwt
 
 import (
 	"errors"
@@ -20,16 +20,16 @@ type Claims struct {
 	UserID uint `json:"user_id"`
 }
 
-// JwtTokenSigner JWT token 生成器
+// TokenSigner JWT token 生成器
 //
 //	author centonhuang
 //	update 2025-01-04 16:01:15
-type JwtTokenSigner interface {
+type TokenSigner interface {
 	EncodeToken(userID uint) (token string, err error)
 	DecodeToken(tokenString string) (userID uint, err error)
 }
 
-type jwtTokenSigner struct {
+type tokenSigner struct {
 	JwtTokenSecret  string
 	JwtTokenExpired time.Duration
 }
@@ -41,7 +41,7 @@ type jwtTokenSigner struct {
 //	return err error
 //	author centonhuang
 //	update 2024-09-21 02:57:11
-func (s *jwtTokenSigner) EncodeToken(userID uint) (token string, err error) {
+func (s *tokenSigner) EncodeToken(userID uint) (token string, err error) {
 	claims := Claims{
 		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
@@ -60,7 +60,7 @@ func (s *jwtTokenSigner) EncodeToken(userID uint) (token string, err error) {
 //	return err error
 //	author centonhuang
 //	update 2024-06-22 11:25:00
-func (s *jwtTokenSigner) DecodeToken(tokenString string) (userID uint, err error) {
+func (s *tokenSigner) DecodeToken(tokenString string) (userID uint, err error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")

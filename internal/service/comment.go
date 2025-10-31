@@ -20,7 +20,7 @@ import (
 // CommentService 评论服务
 type CommentService interface {
 	CreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (rsp *dto.CommentCreateResponse, err error)
-	DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.CommentDeleteResponse, err error)
+	DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.EmptyResponse, err error)
 	ListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (rsp *dto.CommentListArticleResponse, err error)
 	ListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (rsp *dto.CommentListChildrenResponse, err error)
 }
@@ -115,10 +115,10 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.Comm
 }
 
 // DeleteComment 删除评论
-func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.CommentDeleteResponse, err error) {
+func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.EmptyResponse, err error) {
 	logger := logger.WithCtx(ctx)
 
-	rsp = &dto.CommentDeleteResponse{}
+	rsp = &dto.EmptyResponse{}
 
 	db := database.GetDBInstance(ctx)
 

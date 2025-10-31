@@ -40,9 +40,6 @@ type CommentDeleteRequest struct {
 	CommentPathParam
 }
 
-// CommentDeleteResponse 删除评论响应
-type CommentDeleteResponse struct{}
-
 // CommentListArticleRequest 列出文章评论请求
 type CommentListArticleRequest struct {
 	ArticlePathParam

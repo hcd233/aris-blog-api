@@ -12,7 +12,7 @@ import (
 // CommentHandler 评论处理器
 type CommentHandler interface {
 	HandleCreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (*protocol.HumaHTTPResponse[*dto.CommentCreateResponse], error)
-	HandleDeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (*protocol.HumaHTTPResponse[*dto.CommentDeleteResponse], error)
+	HandleDeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
 	HandleListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (*protocol.HumaHTTPResponse[*dto.CommentListArticleResponse], error)
 	HandleListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (*protocol.HumaHTTPResponse[*dto.CommentListChildrenResponse], error)
 }
@@ -32,7 +32,7 @@ func (h *commentHandler) HandleCreateArticleComment(ctx context.Context, req *dt
 	return util.WrapHTTPResponse(h.svc.CreateArticleComment(ctx, req))
 }
 
-func (h *commentHandler) HandleDeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (*protocol.HumaHTTPResponse[*dto.CommentDeleteResponse], error) {
+func (h *commentHandler) HandleDeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteComment(ctx, req))
 }
 

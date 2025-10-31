@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 
+	"github.com/hcd233/aris-blog-api/internal/oauth2"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -39,7 +40,7 @@ func NewOauth2Handler() Oauth2Handler {
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginRequest) (*protocol.HumaHTTPResponse[*dto.LoginResponse], error) {
-	svc := h.getService(req.Provider)
+	svc := h.getService(oauth2.ProviderType(req.Provider))
 	return util.WrapHTTPResponse(svc.Login(ctx, req))
 }
 
@@ -53,7 +54,7 @@ func (h *oauth2Handler) HandleLogin(ctx context.Context, req *dto.LoginRequest) 
 //	author centonhuang
 //	update 2025-01-05 21:00:00
 func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackRequest) (*protocol.HumaHTTPResponse[*dto.CallbackResponse], error) {
-	svc := h.getService(req.Provider)
+	svc := h.getService(oauth2.ProviderType(req.Provider))
 	return util.WrapHTTPResponse(svc.Callback(ctx, req))
 }
 
@@ -64,14 +65,12 @@ func (h *oauth2Handler) HandleCallback(ctx context.Context, req *dto.CallbackReq
 //	return service.Oauth2Service
 //	author centonhuang
 //	update 2025-01-05 21:00:00
-func (h *oauth2Handler) getService(provider string) service.Oauth2Service {
+func (h *oauth2Handler) getService(provider oauth2.ProviderType) service.Oauth2Service {
 	switch provider {
-	case "github":
+	case oauth2.ProviderTypeGithub:
 		return service.NewGithubOauth2Service()
-	case "google":
+	case oauth2.ProviderTypeGoogle:
 		return service.NewGoogleOauth2Service()
-	case "qq":
-		return service.NewQQOauth2Service()
 	default:
 		return service.NewGithubOauth2Service() // 默认返回 github
 	}

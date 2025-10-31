@@ -14,9 +14,9 @@ type ArticleHandler interface {
 	HandleCreateArticle(ctx context.Context, req *dto.ArticleCreateRequest) (*protocol.HumaHTTPResponse[*dto.ArticleCreateResponse], error)
 	HandleGetArticleInfo(ctx context.Context, req *dto.ArticleGetRequest) (*protocol.HumaHTTPResponse[*dto.ArticleGetResponse], error)
 	HandleGetArticleInfoBySlug(ctx context.Context, req *dto.ArticleGetBySlugRequest) (*protocol.HumaHTTPResponse[*dto.ArticleGetBySlugResponse], error)
-	HandleUpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (*protocol.HumaHTTPResponse[*dto.ArticleUpdateResponse], error)
-	HandleUpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (*protocol.HumaHTTPResponse[*dto.ArticleUpdateStatusResponse], error)
-	HandleDeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (*protocol.HumaHTTPResponse[*dto.ArticleDeleteResponse], error)
+	HandleUpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
+	HandleUpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
+	HandleDeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
 	HandleListArticles(ctx context.Context, req *dto.ArticleListRequest) (*protocol.HumaHTTPResponse[*dto.ArticleListResponse], error)
 }
 
@@ -43,15 +43,15 @@ func (h *articleHandler) HandleGetArticleInfoBySlug(ctx context.Context, req *dt
 	return util.WrapHTTPResponse(h.svc.GetArticleInfoBySlug(ctx, req))
 }
 
-func (h *articleHandler) HandleUpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (*protocol.HumaHTTPResponse[*dto.ArticleUpdateResponse], error) {
+func (h *articleHandler) HandleUpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.UpdateArticle(ctx, req))
 }
 
-func (h *articleHandler) HandleUpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (*protocol.HumaHTTPResponse[*dto.ArticleUpdateStatusResponse], error) {
+func (h *articleHandler) HandleUpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.UpdateArticleStatus(ctx, req))
 }
 
-func (h *articleHandler) HandleDeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (*protocol.HumaHTTPResponse[*dto.ArticleDeleteResponse], error) {
+func (h *articleHandler) HandleDeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteArticle(ctx, req))
 }
 

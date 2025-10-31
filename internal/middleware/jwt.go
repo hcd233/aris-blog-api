@@ -8,8 +8,8 @@ import (
 
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/auth"
 	"github.com/hcd233/aris-blog-api/internal/constant"
+	"github.com/hcd233/aris-blog-api/internal/jwt"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
@@ -26,7 +26,7 @@ import (
 //	update 2024-09-16 05:35:57
 func JwtMiddleware() fiber.Handler {
 	dao := dao.GetUserDAO()
-	jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
+	accessTokenSvc := jwt.GetAccessTokenSigner()
 
 	return func(c *fiber.Ctx) error {
 		db := database.GetDBInstance(c.Context())
@@ -40,7 +40,7 @@ func JwtMiddleware() fiber.Handler {
 			})
 		}
 
-		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString)
+		userID, err := accessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
 			logger.WithFCtx(c).Error("[JwtMiddleware] failed to decode token", zap.Error(err))
 			util.SendHTTPResponse(c, nil, protocol.ErrUnauthorized)
@@ -78,7 +78,7 @@ func JwtMiddleware() fiber.Handler {
 //	@update 2025-10-31 03:10:19
 func JwtMiddlewareForHuma() func(ctx huma.Context, next func(huma.Context)) {
 	dao := dao.GetUserDAO()
-	jwtAccessTokenSvc := auth.GetJwtAccessTokenSigner()
+	accessTokenSvc := jwt.GetAccessTokenSigner()
 
 	return func(ctx huma.Context, next func(huma.Context)) {
 		db := database.GetDBInstance(ctx.Context())
@@ -88,7 +88,7 @@ func JwtMiddlewareForHuma() func(ctx huma.Context, next func(huma.Context)) {
 			ctx.SetStatus(fiber.StatusUnauthorized)
 			return
 		}
-		userID, err := jwtAccessTokenSvc.DecodeToken(tokenString)
+		userID, err := accessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
 			ctx.SetStatus(fiber.StatusUnauthorized)
 			return

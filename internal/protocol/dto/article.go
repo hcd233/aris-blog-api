@@ -83,9 +83,6 @@ type ArticleUpdateRequest struct {
 	Body *ArticleUpdateRequestBody `json:"body" doc:"Updatable article fields"`
 }
 
-// ArticleUpdateResponse 更新文章响应
-type ArticleUpdateResponse struct{}
-
 // ArticleUpdateStatusRequestBody 更新文章状态请求体
 type ArticleUpdateStatusRequestBody struct {
 	Status model.ArticleStatus `json:"status" doc:"Article status"`
@@ -97,16 +94,10 @@ type ArticleUpdateStatusRequest struct {
 	Body *ArticleUpdateStatusRequestBody `json:"body" doc:"Status field"`
 }
 
-// ArticleUpdateStatusResponse 更新文章状态响应
-type ArticleUpdateStatusResponse struct{}
-
 // ArticleDeleteRequest 删除文章请求
 type ArticleDeleteRequest struct {
 	ArticlePathParam
 }
-
-// ArticleDeleteResponse 删除文章响应
-type ArticleDeleteResponse struct{}
 
 // ArticleListRequest 列出文章请求
 type ArticleListRequest struct {

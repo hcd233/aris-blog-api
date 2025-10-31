@@ -7,7 +7,7 @@ import (
 	"context"
 	"errors"
 
-	"github.com/hcd233/aris-blog-api/internal/auth"
+	"github.com/hcd233/aris-blog-api/internal/jwt"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
@@ -27,8 +27,8 @@ type TokenService interface {
 
 type tokenService struct {
 	userDAO            *dao.UserDAO
-	accessTokenSigner  auth.JwtTokenSigner
-	refreshTokenSigner auth.JwtTokenSigner
+	accessTokenSigner  jwt.TokenSigner
+	refreshTokenSigner jwt.TokenSigner
 }
 
 // NewTokenService 创建令牌服务
@@ -39,8 +39,8 @@ type tokenService struct {
 func NewTokenService() TokenService {
 	return &tokenService{
 		userDAO:            dao.GetUserDAO(),
-		accessTokenSigner:  auth.GetJwtAccessTokenSigner(),
-		refreshTokenSigner: auth.GetJwtRefreshTokenSigner(),
+		accessTokenSigner:  jwt.GetAccessTokenSigner(),
+		refreshTokenSigner: jwt.GetRefreshTokenSigner(),
 	}
 }
 
