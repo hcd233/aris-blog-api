@@ -1,19 +1,24 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // OperationHandler 用户操作处理器
+//
+//	author centonhuang
+//	update 2025-10-30
 type OperationHandler interface {
-	HandleUserLikeArticle(c *fiber.Ctx) error
-	HandleUserLikeComment(c *fiber.Ctx) error
-	HandleUserLikeTag(c *fiber.Ctx) error
-	HandleLogUserViewArticle(c *fiber.Ctx) error
+	HandleUserLikeArticle(ctx context.Context, req *dto.LikeArticleRequest) (*protocol.HumaHTTPResponse[*dto.LikeArticleResponse], error)
+	HandleUserLikeComment(ctx context.Context, req *dto.LikeCommentRequest) (*protocol.HumaHTTPResponse[*dto.LikeCommentResponse], error)
+	HandleUserLikeTag(ctx context.Context, req *dto.LikeTagRequest) (*protocol.HumaHTTPResponse[*dto.LikeTagResponse], error)
+	HandleLogUserViewArticle(ctx context.Context, req *dto.LogArticleViewRequest) (*protocol.HumaHTTPResponse[*dto.LogArticleViewResponse], error)
 }
 
 type operationHandler struct {
@@ -21,135 +26,80 @@ type operationHandler struct {
 }
 
 // NewOperationHandler 创建用户操作处理器
+//
+//	return OperationHandler
+//	author centonhuang
+//	update 2025-10-30
 func NewOperationHandler() OperationHandler {
 	return &operationHandler{
 		svc: service.NewOperationService(),
 	}
 }
 
-// HandleUserLikeArticle 点赞文章
-//
-//	@Summary 点赞文章
-//	@Description 点赞文章
-//	@Tags			operation
-//	@Accept			json
-//	@Produce		json
-//	@Security		ApiKeyAuth
-//	@Param			body	body		protocol.LikeArticleBody	true	"点赞文章请求体"
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenCategoriesResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/operation/like/article [post]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-01 05:09:47
-func (h *operationHandler) HandleUserLikeArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.LikeArticleBody)
+func (h *operationHandler) HandleUserLikeArticle(ctx context.Context, req *dto.LikeArticleRequest) (*protocol.HumaHTTPResponse[*dto.LikeArticleResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.LikeArticleRequest{
+	svcReq := &protocol.LikeArticleRequest{
 		UserID:    userID,
-		ArticleID: body.ArticleID,
-		Undo:      body.Undo,
+		ArticleID: req.Body.ArticleID,
+		Undo:      req.Body.Undo,
 	}
 
-	rsp, err := h.svc.LikeArticle(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
-}
-
-// HandleUserLikeComment 点赞评论
-//
-//	@Summary		点赞评论
-//	@Description	点赞评论
-//	@Tags			operation
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.LikeCommentBody	true	"点赞评论请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.LikeCommentResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/operation/like/comment [post]
-func (h *operationHandler) HandleUserLikeComment(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.LikeCommentBody)
-
-	req := &protocol.LikeCommentRequest{
-		UserID:    userID,
-		CommentID: body.CommentID,
-		Undo:      body.Undo,
+	_, err := h.svc.LikeArticle(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.LikeArticleResponse](nil, err)
 	}
 
-	rsp, err := h.svc.LikeComment(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(&dto.LikeArticleResponse{}, nil)
 }
 
-// HandleUserLikeTag 点赞标签
-//
-//	@Summary		点赞标签
-//	@Description	点赞标签
-//	@Tags			operation
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.LikeTagBody	true	"点赞标签请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.LikeTagResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/operation/like/tag [post]
-func (h *operationHandler) HandleUserLikeTag(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.LikeTagBody)
+func (h *operationHandler) HandleUserLikeComment(ctx context.Context, req *dto.LikeCommentRequest) (*protocol.HumaHTTPResponse[*dto.LikeCommentResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.LikeTagRequest{
+	svcReq := &protocol.LikeCommentRequest{
+		UserID:    userID,
+		CommentID: req.Body.CommentID,
+		Undo:      req.Body.Undo,
+	}
+
+	_, err := h.svc.LikeComment(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.LikeCommentResponse](nil, err)
+	}
+
+	return util.WrapHTTPResponse(&dto.LikeCommentResponse{}, nil)
+}
+
+func (h *operationHandler) HandleUserLikeTag(ctx context.Context, req *dto.LikeTagRequest) (*protocol.HumaHTTPResponse[*dto.LikeTagResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	svcReq := &protocol.LikeTagRequest{
 		UserID: userID,
-		TagID:  body.TagID,
-		Undo:   body.Undo,
+		TagID:  req.Body.TagID,
+		Undo:   req.Body.Undo,
 	}
 
-	rsp, err := h.svc.LikeTag(c.Context(), req)
+	_, err := h.svc.LikeTag(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.LikeTagResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(&dto.LikeTagResponse{}, nil)
 }
 
-// HandleLogUserViewArticle 记录文章浏览
-//
-//	@Summary		记录文章浏览
-//	@Description	记录文章浏览
-//	@Tags			operation
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.LogUserViewArticleBody	true	"记录文章浏览请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.LogArticleViewResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/operation/view/article [post]
-func (h *operationHandler) HandleLogUserViewArticle(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.LogUserViewArticleBody)
+func (h *operationHandler) HandleLogUserViewArticle(ctx context.Context, req *dto.LogArticleViewRequest) (*protocol.HumaHTTPResponse[*dto.LogArticleViewResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.LogArticleViewRequest{
+	svcReq := &protocol.LogArticleViewRequest{
 		UserID:    userID,
-		ArticleID: body.ArticleID,
-		Progress:  body.Progress,
+		ArticleID: req.Body.ArticleID,
+		Progress:  req.Body.Progress,
 	}
 
-	rsp, err := h.svc.LogArticleView(c.Context(), req)
+	_, err := h.svc.LogArticleView(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.LogArticleViewResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(&dto.LogArticleViewResponse{}, nil)
 }

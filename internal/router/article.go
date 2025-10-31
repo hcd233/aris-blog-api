@@ -1,52 +1,106 @@
 package router
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
-	"github.com/hcd233/aris-blog-api/internal/protocol"
-	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initArticleRouter(r fiber.Router) {
+func initArticleRouter(articleGroup *huma.Group) {
 	articleHandler := handler.NewArticleHandler()
 
-	articleRouter := r.Group("/article", middleware.JwtMiddleware())
-	{
-		articleRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), articleHandler.HandleListArticles)
+	articleGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
 
-		articleRouter.Get("/slug/:authorName/:articleSlug",
-			middleware.ValidateURIMiddleware(&protocol.ArticleSlugURI{}),
-			articleHandler.HandleGetArticleInfoBySlug)
+	// 列出文章
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "listArticles",
+		Method:      http.MethodGet,
+		Path:        "/list",
+		Summary:     "ListArticles",
+		Description: "Get a paginated list of articles",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleListArticles)
 
-		articleRouter.Post(
-			"/",
-			middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
-			middleware.ValidateBodyMiddleware(&protocol.CreateArticleBody{}),
-			articleHandler.HandleCreateArticle,
-		)
-		articleIDRouter := articleRouter.Group("/:articleID", middleware.ValidateURIMiddleware(&protocol.ArticleURI{}))
-		{
-			articleIDRouter.Get("/", articleHandler.HandleGetArticleInfo)
-			articleIDRouter.Patch(
-				"/",
-				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
-				middleware.ValidateBodyMiddleware(&protocol.UpdateArticleBody{}),
-				articleHandler.HandleUpdateArticle,
-			)
-			articleIDRouter.Delete(
-				"/",
-				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
-				articleHandler.HandleDeleteArticle,
-			)
-			articleIDRouter.Put(
-				"/status",
-				middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator),
-				middleware.ValidateBodyMiddleware(&protocol.UpdateArticleStatusBody{}),
-				articleHandler.HandleUpdateArticleStatus,
-			)
+	// 创建文章
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "createArticle",
+		Method:      http.MethodPost,
+		Path:        "/",
+		Summary:     "CreateArticle",
+		Description: "Create a new article",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleCreateArticle)
 
-			initArticleVersionRouter(articleIDRouter)
-		}
-	}
+	// 通过Slug获取文章信息
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "getArticleInfoBySlug",
+		Method:      http.MethodGet,
+		Path:        "/slug/{authorName}/{articleSlug}",
+		Summary:     "GetArticleInfoBySlug",
+		Description: "Get article information by author name and article slug",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleGetArticleInfoBySlug)
+
+	// 获取文章信息
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "getArticleInfo",
+		Method:      http.MethodGet,
+		Path:        "/{articleID}",
+		Summary:     "GetArticleInfo",
+		Description: "Get detailed information about a specific article by ID",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleGetArticleInfo)
+
+	// 更新文章
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "updateArticle",
+		Method:      http.MethodPatch,
+		Path:        "/{articleID}",
+		Summary:     "UpdateArticle",
+		Description: "Update an existing article",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleUpdateArticle)
+
+	// 删除文章
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "deleteArticle",
+		Method:      http.MethodDelete,
+		Path:        "/{articleID}",
+		Summary:     "DeleteArticle",
+		Description: "Delete an article",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleDeleteArticle)
+
+	// 更新文章状态
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "updateArticleStatus",
+		Method:      http.MethodPut,
+		Path:        "/{articleID}/status",
+		Summary:     "UpdateArticleStatus",
+		Description: "Update article status (draft/publish)",
+		Tags:        []string{"article"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleHandler.HandleUpdateArticleStatus)
 }

@@ -1,19 +1,24 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // CommentHandler 评论处理器
+//
+//	author centonhuang
+//	update 2025-10-30
 type CommentHandler interface {
-	HandleCreateArticleComment(c *fiber.Ctx) error
-	HandleDeleteComment(c *fiber.Ctx) error
-	HandleListArticleComments(c *fiber.Ctx) error
-	HandleListChildrenComments(c *fiber.Ctx) error
+	HandleCreateArticleComment(ctx context.Context, req *dto.CreateArticleCommentRequest) (*protocol.HumaHTTPResponse[*dto.CreateArticleCommentResponse], error)
+	HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (*protocol.HumaHTTPResponse[*dto.DeleteCommentResponse], error)
+	HandleListArticleComments(ctx context.Context, req *dto.ListArticleCommentsRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleCommentsResponse], error)
+	HandleListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentsRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenCommentsResponse], error)
 }
 
 type commentHandler struct {
@@ -21,137 +26,161 @@ type commentHandler struct {
 }
 
 // NewCommentHandler 创建评论处理器
+//
+//	return CommentHandler
+//	author centonhuang
+//	update 2025-10-30
 func NewCommentHandler() CommentHandler {
 	return &commentHandler{
 		svc: service.NewCommentService(),
 	}
 }
 
-// HandleCreateArticleComment 创建文章评论
-//
-//	@Summary 创建文章评论
-//	@Description 创建文章评论
-//	@Tags comment
-//	@Accept json
-//	@Produce json
-//	@Param body body protocol.CreateArticleCommentBody true "创建文章评论请求"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.HTTPResponse{data=protocol.CreateArticleCommentResponse,error=nil} "创建文章评论响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/comment [post]
-//	receiver h *commentHandler
-func (h *commentHandler) HandleCreateArticleComment(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleCommentBody)
+func (h *commentHandler) HandleCreateArticleComment(ctx context.Context, req *dto.CreateArticleCommentRequest) (*protocol.HumaHTTPResponse[*dto.CreateArticleCommentResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.CreateArticleCommentRequest{
+	svcReq := &protocol.CreateArticleCommentRequest{
 		UserID:    userID,
-		ArticleID: body.ArticleID,
-		Content:   body.Content,
-		ReplyTo:   body.ReplyTo,
+		ArticleID: req.Body.ArticleID,
+		Content:   req.Body.Content,
+		ReplyTo:   req.Body.ReplyTo,
 	}
 
-	rsp, err := h.svc.CreateArticleComment(c.Context(), req)
+	svcRsp, err := h.svc.CreateArticleComment(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.CreateArticleCommentResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.CreateArticleCommentResponse{
+		Comment: &dto.Comment{
+			CommentID: svcRsp.Comment.CommentID,
+			Content:   svcRsp.Comment.Content,
+			UserID:    svcRsp.Comment.UserID,
+			ReplyTo:   svcRsp.Comment.ReplyTo,
+			CreatedAt: svcRsp.Comment.CreatedAt,
+			Likes:     svcRsp.Comment.Likes,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleDeleteComment 删除评论
-//
-//	@Summary 删除评论
-//	@Description 删除评论
-//	@Tags comment
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.CommentURI true "评论ID"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.HTTPResponse{data=protocol.DeleteCommentResponse,error=nil} "删除评论响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/comment/{commentID} [delete]
-func (h *commentHandler) HandleDeleteComment(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CommentURI)
+func (h *commentHandler) HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (*protocol.HumaHTTPResponse[*dto.DeleteCommentResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.DeleteCommentRequest{
+	svcReq := &protocol.DeleteCommentRequest{
 		UserID:    userID,
-		CommentID: uri.CommentID,
+		CommentID: req.CommentID,
 	}
 
-	rsp, err := h.svc.DeleteComment(c.Context(), req)
+	_, err := h.svc.DeleteComment(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.DeleteCommentResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(&dto.DeleteCommentResponse{}, nil)
 }
 
-// HandleListArticleComments 列出文章一级评论
-//
-//	@Summary 列出文章一级评论
-//	@Description 列出文章一级评论
-//	@Tags comment
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.ArticleURI true "文章ID"
-//	@Param param query protocol.PageParam true "分页参数"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.HTTPResponse{data=protocol.ListArticleCommentsResponse,error=nil} "列出文章评论响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/comment/article/{articleID}/list [get]
-func (h *commentHandler) HandleListArticleComments(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
+func (h *commentHandler) HandleListArticleComments(ctx context.Context, req *dto.ListArticleCommentsRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleCommentsResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.ListArticleCommentsRequest{
-		UserID:         userID,
-		ArticleID:      uri.ArticleID,
-		PaginateParam:  param,
+	page := 1
+	pageSize := 10
+	if req.Page != nil {
+		page = *req.Page
+	}
+	if req.PageSize != nil {
+		pageSize = *req.PageSize
 	}
 
-	rsp, err := h.svc.ListArticleComments(c.Context(), req)
+	svcReq := &protocol.ListArticleCommentsRequest{
+		UserID:    userID,
+		ArticleID: req.ArticleID,
+		PaginateParam: &protocol.PaginateParam{
+			PageParam: &protocol.PageParam{
+				Page:     page,
+				PageSize: pageSize,
+			},
+		},
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	svcRsp, err := h.svc.ListArticleComments(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.ListArticleCommentsResponse](nil, err)
+	}
+
+	comments := make([]*dto.Comment, len(svcRsp.Comments))
+	for i, comment := range svcRsp.Comments {
+		comments[i] = &dto.Comment{
+			CommentID: comment.CommentID,
+			Content:   comment.Content,
+			UserID:    comment.UserID,
+			ReplyTo:   comment.ReplyTo,
+			CreatedAt: comment.CreatedAt,
+			Likes:     comment.Likes,
+		}
+	}
+
+	rsp := &dto.ListArticleCommentsResponse{
+		Comments: comments,
+		PageInfo: &dto.PageInfo{
+			Page:     svcRsp.PageInfo.Page,
+			PageSize: svcRsp.PageInfo.PageSize,
+			Total:    svcRsp.PageInfo.Total,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleListChildrenComments 列出子评论
-//
-//	@Summary 列出子评论
-//	@Description 列出子评论
-//	@Tags comment
-//	@Accept json
-//	@Produce json
-//	@Param path path protocol.CommentURI true "评论ID"
-//	@Param param query protocol.PageParam true "分页参数"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.HTTPResponse{data=protocol.ListChildrenCommentsResponse,error=nil} "列出子评论响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/comment/{commentID}/subComments [get]
-func (h *commentHandler) HandleListChildrenComments(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CommentURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
+func (h *commentHandler) HandleListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentsRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenCommentsResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.ListChildrenCommentsRequest{
-		UserID:         userID,
-		CommentID:      uri.CommentID,
-		PaginateParam:  param,
+	page := 1
+	pageSize := 10
+	if req.Page != nil {
+		page = *req.Page
+	}
+	if req.PageSize != nil {
+		pageSize = *req.PageSize
 	}
 
-	rsp, err := h.svc.ListChildrenComments(c.Context(), req)
+	svcReq := &protocol.ListChildrenCommentsRequest{
+		UserID:    userID,
+		CommentID: req.CommentID,
+		PaginateParam: &protocol.PaginateParam{
+			PageParam: &protocol.PageParam{
+				Page:     page,
+				PageSize: pageSize,
+			},
+		},
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	svcRsp, err := h.svc.ListChildrenComments(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.ListChildrenCommentsResponse](nil, err)
+	}
+
+	comments := make([]*dto.Comment, len(svcRsp.Comments))
+	for i, comment := range svcRsp.Comments {
+		comments[i] = &dto.Comment{
+			CommentID: comment.CommentID,
+			Content:   comment.Content,
+			UserID:    comment.UserID,
+			ReplyTo:   comment.ReplyTo,
+			CreatedAt: comment.CreatedAt,
+			Likes:     comment.Likes,
+		}
+	}
+
+	rsp := &dto.ListChildrenCommentsResponse{
+		Comments: comments,
+		PageInfo: &dto.PageInfo{
+			Page:     svcRsp.PageInfo.Page,
+			PageSize: svcRsp.PageInfo.PageSize,
+			Total:    svcRsp.PageInfo.Total,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }

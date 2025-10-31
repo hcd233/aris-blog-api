@@ -1,19 +1,24 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
 // ArticleVersionHandler 文章版本处理器
+//
+//	author centonhuang
+//	update 2025-10-30
 type ArticleVersionHandler interface {
-	HandleCreateArticleVersion(c *fiber.Ctx) error
-	HandleGetArticleVersionInfo(c *fiber.Ctx) error
-	HandleGetLatestArticleVersionInfo(c *fiber.Ctx) error
-	HandleListArticleVersions(c *fiber.Ctx) error
+	HandleCreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.CreateArticleVersionResponse], error)
+	HandleGetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetArticleVersionInfoResponse], error)
+	HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetLatestArticleVersionInfoResponse], error)
+	HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleVersionsResponse], error)
 }
 
 type articleVersionHandler struct {
@@ -21,147 +26,147 @@ type articleVersionHandler struct {
 }
 
 // NewArticleVersionHandler 创建文章版本处理器
+//
+//	return ArticleVersionHandler
+//	author centonhuang
+//	update 2025-10-30
 func NewArticleVersionHandler() ArticleVersionHandler {
 	return &articleVersionHandler{
 		svc: service.NewArticleVersionService(),
 	}
 }
 
-// HandleCreateArticleVersion 创建文章版本
-//
-//	@Summary 创建文章版本
-//	@Tags articleVersion
-//	@Accept json
-//	@Produce json
-//	@Param uri path protocol.ArticleURI true "文章路径参数"
-//	@Param body body protocol.CreateArticleVersionBody true "创建文章版本请求体"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.CreateArticleVersionResponse "创建文章版本响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID}/version [post]
-//	receiver h *articleVersionHandler
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleCreateArticleVersion(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateArticleVersionBody)
+func (h *articleVersionHandler) HandleCreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.CreateArticleVersionResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.CreateArticleVersionRequest{
+	svcReq := &protocol.CreateArticleVersionRequest{
 		UserID:    userID,
-		ArticleID: uri.ArticleID,
-		Content:   body.Content,
+		ArticleID: req.ArticleID,
+		Content:   req.Body.Content,
 	}
 
-	rsp, err := h.svc.CreateArticleVersion(c.Context(), req)
+	svcRsp, err := h.svc.CreateArticleVersion(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.CreateArticleVersionResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.CreateArticleVersionResponse{
+		ArticleVersion: &dto.ArticleVersion{
+			ArticleVersionID: svcRsp.ArticleVersion.ArticleVersionID,
+			ArticleID:        svcRsp.ArticleVersion.ArticleID,
+			VersionID:        svcRsp.ArticleVersion.VersionID,
+			Content:          svcRsp.ArticleVersion.Content,
+			CreatedAt:        svcRsp.ArticleVersion.CreatedAt,
+			UpdatedAt:        svcRsp.ArticleVersion.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleGetArticleVersionInfo 获取文章版本信息
-//
-//	@Summary 获取文章版本信息
-//	@Tags articleVersion
-//	@Accept json
-//	@Produce json
-//	@Param uri path protocol.ArticleVersionURI true "文章版本路径参数"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.GetArticleVersionInfoResponse "获取文章版本信息响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID}/version/v{version} [get]
-//	receiver h *articleVersionHandler
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleGetArticleVersionInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleVersionURI)
+func (h *articleVersionHandler) HandleGetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetArticleVersionInfoResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.GetArticleVersionInfoRequest{
+	svcReq := &protocol.GetArticleVersionInfoRequest{
 		UserID:    userID,
-		ArticleID: uri.ArticleID,
-		VersionID: uri.Version,
+		ArticleID: req.ArticleID,
+		VersionID: req.Version,
 	}
 
-	rsp, err := h.svc.GetArticleVersionInfo(c.Context(), req)
+	svcRsp, err := h.svc.GetArticleVersionInfo(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.GetArticleVersionInfoResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.GetArticleVersionInfoResponse{
+		Version: &dto.ArticleVersion{
+			ArticleVersionID: svcRsp.Version.ArticleVersionID,
+			ArticleID:        svcRsp.Version.ArticleID,
+			VersionID:        svcRsp.Version.VersionID,
+			Content:          svcRsp.Version.Content,
+			CreatedAt:        svcRsp.Version.CreatedAt,
+			UpdatedAt:        svcRsp.Version.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleGetLatestArticleVersionInfo 获取最新文章版本信息
-//
-//	@Summary 获取最新文章版本信息
-//	@Tags articleVersion
-//	@Accept json
-//	@Produce json
-//	@Param uri path protocol.ArticleURI true "文章路径参数"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.GetLatestArticleVersionInfoResponse "获取最新文章版本信息响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID}/version/latest [get]
-//	receiver h *articleVersionHandler
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
+func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetLatestArticleVersionInfoResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.GetLatestArticleVersionInfoRequest{
+	svcReq := &protocol.GetLatestArticleVersionInfoRequest{
 		UserID:    userID,
-		ArticleID: uri.ArticleID,
+		ArticleID: req.ArticleID,
 	}
 
-	rsp, err := h.svc.GetLatestArticleVersionInfo(c.Context(), req)
+	svcRsp, err := h.svc.GetLatestArticleVersionInfo(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.GetLatestArticleVersionInfoResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.GetLatestArticleVersionInfoResponse{
+		Version: &dto.ArticleVersion{
+			ArticleVersionID: svcRsp.Version.ArticleVersionID,
+			ArticleID:        svcRsp.Version.ArticleID,
+			VersionID:        svcRsp.Version.VersionID,
+			Content:          svcRsp.Version.Content,
+			CreatedAt:        svcRsp.Version.CreatedAt,
+			UpdatedAt:        svcRsp.Version.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleListArticleVersions 列出文章版本
-//
-//	@Summary 列出文章版本
-//	@Tags articleVersion
-//	@Accept json
-//	@Produce json
-//	@Param uri path protocol.ArticleURI true "文章路径参数"
-//	@Param param query protocol.PageParam true "分页参数"
-//	@Security ApiKeyAuth
-//	@Success 200 {object} protocol.ListArticleVersionsResponse "列出文章版本响应"
-//	@Failure 400 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 401 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 403 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Failure 500 {object} protocol.HTTPResponse{data=nil,error=string}
-//	@Router /v1/article/{articleID}/version/list [get]
-//	receiver h *articleVersionHandler
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2025-01-05 15:23:26
-func (h *articleVersionHandler) HandleListArticleVersions(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.ArticleURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
+func (h *articleVersionHandler) HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleVersionsResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.ListArticleVersionsRequest{
-		UserID:         userID,
-		ArticleID:      uri.ArticleID,
-		PaginateParam:  param,
+	page := 1
+	pageSize := 10
+	if req.Page != nil {
+		page = *req.Page
+	}
+	if req.PageSize != nil {
+		pageSize = *req.PageSize
 	}
 
-	rsp, err := h.svc.ListArticleVersions(c.Context(), req)
+	svcReq := &protocol.ListArticleVersionsRequest{
+		UserID:    userID,
+		ArticleID: req.ArticleID,
+		PaginateParam: &protocol.PaginateParam{
+			PageParam: &protocol.PageParam{
+				Page:     page,
+				PageSize: pageSize,
+			},
+		},
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	svcRsp, err := h.svc.ListArticleVersions(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.ListArticleVersionsResponse](nil, err)
+	}
+
+	versions := make([]*dto.ArticleVersion, len(svcRsp.Versions))
+	for i, version := range svcRsp.Versions {
+		versions[i] = &dto.ArticleVersion{
+			ArticleVersionID: version.ArticleVersionID,
+			ArticleID:        version.ArticleID,
+			VersionID:        version.VersionID,
+			Content:          version.Content,
+			CreatedAt:        version.CreatedAt,
+			UpdatedAt:        version.UpdatedAt,
+		}
+	}
+
+	rsp := &dto.ListArticleVersionsResponse{
+		Versions: versions,
+		PageInfo: &dto.PageInfo{
+			Page:     svcRsp.PageInfo.Page,
+			PageSize: svcRsp.PageInfo.PageSize,
+			Total:    svcRsp.PageInfo.Total,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }

@@ -1,25 +1,27 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"context"
+
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
 )
 
-// CategoryHandler 分类服务
+// CategoryHandler 分类处理器
 //
 //	author centonhuang
-//	update 2024-12-08 16:59:38
+//	update 2025-10-30
 type CategoryHandler interface {
-	HandleCreateCategory(c *fiber.Ctx) error
-	HandleGetCategoryInfo(c *fiber.Ctx) error
-	HandleUpdateCategoryInfo(c *fiber.Ctx) error
-	HandleDeleteCategory(c *fiber.Ctx) error
-	HandleGetRootCategories(c *fiber.Ctx) error
-	HandleListChildrenCategories(c *fiber.Ctx) error
-	HandleListChildrenArticles(c *fiber.Ctx) error
+	HandleCreateCategory(ctx context.Context, req *dto.CreateCategoryRequest) (*protocol.HumaHTTPResponse[*dto.CreateCategoryResponse], error)
+	HandleGetCategoryInfo(ctx context.Context, req *dto.GetCategoryInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetCategoryInfoResponse], error)
+	HandleUpdateCategoryInfo(ctx context.Context, req *dto.UpdateCategoryRequest) (*protocol.HumaHTTPResponse[*dto.UpdateCategoryResponse], error)
+	HandleDeleteCategory(ctx context.Context, req *dto.DeleteCategoryRequest) (*protocol.HumaHTTPResponse[*dto.DeleteCategoryResponse], error)
+	HandleGetRootCategories(ctx context.Context, req *dto.GetRootCategoryRequest) (*protocol.HumaHTTPResponse[*dto.GetRootCategoryResponse], error)
+	HandleListChildrenCategories(ctx context.Context, req *dto.ListChildrenCategoriesRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenCategoriesResponse], error)
+	HandleListChildrenArticles(ctx context.Context, req *dto.ListChildrenArticlesRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenArticlesResponse], error)
 }
 
 type categoryHandler struct {
@@ -30,247 +32,278 @@ type categoryHandler struct {
 //
 //	return CategoryHandler
 //	author centonhuang
-//	update 2024-12-08 16:5CategoryHandler
+//	update 2025-10-30
 func NewCategoryHandler() CategoryHandler {
 	return &categoryHandler{
 		svc: service.NewCategoryService(),
 	}
 }
 
-// CreateCategoryHandler 创建分类
-//
-//	@Summary		创建分类
-//	@Description	创建分类
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			body	body		protocol.CreateCategoryBody	true	"创建分类请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.CreateCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category [post]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-09-28 07:03:28
-func (h *categoryHandler) HandleCreateCategory(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.CreateCategoryBody)
+func (h *categoryHandler) HandleCreateCategory(ctx context.Context, req *dto.CreateCategoryRequest) (*protocol.HumaHTTPResponse[*dto.CreateCategoryResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.CreateCategoryRequest{
+	svcReq := &protocol.CreateCategoryRequest{
 		UserID:   userID,
-		Name:     body.Name,
-		ParentID: body.ParentID,
+		Name:     req.Body.Name,
+		ParentID: req.Body.ParentID,
 	}
 
-	rsp, err := h.svc.CreateCategory(c.Context(), req)
+	svcRsp, err := h.svc.CreateCategory(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.CreateCategoryResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.CreateCategoryResponse{
+		Category: &dto.Category{
+			CategoryID: svcRsp.Category.CategoryID,
+			Name:       svcRsp.Category.Name,
+			ParentID:   svcRsp.Category.ParentID,
+			CreatedAt:  svcRsp.Category.CreatedAt,
+			UpdatedAt:  svcRsp.Category.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleGetCategoryInfo 获取分类信息
-//
-//	@Summary		获取分类信息
-//	@Description	根据分类ID获取分类详细信息
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			categoryID	path		uint	true	"分类ID"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetCategoryInfoResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [get]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-01 04:58:27
-func (h *categoryHandler) HandleGetCategoryInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
+func (h *categoryHandler) HandleGetCategoryInfo(ctx context.Context, req *dto.GetCategoryInfoRequest) (*protocol.HumaHTTPResponse[*dto.GetCategoryInfoResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	req := &protocol.GetCategoryInfoRequest{
+	svcReq := &protocol.GetCategoryInfoRequest{
 		UserID:     userID,
-		CategoryID: uri.CategoryID,
+		CategoryID: req.CategoryID,
 	}
 
-	rsp, err := h.svc.GetCategoryInfo(c.Context(), req)
+	svcRsp, err := h.svc.GetCategoryInfo(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.GetCategoryInfoResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.GetCategoryInfoResponse{
+		Category: &dto.Category{
+			CategoryID: svcRsp.Category.CategoryID,
+			Name:       svcRsp.Category.Name,
+			ParentID:   svcRsp.Category.ParentID,
+			CreatedAt:  svcRsp.Category.CreatedAt,
+			UpdatedAt:  svcRsp.Category.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleGetRootCategories 获取根分类信息
-//
-//	@Summary		获取根分类信息
-//	@Description	获取根分类信息
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.GetRootCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/root [get]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-23 03:56:26
-func (h *categoryHandler) HandleGetRootCategories(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	req := &protocol.GetRootCategoryRequest{
+func (h *categoryHandler) HandleUpdateCategoryInfo(ctx context.Context, req *dto.UpdateCategoryRequest) (*protocol.HumaHTTPResponse[*dto.UpdateCategoryResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	svcReq := &protocol.UpdateCategoryRequest{
+		UserID:     userID,
+		CategoryID: req.CategoryID,
+		Name:       req.Body.Name,
+		ParentID:   req.Body.ParentID,
+	}
+
+	svcRsp, err := h.svc.UpdateCategory(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.UpdateCategoryResponse](nil, err)
+	}
+
+	rsp := &dto.UpdateCategoryResponse{
+		Category: &dto.Category{
+			CategoryID: svcRsp.Category.CategoryID,
+			Name:       svcRsp.Category.Name,
+			ParentID:   svcRsp.Category.ParentID,
+			CreatedAt:  svcRsp.Category.CreatedAt,
+			UpdatedAt:  svcRsp.Category.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
+}
+
+func (h *categoryHandler) HandleDeleteCategory(ctx context.Context, req *dto.DeleteCategoryRequest) (*protocol.HumaHTTPResponse[*dto.DeleteCategoryResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	svcReq := &protocol.DeleteCategoryRequest{
+		UserID:     userID,
+		CategoryID: req.CategoryID,
+	}
+
+	_, err := h.svc.DeleteCategory(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.DeleteCategoryResponse](nil, err)
+	}
+
+	return util.WrapHTTPResponse(&dto.DeleteCategoryResponse{}, nil)
+}
+
+func (h *categoryHandler) HandleGetRootCategories(ctx context.Context, req *dto.GetRootCategoryRequest) (*protocol.HumaHTTPResponse[*dto.GetRootCategoryResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	svcReq := &protocol.GetRootCategoryRequest{
 		UserID: userID,
 	}
 
-	rsp, err := h.svc.GetRootCategory(c.Context(), req)
+	svcRsp, err := h.svc.GetRootCategory(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.GetRootCategoryResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	rsp := &dto.GetRootCategoryResponse{
+		Category: &dto.Category{
+			CategoryID: svcRsp.Category.CategoryID,
+			Name:       svcRsp.Category.Name,
+			ParentID:   svcRsp.Category.ParentID,
+			CreatedAt:  svcRsp.Category.CreatedAt,
+			UpdatedAt:  svcRsp.Category.UpdatedAt,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleUpdateCategoryInfo 更新分类信息
-//
-//	@Summary		更新分类信息
-//	@Description	更新分类信息
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Param			body	body		protocol.UpdateCategoryBody	true	"更新分类请求体"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.UpdateCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [patch]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-02 03:45:55
-func (h *categoryHandler) HandleUpdateCategoryInfo(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	body := c.Locals(constant.CtxKeyBody).(*protocol.UpdateCategoryBody)
+func (h *categoryHandler) HandleListChildrenCategories(ctx context.Context, req *dto.ListChildrenCategoriesRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenCategoriesResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.UpdateCategoryRequest{
+	page := 1
+	pageSize := 10
+	if req.Page != nil {
+		page = *req.Page
+	}
+	if req.PageSize != nil {
+		pageSize = *req.PageSize
+	}
+
+	svcReq := &protocol.ListChildrenCategoriesRequest{
 		UserID:     userID,
-		CategoryID: uri.CategoryID,
-		Name:       body.Name,
-		ParentID:   body.ParentID,
+		CategoryID: req.CategoryID,
+		PaginateParam: &protocol.PaginateParam{
+			PageParam: &protocol.PageParam{
+				Page:     page,
+				PageSize: pageSize,
+			},
+		},
 	}
 
-	rsp, err := h.svc.UpdateCategory(c.Context(), req)
+	svcRsp, err := h.svc.ListChildrenCategories(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.ListChildrenCategoriesResponse](nil, err)
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	categories := make([]*dto.Category, len(svcRsp.Categories))
+	for i, cat := range svcRsp.Categories {
+		categories[i] = &dto.Category{
+			CategoryID: cat.CategoryID,
+			Name:       cat.Name,
+			ParentID:   cat.ParentID,
+			CreatedAt:  cat.CreatedAt,
+			UpdatedAt:  cat.UpdatedAt,
+		}
+	}
+
+	rsp := &dto.ListChildrenCategoriesResponse{
+		Categories: categories,
+		PageInfo: &dto.PageInfo{
+			Page:     svcRsp.PageInfo.Page,
+			PageSize: svcRsp.PageInfo.PageSize,
+			Total:    svcRsp.PageInfo.Total,
+		},
+	}
+
+	return util.WrapHTTPResponse(rsp, nil)
 }
 
-// HandleDeleteCategory 删除分类
-//
-//	@Summary		删除分类
-//	@Description	删除分类
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.DeleteCategoryResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID} [delete]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-02 04:55:08
-func (h *categoryHandler) HandleDeleteCategory(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
+func (h *categoryHandler) HandleListChildrenArticles(ctx context.Context, req *dto.ListChildrenArticlesRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenArticlesResponse], error) {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	req := &protocol.DeleteCategoryRequest{
+	page := 1
+	pageSize := 10
+	if req.Page != nil {
+		page = *req.Page
+	}
+	if req.PageSize != nil {
+		pageSize = *req.PageSize
+	}
+
+	svcReq := &protocol.ListChildrenArticlesRequest{
 		UserID:     userID,
-		CategoryID: uri.CategoryID,
+		CategoryID: req.CategoryID,
+		PaginateParam: &protocol.PaginateParam{
+			PageParam: &protocol.PageParam{
+				Page:     page,
+				PageSize: pageSize,
+			},
+		},
 	}
 
-	rsp, err := h.svc.DeleteCategory(c.Context(), req)
-
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
-}
-
-// HandleListChildrenCategories 列出子分类
-//
-//	@Summary		列出子分类
-//	@Description	列出子分类
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Param			param	query		protocol.PageParam	    true	"分页参数"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenCategoriesResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID}/subCategories [get]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-01 05:09:47
-func (h *categoryHandler) HandleListChildrenCategories(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
-
-	req := &protocol.ListChildrenCategoriesRequest{
-		UserID:         userID,
-		CategoryID:     uri.CategoryID,
-		PaginateParam:  param,
+	svcRsp, err := h.svc.ListChildrenArticles(ctx, svcReq)
+	if err != nil {
+		return util.WrapHTTPResponse[*dto.ListChildrenArticlesResponse](nil, err)
 	}
 
-	rsp, err := h.svc.ListChildrenCategories(c.Context(), req)
+	articles := make([]*dto.Article, len(svcRsp.Articles))
+	for i, article := range svcRsp.Articles {
+		var user *dto.User
+		if article.User != nil {
+			user = &dto.User{
+				UserID:    article.User.UserID,
+				Name:      article.User.Name,
+				Email:     article.User.Email,
+				Avatar:    article.User.Avatar,
+				CreatedAt: article.User.CreatedAt,
+				LastLogin: article.User.LastLogin,
+			}
+		}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
-}
+		var category *dto.Category
+		if article.Category != nil {
+			category = &dto.Category{
+				CategoryID: article.Category.CategoryID,
+				Name:       article.Category.Name,
+				ParentID:   article.Category.ParentID,
+				CreatedAt:  article.Category.CreatedAt,
+				UpdatedAt:  article.Category.UpdatedAt,
+			}
+		}
 
-// HandleListChildrenArticles 列出子文章
-//
-//	@Summary		列出子文章
-//	@Description	列出子文章
-//	@Tags			category
-//	@Accept			json
-//	@Produce		json
-//	@Param			path	path		protocol.CategoryURI	true	"分类ID"
-//	@Param			param	query		protocol.PageParam	    true	"分页参数"
-//	@Security		ApiKeyAuth
-//	@Success		200			{object}	protocol.HTTPResponse{data=protocol.ListChildrenArticlesResponse,error=nil}
-//	@Failure		400			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		401			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		403			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Failure		500			{object}	protocol.HTTPResponse{data=nil,error=string}
-//	@Router			/v1/category/{categoryID}/subArticles [get]
-//	param c *fiber.Ctx error
-//	author centonhuang
-//	update 2024-10-02 01:38:12
-func (h *categoryHandler) HandleListChildrenArticles(c *fiber.Ctx) error {
-	userID := c.Locals(constant.CtxKeyUserID).(uint)
-	uri := c.Locals(constant.CtxKeyURI).(*protocol.CategoryURI)
-	param := c.Locals(constant.CtxKeyParam).(*protocol.PaginateParam)
+		tags := make([]*dto.Tag, len(article.Tags))
+		for j, tag := range article.Tags {
+			tags[j] = &dto.Tag{
+				TagID:       tag.TagID,
+				Name:        tag.Name,
+				Slug:        tag.Slug,
+				Description: tag.Description,
+				UserID:      tag.UserID,
+				CreatedAt:   tag.CreatedAt,
+				UpdatedAt:   tag.UpdatedAt,
+				Likes:       tag.Likes,
+			}
+		}
 
-	req := &protocol.ListChildrenArticlesRequest{
-		UserID:         userID,
-		CategoryID:     uri.CategoryID,
-		PaginateParam:  param,
+		articles[i] = &dto.Article{
+			ArticleID:   article.ArticleID,
+			Title:       article.Title,
+			Slug:        article.Slug,
+			Status:      article.Status,
+			User:        user,
+			Category:    category,
+			CreatedAt:   article.CreatedAt,
+			UpdatedAt:   article.UpdatedAt,
+			PublishedAt: article.PublishedAt,
+			Likes:       article.Likes,
+			Views:       article.Views,
+			Tags:        tags,
+			Comments:    article.Comments,
+		}
 	}
 
-	rsp, err := h.svc.ListChildrenArticles(c.Context(), req)
+	rsp := &dto.ListChildrenArticlesResponse{
+		Articles: articles,
+		PageInfo: &dto.PageInfo{
+			Page:     svcRsp.PageInfo.Page,
+			PageSize: svcRsp.PageInfo.PageSize,
+			Total:    svcRsp.PageInfo.Total,
+		},
+	}
 
-	util.SendHTTPResponse(c, rsp, err)
-	return nil
+	return util.WrapHTTPResponse(rsp, nil)
 }

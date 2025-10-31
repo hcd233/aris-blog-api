@@ -1,30 +1,67 @@
 package router
 
 import (
-	"time"
+	"net/http"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/constant"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
-	"github.com/hcd233/aris-blog-api/internal/protocol"
-	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initArticleVersionRouter(r fiber.Router) {
+func initArticleVersionRouter(articleGroup *huma.Group) {
 	articleVersionHandler := handler.NewArticleVersionHandler()
 
-	r.Get("/version/latest", articleVersionHandler.HandleGetLatestArticleVersionInfo)
-	articleVersionRouter := r.Group("/version", middleware.LimitUserPermissionMiddleware("articleVersionService", model.PermissionCreator))
-	{
-		articleVersionRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), articleVersionHandler.HandleListArticleVersions)
+	articleGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
 
-		articleVersionRouter.Post(
-			"/",
-			middleware.RateLimiterMiddleware("createArticleVersion", constant.CtxKeyUserID, 10*time.Second, 1),
-			middleware.ValidateBodyMiddleware(&protocol.CreateArticleVersionBody{}),
-			articleVersionHandler.HandleCreateArticleVersion,
-		)
-		articleVersionRouter.Get("/v:version", middleware.ValidateURIMiddleware(&protocol.ArticleVersionURI{}), articleVersionHandler.HandleGetArticleVersionInfo)
-	}
+	// 创建文章版本
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "createArticleVersion",
+		Method:      http.MethodPost,
+		Path:        "/{articleID}/version",
+		Summary:     "CreateArticleVersion",
+		Description: "Create a new version of an article",
+		Tags:        []string{"articleVersion"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleVersionHandler.HandleCreateArticleVersion)
+
+	// 列出文章版本
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "listArticleVersions",
+		Method:      http.MethodGet,
+		Path:        "/{articleID}/version/list",
+		Summary:     "ListArticleVersions",
+		Description: "Get a paginated list of article versions",
+		Tags:        []string{"articleVersion"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleVersionHandler.HandleListArticleVersions)
+
+	// 获取最新文章版本
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "getLatestArticleVersion",
+		Method:      http.MethodGet,
+		Path:        "/{articleID}/version/latest",
+		Summary:     "GetLatestArticleVersion",
+		Description: "Get the latest version of an article",
+		Tags:        []string{"articleVersion"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleVersionHandler.HandleGetLatestArticleVersionInfo)
+
+	// 获取指定版本
+	huma.Register(articleGroup, huma.Operation{
+		OperationID: "getArticleVersion",
+		Method:      http.MethodGet,
+		Path:        "/{articleID}/version/v{version}",
+		Summary:     "GetArticleVersion",
+		Description: "Get a specific version of an article",
+		Tags:        []string{"articleVersion"},
+		Security: []map[string][]string{
+			{"jwtAuth": {}},
+		},
+	}, articleVersionHandler.HandleGetArticleVersionInfo)
 }
