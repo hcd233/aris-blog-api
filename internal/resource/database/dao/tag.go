@@ -7,6 +7,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 // TagDAO 标签DAO
@@ -73,9 +74,20 @@ func (dao *TagDAO) PaginateByUserID(db *gorm.DB, userID uint, fields, preloads [
 	}
 
 	if param.Query != "" && len(param.QueryFields) > 0 {
-		sql = sql.Where("? LIKE ?", param.QueryFields[0], "%"+param.Query+"%")
-		for _, field := range param.QueryFields[1:] {
-			sql = sql.Or("? LIKE ?", field, "%"+param.Query+"%")
+		like := "%" + param.Query + "%"
+		expressions := make([]clause.Expression, 0, len(param.QueryFields))
+		for _, field := range param.QueryFields {
+			if field == "" {
+				continue
+			}
+			expressions = append(expressions, clause.Like{Column: clause.Column{Name: field}, Value: like})
+		}
+
+		if len(expressions) > 0 {
+			sql = sql.Where(expressions[0])
+			for _, expr := range expressions[1:] {
+				sql = sql.Or(expr)
+			}
 		}
 	}
 

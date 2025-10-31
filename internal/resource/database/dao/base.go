@@ -154,6 +154,7 @@ func (dao *baseDAO[ModelT]) Paginate(db *gorm.DB, fields []string, preloads []st
 			}
 		}
 	}
+
 	err = sql.Limit(limit).Offset(offset).Find(&data).Error
 	if err != nil {
 		return
