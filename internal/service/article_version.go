@@ -8,6 +8,7 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -18,10 +19,10 @@ import (
 
 // ArticleVersionService 文章版本服务
 type ArticleVersionService interface {
-	CreateArticleVersion(ctx context.Context, req *protocol.CreateArticleVersionRequest) (rsp *protocol.CreateArticleVersionResponse, err error)
-	GetArticleVersionInfo(ctx context.Context, req *protocol.GetArticleVersionInfoRequest) (rsp *protocol.GetArticleVersionInfoResponse, err error)
-	GetLatestArticleVersionInfo(ctx context.Context, req *protocol.GetLatestArticleVersionInfoRequest) (rsp *protocol.GetLatestArticleVersionInfoResponse, err error)
-	ListArticleVersions(ctx context.Context, req *protocol.ListArticleVersionsRequest) (rsp *protocol.ListArticleVersionsResponse, err error)
+	CreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (rsp *dto.ArticleVersionCreateResponse, err error)
+	GetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (rsp *dto.ArticleVersionGetResponse, err error)
+	GetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (rsp *dto.ArticleVersionGetLatestResponse, err error)
+	ListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (rsp *dto.ArticleVersionListResponse, err error)
 }
 
 type articleVersionService struct {
@@ -40,11 +41,18 @@ func NewArticleVersionService() ArticleVersionService {
 }
 
 // CreateArticleVersion 创建文章版本
-func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *protocol.CreateArticleVersionRequest) (rsp *protocol.CreateArticleVersionResponse, err error) {
-	rsp = &protocol.CreateArticleVersionResponse{}
-
+func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (rsp *dto.ArticleVersionCreateResponse, err error) {
 	logger := logger.WithCtx(ctx)
+
+	if req == nil || req.Body == nil {
+		logger.Error("[ArticleVersionService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.ArticleVersionCreateResponse{}
+
 	db := database.GetDBInstance(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
@@ -59,10 +67,9 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
+	if article.UserID != userID {
 		logger.Error("[ArticleVersionService] no permission to create article version",
-			zap.Uint("articleID", req.ArticleID),
-		)
+			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -74,11 +81,10 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 		return nil, protocol.ErrInternalError
 	}
 
-	if latestVersion.Content == req.Content {
+	if latestVersion != nil && latestVersion.Content == req.Body.Content {
 		logger.Warn("[ArticleVersionService] content is the same as the latest version",
 			zap.Uint("articleID", article.ID),
-			zap.Uint("articleVersionID", latestVersion.ID),
-			zap.String("content", req.Content))
+			zap.Uint("articleVersionID", latestVersion.ID))
 		return nil, protocol.ErrDataExists
 	}
 
@@ -90,7 +96,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 	version := &model.ArticleVersion{
 		ArticleID: article.ID,
 		Version:   nextVersion,
-		Content:   req.Content,
+		Content:   req.Body.Content,
 	}
 
 	if err := s.articleVersionDAO.Create(db, version); err != nil {
@@ -101,7 +107,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.ArticleVersion = &protocol.ArticleVersion{
+	rsp.ArticleVersion = &dto.ArticleVersion{
 		ArticleID:        version.ArticleID,
 		ArticleVersionID: version.ID,
 		VersionID:        version.Version,
@@ -114,11 +120,14 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *p
 }
 
 // GetArticleVersionInfo 获取文章版本信息
-func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *protocol.GetArticleVersionInfoRequest) (rsp *protocol.GetArticleVersionInfoResponse, err error) {
-	rsp = &protocol.GetArticleVersionInfoResponse{}
-
+func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (rsp *dto.ArticleVersionGetResponse, err error) {
 	logger := logger.WithCtx(ctx)
+
+	rsp = &dto.ArticleVersionGetResponse{}
+
 	db := database.GetDBInstance(ctx)
+
+	// GetArticleVersionInfo 不需要权限校验，任何人都可以查看已发布的文章版本
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
@@ -133,23 +142,22 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 		return nil, protocol.ErrInternalError
 	}
 
-	version, err := s.articleVersionDAO.GetByArticleIDAndVersion(db, article.ID, req.VersionID,
-		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
+	version, err := s.articleVersionDAO.GetByArticleIDAndVersion(db, article.ID, req.Version, []string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleVersionService] version not found",
 				zap.Uint("articleID", article.ID),
-				zap.Uint("versionID", req.VersionID))
+				zap.Uint("versionID", req.Version))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Error("[ArticleVersionService] failed to get version",
 			zap.Uint("articleID", article.ID),
-			zap.Uint("versionID", req.VersionID),
+			zap.Uint("versionID", req.Version),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Version = &protocol.ArticleVersion{
+	rsp.Version = &dto.ArticleVersion{
 		ArticleID:        version.ArticleID,
 		ArticleVersionID: version.ID,
 		VersionID:        version.Version,
@@ -162,10 +170,11 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 }
 
 // GetLatestArticleVersionInfo 获取最新文章版本信息
-func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *protocol.GetLatestArticleVersionInfoRequest) (rsp *protocol.GetLatestArticleVersionInfoResponse, err error) {
-	rsp = &protocol.GetLatestArticleVersionInfoResponse{}
-
+func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (rsp *dto.ArticleVersionGetLatestResponse, err error) {
 	logger := logger.WithCtx(ctx)
+
+	rsp = &dto.ArticleVersionGetLatestResponse{}
+
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
@@ -181,16 +190,15 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 		return nil, protocol.ErrInternalError
 	}
 
-	// 如果文章不是公开的，则只有作者本人可以查看
-	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleVersionService] no permission to get latest article version",
-			zap.Uint("articleID", req.ArticleID),
-		)
+			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
 	}
 
-	version, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID,
-		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
+	version, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleVersionService] latest version not found",
@@ -203,7 +211,7 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Version = &protocol.ArticleVersion{
+	rsp.Version = &dto.ArticleVersion{
 		ArticleID:        version.ArticleID,
 		ArticleVersionID: version.ID,
 		VersionID:        version.Version,
@@ -216,10 +224,11 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 }
 
 // ListArticleVersions 列出文章版本
-func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *protocol.ListArticleVersionsRequest) (rsp *protocol.ListArticleVersionsResponse, err error) {
-	rsp = &protocol.ListArticleVersionsResponse{}
-
+func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (rsp *dto.ArticleVersionListResponse, err error) {
 	logger := logger.WithCtx(ctx)
+
+	rsp = &dto.ArticleVersionListResponse{}
+
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
@@ -235,23 +244,26 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *pr
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID {
 		logger.Error("[ArticleVersionService] no permission to list article versions",
-			zap.Uint("articleID", req.ArticleID),
-		)
+			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
 	}
 
+	paginate := req.PaginationQuery.ToPaginateParam()
 	param := &dao.PaginateParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PaginateParam.Page,
-			PageSize: req.PaginateParam.PageSize,
+			Page:     paginate.PageParam.Page,
+			PageSize: paginate.PageParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.PaginateParam.Query,
+			Query:       paginate.QueryParam.Query,
 			QueryFields: []string{"version", "content"},
 		},
 	}
+
 	versions, pageInfo, err := s.articleVersionDAO.PaginateByArticleID(db, article.ID,
 		[]string{"id", "article_id", "version", "content", "created_at", "updated_at"}, []string{},
 		param)
@@ -262,18 +274,22 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *pr
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Versions = lo.Map(*versions, func(version model.ArticleVersion, _ int) *protocol.ArticleVersion {
-		return &protocol.ArticleVersion{
+	rsp.Versions = lo.Map(*versions, func(version model.ArticleVersion, _ int) *dto.ArticleVersion {
+		content := version.Content
+		if len([]rune(content)) > constant.ListArticleVersionContentLength {
+			content = string([]rune(content)[:constant.ListArticleVersionContentLength]) + "..."
+		}
+		return &dto.ArticleVersion{
 			ArticleID:        version.ArticleID,
 			ArticleVersionID: version.ID,
 			VersionID:        version.Version,
-			Content:          string([]rune(version.Content)[:constant.ListArticleVersionContentLength]) + "...",
+			Content:          content,
 			CreatedAt:        version.CreatedAt.Format(time.DateTime),
 			UpdatedAt:        version.UpdatedAt.Format(time.DateTime),
 		}
 	})
 
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,

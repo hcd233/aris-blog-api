@@ -139,11 +139,16 @@ func (s *userService) GetUserInfo(ctx context.Context, req *dto.GetUserInfoReque
 }
 
 func (s *userService) UpdateUserInfo(ctx context.Context, req *dto.UpdateUserInfoRequest) (rsp *dto.EmptyResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
+	if req == nil || req.Body == nil {
+		logger.Error("[UserService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
 	rsp = &dto.EmptyResponse{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
-	logger := logger.WithCtx(ctx)
 
 	db := database.GetDBInstance(ctx)
 

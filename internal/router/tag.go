@@ -1,39 +1,70 @@
 package router
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
+
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
-	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
-func initTagRouter(r fiber.Router) {
+func initTagRouter(v1Group *huma.Group) {
 	tagHandler := handler.NewTagHandler()
 
-	tagRouter := r.Group("/tag", middleware.JwtMiddleware())
-	{
-		tagRouter.Get("/list", middleware.ValidateParamMiddleware(&protocol.PaginateParam{}), tagHandler.HandleListTags)
-		tagRouter.Post(
-			"/",
-			middleware.LimitUserPermissionMiddleware("createTag", model.PermissionCreator),
-			middleware.ValidateBodyMiddleware(&protocol.CreateTagBody{}),
-			tagHandler.HandleCreateTag,
-		)
-		tagSlugRouter := tagRouter.Group("/:tagID", middleware.ValidateURIMiddleware(&protocol.TagURI{}))
-		{
-			tagSlugRouter.Get("/", tagHandler.HandleGetTagInfo)
-			tagSlugRouter.Patch(
-				"/",
-				middleware.LimitUserPermissionMiddleware("updateTag", model.PermissionCreator),
-				middleware.ValidateBodyMiddleware(&protocol.UpdateTagBody{}),
-				tagHandler.HandleUpdateTag,
-			)
-			tagSlugRouter.Delete(
-				"/",
-				middleware.LimitUserPermissionMiddleware("deleteTag", model.PermissionCreator),
-				tagHandler.HandleDeleteTag,
-			)
-		}
-	}
+	tagGroup := huma.NewGroup(v1Group, "/tag")
+	tagGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+
+	huma.Register(tagGroup, huma.Operation{
+		OperationID: "listTags",
+		Method:      http.MethodGet,
+		Path:        "/list",
+		Summary:     "ListTags",
+		Description: "List all tags with pagination",
+		Tags:        []string{"tag"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, tagHandler.HandleListTags)
+
+	huma.Register(tagGroup, huma.Operation{
+		OperationID: "getTagInfo",
+		Method:      http.MethodGet,
+		Path:        "/{tagID}",
+		Summary:     "GetTagInfo",
+		Description: "Get tag detail by ID",
+		Tags:        []string{"tag"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, tagHandler.HandleGetTagInfo)
+
+	securedGroup := huma.NewGroup(tagGroup, "")
+	securedGroup.UseMiddleware(middleware.LimitUserPermissionMiddlewareForHuma("tagService", model.PermissionCreator))
+
+	huma.Register(securedGroup, huma.Operation{
+		OperationID: "createTag",
+		Method:      http.MethodPost,
+		Path:        "/",
+		Summary:     "CreateTag",
+		Description: "Create a new tag",
+		Tags:        []string{"tag"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, tagHandler.HandleCreateTag)
+
+	huma.Register(securedGroup, huma.Operation{
+		OperationID: "updateTag",
+		Method:      http.MethodPatch,
+		Path:        "/{tagID}",
+		Summary:     "UpdateTag",
+		Description: "Update tag information",
+		Tags:        []string{"tag"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, tagHandler.HandleUpdateTag)
+
+	huma.Register(securedGroup, huma.Operation{
+		OperationID: "deleteTag",
+		Method:      http.MethodDelete,
+		Path:        "/{tagID}",
+		Summary:     "DeleteTag",
+		Description: "Delete tag by ID",
+		Tags:        []string{"tag"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, tagHandler.HandleDeleteTag)
 }
