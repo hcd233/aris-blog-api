@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
@@ -41,13 +42,17 @@ func NewCommentService() CommentService {
 
 // CreateArticleComment 创建文章评论
 func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.CommentCreateRequest) (rsp *dto.CommentCreateResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[CommentService] request body is nil")
 		return nil, protocol.ErrBadRequest
 	}
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	rsp = &dto.CommentCreateResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByIDAndStatus(db, req.Body.ArticleID, model.ArticleStatusPublish, []string{"id"}, []string{})
@@ -84,7 +89,7 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.Comm
 	}
 
 	comment := &model.Comment{
-		UserID:    req.UserID,
+		UserID:    userID,
 		ArticleID: article.ID,
 		Parent:    parent,
 		Content:   req.Body.Content,
@@ -111,9 +116,10 @@ func (s *commentService) CreateArticleComment(ctx context.Context, req *dto.Comm
 
 // DeleteComment 删除评论
 func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDeleteRequest) (rsp *dto.CommentDeleteResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	rsp = &dto.CommentDeleteResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	comment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "user_id", "article_id"}, []string{})
@@ -137,7 +143,9 @@ func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDele
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID && comment.UserID != req.UserID {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID && comment.UserID != userID {
 		logger.Error("[CommentService] no permission to delete comment",
 			zap.Uint("commentUserID", comment.UserID))
 		return nil, protocol.ErrNoPermission
@@ -155,9 +163,10 @@ func (s *commentService) DeleteComment(ctx context.Context, req *dto.CommentDele
 
 // ListArticleComments 列出文章评论
 func (s *commentService) ListArticleComments(ctx context.Context, req *dto.CommentListArticleRequest) (rsp *dto.CommentListArticleResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	rsp = &dto.CommentListArticleResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
@@ -173,7 +182,9 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *dto.Comme
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[CommentService] no permission to list article comments",
 			zap.Uint("articleUserID", article.UserID))
 		return nil, protocol.ErrNoPermission
@@ -220,9 +231,10 @@ func (s *commentService) ListArticleComments(ctx context.Context, req *dto.Comme
 
 // ListChildrenComments 列出子评论
 func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.CommentListChildrenRequest) (rsp *dto.CommentListChildrenResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	rsp = &dto.CommentListChildrenResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	parentComment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "article_id"}, []string{})
@@ -241,7 +253,9 @@ func (s *commentService) ListChildrenComments(ctx context.Context, req *dto.Comm
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[CommentService] no permission to list children comments",
 			zap.Uint("articleUserID", article.UserID))
 		return nil, protocol.ErrNoPermission

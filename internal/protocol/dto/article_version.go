@@ -5,73 +5,69 @@ package dto
 //	author centonhuang
 //	update 2025-10-31 05:38:00
 type ArticleVersion struct {
-	ArticleVersionID uint   `json:"versionID" doc:"版本 ID"`
-	ArticleID        uint   `json:"articleID" doc:"文章 ID"`
-	VersionID        uint   `json:"version" doc:"版本号"`
-	Content          string `json:"content" doc:"版本内容"`
-	CreatedAt        string `json:"createdAt" doc:"创建时间"`
-	UpdatedAt        string `json:"updatedAt" doc:"更新时间"`
+	ArticleVersionID uint   `json:"versionID" doc:"Version ID"`
+	ArticleID        uint   `json:"articleID" doc:"Article ID"`
+	VersionID        uint   `json:"version" doc:"Version number"`
+	Content          string `json:"content" doc:"Version content"`
+	CreatedAt        string `json:"createdAt" doc:"Creation timestamp"`
+	UpdatedAt        string `json:"updatedAt" doc:"Update timestamp"`
 }
 
 // ArticleVersionArticlePathParam 文章路径参数
 type ArticleVersionArticlePathParam struct {
-	ArticleID uint `path:"articleID" doc:"文章 ID"`
+	ArticleID uint `path:"articleID" doc:"Article ID"`
 }
 
 // ArticleVersionPathParam 文章版本路径参数
 type ArticleVersionPathParam struct {
 	ArticleVersionArticlePathParam
-	Version uint `path:"version" doc:"版本号"`
+	Version uint `path:"version" doc:"Version number"`
 }
 
 // ArticleVersionCreateRequestBody 创建文章版本请求体
 type ArticleVersionCreateRequestBody struct {
-	Content string `json:"content" doc:"版本内容"`
+	Content string `json:"content" doc:"Version content"`
 }
 
 // ArticleVersionCreateRequest 创建文章版本请求
 type ArticleVersionCreateRequest struct {
 	ArticleVersionArticlePathParam
-	UserID uint                             `json:"-"`
-	Body   *ArticleVersionCreateRequestBody `json:"body" doc:"创建版本字段"`
+	Body *ArticleVersionCreateRequestBody `json:"body" doc:"Fields for creating article version"`
 }
 
 // ArticleVersionCreateResponse 创建文章版本响应
 type ArticleVersionCreateResponse struct {
-	ArticleVersion *ArticleVersion `json:"articleVersion" doc:"文章版本详情"`
+	ArticleVersion *ArticleVersion `json:"articleVersion" doc:"Article version details"`
 }
 
 // ArticleVersionGetRequest 获取文章版本请求
 type ArticleVersionGetRequest struct {
 	ArticleVersionPathParam
-	UserID uint `json:"-"`
 }
 
 // ArticleVersionGetResponse 获取文章版本响应
 type ArticleVersionGetResponse struct {
-	Version *ArticleVersion `json:"version" doc:"文章版本详情"`
+	Version *ArticleVersion `json:"version" doc:"Article version details"`
 }
 
 // ArticleVersionGetLatestRequest 获取最新文章版本请求
 type ArticleVersionGetLatestRequest struct {
 	ArticleVersionArticlePathParam
-	UserID uint `json:"-"`
 }
 
 // ArticleVersionGetLatestResponse 获取最新文章版本响应
 type ArticleVersionGetLatestResponse struct {
-	Version *ArticleVersion `json:"version" doc:"文章最新版本"`
+	Version *ArticleVersion `json:"version" doc:"Latest article version"`
 }
 
 // ArticleVersionListRequest 列出文章版本请求
 type ArticleVersionListRequest struct {
 	ArticleVersionArticlePathParam
-	UserID uint `json:"-"`
 	PaginationQuery
 }
 
 // ArticleVersionListResponse 列出文章版本响应
 type ArticleVersionListResponse struct {
-	Versions []*ArticleVersion `json:"versions" doc:"文章版本列表"`
-	PageInfo *PageInfo         `json:"pageInfo" doc:"分页信息"`
+	Versions []*ArticleVersion `json:"versions" doc:"List of article versions"`
+	PageInfo *PageInfo         `json:"pageInfo" doc:"Pagination information"`
 }

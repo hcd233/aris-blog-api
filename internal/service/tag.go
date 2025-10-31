@@ -5,6 +5,7 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
@@ -18,8 +19,8 @@ import (
 
 // TagService 标签服务
 //
-//  author centonhuang
-//  update 2025-10-31 05:45:00
+//	author centonhuang
+//	update 2025-10-31 05:45:00
 type TagService interface {
 	CreateTag(ctx context.Context, req *dto.TagCreateRequest) (rsp *dto.TagCreateResponse, err error)
 	GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rsp *dto.TagGetResponse, err error)
@@ -43,20 +44,23 @@ func NewTagService() TagService {
 
 // CreateTag 创建标签
 func (s *tagService) CreateTag(ctx context.Context, req *dto.TagCreateRequest) (rsp *dto.TagCreateResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[TagService] request body is nil")
 		return nil, protocol.ErrBadRequest
 	}
 
 	rsp = &dto.TagCreateResponse{}
-
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	tag := &model.Tag{
 		Name:        req.Body.Name,
 		Slug:        req.Body.Slug,
 		Description: req.Body.Description,
-		UserID:      req.UserID,
+		UserID:      userID,
 	}
 
 	if err := s.tagDAO.Create(db, tag); err != nil {
@@ -73,7 +77,6 @@ func (s *tagService) CreateTag(ctx context.Context, req *dto.TagCreateRequest) (
 		Name:        tag.Name,
 		Slug:        tag.Slug,
 		Description: tag.Description,
-		UserID:      tag.UserID,
 		CreatedAt:   tag.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   tag.UpdatedAt.Format(time.DateTime),
 		Likes:       tag.Likes,
@@ -106,7 +109,6 @@ func (s *tagService) GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rs
 		Name:        tag.Name,
 		Slug:        tag.Slug,
 		Description: tag.Description,
-		UserID:      tag.UserID,
 		CreatedAt:   tag.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   tag.UpdatedAt.Format(time.DateTime),
 		Likes:       tag.Likes,
@@ -117,14 +119,17 @@ func (s *tagService) GetTagInfo(ctx context.Context, req *dto.TagGetRequest) (rs
 
 // UpdateTag 更新标签
 func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (rsp *dto.TagUpdateResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[TagService] request body is nil")
 		return nil, protocol.ErrBadRequest
 	}
 
 	rsp = &dto.TagUpdateResponse{}
-
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "user_id"}, []string{})
 	if err != nil {
@@ -136,7 +141,7 @@ func (s *tagService) UpdateTag(ctx context.Context, req *dto.TagUpdateRequest) (
 		return nil, protocol.ErrInternalError
 	}
 
-	if tag.UserID != req.UserID {
+	if tag.UserID != userID {
 		logger.Error("[TagService] no permission to update tag",
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
@@ -177,6 +182,8 @@ func (s *tagService) DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "name", "slug", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -187,7 +194,7 @@ func (s *tagService) DeleteTag(ctx context.Context, req *dto.TagDeleteRequest) (
 		return nil, protocol.ErrInternalError
 	}
 
-	if tag.UserID != req.UserID {
+	if tag.UserID != userID {
 		logger.Error("[TagService] no permission to delete tag",
 			zap.Uint("tagUserID", tag.UserID))
 		return nil, protocol.ErrNoPermission
@@ -236,7 +243,6 @@ func (s *tagService) ListTags(ctx context.Context, req *dto.TagListRequest) (rsp
 			Name:        tag.Name,
 			Slug:        tag.Slug,
 			Description: tag.Description,
-			UserID:      tag.UserID,
 			CreatedAt:   tag.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   tag.UpdatedAt.Format(time.DateTime),
 			Likes:       tag.Likes,

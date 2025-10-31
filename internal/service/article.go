@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
@@ -49,13 +50,17 @@ func NewArticleService() ArticleService {
 
 // CreateArticle 创建文章
 func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCreateRequest) (rsp *dto.ArticleCreateResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[UserService] request body is nil")
 		return nil, protocol.ErrBadRequest
 	}
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	rsp = &dto.ArticleCreateResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	tags := []model.Tag{}
@@ -108,7 +113,7 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCrea
 	}
 
 	article := &model.Article{
-		UserID:   req.UserID,
+		UserID:   userID,
 		Status:   model.ArticleStatusDraft,
 		Title:    req.Body.Title,
 		Slug:     req.Body.Slug,
@@ -138,7 +143,6 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCrea
 		Slug:        article.Slug,
 		Status:      string(article.Status),
 		User:        nil,
-		Category:    nil,
 		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 		PublishedAt: article.PublishedAt.Format(time.DateTime),
@@ -153,9 +157,17 @@ func (s *articleService) CreateArticle(ctx context.Context, req *dto.ArticleCrea
 
 // GetArticleInfo 获取文章信息
 func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGetRequest) (rsp *dto.ArticleGetResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
+	if req == nil {
+		logger.Error("[ArticleService] request is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	rsp = &dto.ArticleGetResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{
@@ -175,7 +187,7 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGet
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
+	if article.UserID != userID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleService] no permission to get article",
 			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
@@ -188,9 +200,17 @@ func (s *articleService) GetArticleInfo(ctx context.Context, req *dto.ArticleGet
 
 // GetArticleInfoBySlug 通过别名获取文章信息
 func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.ArticleGetBySlugRequest) (rsp *dto.ArticleGetBySlugResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
+	if req == nil {
+		logger.Error("[ArticleService] request is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	rsp = &dto.ArticleGetBySlugResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	user, err := s.userDAO.GetByName(db, req.AuthorName, []string{"id"}, []string{})
@@ -223,7 +243,7 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.Arti
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != user.ID && article.Status != model.ArticleStatusPublish {
+	if article.UserID != userID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleService] no permission to get article",
 			zap.String("ArticleSlug", req.ArticleSlug),
 			zap.String("AuthorName", req.AuthorName))
@@ -237,13 +257,17 @@ func (s *articleService) GetArticleInfoBySlug(ctx context.Context, req *dto.Arti
 
 // UpdateArticle 更新文章
 func (s *articleService) UpdateArticle(ctx context.Context, req *dto.ArticleUpdateRequest) (rsp *dto.ArticleUpdateResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[ArticleService] request is nil")
 		return nil, protocol.ErrBadRequest
 	}
 
 	rsp = &dto.ArticleUpdateResponse{}
 
-	logger := logger.WithCtx(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	db := database.GetDBInstance(ctx)
 
 	updateFields := make(map[string]interface{})
@@ -276,9 +300,9 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.ArticleUpda
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
+	if article.UserID != userID {
 		logger.Error("[ArticleService] no permission to update article",
-			zap.Uint("articleID", req.ArticleID))
+			zap.Uint("articleID", article.ID))
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -295,26 +319,29 @@ func (s *articleService) UpdateArticle(ctx context.Context, req *dto.ArticleUpda
 
 // UpdateArticleStatus 更新文章状态
 func (s *articleService) UpdateArticleStatus(ctx context.Context, req *dto.ArticleUpdateStatusRequest) (rsp *dto.ArticleUpdateStatusResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[ArticleService] request is nil")
 		return nil, protocol.ErrBadRequest
 	}
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	rsp = &dto.ArticleUpdateStatusResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, req.UserID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
+	article, err := s.articleDAO.GetByIDAndUserID(db, req.ArticleID, userID, []string{"id", "status", "title", "slug", "category_id"}, []string{"User", "Category", "Tags"})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[ArticleService] article not found",
 				zap.Uint("articleID", req.ArticleID),
-				zap.Uint("userID", req.UserID))
+				zap.Uint("userID", userID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Error("[ArticleService] failed to get article",
 			zap.Uint("articleID", req.ArticleID),
-			zap.Uint("userID", req.UserID),
+			zap.Uint("userID", userID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -336,9 +363,17 @@ func (s *articleService) UpdateArticleStatus(ctx context.Context, req *dto.Artic
 
 // DeleteArticle 删除文章
 func (s *articleService) DeleteArticle(ctx context.Context, req *dto.ArticleDeleteRequest) (rsp *dto.ArticleDeleteResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
+	if req == nil {
+		logger.Error("[ArticleService] request is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	rsp = &dto.ArticleDeleteResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
@@ -354,9 +389,9 @@ func (s *articleService) DeleteArticle(ctx context.Context, req *dto.ArticleDele
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
+	if article.UserID != userID {
 		logger.Error("[ArticleService] no permission to delete article",
-			zap.Uint("articleID", req.ArticleID))
+			zap.Uint("articleID", article.ID))
 		return nil, protocol.ErrNoPermission
 	}
 
@@ -426,10 +461,6 @@ func (s *articleService) buildArticleDTO(article *model.Article) *dto.Article {
 			UserID: article.User.ID,
 			Name:   article.User.Name,
 			Avatar: article.User.Avatar,
-		},
-		Category: &dto.Category{
-			CategoryID: article.CategoryID,
-			Name:       article.Category.Name,
 		},
 		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   article.UpdatedAt.Format(time.DateTime),

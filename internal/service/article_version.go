@@ -42,14 +42,17 @@ func NewArticleVersionService() ArticleVersionService {
 
 // CreateArticleVersion 创建文章版本
 func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *dto.ArticleVersionCreateRequest) (rsp *dto.ArticleVersionCreateResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	if req == nil || req.Body == nil {
+		logger.Error("[ArticleVersionService] request body is nil")
 		return nil, protocol.ErrBadRequest
 	}
 
 	rsp = &dto.ArticleVersionCreateResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
@@ -64,7 +67,7 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *d
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
+	if article.UserID != userID {
 		logger.Error("[ArticleVersionService] no permission to create article version",
 			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
@@ -118,10 +121,13 @@ func (s *articleVersionService) CreateArticleVersion(ctx context.Context, req *d
 
 // GetArticleVersionInfo 获取文章版本信息
 func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetRequest) (rsp *dto.ArticleVersionGetResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	rsp = &dto.ArticleVersionGetResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
+
+	// GetArticleVersionInfo 不需要权限校验，任何人都可以查看已发布的文章版本
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
 	if err != nil {
@@ -165,9 +171,10 @@ func (s *articleVersionService) GetArticleVersionInfo(ctx context.Context, req *
 
 // GetLatestArticleVersionInfo 获取最新文章版本信息
 func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context, req *dto.ArticleVersionGetLatestRequest) (rsp *dto.ArticleVersionGetLatestResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	rsp = &dto.ArticleVersionGetLatestResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id", "status"}, []string{})
@@ -183,7 +190,9 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID && article.Status != model.ArticleStatusPublish {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID && article.Status != model.ArticleStatusPublish {
 		logger.Error("[ArticleVersionService] no permission to get latest article version",
 			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission
@@ -216,9 +225,10 @@ func (s *articleVersionService) GetLatestArticleVersionInfo(ctx context.Context,
 
 // ListArticleVersions 列出文章版本
 func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dto.ArticleVersionListRequest) (rsp *dto.ArticleVersionListResponse, err error) {
+	logger := logger.WithCtx(ctx)
+
 	rsp = &dto.ArticleVersionListResponse{}
 
-	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "user_id"}, []string{})
@@ -234,7 +244,9 @@ func (s *articleVersionService) ListArticleVersions(ctx context.Context, req *dt
 		return nil, protocol.ErrInternalError
 	}
 
-	if article.UserID != req.UserID {
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if article.UserID != userID {
 		logger.Error("[ArticleVersionService] no permission to list article versions",
 			zap.Uint("articleID", req.ArticleID))
 		return nil, protocol.ErrNoPermission

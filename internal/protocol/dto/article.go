@@ -7,85 +7,80 @@ import "github.com/hcd233/aris-blog-api/internal/resource/database/model"
 //	author centonhuang
 //	update 2025-10-31 05:36:00
 type Article struct {
-	ArticleID   uint      `json:"articleID" doc:"文章 ID"`
-	Title       string    `json:"title" doc:"文章标题"`
-	Slug        string    `json:"slug" doc:"文章别名"`
-	Status      string    `json:"status" doc:"文章状态"`
-	User        *User     `json:"user" doc:"作者信息"`
-	Category    *Category `json:"category" doc:"分类信息"`
-	CreatedAt   string    `json:"createdAt" doc:"创建时间"`
-	UpdatedAt   string    `json:"updatedAt" doc:"更新时间"`
-	PublishedAt string    `json:"publishedAt" doc:"发布时间"`
-	Likes       uint      `json:"likes" doc:"点赞数量"`
-	Views       uint      `json:"views" doc:"浏览量"`
-	Tags        []*Tag    `json:"tags" doc:"标签列表"`
-	Comments    int       `json:"comments" doc:"评论数量"`
+	ArticleID   uint   `json:"articleID" doc:"Article ID"`
+	Title       string `json:"title" doc:"Article title"`
+	Slug        string `json:"slug" doc:"Article slug"`
+	Status      string `json:"status" doc:"Article status"`
+	User        *User  `json:"user" doc:"Author information"`
+	CreatedAt   string `json:"createdAt" doc:"Creation timestamp"`
+	UpdatedAt   string `json:"updatedAt" doc:"Update timestamp"`
+	PublishedAt string `json:"publishedAt" doc:"Publication timestamp"`
+	Likes       uint   `json:"likes" doc:"Number of likes"`
+	Views       uint   `json:"views" doc:"Number of views"`
+	Tags        []*Tag `json:"tags" doc:"List of tags"`
+	Comments    int    `json:"comments" doc:"Number of comments"`
 }
 
 // ArticleCreateRequestBody 创建文章请求体
 type ArticleCreateRequestBody struct {
-	Title      string   `json:"title" doc:"文章标题"`
-	Slug       string   `json:"slug" doc:"文章别名"`
-	CategoryID uint     `json:"categoryID" doc:"分类 ID"`
-	Tags       []string `json:"tags" doc:"标签别名列表"`
+	Title      string   `json:"title" doc:"Article title"`
+	Slug       string   `json:"slug" doc:"Article slug"`
+	CategoryID uint     `json:"categoryID" doc:"Category ID"`
+	Tags       []string `json:"tags" doc:"List of tag slugs"`
 }
 
 // ArticleCreateRequest 创建文章请求
 type ArticleCreateRequest struct {
-	UserID uint                      `json:"-"`
-	Body   *ArticleCreateRequestBody `json:"body" doc:"创建文章字段"`
+	Body *ArticleCreateRequestBody `json:"body" doc:"Fields for creating article"`
 }
 
 // ArticleCreateResponse 创建文章响应
 type ArticleCreateResponse struct {
-	Article *Article `json:"article" doc:"文章详情"`
+	Article *Article `json:"article" doc:"Article details"`
 }
 
 // ArticlePathParam 文章路径参数
 type ArticlePathParam struct {
-	ArticleID uint `path:"articleID" doc:"文章 ID"`
+	ArticleID uint `path:"articleID" doc:"Article ID"`
 }
 
 // ArticleSlugPathParam 文章别名路径参数
 type ArticleSlugPathParam struct {
-	AuthorName  string `path:"authorName" doc:"作者名称"`
-	ArticleSlug string `path:"articleSlug" doc:"文章别名"`
+	AuthorName  string `path:"authorName" doc:"Author name"`
+	ArticleSlug string `path:"articleSlug" doc:"Article slug"`
 }
 
 // ArticleGetRequest 获取文章详情请求
 type ArticleGetRequest struct {
 	ArticlePathParam
-	UserID uint `json:"-"`
 }
 
 // ArticleGetResponse 获取文章详情响应
 type ArticleGetResponse struct {
-	Article *Article `json:"article" doc:"文章详情"`
+	Article *Article `json:"article" doc:"Article details"`
 }
 
 // ArticleGetBySlugRequest 通过别名获取文章请求
 type ArticleGetBySlugRequest struct {
 	ArticleSlugPathParam
-	UserID uint `json:"-"`
 }
 
 // ArticleGetBySlugResponse 通过别名获取文章响应
 type ArticleGetBySlugResponse struct {
-	Article *Article `json:"article" doc:"文章详情"`
+	Article *Article `json:"article" doc:"Article details"`
 }
 
 // ArticleUpdateRequestBody 更新文章请求体
 type ArticleUpdateRequestBody struct {
-	Title      string `json:"title" doc:"新的标题"`
-	Slug       string `json:"slug" doc:"新的别名"`
-	CategoryID uint   `json:"categoryID" doc:"新的分类 ID"`
+	Title      string `json:"title" doc:"New title"`
+	Slug       string `json:"slug" doc:"New slug"`
+	CategoryID uint   `json:"categoryID" doc:"New category ID"`
 }
 
 // ArticleUpdateRequest 更新文章请求
 type ArticleUpdateRequest struct {
 	ArticlePathParam
-	UserID uint                      `json:"-"`
-	Body   *ArticleUpdateRequestBody `json:"body" doc:"可更新的文章字段"`
+	Body *ArticleUpdateRequestBody `json:"body" doc:"Updatable article fields"`
 }
 
 // ArticleUpdateResponse 更新文章响应
@@ -93,14 +88,13 @@ type ArticleUpdateResponse struct{}
 
 // ArticleUpdateStatusRequestBody 更新文章状态请求体
 type ArticleUpdateStatusRequestBody struct {
-	Status model.ArticleStatus `json:"status" doc:"文章状态"`
+	Status model.ArticleStatus `json:"status" doc:"Article status"`
 }
 
 // ArticleUpdateStatusRequest 更新文章状态请求
 type ArticleUpdateStatusRequest struct {
 	ArticlePathParam
-	UserID uint                            `json:"-"`
-	Body   *ArticleUpdateStatusRequestBody `json:"body" doc:"状态字段"`
+	Body *ArticleUpdateStatusRequestBody `json:"body" doc:"Status field"`
 }
 
 // ArticleUpdateStatusResponse 更新文章状态响应
@@ -109,7 +103,6 @@ type ArticleUpdateStatusResponse struct{}
 // ArticleDeleteRequest 删除文章请求
 type ArticleDeleteRequest struct {
 	ArticlePathParam
-	UserID uint `json:"-"`
 }
 
 // ArticleDeleteResponse 删除文章响应
@@ -122,6 +115,6 @@ type ArticleListRequest struct {
 
 // ArticleListResponse 列出文章响应
 type ArticleListResponse struct {
-	Articles []*Article `json:"articles" doc:"文章列表"`
-	PageInfo *PageInfo  `json:"pageInfo" doc:"分页信息"`
+	Articles []*Article `json:"articles" doc:"List of articles"`
+	PageInfo *PageInfo  `json:"pageInfo" doc:"Pagination information"`
 }

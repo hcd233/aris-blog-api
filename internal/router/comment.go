@@ -10,10 +10,9 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/middleware"
 )
 
-func initCommentRouter(v1Group *huma.Group) {
+func initCommentRouter(commentGroup *huma.Group) {
 	commentHandler := handler.NewCommentHandler()
 
-	commentGroup := huma.NewGroup(v1Group, "/comment")
 	commentGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
 
 	listGroup := huma.NewGroup(commentGroup, "")

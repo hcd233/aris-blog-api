@@ -5,8 +5,8 @@ package dto
 //	author centonhuang
 //	update 2025-10-31 05:30:00
 type PageParam struct {
-	Page     int `json:"page" doc:"页码，最小为 1" minimum:"1" default:"1"`
-	PageSize int `json:"pageSize" doc:"每页条数，范围 1-50" minimum:"1" maximum:"50" default:"10"`
+	Page     int `json:"page" doc:"Page number, minimum is 1" minimum:"1" default:"1"`
+	PageSize int `json:"pageSize" doc:"Items per page, range 1-50" minimum:"1" maximum:"50" default:"10"`
 }
 
 // QueryParam 查询参数
@@ -14,7 +14,7 @@ type PageParam struct {
 //	author centonhuang
 //	update 2025-10-31 05:30:00
 type QueryParam struct {
-	Query string `json:"query,omitempty" doc:"模糊搜索关键字"`
+	Query string `json:"query,omitempty" doc:"Fuzzy search keyword"`
 }
 
 // PaginateParam 综合分页参数
@@ -31,9 +31,9 @@ type PaginateParam struct {
 //	author centonhuang
 //	update 2025-10-31 05:30:00
 type PaginationQuery struct {
-	Page     int    `query:"page" doc:"页码，最小为 1" minimum:"1" default:"1"`
-	PageSize int    `query:"pageSize" doc:"每页条数，范围 1-50" minimum:"1" maximum:"50" default:"10"`
-	Query    string `query:"query" doc:"模糊搜索关键字"`
+	Page     int    `query:"page" doc:"Page number, minimum is 1" minimum:"1" default:"1"`
+	PageSize int    `query:"pageSize" doc:"Items per page, range 1-50" minimum:"1" maximum:"50" default:"10"`
+	Query    string `query:"query" doc:"Fuzzy search keyword"`
 }
 
 // ToPaginateParam 转换为通用分页参数

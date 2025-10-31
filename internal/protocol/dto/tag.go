@@ -5,37 +5,35 @@ package dto
 //	author centonhuang
 //	update 2025-10-31 05:32:00
 type Tag struct {
-	TagID       uint   `json:"tagID" doc:"标签 ID"`
-	Name        string `json:"name" doc:"标签名称"`
-	Slug        string `json:"slug" doc:"标签别名"`
-	Description string `json:"description,omitempty" doc:"标签描述"`
-	UserID      uint   `json:"userID,omitempty" doc:"标签拥有者用户 ID"`
-	CreatedAt   string `json:"createdAt,omitempty" doc:"创建时间"`
-	UpdatedAt   string `json:"updatedAt,omitempty" doc:"更新时间"`
-	Likes       uint   `json:"likes,omitempty" doc:"点赞数量"`
+	TagID       uint   `json:"tagID" doc:"Tag ID"`
+	Name        string `json:"name" doc:"Tag name"`
+	Slug        string `json:"slug" doc:"Tag slug"`
+	Description string `json:"description,omitempty" doc:"Tag description"`
+	CreatedAt   string `json:"createdAt,omitempty" doc:"Creation timestamp"`
+	UpdatedAt   string `json:"updatedAt,omitempty" doc:"Update timestamp"`
+	Likes       uint   `json:"likes,omitempty" doc:"Number of likes"`
 }
 
 // TagPathParam 标签路径参数
 type TagPathParam struct {
-	TagID uint `path:"tagID" doc:"标签 ID"`
+	TagID uint `path:"tagID" doc:"Tag ID"`
 }
 
 // TagCreateRequestBody 创建标签请求体
 type TagCreateRequestBody struct {
-	Name        string `json:"name" doc:"标签名称"`
-	Slug        string `json:"slug" doc:"标签别名"`
-	Description string `json:"description" doc:"标签描述"`
+	Name        string `json:"name" doc:"Tag name"`
+	Slug        string `json:"slug" doc:"Tag slug"`
+	Description string `json:"description" doc:"Tag description"`
 }
 
 // TagCreateRequest 创建标签请求
 type TagCreateRequest struct {
-	UserID uint                  `json:"-"`
-	Body   *TagCreateRequestBody `json:"body" doc:"创建标签字段"`
+	Body *TagCreateRequestBody `json:"body" doc:"Fields for creating tag"`
 }
 
 // TagCreateResponse 创建标签响应
 type TagCreateResponse struct {
-	Tag *Tag `json:"tag" doc:"新建成功的标签"`
+	Tag *Tag `json:"tag" doc:"Successfully created tag"`
 }
 
 // TagGetRequest 获取标签请求
@@ -45,21 +43,20 @@ type TagGetRequest struct {
 
 // TagGetResponse 获取标签响应
 type TagGetResponse struct {
-	Tag *Tag `json:"tag" doc:"标签详情"`
+	Tag *Tag `json:"tag" doc:"Tag details"`
 }
 
 // TagUpdateRequestBody 更新标签请求体
 type TagUpdateRequestBody struct {
-	Name        string `json:"name" doc:"标签名称"`
-	Slug        string `json:"slug" doc:"标签别名"`
-	Description string `json:"description" doc:"标签描述"`
+	Name        string `json:"name" doc:"Tag name"`
+	Slug        string `json:"slug" doc:"Tag slug"`
+	Description string `json:"description" doc:"Tag description"`
 }
 
 // TagUpdateRequest 更新标签请求
 type TagUpdateRequest struct {
 	TagPathParam
-	UserID uint                  `json:"-"`
-	Body   *TagUpdateRequestBody `json:"body" doc:"可更新的标签字段"`
+	Body *TagUpdateRequestBody `json:"body" doc:"Updatable tag fields"`
 }
 
 // TagUpdateResponse 更新标签响应
@@ -68,7 +65,6 @@ type TagUpdateResponse struct{}
 // TagDeleteRequest 删除标签请求
 type TagDeleteRequest struct {
 	TagPathParam
-	UserID uint `json:"-"`
 }
 
 // TagDeleteResponse 删除标签响应
@@ -81,6 +77,6 @@ type TagListRequest struct {
 
 // TagListResponse 标签列表响应
 type TagListResponse struct {
-	Tags     []*Tag    `json:"tags" doc:"标签列表"`
-	PageInfo *PageInfo `json:"pageInfo" doc:"分页信息"`
+	Tags     []*Tag    `json:"tags" doc:"List of tags"`
+	PageInfo *PageInfo `json:"pageInfo" doc:"Pagination information"`
 }
