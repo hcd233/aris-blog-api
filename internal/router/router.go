@@ -46,11 +46,6 @@ func RegisterRouter(app *fiber.App) {
 		DefaultFormat: "application/json",
 	})
 
-	v1Router := app.Group("/v1")
-	{
-		initAIRouter(v1Router)
-	}
-
 	v1Group := huma.NewGroup(api, "/v1")
 	userGroup := huma.NewGroup(v1Group, "/user")
 	initUserRouter(userGroup)
@@ -75,6 +70,9 @@ func RegisterRouter(app *fiber.App) {
 
 	assetGroup := huma.NewGroup(v1Group, "/asset")
 	initAssetRouter(assetGroup)
+
+	aiGroup := huma.NewGroup(v1Group, "/ai")
+	initAIRouter(aiGroup)
 
 	huma.Register(api, huma.Operation{
 		OperationID: "ping",
