@@ -16,8 +16,10 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/hcd233/aris-blog-api/internal/ai/callback"
 	"github.com/hcd233/aris-blog-api/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -32,15 +34,15 @@ import (
 //	author centonhuang
 //	update 2025-01-05 17:57:43
 type AIService interface {
-	GetPrompt(ctx context.Context, req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error)
-	GetLatestPrompt(ctx context.Context, req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error)
-	ListPrompt(ctx context.Context, req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error)
-	CreatePrompt(ctx context.Context, req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error)
-	GenerateContentCompletion(ctx context.Context, req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error)
-	GenerateArticleSummary(ctx context.Context, req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error)
-	GenerateArticleTranslation(ctx context.Context, req *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error)
-	GenerateArticleQA(ctx context.Context, req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error)
-	GenerateTermExplaination(ctx context.Context, req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error)
+	GetPrompt(ctx context.Context, req *dto.GetPromptRequest) (rsp *dto.GetPromptResponse, err error)
+	GetLatestPrompt(ctx context.Context, req *dto.GetLatestPromptRequest) (rsp *dto.GetLatestPromptResponse, err error)
+	ListPrompt(ctx context.Context, req *dto.ListPromptRequest) (rsp *dto.ListPromptResponse, err error)
+	CreatePrompt(ctx context.Context, req *dto.CreatePromptRequest) (rsp *dto.EmptyResponse, err error)
+	GenerateContentCompletion(ctx context.Context, req *dto.GenerateContentCompletionRequest) (rsp *dto.GenerateContentCompletionResponse, err error)
+	GenerateArticleSummary(ctx context.Context, req *dto.GenerateArticleSummaryRequest) (rsp *dto.GenerateArticleSummaryResponse, err error)
+	GenerateArticleTranslation(ctx context.Context, req *dto.GenerateArticleTranslationRequest) (rsp *dto.GenerateArticleTranslationResponse, err error)
+	GenerateArticleQA(ctx context.Context, req *dto.GenerateArticleQARequest) (rsp *dto.GenerateArticleQAResponse, err error)
+	GenerateTermExplaination(ctx context.Context, req *dto.GenerateTermExplainationRequest) (rsp *dto.GenerateTermExplainationResponse, err error)
 }
 
 // NewAIService 创建AI服务
@@ -64,16 +66,8 @@ type aiService struct {
 	promptDAO         *dao.PromptDAO
 }
 
-// GetPrompt 获取提示词
-//
-//	receiver s *aiService
-//	param req *protocol.GetPromptRequest
-//	return rsp *protocol.GetPromptResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:02:44
-func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptRequest) (rsp *protocol.GetPromptResponse, err error) {
-	rsp = &protocol.GetPromptResponse{}
+func (s *aiService) GetPrompt(ctx context.Context, req *dto.GetPromptRequest) (rsp *dto.GetPromptResponse, err error) {
+	rsp = &dto.GetPromptResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -88,13 +82,13 @@ func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptReques
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Prompt = &protocol.Prompt{
+	rsp.Prompt = &dto.Prompt{
 		PromptID:  prompt.ID,
 		CreatedAt: prompt.CreatedAt.Format(time.DateTime),
 		Task:      string(prompt.Task),
 		Version:   prompt.Version,
-		Templates: lo.Map(prompt.Templates, func(t model.Template, _ int) protocol.Template {
-			return protocol.Template{
+		Templates: lo.Map(prompt.Templates, func(t model.Template, _ int) dto.Template {
+			return dto.Template{
 				Role:    t.Role,
 				Content: t.Content,
 			}
@@ -105,16 +99,8 @@ func (s *aiService) GetPrompt(ctx context.Context, req *protocol.GetPromptReques
 	return rsp, nil
 }
 
-// GetLatestPrompt 获取最新提示词
-//
-//	receiver s *aiService
-//	param req *protocol.GetLatestPromptRequest
-//	return rsp *protocol.GetLatestPromptResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:02:55
-func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatestPromptRequest) (rsp *protocol.GetLatestPromptResponse, err error) {
-	rsp = &protocol.GetLatestPromptResponse{}
+func (s *aiService) GetLatestPrompt(ctx context.Context, req *dto.GetLatestPromptRequest) (rsp *dto.GetLatestPromptResponse, err error) {
+	rsp = &dto.GetLatestPromptResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
@@ -129,13 +115,13 @@ func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatest
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Prompt = &protocol.Prompt{
+	rsp.Prompt = &dto.Prompt{
 		PromptID:  prompt.ID,
 		CreatedAt: prompt.CreatedAt.Format(time.DateTime),
 		Task:      string(prompt.Task),
 		Version:   prompt.Version,
-		Templates: lo.Map(prompt.Templates, func(t model.Template, _ int) protocol.Template {
-			return protocol.Template{
+		Templates: lo.Map(prompt.Templates, func(t model.Template, _ int) dto.Template {
+			return dto.Template{
 				Role:    t.Role,
 				Content: t.Content,
 			}
@@ -146,27 +132,19 @@ func (s *aiService) GetLatestPrompt(ctx context.Context, req *protocol.GetLatest
 	return rsp, nil
 }
 
-// ListPrompt 列出提示词
-//
-//	receiver s *aiService
-//	param req *protocol.ListPromptRequest
-//	return rsp *protocol.ListPromptResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:02:55
-func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequest) (rsp *protocol.ListPromptResponse, err error) {
-	rsp = &protocol.ListPromptResponse{}
+func (s *aiService) ListPrompt(ctx context.Context, req *dto.ListPromptRequest) (rsp *dto.ListPromptResponse, err error) {
+	rsp = &dto.ListPromptResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.PaginateParam.Page,
-			PageSize: req.PaginateParam.PageSize,
+			Page:     req.Page,
+			PageSize: req.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.PaginateParam.Query,
+			Query:       req.Query,
 			QueryFields: []string{"task", "version"},
 		},
 	}
@@ -180,14 +158,14 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Prompts = lo.Map(prompts, func(p *model.Prompt, _ int) *protocol.Prompt {
-		return &protocol.Prompt{
+	rsp.Prompts = lo.Map(prompts, func(p *model.Prompt, _ int) *dto.Prompt {
+		return &dto.Prompt{
 			PromptID:  p.ID,
 			CreatedAt: p.CreatedAt.Format(time.DateTime),
 			Task:      string(p.Task),
 			Version:   p.Version,
-			Templates: lo.Map(p.Templates, func(t model.Template, _ int) protocol.Template {
-				return protocol.Template{
+			Templates: lo.Map(p.Templates, func(t model.Template, _ int) dto.Template {
+				return dto.Template{
 					Role:    t.Role,
 					Content: t.Content,
 				}
@@ -196,7 +174,7 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 		}
 	})
 
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
@@ -205,67 +183,63 @@ func (s *aiService) ListPrompt(ctx context.Context, req *protocol.ListPromptRequ
 	return rsp, nil
 }
 
-// CreatePrompt 创建提示词
-//
-//	receiver s *aiService
-//	param req *protocol.CreatePromptRequest
-//	return rsp *protocol.CreatePromptResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:03:07
-func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePromptRequest) (rsp *protocol.CreatePromptResponse, err error) {
-	rsp = &protocol.CreatePromptResponse{}
+func (s *aiService) CreatePrompt(ctx context.Context, req *dto.CreatePromptRequest) (rsp *dto.EmptyResponse, err error) {
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	contents := lo.Map(req.Templates, func(tmplate protocol.Template, _ int) string {
-		return tmplate.Content
+	if req == nil || req.Body == nil {
+		logger.Error("[AIService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	contents := lo.Map(req.Body.Templates, func(template dto.Template, _ int) string {
+		return template.Content
 	})
 
 	content := strings.Join(contents, "\n")
 
 	variables := util.ExtractVariablesFromContent(content)
-
 	if len(variables) == 0 {
 		logger.Error("[AIService] no variables found in the content", zap.String("taskName", req.TaskName), zap.String("content", content))
 		return nil, protocol.ErrBadRequest
 	}
 
-	prompt, err := s.promptDAO.GetLatestPromptByTask(db, model.Task(req.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
+	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(db, model.Task(req.TaskName), []string{"id", "templates", "variables", "version"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
-	contents = lo.Map(prompt.Templates, func(tmplate model.Template, _ int) string {
-		return tmplate.Content
+	contents = lo.Map(latestPrompt.Templates, func(template model.Template, _ int) string {
+		return template.Content
 	})
 
-	if latestContent := strings.Join(contents, "\n"); latestContent == content {
-		logger.Info("[AIService] the content of the new version is the same as the latest version", zap.String("taskName", req.TaskName), zap.Any("templates", req.Templates))
+	if latestContent := strings.Join(contents, "\n"); latestPrompt.ID != 0 && latestContent == content {
+		logger.Info("[AIService] the content of the new version is the same as the latest version", zap.String("taskName", req.TaskName), zap.Any("templates", req.Body.Templates))
 		return nil, protocol.ErrBadRequest
 	}
 
-	if l, r := lo.Difference(prompt.Variables, variables); prompt.ID != 0 && len(l)+len(r) > 0 {
+	if l, r := lo.Difference(latestPrompt.Variables, variables); latestPrompt.ID != 0 && (len(l)+len(r) > 0) {
 		logger.Info("[AIService] the variables of the latest prompt and the new prompt are mismatch",
-			zap.String("taskName", req.TaskName), zap.Strings("latestVariables", prompt.Variables), zap.Strings("newVariables", variables))
+			zap.String("taskName", req.TaskName), zap.Strings("latestVariables", latestPrompt.Variables), zap.Strings("newVariables", variables))
 		return nil, protocol.ErrBadRequest
 	}
 
-	prompt = &model.Prompt{
+	newPrompt := &model.Prompt{
 		Task: model.Task(req.TaskName),
-		Templates: lo.Map(req.Templates, func(tmplate protocol.Template, _ int) model.Template {
+		Templates: lo.Map(req.Body.Templates, func(template dto.Template, _ int) model.Template {
 			return model.Template{
-				Role:    tmplate.Role,
-				Content: tmplate.Content,
+				Role:    template.Role,
+				Content: template.Content,
 			}
 		}),
 		Variables: variables,
-		Version:   prompt.Version + 1,
+		Version:   latestPrompt.Version + 1,
 	}
 
-	if err = s.promptDAO.Create(db, prompt); err != nil {
+	if err = s.promptDAO.Create(db, newPrompt); err != nil {
 		logger.Error("[AIService] failed to create prompt", zap.String("taskName", req.TaskName), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
@@ -273,21 +247,25 @@ func (s *aiService) CreatePrompt(ctx context.Context, req *protocol.CreatePrompt
 	return rsp, nil
 }
 
-// GenerateContentCompletion 生成内容补全
-//
-//	receiver s *aiService
-//	param req *protocol.GenerateContentCompletionRequest
-//	return rsp *protocol.GenerateContentCompletionResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:03:15
-func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol.GenerateContentCompletionRequest) (rsp *protocol.GenerateContentCompletionResponse, err error) {
-	rsp = &protocol.GenerateContentCompletionResponse{}
+func (s *aiService) GenerateContentCompletion(ctx context.Context, req *dto.GenerateContentCompletionRequest) (rsp *dto.GenerateContentCompletionResponse, err error) {
+	rsp = &dto.GenerateContentCompletionResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	if req == nil || req.Body == nil {
+		logger.Error("[AIService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userIDValue := ctx.Value(constant.CtxKeyUserID)
+	if userIDValue == nil {
+		logger.Error("[AIService] user id missing in context")
+		return nil, protocol.ErrUnauthorized
+	}
+	userID := userIDValue.(uint)
+
+	user := lo.Must1(s.userDAO.GetByID(db, userID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
@@ -313,11 +291,12 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
+	temperature := req.Body.Temperature
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		Model:       config.OpenAIModel,
 		APIKey:      config.OpenAIAPIKey,
 		BaseURL:     config.OpenAIBaseURL,
-		Temperature: &req.Temperature,
+		Temperature: &temperature,
 	})
 	if err != nil {
 		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
@@ -334,12 +313,12 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 	}
 
 	input := map[string]interface{}{
-		"context":     req.Context,
-		"instruction": req.Instruction,
-		"reference":   req.Reference,
+		"context":     req.Body.Context,
+		"instruction": req.Body.Instruction,
+		"reference":   req.Body.Reference,
 	}
 
-	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, userID)
 
 	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
 		Host:      config.LangfuseHost,
@@ -395,36 +374,37 @@ func (s *aiService) GenerateContentCompletion(ctx context.Context, req *protocol
 	return rsp, nil
 }
 
-// GenerateArticleSummary 生成文章总结
-//
-//	receiver s *aiService
-//	param req *protocol.GenerateArticleSummaryRequest
-//	return rsp *protocol.GenerateArticleSummaryResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:03:21
-func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.GenerateArticleSummaryRequest) (rsp *protocol.GenerateArticleSummaryResponse, err error) {
-	rsp = &protocol.GenerateArticleSummaryResponse{}
+func (s *aiService) GenerateArticleSummary(ctx context.Context, req *dto.GenerateArticleSummaryRequest) (rsp *dto.GenerateArticleSummaryResponse, err error) {
+	rsp = &dto.GenerateArticleSummaryResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	if req == nil || req.Body == nil {
+		logger.Error("[AIService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userIDValue := ctx.Value(constant.CtxKeyUserID)
+	if userIDValue == nil {
+		logger.Error("[AIService] user id missing in context")
+		return nil, protocol.ErrUnauthorized
+	}
+	userID := userIDValue.(uint)
+
+	user := lo.Must1(s.userDAO.GetByID(db, userID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.Body.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[AIService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+			logger.Error("[AIService] article not found", zap.Uint("articleID", req.Body.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[AIService] failed to get article",
-			zap.Uint("articleID", req.ArticleID),
-			zap.Error(err))
+		logger.Error("[AIService] failed to get article", zap.Uint("articleID", req.Body.ArticleID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -454,11 +434,12 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
+	temperature := req.Body.Temperature
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		Model:       config.OpenAIModel,
 		APIKey:      config.OpenAIAPIKey,
 		BaseURL:     config.OpenAIBaseURL,
-		Temperature: &req.Temperature,
+		Temperature: &temperature,
 	})
 	if err != nil {
 		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
@@ -477,10 +458,10 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 	input := map[string]interface{}{
 		"title":       article.Title,
 		"content":     latestVersion.Content,
-		"instruction": req.Instruction,
+		"instruction": req.Body.Instruction,
 	}
 
-	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, userID)
 
 	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
 		Host:      config.LangfuseHost,
@@ -489,7 +470,7 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 		UserID:    userUniqueID,
 		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
 		Tags: []string{
-			fmt.Sprintf("%d", req.ArticleID),
+			fmt.Sprintf("%d", req.Body.ArticleID),
 			string(latestPrompt.Task),
 		},
 	})
@@ -537,75 +518,61 @@ func (s *aiService) GenerateArticleSummary(ctx context.Context, req *protocol.Ge
 	return rsp, nil
 }
 
-// GenerateArticleTranslation 生成文章翻译
-//
-//	receiver s *aiService
-//	param req *protocol.GenerateArticleTranslationRequest
-//	return rsp *protocol.GenerateArticleTranslationResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:03:27
-func (s *aiService) GenerateArticleTranslation(_ context.Context, _ *protocol.GenerateArticleTranslationRequest) (rsp *protocol.GenerateArticleTranslationResponse, err error) {
-	// TODO: 实现
+func (s *aiService) GenerateArticleTranslation(_ context.Context, _ *dto.GenerateArticleTranslationRequest) (rsp *dto.GenerateArticleTranslationResponse, err error) {
 	return nil, protocol.ErrNoImplement
 }
 
-// GenerateArticleQA 生成文章问答
-//
-//	receiver s *aiService
-//	param req *protocol.GenerateArticleQARequest
-//	return rsp *protocol.GenerateArticleQAResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:03:44
-func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.GenerateArticleQARequest) (rsp *protocol.GenerateArticleQAResponse, err error) {
-	rsp = &protocol.GenerateArticleQAResponse{}
+func (s *aiService) GenerateArticleQA(ctx context.Context, req *dto.GenerateArticleQARequest) (rsp *dto.GenerateArticleQAResponse, err error) {
+	rsp = &dto.GenerateArticleQAResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	if req == nil || req.Body == nil {
+		logger.Error("[AIService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userIDValue := ctx.Value(constant.CtxKeyUserID)
+	if userIDValue == nil {
+		logger.Error("[AIService] user id missing in context")
+		return nil, protocol.ErrUnauthorized
+	}
+	userID := userIDValue.(uint)
+
+	user := lo.Must1(s.userDAO.GetByID(db, userID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.Body.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[AIService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+			logger.Error("[AIService] article not found", zap.Uint("articleID", req.Body.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[AIService] failed to get article",
-			zap.Uint("articleID", req.ArticleID),
-			zap.Error(err))
+		logger.Error("[AIService] failed to get article", zap.Uint("articleID", req.Body.ArticleID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	latestVersion, err := s.articleVersionDAO.GetLatestByArticleID(db, article.ID, []string{"id", "content"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[AIService] article version not found",
-				zap.Uint("articleID", article.ID))
+			logger.Error("[AIService] article version not found", zap.Uint("articleID", article.ID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[AIService] failed to get article version",
-			zap.Uint("articleID", article.ID),
-			zap.Error(err))
+		logger.Error("[AIService] failed to get article version", zap.Uint("articleID", article.ID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	latestPrompt, err := s.promptDAO.GetLatestPromptByTask(db, model.TaskArticleQA, []string{"id", "task", "templates"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[AIService] latest prompt not found",
-				zap.String("taskName", string(latestPrompt.Task)))
+			logger.Error("[AIService] latest prompt not found", zap.String("taskName", string(latestPrompt.Task)))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[AIService] failed to get latest prompt",
-			zap.String("taskName", string(latestPrompt.Task)),
-			zap.Error(err))
+		logger.Error("[AIService] failed to get latest prompt", zap.String("taskName", string(latestPrompt.Task)), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -619,11 +586,12 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
+	temperature := req.Body.Temperature
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		Model:       config.OpenAIModel,
 		APIKey:      config.OpenAIAPIKey,
 		BaseURL:     config.OpenAIBaseURL,
-		Temperature: &req.Temperature,
+		Temperature: &temperature,
 	})
 	if err != nil {
 		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
@@ -642,10 +610,10 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 	input := map[string]interface{}{
 		"title":    article.Title,
 		"content":  latestVersion.Content,
-		"question": req.Question,
+		"question": req.Body.Question,
 	}
 
-	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, userID)
 
 	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
 		Host:      config.LangfuseHost,
@@ -654,7 +622,7 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 		UserID:    userUniqueID,
 		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
 		Tags: []string{
-			fmt.Sprintf("%d", req.ArticleID),
+			fmt.Sprintf("%d", req.Body.ArticleID),
 			string(latestPrompt.Task),
 		},
 	})
@@ -702,36 +670,37 @@ func (s *aiService) GenerateArticleQA(ctx context.Context, req *protocol.Generat
 	return rsp, nil
 }
 
-// GenerateTermExplaination 生成术语解释
-//
-//	receiver s *aiService
-//	param req *protocol.GenerateTermExplainationRequest
-//	return rsp *protocol.GenerateTermExplainationResponse
-//	return err error
-//	author centonhuang
-//	update 2025-01-05 18:03:48
-func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.GenerateTermExplainationRequest) (rsp *protocol.GenerateTermExplainationResponse, err error) {
-	rsp = &protocol.GenerateTermExplainationResponse{}
+func (s *aiService) GenerateTermExplaination(ctx context.Context, req *dto.GenerateTermExplainationRequest) (rsp *dto.GenerateTermExplainationResponse, err error) {
+	rsp = &dto.GenerateTermExplainationResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	user := lo.Must1(s.userDAO.GetByID(db, req.UserID, []string{"id", "name", "llm_quota"}, []string{}))
+	if req == nil || req.Body == nil {
+		logger.Error("[AIService] request body is nil")
+		return nil, protocol.ErrBadRequest
+	}
+
+	userIDValue := ctx.Value(constant.CtxKeyUserID)
+	if userIDValue == nil {
+		logger.Error("[AIService] user id missing in context")
+		return nil, protocol.ErrUnauthorized
+	}
+	userID := userIDValue.(uint)
+
+	user := lo.Must1(s.userDAO.GetByID(db, userID, []string{"id", "name", "llm_quota"}, []string{}))
 	if user.LLMQuota <= 0 {
 		logger.Info("[AIService] insufficient LLM quota", zap.Int("quota", int(user.LLMQuota)))
 		return nil, protocol.ErrInsufficientQuota
 	}
 
-	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "title"}, []string{})
+	article, err := s.articleDAO.GetByID(db, req.Body.ArticleID, []string{"id", "title"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[AIService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+			logger.Error("[AIService] article not found", zap.Uint("articleID", req.Body.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[AIService] failed to get article",
-			zap.Uint("articleID", req.ArticleID),
-			zap.Error(err))
+		logger.Error("[AIService] failed to get article", zap.Uint("articleID", req.Body.ArticleID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -765,11 +734,12 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 
 	promptTemplate := prompt.FromMessages(schema.GoTemplate, messages...)
 
+	temperature := req.Body.Temperature
 	chatOpenAI, err := openai.NewChatModel(ctx, &openai.ChatModelConfig{
 		Model:       config.OpenAIModel,
 		APIKey:      config.OpenAIAPIKey,
 		BaseURL:     config.OpenAIBaseURL,
-		Temperature: &req.Temperature,
+		Temperature: &temperature,
 	})
 	if err != nil {
 		logger.Error("[AIService] failed to create chat openai", zap.Error(err))
@@ -788,25 +758,25 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 	contextWindowLen := 200
 
 	var left, right int
-	if int(req.Position) < contextWindowLen/2 {
+	if int(req.Body.Position) < contextWindowLen/2 {
 		left = 0
 		right = contextWindowLen
-	} else if int(req.Position) > len(latestVersion.Content)-contextWindowLen/2 {
+	} else if int(req.Body.Position) > len(latestVersion.Content)-contextWindowLen/2 {
 		left = len(latestVersion.Content) - contextWindowLen
 		right = len(latestVersion.Content)
 	} else {
-		left = int(req.Position) - contextWindowLen/2
-		right = int(req.Position) + contextWindowLen/2
+		left = int(req.Body.Position) - contextWindowLen/2
+		right = int(req.Body.Position) + contextWindowLen/2
 	}
 
 	input := map[string]interface{}{
 		"title":   article.Title,
 		"content": latestVersion.Content,
 		"context": latestVersion.Content[left:right],
-		"term":    req.Term,
+		"term":    req.Body.Term,
 	}
 
-	userUniqueID := fmt.Sprintf("%s-%d", user.Name, req.UserID)
+	userUniqueID := fmt.Sprintf("%s-%d", user.Name, userID)
 
 	langfuseCallbackHandler, _ := langfuse.NewLangfuseHandler(&langfuse.Config{
 		Host:      config.LangfuseHost,
@@ -815,7 +785,7 @@ func (s *aiService) GenerateTermExplaination(ctx context.Context, req *protocol.
 		UserID:    userUniqueID,
 		Name:      fmt.Sprintf("%s-trace", string(latestPrompt.Task)),
 		Tags: []string{
-			fmt.Sprintf("%d", req.ArticleID),
+			fmt.Sprintf("%d", req.Body.ArticleID),
 			string(latestPrompt.Task),
 		},
 	})

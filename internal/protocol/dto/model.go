@@ -15,6 +15,15 @@ type User struct {
 	Permission string `json:"permission,omitempty" doc:"Permission level of the user"`
 }
 
+// Category 分类信息
+type Category struct {
+	CategoryID uint   `json:"categoryID" doc:"Category ID"`
+	Name       string `json:"name" doc:"Category name"`
+	ParentID   uint   `json:"parentID,omitempty" doc:"Parent category ID"`
+	CreatedAt  string `json:"createdAt,omitempty" doc:"Creation timestamp"`
+	UpdatedAt  string `json:"updatedAt,omitempty" doc:"Update timestamp"`
+}
+
 // Tag 标签信息
 //
 //	author centonhuang
@@ -39,6 +48,7 @@ type Article struct {
 	Slug        string `json:"slug" doc:"Article slug"`
 	Status      string `json:"status" doc:"Article status"`
 	User        *User  `json:"user" doc:"Author information"`
+	Category    *Category `json:"category,omitempty" doc:"Category information"`
 	CreatedAt   string `json:"createdAt" doc:"Creation timestamp"`
 	UpdatedAt   string `json:"updatedAt" doc:"Update timestamp"`
 	PublishedAt string `json:"publishedAt" doc:"Publication timestamp"`
