@@ -1,20 +1,6 @@
 package dto
 
-// Template 提示词模板
-type Template struct {
-	Role    string `json:"role" doc:"Message role (system/user/assistant)"`
-	Content string `json:"content" doc:"Message content"`
-}
 
-// Prompt 提示词信息
-type Prompt struct {
-	PromptID  uint       `json:"promptID" doc:"Prompt ID"`
-	CreatedAt string     `json:"createdAt" doc:"Creation timestamp"`
-	Task      string     `json:"task" doc:"Task name"`
-	Version   uint       `json:"version" doc:"Prompt version"`
-	Templates []Template `json:"templates" doc:"Prompt templates"`
-	Variables []string   `json:"variables,omitempty" doc:"Template variables"`
-}
 
 // TaskPathParam 任务路径参数
 type TaskPathParam struct {

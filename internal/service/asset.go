@@ -338,7 +338,7 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *dto.ListUserLi
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:15:38
-func (s *assetService) ListImages(ctx context.Context, req *dto.EmptyRequest) (rsp *dto.ListImagesResponse, err error) {
+func (s *assetService) ListImages(ctx context.Context, _ *dto.EmptyRequest) (rsp *dto.ListImagesResponse, err error) {
 	rsp = &dto.ListImagesResponse{}
 
 	logger := logger.WithCtx(ctx)
@@ -377,15 +377,15 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	fileName := req.Body.Filename
-	fileSize := req.Body.Size
+	fileName := req.RawBody.Filename
+	fileSize := req.RawBody.Size
 
 	if !util.IsValidImageFormat(fileName) {
 		logger.Error("[AssetService] invalid image format", zap.String("fileName", fileName))
 		return nil, protocol.ErrBadRequest
 	}
 
-	if contentType := req.Body.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
+	if contentType := req.RawBody.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
 		logger.Error("[AssetService] invalid image content type", zap.String("contentType", contentType))
 		return nil, protocol.ErrBadRequest
 	}
@@ -399,7 +399,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 	var imageFormat imaging.Format
 
 	extension := filepath.Ext(fileName)
-	file, err := req.Body.Open()
+	file, err := req.RawBody.Open()
 	if err != nil {
 		logger.Error("[AssetService] failed to open file", zap.Error(err))
 		return nil, protocol.ErrInternalError

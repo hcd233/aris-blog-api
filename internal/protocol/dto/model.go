@@ -60,3 +60,35 @@ type ArticleVersion struct {
 	CreatedAt        string `json:"createdAt" doc:"Creation timestamp"`
 	UpdatedAt        string `json:"updatedAt" doc:"Update timestamp"`
 }
+
+// UserView 用户浏览
+type UserView struct {
+	ViewID       uint   `json:"viewID" doc:"View record ID"`
+	Progress     int8   `json:"progress" doc:"Reading progress percentage (0-100)"`
+	LastViewedAt string `json:"lastViewedAt" doc:"Last viewed timestamp"`
+	UserID       uint   `json:"userID" doc:"User ID"`
+	ArticleID    uint   `json:"articleID" doc:"Article ID"`
+}
+
+// Image 图片信息
+type Image struct {
+	Name      string `json:"name" doc:"Image name"`
+	Size      int64  `json:"size" doc:"Image size in bytes"`
+	CreatedAt string `json:"createdAt" doc:"Creation timestamp"`
+}
+
+// Template 提示词模板
+type Template struct {
+	Role    string `json:"role" doc:"Message role (system/user/assistant)"`
+	Content string `json:"content" doc:"Message content"`
+}
+
+// Prompt 提示词信息
+type Prompt struct {
+	PromptID  uint       `json:"promptID" doc:"Prompt ID"`
+	CreatedAt string     `json:"createdAt" doc:"Creation timestamp"`
+	Task      string     `json:"task" doc:"Task name"`
+	Version   uint       `json:"version" doc:"Prompt version"`
+	Templates []Template `json:"templates" doc:"Prompt templates"`
+	Variables []string   `json:"variables,omitempty" doc:"Template variables"`
+}

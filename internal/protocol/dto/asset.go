@@ -2,21 +2,7 @@ package dto
 
 import "mime/multipart"
 
-// Image 图片信息
-type Image struct {
-	Name      string `json:"name" doc:"Image name"`
-	Size      int64  `json:"size" doc:"Image size in bytes"`
-	CreatedAt string `json:"createdAt" doc:"Creation timestamp"`
-}
 
-// UserView 用户浏览
-type UserView struct {
-	ViewID       uint   `json:"viewID" doc:"View record ID"`
-	Progress     int8   `json:"progress" doc:"Reading progress percentage (0-100)"`
-	LastViewedAt string `json:"lastViewedAt" doc:"Last viewed timestamp"`
-	UserID       uint   `json:"userID" doc:"User ID"`
-	ArticleID    uint   `json:"articleID" doc:"Article ID"`
-}
 
 // ViewPathParam 浏览记录路径参数
 type ViewPathParam struct {
@@ -89,7 +75,7 @@ type ListImagesResponse struct {
 
 // UploadImageRequest 上传图片请求
 type UploadImageRequest struct {
-	Body multipart.FileHeader
+	RawBody *multipart.FileHeader
 }
 
 // GetImageRequest 获取图片请求
