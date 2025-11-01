@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/url"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -401,7 +402,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 	var rawImage image.Image
 	var imageFormat imaging.Format
 
-	extension := filepath.Ext(fileName)
+	extension := strings.ToLower(filepath.Ext(fileName))
 
 	switch extension {
 	case ".webp":
