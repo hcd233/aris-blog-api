@@ -1,12 +1,18 @@
 package service
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"fmt"
+	"image"
+	"io"
 	"net/url"
+	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/disintegration/imaging"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -15,8 +21,10 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	objdao "github.com/hcd233/aris-blog-api/internal/resource/storage/obj_dao"
+	"github.com/hcd233/aris-blog-api/internal/util"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
+	"golang.org/x/image/webp"
 	"gorm.io/gorm"
 )
 
@@ -30,7 +38,7 @@ type AssetService interface {
 	ListUserLikeTags(ctx context.Context, req *dto.ListUserLikeTagsRequest) (rsp *dto.ListUserLikeTagsResponse, err error)
 	ListImages(ctx context.Context, req *dto.ListImagesRequest) (rsp *dto.ListImagesResponse, err error)
 	UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.UploadImageResponse, err error)
-	GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.GetImageResponse, err error)
+	GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.URLResponse, err error)
 	DeleteImage(ctx context.Context, req *dto.DeleteImageRequest) (rsp *dto.EmptyResponse, err error)
 	ListUserViewArticles(ctx context.Context, req *dto.ListUserViewArticlesRequest) (rsp *dto.ListUserViewArticlesResponse, err error)
 	DeleteUserView(ctx context.Context, req *dto.DeleteUserViewRequest) (rsp *dto.EmptyResponse, err error)
@@ -141,12 +149,12 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *dto.ListUs
 			Title:     article.Title,
 			Slug:      article.Slug,
 			Status:    string(article.Status),
-		User: &dto.User{
-			UserID: article.User.ID,
-			Name:   article.User.Name,
-			Avatar: article.User.Avatar,
-		},
-		CreatedAt:   article.CreatedAt.Format(time.DateTime),
+			User: &dto.User{
+				UserID: article.User.ID,
+				Name:   article.User.Name,
+				Avatar: article.User.Avatar,
+			},
+			CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
 			Likes:       article.Likes,
@@ -158,8 +166,8 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *dto.ListUs
 					Slug:  tag.Slug,
 				}
 			}),
-		Comments: len(article.Comments),
-	}
+			Comments: len(article.Comments),
+		}
 	})
 	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
@@ -369,42 +377,41 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	if len(req.RawBody) == 0 {
-		logger.Error("[AssetService] empty file upload")
+	fileName := req.RawBody.Filename
+	fileSize := req.RawBody.Size
+
+	if !util.IsValidImageFormat(fileName) {
+		logger.Error("[AssetService] invalid image format", zap.String("fileName", fileName))
 		return nil, protocol.ErrBadRequest
 	}
 
-	// TODO: 实现文件上传逻辑
-	// 暂时返回未实现错误
-	logger.Warn("[AssetService] UploadImage not yet fully implemented", zap.Uint("userID", userID))
-	return nil, protocol.ErrNoImplement
-
-	/* TODO: Uncomment when file upload is properly implemented
-	if !util.IsValidImageFormat(req.FileName) {
-		logger.Error("[AssetService] invalid image format", zap.String("fileName", req.FileName))
+	if contentType := req.RawBody.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
+		logger.Error("[AssetService] invalid image content type", zap.String("contentType", contentType))
 		return nil, protocol.ErrBadRequest
 	}
 
-	if !util.IsValidImageContentType(req.ContentType) {
-		logger.Error("[AssetService] invalid image content type", zap.String("contentType", req.ContentType))
-		return nil, protocol.ErrBadRequest
-	}
-
-	if maxFileSize := 3 * 1024 * 1024; req.Size > int64(maxFileSize) {
-		logger.Error("[AssetService] file size is too large", zap.Int64("fileSize", req.Size), zap.Int("maxFileSize", maxFileSize))
+	if maxFileSize := 3 * 1024 * 1024; fileSize > int64(maxFileSize) {
+		logger.Error("[AssetService] file size is too large", zap.Int64("fileSize", fileSize), zap.Int("maxFileSize", maxFileSize))
 		return nil, protocol.ErrBadRequest
 	}
 
 	var rawImage image.Image
 	var imageFormat imaging.Format
 
-	extension := filepath.Ext(req.FileName)
+	extension := filepath.Ext(fileName)
+	file, err := req.RawBody.Open()
+	if err != nil {
+		logger.Error("[AssetService] failed to open file", zap.Error(err))
+		return nil, protocol.ErrInternalError
+	}
+	defer file.Close()
+
 	switch extension {
 	case ".webp":
-		rawImage = lo.Must1(webp.Decode(req.ReadSeeker))
+		rawImage = lo.Must1(webp.Decode(file))
 		imageFormat = imaging.PNG
 	case ".png", ".jpg", ".jpeg", ".gif":
-		rawImage, _ = lo.Must2(image.Decode(req.ReadSeeker))
+		rawImage, _ = lo.Must2(image.Decode(file))
 		imageFormat = lo.Must1(imaging.FormatFromExtension(extension))
 	default:
 		panic(fmt.Sprintf("Invalid image extension: %s", extension))
@@ -427,7 +434,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 		logger.Error("[AssetService] failed to encode thumbnail image", zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
-	req.ReadSeeker.Seek(0, io.SeekStart)
+	file.Seek(0, io.SeekStart)
 
 	var wg sync.WaitGroup
 	var imageErr, thumbnailErr error
@@ -436,31 +443,30 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 
 	go func() {
 		defer wg.Done()
-		imageErr = s.imageObjDAO.UploadObject(ctx, req.UserID, req.FileName, int64(req.Size), req.ReadSeeker)
+		imageErr = s.imageObjDAO.UploadObject(ctx, userID, fileName, fileSize, file)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailErr = s.thumbnailObjDAO.UploadObject(ctx, req.UserID, req.FileName, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
+		thumbnailErr = s.thumbnailObjDAO.UploadObject(ctx, userID, fileName, int64(thumbnailBuffer.Len()), &thumbnailBuffer)
 	}()
 
 	wg.Wait()
 
 	if imageErr != nil {
-		logger.Error("[AssetService] failed to upload image", zap.String("fileName", req.FileName), zap.Error(imageErr))
+		logger.Error("[AssetService] failed to upload image", zap.String("fileName", fileName), zap.Error(imageErr))
 		return nil, protocol.ErrInternalError
 	}
 
 	if thumbnailErr != nil {
-		logger.Error("[AssetService] failed to upload thumbnail image", zap.String("fileName", req.FileName), zap.Error(thumbnailErr))
+		logger.Error("[AssetService] failed to upload thumbnail image", zap.String("fileName", fileName), zap.Error(thumbnailErr))
 		return nil, protocol.ErrInternalError
 	}
 
 	logger.Info("[AssetService] image uploaded successfully",
-		zap.String("fileName", req.FileName),
+		zap.String("fileName", fileName),
 	)
 	return rsp, nil
-	*/
 }
 
 // GetImage 获取图片
@@ -471,10 +477,10 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:49:39
-func (s *assetService) GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.GetImageResponse, err error) {
-	rsp = &dto.GetImageResponse{}
-
+func (s *assetService) GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.URLResponse, err error) {
 	logger := logger.WithCtx(ctx)
+
+	rsp = &dto.URLResponse{}
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
@@ -494,8 +500,9 @@ func (s *assetService) GetImage(ctx context.Context, req *dto.GetImageRequest) (
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.PresignedURL = presignedURL.String()
-	logger.Info("[AssetService] presigned URL", zap.String("imageName", req.ObjectName), zap.String("quality", req.Quality), zap.String("url", rsp.PresignedURL))
+	rsp.URL = presignedURL.String()
+
+	logger.Info("[AssetService] presigned URL", zap.String("imageName", req.ObjectName), zap.String("quality", req.Quality), zap.String("url", rsp.URL))
 
 	return rsp, nil
 }

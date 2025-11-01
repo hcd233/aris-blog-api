@@ -4,16 +4,13 @@ import (
 	"fmt"
 	"os"
 	"runtime/debug"
-	"time"
 
-	"github.com/bytedance/sonic"
-	"github.com/gofiber/fiber/v2"
-	"github.com/hcd233/aris-blog-api/internal/config"
+	"github.com/hcd233/aris-blog-api/internal/api"
 	"github.com/hcd233/aris-blog-api/internal/cron"
 	"github.com/hcd233/aris-blog-api/internal/logger"
+	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"go.uber.org/zap"
 
-	"github.com/hcd233/aris-blog-api/internal/middleware"
 	"github.com/hcd233/aris-blog-api/internal/resource/cache"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/llm"
@@ -49,16 +46,8 @@ var startServerCmd = &cobra.Command{
 		llm.InitOpenAIClient()
 		cron.InitCronJobs()
 
-		app := fiber.New(fiber.Config{
-			Prefork:      false,
-			ReadTimeout:  config.ReadTimeout,
-			WriteTimeout: config.WriteTimeout,
-			IdleTimeout:  120 * time.Second,
-			JSONEncoder:  sonic.Marshal,
-			JSONDecoder:  sonic.Unmarshal,
-		})
+		app := api.GetFiberApp()
 
-		// 中间件
 		app.Use(
 			middleware.FgprofMiddleware(),
 			middleware.TraceMiddleware(),
@@ -68,7 +57,7 @@ var startServerCmd = &cobra.Command{
 			middleware.RecoverMiddleware(),
 		)
 
-		router.RegisterRouter(app)
+		router.RegisterRouter()
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},

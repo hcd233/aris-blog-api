@@ -14,9 +14,8 @@ import (
 func initAssetRouter(assetGroup *huma.Group) {
 	assetHandler := handler.NewAssetHandler()
 
-	assetGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+	assetGroup.UseMiddleware(middleware.JwtMiddleware())
 
-	// Like????
 	likeGroup := huma.NewGroup(assetGroup, "/like")
 
 	huma.Register(likeGroup, huma.Operation{
@@ -49,7 +48,6 @@ func initAssetRouter(assetGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, assetHandler.HandleListUserLikeTags)
 
-	// View????
 	viewGroup := huma.NewGroup(assetGroup, "/view")
 
 	huma.Register(viewGroup, huma.Operation{
@@ -72,9 +70,8 @@ func initAssetRouter(assetGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, assetHandler.HandleDeleteUserView)
 
-	// Object????
 	objectGroup := huma.NewGroup(assetGroup, "/object")
-	objectGroup.UseMiddleware(middleware.LimitUserPermissionMiddlewareForHuma("objectService", model.PermissionCreator))
+	objectGroup.UseMiddleware(middleware.LimitUserPermissionMiddleware("objectService", model.PermissionCreator))
 
 	huma.Register(objectGroup, huma.Operation{
 		OperationID: "listImages",
@@ -86,11 +83,10 @@ func initAssetRouter(assetGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, assetHandler.HandleListImages)
 
-	// Image????
 	imageGroup := huma.NewGroup(objectGroup, "/image")
 
 	uploadImageGroup := huma.NewGroup(imageGroup, "")
-	uploadImageGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("uploadImage", constant.CtxKeyUserID, 10*time.Second, 1))
+	uploadImageGroup.UseMiddleware(middleware.RateLimiterMiddleware("uploadImage", constant.CtxKeyUserID, 10*time.Second, 1))
 
 	huma.Register(uploadImageGroup, huma.Operation{
 		OperationID: "uploadImage",

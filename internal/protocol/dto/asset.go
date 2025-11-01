@@ -1,5 +1,7 @@
 package dto
 
+import "mime/multipart"
+
 // Image 图片信息
 type Image struct {
 	Name      string `json:"name" doc:"Image name"`
@@ -92,7 +94,7 @@ type ListImagesResponse struct {
 
 // UploadImageRequest 上传图片请求
 type UploadImageRequest struct {
-	RawBody []byte `contentType:"multipart/form-data"`
+	RawBody multipart.FileHeader
 }
 
 // UploadImageResponse 上传图片响应
@@ -104,11 +106,6 @@ type UploadImageResponse struct {
 type GetImageRequest struct {
 	ObjectPathParam
 	ImageQueryParam
-}
-
-// GetImageResponse 获取图片响应
-type GetImageResponse struct {
-	PresignedURL string `json:"presignedURL" doc:"Presigned URL for image access"`
 }
 
 // DeleteImageRequest 删除图片请求

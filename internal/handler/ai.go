@@ -1,8 +1,13 @@
+// Package handler provides handlers for the API.
+//
+//	author centonhuang
+//	update 2025-11-02 04:14:56
 package handler
 
 import (
 	"context"
 
+	"github.com/danielgtaylor/huma/v2/sse"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
 	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
@@ -11,15 +16,15 @@ import (
 
 // AIHandler AI处理器
 type AIHandler interface {
-	HandleGetPrompt(ctx context.Context, req *dto.GetPromptRequest) (*protocol.HumaHTTPResponse[*dto.GetPromptResponse], error)
-	HandleGetLatestPrompt(ctx context.Context, req *dto.GetLatestPromptRequest) (*protocol.HumaHTTPResponse[*dto.GetLatestPromptResponse], error)
-	HandleListPrompt(ctx context.Context, req *dto.ListPromptRequest) (*protocol.HumaHTTPResponse[*dto.ListPromptResponse], error)
-	HandleCreatePrompt(ctx context.Context, req *dto.CreatePromptRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
+	HandleGetPrompt(ctx context.Context, req *dto.GetPromptRequest) (*protocol.HTTPResponse[*dto.GetPromptResponse], error)
+	HandleGetLatestPrompt(ctx context.Context, req *dto.GetLatestPromptRequest) (*protocol.HTTPResponse[*dto.GetLatestPromptResponse], error)
+	HandleListPrompt(ctx context.Context, req *dto.ListPromptRequest) (*protocol.HTTPResponse[*dto.ListPromptResponse], error)
+	HandleCreatePrompt(ctx context.Context, req *dto.CreatePromptRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error)
 	// SSE streaming methods - will return special responses
-	HandleGenerateContentCompletion(ctx context.Context, req *dto.GenerateContentCompletionRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
-	HandleGenerateArticleSummary(ctx context.Context, req *dto.GenerateArticleSummaryRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
-	HandleGenerateArticleQA(ctx context.Context, req *dto.GenerateArticleQARequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
-	HandleGenerateTermExplaination(ctx context.Context, req *dto.GenerateTermExplainationRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
+	HandleGenerateContentCompletion(ctx context.Context, req *dto.GenerateContentCompletionRequest, sender sse.Sender)
+	HandleGenerateArticleSummary(ctx context.Context, req *dto.GenerateArticleSummaryRequest, sender sse.Sender)
+	HandleGenerateArticleQA(ctx context.Context, req *dto.GenerateArticleQARequest, sender sse.Sender)
+	HandleGenerateTermExplaination(ctx context.Context, req *dto.GenerateTermExplainationRequest, sender sse.Sender)
 }
 
 type aiHandler struct {
@@ -33,37 +38,39 @@ func NewAIHandler() AIHandler {
 	}
 }
 
-func (h *aiHandler) HandleGetPrompt(ctx context.Context, req *dto.GetPromptRequest) (*protocol.HumaHTTPResponse[*dto.GetPromptResponse], error) {
+func (h *aiHandler) HandleGetPrompt(ctx context.Context, req *dto.GetPromptRequest) (*protocol.HTTPResponse[*dto.GetPromptResponse], error) {
 	return util.WrapHTTPResponse(h.svc.GetPrompt(ctx, req))
 }
 
-func (h *aiHandler) HandleGetLatestPrompt(ctx context.Context, req *dto.GetLatestPromptRequest) (*protocol.HumaHTTPResponse[*dto.GetLatestPromptResponse], error) {
+func (h *aiHandler) HandleGetLatestPrompt(ctx context.Context, req *dto.GetLatestPromptRequest) (*protocol.HTTPResponse[*dto.GetLatestPromptResponse], error) {
 	return util.WrapHTTPResponse(h.svc.GetLatestPrompt(ctx, req))
 }
 
-func (h *aiHandler) HandleListPrompt(ctx context.Context, req *dto.ListPromptRequest) (*protocol.HumaHTTPResponse[*dto.ListPromptResponse], error) {
+func (h *aiHandler) HandleListPrompt(ctx context.Context, req *dto.ListPromptRequest) (*protocol.HTTPResponse[*dto.ListPromptResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListPrompt(ctx, req))
 }
 
-func (h *aiHandler) HandleCreatePrompt(ctx context.Context, req *dto.CreatePromptRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
+func (h *aiHandler) HandleCreatePrompt(ctx context.Context, req *dto.CreatePromptRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.CreatePrompt(ctx, req))
 }
 
 // SSE streaming handlers - TODO: Implement SSE response handling
-func (h *aiHandler) HandleGenerateContentCompletion(ctx context.Context, req *dto.GenerateContentCompletionRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
-	// For now, return not implemented
-	// SSE streaming will be implemented separately
-	return nil, protocol.ErrNoImplement
+func (h *aiHandler) HandleGenerateContentCompletion(ctx context.Context, req *dto.GenerateContentCompletionRequest, sender sse.Sender) {
+	tokenChan, errChan := h.svc.GenerateContentCompletion(ctx, req)
+	util.SendStreamEventResponses(sender, tokenChan, errChan)
 }
 
-func (h *aiHandler) HandleGenerateArticleSummary(ctx context.Context, req *dto.GenerateArticleSummaryRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
-	return nil, protocol.ErrNoImplement
+func (h *aiHandler) HandleGenerateArticleSummary(ctx context.Context, req *dto.GenerateArticleSummaryRequest, sender sse.Sender) {
+	tokenChan, errChan := h.svc.GenerateArticleSummary(ctx, req)
+	util.SendStreamEventResponses(sender, tokenChan, errChan)
 }
 
-func (h *aiHandler) HandleGenerateArticleQA(ctx context.Context, req *dto.GenerateArticleQARequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
-	return nil, protocol.ErrNoImplement
+func (h *aiHandler) HandleGenerateArticleQA(ctx context.Context, req *dto.GenerateArticleQARequest, sender sse.Sender) {
+	tokenChan, errChan := h.svc.GenerateArticleQA(ctx, req)
+	util.SendStreamEventResponses(sender, tokenChan, errChan)
 }
 
-func (h *aiHandler) HandleGenerateTermExplaination(ctx context.Context, req *dto.GenerateTermExplainationRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
-	return nil, protocol.ErrNoImplement
+func (h *aiHandler) HandleGenerateTermExplaination(ctx context.Context, req *dto.GenerateTermExplainationRequest, sender sse.Sender) {
+	tokenChan, errChan := h.svc.GenerateTermExplaination(ctx, req)
+	util.SendStreamEventResponses(sender, tokenChan, errChan)
 }

@@ -3,9 +3,9 @@ module github.com/hcd233/aris-blog-api
 go 1.25.1
 
 require (
-	github.com/cloudwego/eino v0.4.5
-	github.com/cloudwego/eino-ext/callbacks/langfuse v0.0.0-20250822023757-dbf41c9449b9
-	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250822023757-dbf41c9449b9
+	github.com/cloudwego/eino v0.5.7
+	github.com/cloudwego/eino-ext/callbacks/langfuse v0.0.0-20251030100426-0019cd119fa9
+	github.com/cloudwego/eino-ext/components/model/openai v0.1.2
 	github.com/danielgtaylor/huma/v2 v2.34.1
 	github.com/disintegration/imaging v1.6.2
 	github.com/gofiber/contrib/fgprof v1.0.4
@@ -19,7 +19,7 @@ require (
 	github.com/tencentyun/cos-go-sdk-v5 v0.7.60
 	github.com/ulule/limiter/v3 v3.11.2
 	go.uber.org/zap v1.27.0
-	golang.org/x/image v0.22.0
+	golang.org/x/image v0.32.0
 	golang.org/x/oauth2 v0.30.0
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 	gorm.io/driver/postgres v1.6.0
@@ -28,10 +28,14 @@ require (
 
 require (
 	cloud.google.com/go/compute/metadata v0.7.0 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
+	github.com/bytedance/gopkg v0.1.3 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
 	github.com/clbanning/mxj v1.8.4 // indirect
 	github.com/cloudwego/eino-ext/libs/acl/langfuse v0.0.0-20250409060521-ba8646352e4b // indirect
-	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250821122458-ae35393076b3 // indirect
+	github.com/cloudwego/eino-ext/libs/acl/openai v0.1.0 // indirect
+	github.com/eino-contrib/jsonschema v1.0.1 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
 	github.com/felixge/fgprof v0.9.5 // indirect
 	github.com/getkin/kin-openapi v0.118.0 // indirect
@@ -49,7 +53,7 @@ require (
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect
-	github.com/meguminnnnnnnnn/go-openai v0.0.0-20250821095446-07791bea23a0 // indirect
+	github.com/meguminnnnnnnnn/go-openai v0.1.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826 // indirect
@@ -63,16 +67,17 @@ require (
 	github.com/stretchr/testify v1.11.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.3.0 // indirect
+	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 )
 
 require (
 	github.com/andybalholm/brotli v1.2.0 // indirect
-	github.com/bytedance/sonic v1.14.0
+	github.com/bytedance/sonic v1.14.1
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/cloudwego/base64x v0.1.5 // indirect
+	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
@@ -110,7 +115,7 @@ require (
 	golang.org/x/exp v0.0.0-20240604190554-fc45aab8b7f8 // indirect
 	golang.org/x/net v0.44.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
-	golang.org/x/text v0.29.0 // indirect
+	golang.org/x/text v0.30.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

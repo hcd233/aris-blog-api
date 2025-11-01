@@ -5,22 +5,22 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/sse"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
+	"github.com/hcd233/aris-blog-api/internal/protocol"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 )
 
 func initAIRouter(aiGroup *huma.Group) {
 	aiHandler := handler.NewAIHandler()
 
-	aiGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+	aiGroup.UseMiddleware(middleware.JwtMiddleware())
 
-	// Prompt???? - ??Admin??
 	promptGroup := huma.NewGroup(aiGroup, "/prompt")
-	promptGroup.UseMiddleware(middleware.LimitUserPermissionMiddlewareForHuma("promptService", model.PermissionAdmin))
+	promptGroup.UseMiddleware(middleware.LimitUserPermissionMiddleware("promptService", model.PermissionAdmin))
 
-	// /:taskName/v:version - ???????Prompt
 	huma.Register(promptGroup, huma.Operation{
 		OperationID: "getPrompt",
 		Method:      http.MethodGet,
@@ -31,7 +31,6 @@ func initAIRouter(aiGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, aiHandler.HandleGetPrompt)
 
-	// /:taskName/latest - ????Prompt
 	huma.Register(promptGroup, huma.Operation{
 		OperationID: "getLatestPrompt",
 		Method:      http.MethodGet,
@@ -42,7 +41,6 @@ func initAIRouter(aiGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, aiHandler.HandleGetLatestPrompt)
 
-	// /:taskName - ??Prompt
 	huma.Register(promptGroup, huma.Operation{
 		OperationID: "listPrompts",
 		Method:      http.MethodGet,
@@ -53,7 +51,6 @@ func initAIRouter(aiGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, aiHandler.HandleListPrompt)
 
-	// /:taskName - ??Prompt
 	huma.Register(promptGroup, huma.Operation{
 		OperationID: "createPrompt",
 		Method:      http.MethodPost,
@@ -64,16 +61,14 @@ func initAIRouter(aiGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, aiHandler.HandleCreatePrompt)
 
-	// AI????
 	appGroup := huma.NewGroup(aiGroup, "/app")
 
-	// Creator??
 	creatorGroup := huma.NewGroup(appGroup, "/creator")
 
 	contentCompletionGroup := huma.NewGroup(creatorGroup, "")
-	contentCompletionGroup.UseMiddleware(middleware.RedisLockMiddlewareForHuma("contentCompletion", constant.CtxKeyUserID, 30*time.Second))
+	contentCompletionGroup.UseMiddleware(middleware.RedisLockMiddleware("contentCompletion", constant.CtxKeyUserID, 30*time.Second))
 
-	huma.Register(contentCompletionGroup, huma.Operation{
+	sse.Register(contentCompletionGroup, huma.Operation{
 		OperationID: "generateContentCompletion",
 		Method:      http.MethodPost,
 		Path:        "/contentCompletion",
@@ -81,12 +76,16 @@ func initAIRouter(aiGroup *huma.Group) {
 		Description: "Generate content completion using AI",
 		Tags:        []string{"ai"},
 		Security:    []map[string][]string{{"jwtAuth": {}}},
-	}, aiHandler.HandleGenerateContentCompletion)
+	},
+		map[string]any{
+			"SSEResponse": protocol.SSEResponse{},
+		},
+		aiHandler.HandleGenerateContentCompletion)
 
 	articleSummaryGroup := huma.NewGroup(creatorGroup, "")
-	articleSummaryGroup.UseMiddleware(middleware.RedisLockMiddlewareForHuma("articleSummary", constant.CtxKeyUserID, 30*time.Second))
+	articleSummaryGroup.UseMiddleware(middleware.RedisLockMiddleware("articleSummary", constant.CtxKeyUserID, 30*time.Second))
 
-	huma.Register(articleSummaryGroup, huma.Operation{
+	sse.Register(articleSummaryGroup, huma.Operation{
 		OperationID: "generateArticleSummary",
 		Method:      http.MethodPost,
 		Path:        "/articleSummary",
@@ -94,15 +93,17 @@ func initAIRouter(aiGroup *huma.Group) {
 		Description: "Generate article summary using AI",
 		Tags:        []string{"ai"},
 		Security:    []map[string][]string{{"jwtAuth": {}}},
-	}, aiHandler.HandleGenerateArticleSummary)
+	},
+		map[string]any{
+			"SSEResponse": protocol.SSEResponse{},
+		}, aiHandler.HandleGenerateArticleSummary)
 
-	// Reader??
 	readerGroup := huma.NewGroup(appGroup, "/reader")
 
 	articleQAGroup := huma.NewGroup(readerGroup, "")
-	articleQAGroup.UseMiddleware(middleware.RedisLockMiddlewareForHuma("articleQA", constant.CtxKeyUserID, 30*time.Second))
+	articleQAGroup.UseMiddleware(middleware.RedisLockMiddleware("articleQA", constant.CtxKeyUserID, 30*time.Second))
 
-	huma.Register(articleQAGroup, huma.Operation{
+	sse.Register(articleQAGroup, huma.Operation{
 		OperationID: "generateArticleQA",
 		Method:      http.MethodPost,
 		Path:        "/articleQA",
@@ -110,9 +111,12 @@ func initAIRouter(aiGroup *huma.Group) {
 		Description: "Generate article Q&A using AI",
 		Tags:        []string{"ai"},
 		Security:    []map[string][]string{{"jwtAuth": {}}},
-	}, aiHandler.HandleGenerateArticleQA)
+	},
+		map[string]any{
+			"SSEResponse": protocol.SSEResponse{},
+		}, aiHandler.HandleGenerateArticleQA)
 
-	// ??????????
+	//
 	// termExplainationGroup := huma.NewGroup(readerGroup, "")
 	// huma.Register(termExplainationGroup, huma.Operation{
 	// 	OperationID: "generateTermExplaination",

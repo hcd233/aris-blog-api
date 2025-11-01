@@ -13,11 +13,10 @@ import (
 func initOperationRouter(operationGroup *huma.Group) {
 	operationHandler := handler.NewOperationHandler()
 
-	operationGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+	operationGroup.UseMiddleware(middleware.JwtMiddleware())
 
-	// Like??
 	likeArticleGroup := huma.NewGroup(operationGroup, "/like")
-	likeArticleGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("likeArticle", constant.CtxKeyUserID, 10*time.Second, 2))
+	likeArticleGroup.UseMiddleware(middleware.RateLimiterMiddleware("likeArticle", constant.CtxKeyUserID, 10*time.Second, 2))
 
 	huma.Register(likeArticleGroup, huma.Operation{
 		OperationID: "likeArticle",
@@ -30,7 +29,7 @@ func initOperationRouter(operationGroup *huma.Group) {
 	}, operationHandler.HandleUserLikeArticle)
 
 	likeCommentGroup := huma.NewGroup(operationGroup, "/like")
-	likeCommentGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("likeComment", constant.CtxKeyUserID, 2*time.Second, 2))
+	likeCommentGroup.UseMiddleware(middleware.RateLimiterMiddleware("likeComment", constant.CtxKeyUserID, 2*time.Second, 2))
 
 	huma.Register(likeCommentGroup, huma.Operation{
 		OperationID: "likeComment",
@@ -43,7 +42,7 @@ func initOperationRouter(operationGroup *huma.Group) {
 	}, operationHandler.HandleUserLikeComment)
 
 	likeTagGroup := huma.NewGroup(operationGroup, "/like")
-	likeTagGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("likeTag", constant.CtxKeyUserID, 10*time.Second, 2))
+	likeTagGroup.UseMiddleware(middleware.RateLimiterMiddleware("likeTag", constant.CtxKeyUserID, 10*time.Second, 2))
 
 	huma.Register(likeTagGroup, huma.Operation{
 		OperationID: "likeTag",
@@ -55,9 +54,8 @@ func initOperationRouter(operationGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, operationHandler.HandleUserLikeTag)
 
-	// View??
 	viewGroup := huma.NewGroup(operationGroup, "/view")
-	viewGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("logUserViewArticle", constant.CtxKeyUserID, 10*time.Second, 2))
+	viewGroup.UseMiddleware(middleware.RateLimiterMiddleware("logUserViewArticle", constant.CtxKeyUserID, 10*time.Second, 2))
 
 	huma.Register(viewGroup, huma.Operation{
 		OperationID: "logArticleView",
