@@ -5,8 +5,10 @@ import (
 	"errors"
 	"time"
 
+	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
+	"github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
@@ -16,10 +18,10 @@ import (
 
 // OperationService 用户操作服务
 type OperationService interface {
-	LikeArticle(ctx context.Context, req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error)
-	LikeComment(ctx context.Context, req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error)
-	LikeTag(ctx context.Context, req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error)
-	LogArticleView(ctx context.Context, req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error)
+	LikeArticle(ctx context.Context, req *dto.LikeArticleRequest) (rsp *dto.EmptyResponse, err error)
+	LikeComment(ctx context.Context, req *dto.LikeCommentRequest) (rsp *dto.EmptyResponse, err error)
+	LikeTag(ctx context.Context, req *dto.LikeTagRequest) (rsp *dto.EmptyResponse, err error)
+	LogArticleView(ctx context.Context, req *dto.LogArticleViewRequest) (rsp *dto.EmptyResponse, err error)
 }
 
 type operationService struct {
@@ -44,34 +46,40 @@ func NewOperationService() OperationService {
 }
 
 // LikeArticle 点赞文章
-func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeArticleRequest) (rsp *protocol.LikeArticleResponse, err error) {
-	rsp = &protocol.LikeArticleResponse{}
+func (s *operationService) LikeArticle(ctx context.Context, req *dto.LikeArticleRequest) (rsp *dto.EmptyResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	article, err := s.articleDAO.GetByID(db, req.Body.ArticleID, []string{"id", "likes", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+				zap.Uint("articleID", req.Body.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Error("[OperationService] failed to get article",
-			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("articleID", req.Body.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
-	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
+	if userID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Info("[OperationService] no permission to like article",
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
 
 	userLike := &model.UserLike{
-		UserID:     req.UserID,
+		UserID:     userID,
 		ObjectID:   article.ID,
 		ObjectType: model.LikeObjectTypeArticle,
 	}
@@ -85,7 +93,7 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 		}
 	}()
 
-	if req.Undo {
+	if req.Body.Undo {
 		if err = s.transactUndoLikeArticle(tx, article, userLike); err != nil {
 			logger.Error("[OperationService] failed to undo like article",
 				zap.Uint("articleID", article.ID),
@@ -105,19 +113,25 @@ func (s *operationService) LikeArticle(ctx context.Context, req *protocol.LikeAr
 }
 
 // LikeComment 点赞评论
-func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCommentRequest) (rsp *protocol.LikeCommentResponse, err error) {
-	rsp = &protocol.LikeCommentResponse{}
+func (s *operationService) LikeComment(ctx context.Context, req *dto.LikeCommentRequest) (rsp *dto.EmptyResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	comment, err := s.commentDAO.GetByID(db, req.CommentID, []string{"id", "likes", "article_id"}, []string{})
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	comment, err := s.commentDAO.GetByID(db, req.Body.CommentID, []string{"id", "likes", "article_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[OperationService] comment not found", zap.Uint("commentID", req.CommentID))
+			logger.Error("[OperationService] comment not found", zap.Uint("commentID", req.Body.CommentID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[OperationService] failed to get comment", zap.Uint("commentID", req.CommentID), zap.Error(err))
+		logger.Error("[OperationService] failed to get comment", zap.Uint("commentID", req.Body.CommentID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
@@ -132,7 +146,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 	}
 
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许点赞
-	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
+	if userID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Info("[OperationService] no permission to like comment",
 			zap.Uint("articleID", article.ID),
 			zap.String("articleStatus", string(article.Status)))
@@ -140,7 +154,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 	}
 
 	userLike := &model.UserLike{
-		UserID:     req.UserID,
+		UserID:     userID,
 		ObjectID:   comment.ID,
 		ObjectType: model.LikeObjectTypeComment,
 	}
@@ -154,7 +168,7 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 		}
 	}()
 
-	if req.Undo {
+	if req.Body.Undo {
 		if err = s.transactUndoLikeComment(tx, comment, userLike); err != nil {
 			logger.Error("[OperationService] failed to undo like comment",
 				zap.Uint("commentID", comment.ID),
@@ -174,24 +188,30 @@ func (s *operationService) LikeComment(ctx context.Context, req *protocol.LikeCo
 }
 
 // LikeTag 点赞标签
-func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagRequest) (rsp *protocol.LikeTagResponse, err error) {
-	rsp = &protocol.LikeTagResponse{}
+func (s *operationService) LikeTag(ctx context.Context, req *dto.LikeTagRequest) (rsp *dto.EmptyResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	tag, err := s.tagDAO.GetByID(db, req.TagID, []string{"id", "likes"}, []string{})
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	tag, err := s.tagDAO.GetByID(db, req.Body.TagID, []string{"id", "likes"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			logger.Error("[OperationService] tag not found", zap.Uint("tagID", req.TagID))
+			logger.Error("[OperationService] tag not found", zap.Uint("tagID", req.Body.TagID))
 			return nil, protocol.ErrDataNotExists
 		}
-		logger.Error("[OperationService] failed to get tag", zap.Uint("tagID", req.TagID), zap.Error(err))
+		logger.Error("[OperationService] failed to get tag", zap.Uint("tagID", req.Body.TagID), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	userLike := &model.UserLike{
-		UserID:     req.UserID,
+		UserID:     userID,
 		ObjectID:   tag.ID,
 		ObjectType: model.LikeObjectTypeTag,
 	}
@@ -205,7 +225,7 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 		}
 	}()
 
-	if req.Undo {
+	if req.Body.Undo {
 		if err = s.transactUndoLikeTag(tx, tag, userLike); err != nil {
 			logger.Error("[OperationService] failed to undo like tag",
 				zap.Uint("tagID", tag.ID),
@@ -225,33 +245,39 @@ func (s *operationService) LikeTag(ctx context.Context, req *protocol.LikeTagReq
 }
 
 // LogArticleView 记录文章浏览
-func (s *operationService) LogArticleView(ctx context.Context, req *protocol.LogArticleViewRequest) (rsp *protocol.LogArticleViewResponse, err error) {
-	rsp = &protocol.LogArticleViewResponse{}
+func (s *operationService) LogArticleView(ctx context.Context, req *dto.LogArticleViewRequest) (rsp *dto.EmptyResponse, err error) {
+	if req == nil || req.Body == nil {
+		return nil, protocol.ErrBadRequest
+	}
+
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	article, err := s.articleDAO.GetByID(db, req.ArticleID, []string{"id", "status"}, []string{})
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	article, err := s.articleDAO.GetByID(db, req.Body.ArticleID, []string{"id", "status", "user_id"}, []string{})
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			logger.Error("[OperationService] article not found",
-				zap.Uint("articleID", req.ArticleID))
+				zap.Uint("articleID", req.Body.ArticleID))
 			return nil, protocol.ErrDataNotExists
 		}
 		logger.Error("[OperationService] failed to get article",
-			zap.Uint("articleID", req.ArticleID),
+			zap.Uint("articleID", req.Body.ArticleID),
 			zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	// 如果用户不是文章作者，且文章状态不是已发布，则不允许浏览
-	if req.UserID != article.UserID && article.Status != model.ArticleStatusPublish {
+	if userID != article.UserID && article.Status != model.ArticleStatusPublish {
 		logger.Info("[OperationService] no permission to view article",
 			zap.String("articleStatus", string(article.Status)))
 		return nil, protocol.ErrNoPermission
 	}
 
-	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(db, req.UserID, article.ID, []string{"id", "created_at", "progress"}, []string{})
+	userView, err := s.userViewDAO.GetLatestViewByUserIDAndArticleID(db, userID, article.ID, []string{"id", "created_at", "progress"}, []string{})
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Error("[OperationService] failed to get user view",
 			zap.Uint("articleID", article.ID),
@@ -260,17 +286,17 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 	}
 
 	if userView.ID == 0 || userView.Progress >= 95 {
-		if req.Progress != 0 {
+		if req.Body.Progress != 0 {
 			logger.Error("[OperationService] invalid progress",
 				zap.Uint("articleID", article.ID),
-				zap.Int8("progress", req.Progress))
+				zap.Int8("progress", req.Body.Progress))
 			return nil, protocol.ErrInternalError
 		}
 
 		userView = &model.UserView{
-			UserID:       req.UserID,
+			UserID:       userID,
 			ArticleID:    article.ID,
-			Progress:     req.Progress,
+			Progress:     req.Body.Progress,
 			LastViewedAt: time.Now().UTC(),
 		}
 
@@ -281,16 +307,16 @@ func (s *operationService) LogArticleView(ctx context.Context, req *protocol.Log
 			return nil, protocol.ErrInternalError
 		}
 	} else {
-		if req.Progress-userView.Progress < 5 {
+		if req.Body.Progress-userView.Progress < 5 {
 			logger.Info("[OperationService] log view too frequently",
 				zap.Uint("articleID", article.ID),
 				zap.Int8("lastProgress", userView.Progress),
-				zap.Int8("progress", req.Progress))
+				zap.Int8("progress", req.Body.Progress))
 			return nil, protocol.ErrTooManyRequests
 		}
 
 		if err = s.userViewDAO.Update(db, userView, map[string]interface{}{
-			"progress":       req.Progress,
+			"progress":       req.Body.Progress,
 			"last_viewed_at": time.Now().UTC(),
 		}); err != nil {
 			logger.Error("[OperationService] failed to update user view",

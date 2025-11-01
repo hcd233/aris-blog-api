@@ -182,25 +182,23 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *dto.ListUs
 	return rsp, nil
 }
 
-func (s *assetService) ListUserLikeComments(ctx context.Context, req *dto.ListUserLikeCommentsRequest) (rsp *dto.ListUserLikeCommentsResponse, err error) {
-	rsp = &dto.ListUserLikeCommentsResponse{}
+func (s *assetService) ListUserLikeComments(ctx context.Context, req *protocol.ListUserLikeCommentsRequest) (rsp *protocol.ListUserLikeCommentsResponse, err error) {
+	rsp = &protocol.ListUserLikeCommentsResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.Page,
-			PageSize: req.PageSize,
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.Query,
+			Query:       req.PaginateParam.Query,
 			QueryFields: []string{"object_id"},
 		},
 	}
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, userID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, param)
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeComment, []string{"object_id"}, []string{}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -258,25 +256,23 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *dto.ListUs
 	return rsp, nil
 }
 
-func (s *assetService) ListUserLikeTags(ctx context.Context, req *dto.ListUserLikeTagsRequest) (rsp *dto.ListUserLikeTagsResponse, err error) {
-	rsp = &dto.ListUserLikeTagsResponse{}
+func (s *assetService) ListUserLikeTags(ctx context.Context, req *protocol.ListUserLikeTagsRequest) (rsp *protocol.ListUserLikeTagsResponse, err error) {
+	rsp = &protocol.ListUserLikeTagsResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.Page,
-			PageSize: req.PageSize,
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.Query,
+			Query:       req.PaginateParam.Query,
 			QueryFields: []string{"object_id"},
 		},
 	}
-	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, userID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, param)
+	userLikes, pageInfo, err := s.userLikeDAO.PaginateByUserIDAndObjectType(db, req.UserID, model.LikeObjectTypeTag, []string{"object_id"}, []string{}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to get user likes", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -343,14 +339,12 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *dto.ListUserLi
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:15:38
-func (s *assetService) ListImages(ctx context.Context, req *dto.ListImagesRequest) (rsp *dto.ListImagesResponse, err error) {
-	rsp = &dto.ListImagesResponse{}
+func (s *assetService) ListImages(ctx context.Context, req *protocol.ListImagesRequest) (rsp *protocol.ListImagesResponse, err error) {
+	rsp = &protocol.ListImagesResponse{}
 
 	logger := logger.WithCtx(ctx)
 
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
-	objectInfos, err := s.imageObjDAO.ListObjects(ctx, userID)
+	objectInfos, err := s.imageObjDAO.ListObjects(ctx, req.UserID)
 	if err != nil {
 		logger.Error("[AssetService] failed to list images", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -375,8 +369,8 @@ func (s *assetService) ListImages(ctx context.Context, req *dto.ListImagesReques
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:20:31
-func (s *assetService) UploadImage(ctx context.Context, req *dto.InternalUploadImageRequest) (rsp *dto.UploadImageResponse, err error) {
-	rsp = &dto.UploadImageResponse{}
+func (s *assetService) UploadImage(ctx context.Context, req *protocol.UploadImageRequest) (rsp *protocol.UploadImageResponse, err error) {
+	rsp = &protocol.UploadImageResponse{}
 
 	logger := logger.WithCtx(ctx)
 
@@ -470,8 +464,8 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.InternalUploadI
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:49:39
-func (s *assetService) GetImage(ctx context.Context, req *dto.InternalGetImageRequest) (rsp *dto.GetImageResponse, err error) {
-	rsp = &dto.GetImageResponse{}
+func (s *assetService) GetImage(ctx context.Context, req *protocol.GetImageRequest) (rsp *protocol.GetImageResponse, err error) {
+	rsp = &protocol.GetImageResponse{}
 
 	logger := logger.WithCtx(ctx)
 
@@ -503,8 +497,8 @@ func (s *assetService) GetImage(ctx context.Context, req *dto.InternalGetImageRe
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:49:33
-func (s *assetService) DeleteImage(ctx context.Context, req *dto.InternalDeleteImageRequest) (rsp *dto.EmptyResponse, err error) {
-	rsp = &dto.EmptyResponse{}
+func (s *assetService) DeleteImage(ctx context.Context, req *protocol.DeleteImageRequest) (rsp *protocol.DeleteImageResponse, err error) {
+	rsp = &protocol.DeleteImageResponse{}
 
 	logger := logger.WithCtx(ctx)
 
@@ -539,25 +533,23 @@ func (s *assetService) DeleteImage(ctx context.Context, req *dto.InternalDeleteI
 	return rsp, nil
 }
 
-func (s *assetService) ListUserViewArticles(ctx context.Context, req *dto.ListUserViewArticlesRequest) (rsp *dto.ListUserViewArticlesResponse, err error) {
-	rsp = &dto.ListUserViewArticlesResponse{}
+func (s *assetService) ListUserViewArticles(ctx context.Context, req *protocol.ListUserViewArticlesRequest) (rsp *protocol.ListUserViewArticlesResponse, err error) {
+	rsp = &protocol.ListUserViewArticlesResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
 
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
-
 	param := &dao.CommonParam{
 		PageParam: &dao.PageParam{
-			Page:     req.Page,
-			PageSize: req.PageSize,
+			Page:     req.PaginateParam.Page,
+			PageSize: req.PaginateParam.PageSize,
 		},
 		QueryParam: &dao.QueryParam{
-			Query:       req.Query,
+			Query:       req.PaginateParam.Query,
 			QueryFields: []string{"article_id"},
 		},
 	}
-	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, userID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, param)
+	userViews, pageInfo, err := s.userViewDAO.PaginateByUserID(db, req.UserID, []string{"id", "progress", "last_viewed_at", "user_id", "article_id"}, []string{"User", "Article", "Article.Tags", "Article.User"}, param)
 	if err != nil {
 		logger.Error("[AssetService] failed to list user view articles", zap.Error(err))
 		return nil, protocol.ErrInternalError
@@ -580,13 +572,11 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *dto.ListUs
 	return rsp, nil
 }
 
-func (s *assetService) DeleteUserView(ctx context.Context, req *dto.DeleteUserViewRequest) (rsp *dto.EmptyResponse, err error) {
-	rsp = &dto.EmptyResponse{}
+func (s *assetService) DeleteUserView(ctx context.Context, req *protocol.DeleteUserViewRequest) (rsp *protocol.DeleteUserViewResponse, err error) {
+	rsp = &protocol.DeleteUserViewResponse{}
 
 	logger := logger.WithCtx(ctx)
 	db := database.GetDBInstance(ctx)
-
-	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	userView, err := s.userViewDAO.GetByID(db, req.ViewID, []string{"id", "user_id"}, []string{})
 	if err != nil {
@@ -598,8 +588,8 @@ func (s *assetService) DeleteUserView(ctx context.Context, req *dto.DeleteUserVi
 		return nil, protocol.ErrInternalError
 	}
 
-	if userView.UserID != userID {
-		logger.Error("[AssetService] no permission to delete view", zap.Uint("curUserID", userID), zap.Uint("viewID", req.ViewID))
+	if userView.UserID != req.UserID {
+		logger.Error("[AssetService] no permission to delete view", zap.Uint("curUserID", req.UserID), zap.Uint("viewID", req.ViewID))
 		return nil, protocol.ErrNoPermission
 	}
 

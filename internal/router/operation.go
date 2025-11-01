@@ -1,49 +1,71 @@
 package router
 
 import (
+	"net/http"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 	"github.com/hcd233/aris-blog-api/internal/middleware"
-	"github.com/hcd233/aris-blog-api/internal/protocol"
 )
 
-func initOperationRouter(r fiber.Router) {
-	operationHandler := handler.NewOperationHandler()
+func initOperationRouter(operationGroup *huma.Group) {
+	operationHandler := handler.NewOperationHandlerForHuma()
 
-	operationRouter := r.Group("/operation", middleware.JwtMiddleware())
-	{
-		userLikeRouter := operationRouter.Group("/like")
-		{
-			userLikeRouter.Post(
-				"/article",
-				middleware.RateLimiterMiddleware("likeArticle", constant.CtxKeyUserID, 10*time.Second, 2),
-				middleware.ValidateBodyMiddleware(&protocol.LikeArticleBody{}),
-				operationHandler.HandleUserLikeArticle,
-			)
-			userLikeRouter.Post(
-				"/comment",
-				middleware.RateLimiterMiddleware("likeComment", constant.CtxKeyUserID, 2*time.Second, 2),
-				middleware.ValidateBodyMiddleware(&protocol.LikeCommentBody{}),
-				operationHandler.HandleUserLikeComment,
-			)
-			userLikeRouter.Post(
-				"/tag",
-				middleware.RateLimiterMiddleware("likeTag", constant.CtxKeyUserID, 10*time.Second, 2),
-				middleware.ValidateBodyMiddleware(&protocol.LikeTagBody{}),
-				operationHandler.HandleUserLikeTag,
-			)
-		}
-		viewRouter := operationRouter.Group("/view")
-		{
-			viewRouter.Post(
-				"/article",
-				middleware.RateLimiterMiddleware("logUserViewArticle", constant.CtxKeyUserID, 10*time.Second, 2),
-				middleware.ValidateBodyMiddleware(&protocol.LogUserViewArticleBody{}),
-				operationHandler.HandleLogUserViewArticle,
-			)
-		}
-	}
+	operationGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+
+	// Like??
+	likeArticleGroup := huma.NewGroup(operationGroup, "/like")
+	likeArticleGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("likeArticle", constant.CtxKeyUserID, 10*time.Second, 2))
+
+	huma.Register(likeArticleGroup, huma.Operation{
+		OperationID: "likeArticle",
+		Method:      http.MethodPost,
+		Path:        "/article",
+		Summary:     "LikeArticle",
+		Description: "Like or unlike an article",
+		Tags:        []string{"operation"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, operationHandler.HandleUserLikeArticle)
+
+	likeCommentGroup := huma.NewGroup(operationGroup, "/like")
+	likeCommentGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("likeComment", constant.CtxKeyUserID, 2*time.Second, 2))
+
+	huma.Register(likeCommentGroup, huma.Operation{
+		OperationID: "likeComment",
+		Method:      http.MethodPost,
+		Path:        "/comment",
+		Summary:     "LikeComment",
+		Description: "Like or unlike a comment",
+		Tags:        []string{"operation"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, operationHandler.HandleUserLikeComment)
+
+	likeTagGroup := huma.NewGroup(operationGroup, "/like")
+	likeTagGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("likeTag", constant.CtxKeyUserID, 10*time.Second, 2))
+
+	huma.Register(likeTagGroup, huma.Operation{
+		OperationID: "likeTag",
+		Method:      http.MethodPost,
+		Path:        "/tag",
+		Summary:     "LikeTag",
+		Description: "Like or unlike a tag",
+		Tags:        []string{"operation"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, operationHandler.HandleUserLikeTag)
+
+	// View??
+	viewGroup := huma.NewGroup(operationGroup, "/view")
+	viewGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("logUserViewArticle", constant.CtxKeyUserID, 10*time.Second, 2))
+
+	huma.Register(viewGroup, huma.Operation{
+		OperationID: "logArticleView",
+		Method:      http.MethodPost,
+		Path:        "/article",
+		Summary:     "LogArticleView",
+		Description: "Log article view progress",
+		Tags:        []string{"operation"},
+		Security:    []map[string][]string{{"jwtAuth": {}}},
+	}, operationHandler.HandleLogUserViewArticle)
 }
