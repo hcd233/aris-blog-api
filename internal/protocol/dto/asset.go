@@ -81,7 +81,7 @@ type FormFileData struct {
 
 // UploadImageRequest 上传图片请求
 type UploadImageRequest struct {
-	RawBody *huma.MultipartFormFiles[FormFileData]
+	RawBody huma.MultipartFormFiles[FormFileData]
 }
 
 // GetImageRequest 获取图片请求
