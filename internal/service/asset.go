@@ -36,8 +36,8 @@ type AssetService interface {
 	ListUserLikeArticles(ctx context.Context, req *dto.ListUserLikeArticlesRequest) (rsp *dto.ListUserLikeArticlesResponse, err error)
 	ListUserLikeComments(ctx context.Context, req *dto.ListUserLikeCommentsRequest) (rsp *dto.ListUserLikeCommentsResponse, err error)
 	ListUserLikeTags(ctx context.Context, req *dto.ListUserLikeTagsRequest) (rsp *dto.ListUserLikeTagsResponse, err error)
-	ListImages(ctx context.Context, req *dto.ListImagesRequest) (rsp *dto.ListImagesResponse, err error)
-	UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.UploadImageResponse, err error)
+	ListImages(ctx context.Context, req *dto.EmptyRequest) (rsp *dto.ListImagesResponse, err error)
+	UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.EmptyResponse, err error)
 	GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.URLResponse, err error)
 	DeleteImage(ctx context.Context, req *dto.DeleteImageRequest) (rsp *dto.EmptyResponse, err error)
 	ListUserViewArticles(ctx context.Context, req *dto.ListUserViewArticlesRequest) (rsp *dto.ListUserViewArticlesResponse, err error)
@@ -333,12 +333,12 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *dto.ListUserLi
 // ListImages 列出图片
 //
 //	receiver s *assetService
-//	param req *protocol.ListImagesRequest
+//	param req *protocol.EmptyRequest
 //	return rsp *protocol.ListImagesResponse
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:15:38
-func (s *assetService) ListImages(ctx context.Context, req *dto.ListImagesRequest) (rsp *dto.ListImagesResponse, err error) {
+func (s *assetService) ListImages(ctx context.Context, req *dto.EmptyRequest) (rsp *dto.ListImagesResponse, err error) {
 	rsp = &dto.ListImagesResponse{}
 
 	logger := logger.WithCtx(ctx)
@@ -366,26 +366,26 @@ func (s *assetService) ListImages(ctx context.Context, req *dto.ListImagesReques
 //
 //	receiver s *assetService
 //	param req *protocol.UploadImageRequest
-//	return rsp *protocol.UploadImageResponse
+//	return rsp *protocol.EmptyResponse
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:20:31
-func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.UploadImageResponse, err error) {
-	rsp = &dto.UploadImageResponse{}
+func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.EmptyResponse, err error) {
+	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	fileName := req.RawBody.Filename
-	fileSize := req.RawBody.Size
+	fileName := req.Body.Filename
+	fileSize := req.Body.Size
 
 	if !util.IsValidImageFormat(fileName) {
 		logger.Error("[AssetService] invalid image format", zap.String("fileName", fileName))
 		return nil, protocol.ErrBadRequest
 	}
 
-	if contentType := req.RawBody.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
+	if contentType := req.Body.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
 		logger.Error("[AssetService] invalid image content type", zap.String("contentType", contentType))
 		return nil, protocol.ErrBadRequest
 	}
@@ -399,7 +399,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 	var imageFormat imaging.Format
 
 	extension := filepath.Ext(fileName)
-	file, err := req.RawBody.Open()
+	file, err := req.Body.Open()
 	if err != nil {
 		logger.Error("[AssetService] failed to open file", zap.Error(err))
 		return nil, protocol.ErrInternalError

@@ -795,11 +795,11 @@ type Image struct {
 	CreatedAt string `json:"createdAt"`
 }
 
-// ListImagesRequest 列出图片请求
+// EmptyRequest 列出图片请求
 //
 //	author centonhuang
 //	update 2025-01-05 17:03:22
-type ListImagesRequest struct {
+type EmptyRequest struct {
 	UserID uint `json:"userID"`
 }
 
@@ -823,11 +823,11 @@ type UploadImageRequest struct {
 	ReadSeeker  io.ReadSeeker
 }
 
-// UploadImageResponse 上传图片响应
+// EmptyResponse 上传图片响应
 //
 //	author centonhuang
 //	update 2025-01-05 17:03:27
-type UploadImageResponse struct{}
+type EmptyResponse struct{}
 
 // GetImageRequest 获取图片请求
 //

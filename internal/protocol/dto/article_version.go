@@ -16,13 +16,19 @@ type CreateArticleVersionRequestBody struct {
 	Content string `json:"content" doc:"Version content"`
 }
 
-// ArticleVersionCreateRequest 创建文章版本请求
+// CreateArticleVersionRequest 创建文章版本请求
+//
+//	@author centonhuang
+//	@update 2025-11-02 05:20:37
 type CreateArticleVersionRequest struct {
 	ArticleVersionArticlePathParam
 	Body *CreateArticleVersionRequestBody `json:"body" doc:"Fields for creating article version"`
 }
 
-// ArticleVersionCreateResponse 创建文章版本响应
+// CreateArticleVersionResponse 创建文章版本响应
+//
+//	@author centonhuang
+//	@update 2025-11-02 05:20:33
 type CreateArticleVersionResponse struct {
 	ArticleVersion *ArticleVersion `json:"articleVersion" doc:"Article version details"`
 }
@@ -32,7 +38,9 @@ type GetArticleVersionRequest struct {
 	ArticleVersionPathParam
 }
 
-// ArticleVersionGetResponse 获取文章版本响应
+// GetArticleVersionResponse 获取文章版本响应
+//	@author centonhuang 
+//	@update 2025-11-02 05:20:43 
 type GetArticleVersionResponse struct {
 	Version *ArticleVersion `json:"version" doc:"Article version details"`
 }
@@ -42,7 +50,9 @@ type GetLatestArticleVersionRequest struct {
 	ArticleVersionArticlePathParam
 }
 
-// ArticleVersionGetLatestResponse 获取最新文章版本响应
+// GetLatestArticleVersionResponse 获取最新文章版本响应
+//	@author centonhuang 
+//	@update 2025-11-02 05:20:48 
 type GetLatestArticleVersionResponse struct {
 	Version *ArticleVersion `json:"version" doc:"Latest article version"`
 }

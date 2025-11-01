@@ -82,11 +82,6 @@ type DeleteUserViewRequest struct {
 	ViewPathParam
 }
 
-// ListImagesRequest 列出图片请求
-type ListImagesRequest struct {
-	EmptyRequest
-}
-
 // ListImagesResponse 列出图片响应
 type ListImagesResponse struct {
 	Images []*Image `json:"images" doc:"List of images"`
@@ -94,12 +89,7 @@ type ListImagesResponse struct {
 
 // UploadImageRequest 上传图片请求
 type UploadImageRequest struct {
-	RawBody multipart.FileHeader
-}
-
-// UploadImageResponse 上传图片响应
-type UploadImageResponse struct {
-	ImageName string `json:"imageName" doc:"Uploaded image name"`
+	Body multipart.FileHeader
 }
 
 // GetImageRequest 获取图片请求

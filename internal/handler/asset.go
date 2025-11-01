@@ -14,8 +14,8 @@ type AssetHandler interface {
 	HandleListUserLikeArticles(ctx context.Context, req *dto.ListUserLikeArticlesRequest) (*protocol.HTTPResponse[*dto.ListUserLikeArticlesResponse], error)
 	HandleListUserLikeComments(ctx context.Context, req *dto.ListUserLikeCommentsRequest) (*protocol.HTTPResponse[*dto.ListUserLikeCommentsResponse], error)
 	HandleListUserLikeTags(ctx context.Context, req *dto.ListUserLikeTagsRequest) (*protocol.HTTPResponse[*dto.ListUserLikeTagsResponse], error)
-	HandleListImages(ctx context.Context, req *dto.ListImagesRequest) (*protocol.HTTPResponse[*dto.ListImagesResponse], error)
-	HandleUploadImage(ctx context.Context, req *dto.UploadImageRequest) (*protocol.HTTPResponse[*dto.UploadImageResponse], error)
+	HandleListImages(ctx context.Context, req *dto.EmptyRequest) (*protocol.HTTPResponse[*dto.ListImagesResponse], error)
+	HandleUploadImage(ctx context.Context, req *dto.UploadImageRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error)
 	HandleGetImage(ctx context.Context, req *dto.GetImageRequest) (*protocol.RedirectResponse, error)
 	HandleDeleteImage(ctx context.Context, req *dto.DeleteImageRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error)
 	HandleListUserViewArticles(ctx context.Context, req *dto.ListUserViewArticlesRequest) (*protocol.HTTPResponse[*dto.ListUserViewArticlesResponse], error)
@@ -45,11 +45,11 @@ func (h *assetHandler) HandleListUserLikeTags(ctx context.Context, req *dto.List
 	return util.WrapHTTPResponse(h.svc.ListUserLikeTags(ctx, req))
 }
 
-func (h *assetHandler) HandleListImages(ctx context.Context, req *dto.ListImagesRequest) (*protocol.HTTPResponse[*dto.ListImagesResponse], error) {
+func (h *assetHandler) HandleListImages(ctx context.Context, req *dto.EmptyRequest) (*protocol.HTTPResponse[*dto.ListImagesResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListImages(ctx, req))
 }
 
-func (h *assetHandler) HandleUploadImage(ctx context.Context, req *dto.UploadImageRequest) (*protocol.HTTPResponse[*dto.UploadImageResponse], error) {
+func (h *assetHandler) HandleUploadImage(ctx context.Context, req *dto.UploadImageRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.UploadImage(ctx, req))
 }
 

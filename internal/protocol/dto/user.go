@@ -17,10 +17,12 @@ type GetCurrentUserResponse struct {
 	User *User `json:"user" doc:"Complete user information including permissions"`
 }
 
-// GetUserInfoRequest represents a request to get a specific user's public information
+// GetUserRequest represents a request to get a specific user's public information
 //
 //	author centonhuang
 //	update 2025-01-04 21:19:41
+//	@author centonhuang
+//	@update 2025-11-02 05:20:52
 type GetUserRequest struct {
 	UserID uint `json:"userID" path:"userID" doc:"Unique identifier of the user to retrieve"`
 }
