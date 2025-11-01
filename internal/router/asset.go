@@ -12,7 +12,7 @@ import (
 )
 
 func initAssetRouter(assetGroup *huma.Group) {
-	assetHandler := handler.NewAssetHandlerForHuma()
+	assetHandler := handler.NewAssetHandler()
 
 	assetGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
 

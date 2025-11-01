@@ -11,7 +11,7 @@ import (
 )
 
 func initOperationRouter(operationGroup *huma.Group) {
-	operationHandler := handler.NewOperationHandlerForHuma()
+	operationHandler := handler.NewOperationHandler()
 
 	operationGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
 

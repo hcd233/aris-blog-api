@@ -1,7 +1,5 @@
 package dto
 
-import "io"
-
 // Image 图片信息
 type Image struct {
 	Name      string `json:"name" doc:"Image name"`
@@ -93,9 +91,8 @@ type ListImagesResponse struct {
 }
 
 // UploadImageRequest 上传图片请求
-// Note: 文件上传通过multipart/form-data处理，不在DTO中定义
 type UploadImageRequest struct {
-	RawBody string
+	RawBody []byte `contentType:"multipart/form-data"`
 }
 
 // UploadImageResponse 上传图片响应
@@ -117,26 +114,4 @@ type GetImageResponse struct {
 // DeleteImageRequest 删除图片请求
 type DeleteImageRequest struct {
 	ObjectPathParam
-}
-
-// InternalUploadImageRequest 内部上传图片请求（用于service层）
-type InternalUploadImageRequest struct {
-	UserID      uint
-	FileName    string
-	Size        int64
-	ContentType string
-	ReadSeeker  io.ReadSeeker
-}
-
-// InternalGetImageRequest 内部获取图片请求（用于service层）
-type InternalGetImageRequest struct {
-	UserID    uint
-	ImageName string
-	Quality   string
-}
-
-// InternalDeleteImageRequest 内部删除图片请求（用于service层）
-type InternalDeleteImageRequest struct {
-	UserID    uint
-	ImageName string
 }

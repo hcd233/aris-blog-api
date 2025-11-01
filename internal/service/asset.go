@@ -1,18 +1,12 @@
 package service
 
 import (
-	"bytes"
 	"context"
 	"errors"
-	"fmt"
-	"image"
-	"io"
 	"net/url"
-	"path/filepath"
 	"sync"
 	"time"
 
-	"github.com/disintegration/imaging"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -21,10 +15,8 @@ import (
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/model"
 	objdao "github.com/hcd233/aris-blog-api/internal/resource/storage/obj_dao"
-	"github.com/hcd233/aris-blog-api/internal/util"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"golang.org/x/image/webp"
 	"gorm.io/gorm"
 )
 
@@ -37,9 +29,9 @@ type AssetService interface {
 	ListUserLikeComments(ctx context.Context, req *dto.ListUserLikeCommentsRequest) (rsp *dto.ListUserLikeCommentsResponse, err error)
 	ListUserLikeTags(ctx context.Context, req *dto.ListUserLikeTagsRequest) (rsp *dto.ListUserLikeTagsResponse, err error)
 	ListImages(ctx context.Context, req *dto.ListImagesRequest) (rsp *dto.ListImagesResponse, err error)
-	UploadImage(ctx context.Context, req *dto.InternalUploadImageRequest) (rsp *dto.UploadImageResponse, err error)
-	GetImage(ctx context.Context, req *dto.InternalGetImageRequest) (rsp *dto.GetImageResponse, err error)
-	DeleteImage(ctx context.Context, req *dto.InternalDeleteImageRequest) (rsp *dto.EmptyResponse, err error)
+	UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.UploadImageResponse, err error)
+	GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.GetImageResponse, err error)
+	DeleteImage(ctx context.Context, req *dto.DeleteImageRequest) (rsp *dto.EmptyResponse, err error)
 	ListUserViewArticles(ctx context.Context, req *dto.ListUserViewArticlesRequest) (rsp *dto.ListUserViewArticlesResponse, err error)
 	DeleteUserView(ctx context.Context, req *dto.DeleteUserViewRequest) (rsp *dto.EmptyResponse, err error)
 }
@@ -370,11 +362,24 @@ func (s *assetService) ListImages(ctx context.Context, req *dto.ListImagesReques
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:20:31
-func (s *assetService) UploadImage(ctx context.Context, req *dto.InternalUploadImageRequest) (rsp *dto.UploadImageResponse, err error) {
+func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequest) (rsp *dto.UploadImageResponse, err error) {
 	rsp = &dto.UploadImageResponse{}
 
 	logger := logger.WithCtx(ctx)
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
+	if len(req.RawBody) == 0 {
+		logger.Error("[AssetService] empty file upload")
+		return nil, protocol.ErrBadRequest
+	}
+
+	// TODO: 实现文件上传逻辑
+	// 暂时返回未实现错误
+	logger.Warn("[AssetService] UploadImage not yet fully implemented", zap.Uint("userID", userID))
+	return nil, protocol.ErrNoImplement
+
+	/* TODO: Uncomment when file upload is properly implemented
 	if !util.IsValidImageFormat(req.FileName) {
 		logger.Error("[AssetService] invalid image format", zap.String("fileName", req.FileName))
 		return nil, protocol.ErrBadRequest
@@ -455,6 +460,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.InternalUploadI
 		zap.String("fileName", req.FileName),
 	)
 	return rsp, nil
+	*/
 }
 
 // GetImage 获取图片
@@ -465,27 +471,31 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.InternalUploadI
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:49:39
-func (s *assetService) GetImage(ctx context.Context, req *dto.InternalGetImageRequest) (rsp *dto.GetImageResponse, err error) {
+func (s *assetService) GetImage(ctx context.Context, req *dto.GetImageRequest) (rsp *dto.GetImageResponse, err error) {
 	rsp = &dto.GetImageResponse{}
 
 	logger := logger.WithCtx(ctx)
 
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
+
 	var presignedURL *url.URL
 	switch req.Quality {
-	case "raw":
-		presignedURL, err = s.imageObjDAO.PresignObject(ctx, req.UserID, req.ImageName)
-	case "thumb":
-		presignedURL, err = s.thumbnailObjDAO.PresignObject(ctx, req.UserID, req.ImageName)
+	case "low":
+		presignedURL, err = s.thumbnailObjDAO.PresignObject(ctx, userID, req.ObjectName)
+	case "high", "medium":
+		presignedURL, err = s.imageObjDAO.PresignObject(ctx, userID, req.ObjectName)
+	default:
+		presignedURL, err = s.imageObjDAO.PresignObject(ctx, userID, req.ObjectName)
 	}
 	if err != nil {
 		logger.Error("[AssetService] failed to presign object",
-			zap.String("imageName", req.ImageName),
+			zap.String("imageName", req.ObjectName),
 			zap.String("quality", req.Quality), zap.Error(err))
 		return nil, protocol.ErrInternalError
 	}
 
 	rsp.PresignedURL = presignedURL.String()
-	logger.Info("[AssetService] presigned URL", zap.String("imageName", req.ImageName), zap.String("quality", req.Quality), zap.String("url", rsp.PresignedURL))
+	logger.Info("[AssetService] presigned URL", zap.String("imageName", req.ObjectName), zap.String("quality", req.Quality), zap.String("url", rsp.PresignedURL))
 
 	return rsp, nil
 }
@@ -498,10 +508,12 @@ func (s *assetService) GetImage(ctx context.Context, req *dto.InternalGetImageRe
 //	return err error
 //	author centonhuang
 //	update 2025-01-05 17:49:33
-func (s *assetService) DeleteImage(ctx context.Context, req *dto.InternalDeleteImageRequest) (rsp *dto.EmptyResponse, err error) {
+func (s *assetService) DeleteImage(ctx context.Context, req *dto.DeleteImageRequest) (rsp *dto.EmptyResponse, err error) {
 	rsp = &dto.EmptyResponse{}
 
 	logger := logger.WithCtx(ctx)
+
+	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
 	var wg sync.WaitGroup
 	var imageErr, thumbnailErr error
@@ -510,27 +522,27 @@ func (s *assetService) DeleteImage(ctx context.Context, req *dto.InternalDeleteI
 
 	go func() {
 		defer wg.Done()
-		imageErr = s.imageObjDAO.DeleteObject(ctx, req.UserID, req.ImageName)
+		imageErr = s.imageObjDAO.DeleteObject(ctx, userID, req.ObjectName)
 	}()
 
 	go func() {
 		defer wg.Done()
-		thumbnailErr = s.thumbnailObjDAO.DeleteObject(ctx, req.UserID, req.ImageName)
+		thumbnailErr = s.thumbnailObjDAO.DeleteObject(ctx, userID, req.ObjectName)
 	}()
 
 	wg.Wait()
 
 	if imageErr != nil {
-		logger.Error("[AssetService] failed to delete image", zap.String("imageName", req.ImageName), zap.Error(imageErr))
+		logger.Error("[AssetService] failed to delete image", zap.String("imageName", req.ObjectName), zap.Error(imageErr))
 		return nil, protocol.ErrInternalError
 	}
 
 	if thumbnailErr != nil {
-		logger.Error("[AssetService] failed to delete thumbnail image", zap.String("imageName", req.ImageName), zap.Error(thumbnailErr))
+		logger.Error("[AssetService] failed to delete thumbnail image", zap.String("imageName", req.ObjectName), zap.Error(thumbnailErr))
 		return nil, protocol.ErrInternalError
 	}
 
-	logger.Info("[AssetService] image deleted successfully", zap.String("imageName", req.ImageName))
+	logger.Info("[AssetService] image deleted successfully", zap.String("imageName", req.ObjectName))
 	return rsp, nil
 }
 
