@@ -13,7 +13,7 @@ func initTagRouter(v1Group *huma.Group) {
 	tagHandler := handler.NewTagHandler()
 
 	tagGroup := huma.NewGroup(v1Group, "/tag")
-	tagGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+	tagGroup.UseMiddleware(middleware.JwtMiddleware())
 
 	huma.Register(tagGroup, huma.Operation{
 		OperationID: "listTags",
@@ -36,7 +36,7 @@ func initTagRouter(v1Group *huma.Group) {
 	}, tagHandler.HandleGetTagInfo)
 
 	securedGroup := huma.NewGroup(tagGroup, "")
-	securedGroup.UseMiddleware(middleware.LimitUserPermissionMiddlewareForHuma("tagService", model.PermissionCreator))
+	securedGroup.UseMiddleware(middleware.LimitUserPermissionMiddleware("tagService", model.PermissionCreator))
 
 	huma.Register(securedGroup, huma.Operation{
 		OperationID: "createTag",

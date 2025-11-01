@@ -11,11 +11,11 @@ import (
 
 // TagHandler 标签处理器
 type TagHandler interface {
-	HandleCreateTag(ctx context.Context, req *dto.CreateTagRequest) (*protocol.HumaHTTPResponse[*dto.CreateTagResponse], error)
-	HandleGetTagInfo(ctx context.Context, req *dto.GetTagRequest) (*protocol.HumaHTTPResponse[*dto.GetTagResponse], error)
-	HandleUpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
-	HandleDeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
-	HandleListTags(ctx context.Context, req *dto.ListTagRequest) (*protocol.HumaHTTPResponse[*dto.ListTagResponse], error)
+	HandleCreateTag(ctx context.Context, req *dto.CreateTagRequest) (*protocol.HTTPResponse[*dto.CreateTagResponse], error)
+	HandleGetTagInfo(ctx context.Context, req *dto.GetTagRequest) (*protocol.HTTPResponse[*dto.GetTagResponse], error)
+	HandleUpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error)
+	HandleDeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error)
+	HandleListTags(ctx context.Context, req *dto.ListTagRequest) (*protocol.HTTPResponse[*dto.ListTagResponse], error)
 }
 
 type tagHandler struct {
@@ -29,22 +29,22 @@ func NewTagHandler() TagHandler {
 	}
 }
 
-func (h *tagHandler) HandleCreateTag(ctx context.Context, req *dto.CreateTagRequest) (*protocol.HumaHTTPResponse[*dto.CreateTagResponse], error) {
+func (h *tagHandler) HandleCreateTag(ctx context.Context, req *dto.CreateTagRequest) (*protocol.HTTPResponse[*dto.CreateTagResponse], error) {
 	return util.WrapHTTPResponse(h.svc.CreateTag(ctx, req))
 }
 
-func (h *tagHandler) HandleGetTagInfo(ctx context.Context, req *dto.GetTagRequest) (*protocol.HumaHTTPResponse[*dto.GetTagResponse], error) {
+func (h *tagHandler) HandleGetTagInfo(ctx context.Context, req *dto.GetTagRequest) (*protocol.HTTPResponse[*dto.GetTagResponse], error) {
 	return util.WrapHTTPResponse(h.svc.GetTagInfo(ctx, req))
 }
 
-func (h *tagHandler) HandleUpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
+func (h *tagHandler) HandleUpdateTag(ctx context.Context, req *dto.UpdateTagRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.UpdateTag(ctx, req))
 }
 
-func (h *tagHandler) HandleDeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
+func (h *tagHandler) HandleDeleteTag(ctx context.Context, req *dto.DeleteTagRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteTag(ctx, req))
 }
 
-func (h *tagHandler) HandleListTags(ctx context.Context, req *dto.ListTagRequest) (*protocol.HumaHTTPResponse[*dto.ListTagResponse], error) {
+func (h *tagHandler) HandleListTags(ctx context.Context, req *dto.ListTagRequest) (*protocol.HTTPResponse[*dto.ListTagResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListTags(ctx, req))
 }

@@ -11,10 +11,10 @@ import (
 
 // ArticleVersionHandler 文章版本处理器
 type ArticleVersionHandler interface {
-	HandleCreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.CreateArticleVersionResponse], error)
-	HandleGetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.GetArticleVersionResponse], error)
-	HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.GetLatestArticleVersionResponse], error)
-	HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleVersionsResponse], error)
+	HandleCreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (*protocol.HTTPResponse[*dto.CreateArticleVersionResponse], error)
+	HandleGetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionRequest) (*protocol.HTTPResponse[*dto.GetArticleVersionResponse], error)
+	HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionRequest) (*protocol.HTTPResponse[*dto.GetLatestArticleVersionResponse], error)
+	HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (*protocol.HTTPResponse[*dto.ListArticleVersionsResponse], error)
 }
 
 type articleVersionHandler struct {
@@ -28,18 +28,18 @@ func NewArticleVersionHandler() ArticleVersionHandler {
 	}
 }
 
-func (h *articleVersionHandler) HandleCreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.CreateArticleVersionResponse], error) {
+func (h *articleVersionHandler) HandleCreateArticleVersion(ctx context.Context, req *dto.CreateArticleVersionRequest) (*protocol.HTTPResponse[*dto.CreateArticleVersionResponse], error) {
 	return util.WrapHTTPResponse(h.svc.CreateArticleVersion(ctx, req))
 }
 
-func (h *articleVersionHandler) HandleGetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.GetArticleVersionResponse], error) {
+func (h *articleVersionHandler) HandleGetArticleVersionInfo(ctx context.Context, req *dto.GetArticleVersionRequest) (*protocol.HTTPResponse[*dto.GetArticleVersionResponse], error) {
 	return util.WrapHTTPResponse(h.svc.GetArticleVersionInfo(ctx, req))
 }
 
-func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionRequest) (*protocol.HumaHTTPResponse[*dto.GetLatestArticleVersionResponse], error) {
+func (h *articleVersionHandler) HandleGetLatestArticleVersionInfo(ctx context.Context, req *dto.GetLatestArticleVersionRequest) (*protocol.HTTPResponse[*dto.GetLatestArticleVersionResponse], error) {
 	return util.WrapHTTPResponse(h.svc.GetLatestArticleVersionInfo(ctx, req))
 }
 
-func (h *articleVersionHandler) HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleVersionsResponse], error) {
+func (h *articleVersionHandler) HandleListArticleVersions(ctx context.Context, req *dto.ListArticleVersionsRequest) (*protocol.HTTPResponse[*dto.ListArticleVersionsResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListArticleVersions(ctx, req))
 }

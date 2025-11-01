@@ -13,7 +13,7 @@ import (
 
 func initArticleRouter(articleGroup *huma.Group) {
 	articleHandler := handler.NewArticleHandler()
-	articleGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+	articleGroup.UseMiddleware(middleware.JwtMiddleware())
 
 	huma.Register(articleGroup, huma.Operation{
 		OperationID: "listArticles",
@@ -46,7 +46,7 @@ func initArticleRouter(articleGroup *huma.Group) {
 	}, articleHandler.HandleGetArticleInfo)
 
 	creatorArticleGroup := huma.NewGroup(articleGroup, "")
-	creatorArticleGroup.UseMiddleware(middleware.LimitUserPermissionMiddlewareForHuma("articleService", model.PermissionCreator))
+	creatorArticleGroup.UseMiddleware(middleware.LimitUserPermissionMiddleware("articleService", model.PermissionCreator))
 
 	huma.Register(creatorArticleGroup, huma.Operation{
 		OperationID: "createArticle",
@@ -106,7 +106,7 @@ func initArticleVersionRouter(articleVersionGroup *huma.Group) {
 	}, versionHandler.HandleGetLatestArticleVersionInfo)
 
 	creatorArticleVersionGroup := huma.NewGroup(articleVersionGroup, "")
-	creatorArticleVersionGroup.UseMiddleware(middleware.LimitUserPermissionMiddlewareForHuma("articleVersionService", model.PermissionCreator))
+	creatorArticleVersionGroup.UseMiddleware(middleware.LimitUserPermissionMiddleware("articleVersionService", model.PermissionCreator))
 
 	huma.Register(creatorArticleVersionGroup, huma.Operation{
 		OperationID: "listArticleVersions",
@@ -118,10 +118,7 @@ func initArticleVersionRouter(articleVersionGroup *huma.Group) {
 		Security:    []map[string][]string{{"jwtAuth": {}}},
 	}, versionHandler.HandleListArticleVersions)
 
-	versionCreate := huma.NewGroup(creatorArticleVersionGroup, "")
-	versionCreate.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("createArticleVersion", constant.CtxKeyUserID, 10*time.Second, 1))
-
-	huma.Register(versionCreate, huma.Operation{
+	huma.Register(creatorArticleVersionGroup, huma.Operation{
 		OperationID: "createArticleVersion",
 		Method:      http.MethodPost,
 		Path:        "/",
@@ -129,6 +126,7 @@ func initArticleVersionRouter(articleVersionGroup *huma.Group) {
 		Description: "Create a new article version",
 		Tags:        []string{"articleVersion"},
 		Security:    []map[string][]string{{"jwtAuth": {}}},
+		Middlewares: huma.Middlewares{middleware.RateLimiterMiddleware("createArticleVersion", constant.CtxKeyUserID, 10*time.Second, 1)},
 	}, versionHandler.HandleCreateArticleVersion)
 
 	huma.Register(creatorArticleVersionGroup, huma.Operation{

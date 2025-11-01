@@ -11,10 +11,10 @@ import (
 
 // CommentHandler 评论处理器
 type CommentHandler interface {
-	HandleCreateArticleComment(ctx context.Context, req *dto.CreateCommentRequest) (*protocol.HumaHTTPResponse[*dto.CreateCommentResponse], error)
-	HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
-	HandleListArticleComments(ctx context.Context, req *dto.ListArticleCommentRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleCommentResponse], error)
-	HandleListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenCommentResponse], error)
+	HandleCreateArticleComment(ctx context.Context, req *dto.CreateCommentRequest) (*protocol.HTTPResponse[*dto.CreateCommentResponse], error)
+	HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error)
+	HandleListArticleComments(ctx context.Context, req *dto.ListArticleCommentRequest) (*protocol.HTTPResponse[*dto.ListArticleCommentResponse], error)
+	HandleListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentRequest) (*protocol.HTTPResponse[*dto.ListChildrenCommentResponse], error)
 }
 
 type commentHandler struct {
@@ -28,18 +28,18 @@ func NewCommentHandler() CommentHandler {
 	}
 }
 
-func (h *commentHandler) HandleCreateArticleComment(ctx context.Context, req *dto.CreateCommentRequest) (*protocol.HumaHTTPResponse[*dto.CreateCommentResponse], error) {
+func (h *commentHandler) HandleCreateArticleComment(ctx context.Context, req *dto.CreateCommentRequest) (*protocol.HTTPResponse[*dto.CreateCommentResponse], error) {
 	return util.WrapHTTPResponse(h.svc.CreateArticleComment(ctx, req))
 }
 
-func (h *commentHandler) HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error) {
+func (h *commentHandler) HandleDeleteComment(ctx context.Context, req *dto.DeleteCommentRequest) (*protocol.HTTPResponse[*dto.EmptyResponse], error) {
 	return util.WrapHTTPResponse(h.svc.DeleteComment(ctx, req))
 }
 
-func (h *commentHandler) HandleListArticleComments(ctx context.Context, req *dto.ListArticleCommentRequest) (*protocol.HumaHTTPResponse[*dto.ListArticleCommentResponse], error) {
+func (h *commentHandler) HandleListArticleComments(ctx context.Context, req *dto.ListArticleCommentRequest) (*protocol.HTTPResponse[*dto.ListArticleCommentResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListArticleComments(ctx, req))
 }
 
-func (h *commentHandler) HandleListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentRequest) (*protocol.HumaHTTPResponse[*dto.ListChildrenCommentResponse], error) {
+func (h *commentHandler) HandleListChildrenComments(ctx context.Context, req *dto.ListChildrenCommentRequest) (*protocol.HTTPResponse[*dto.ListChildrenCommentResponse], error) {
 	return util.WrapHTTPResponse(h.svc.ListChildrenComments(ctx, req))
 }

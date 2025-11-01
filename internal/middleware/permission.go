@@ -2,7 +2,7 @@ package middleware
 
 import (
 	"github.com/danielgtaylor/huma/v2"
-	"github.com/gofiber/fiber/v2"
+	"github.com/hcd233/aris-blog-api/internal/api"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/protocol"
@@ -12,45 +12,29 @@ import (
 )
 
 // LimitUserPermissionMiddleware 限制用户权限中间件
-//
-//	param serviceName string
-//	param requiredPermission model.Permission
-//	return fiber.Handler
-//	author centonhuang
-//	update 2025-01-05 15:07:08
-func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.Permission) fiber.Handler {
-	return func(c *fiber.Ctx) error {
-		permission := c.Locals(constant.CtxKeyPermission).(model.Permission)
-		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
-			logger.WithFCtx(c).Info("[LimitUserPermissionMiddleware] permission denied",
-				zap.String("serviceName", serviceName),
-				zap.String("requiredPermission", string(requiredPermission)),
-				zap.String("permission", string(permission)))
-			util.SendHTTPResponse(c, nil, protocol.ErrNoPermission)
-			return c.Status(fiber.StatusForbidden).JSON(protocol.HTTPResponse{
-				Error: protocol.ErrNoPermission.Error(),
-			})
-		}
-
-		return c.Next()
-	}
-}
-
-// LimitUserPermissionMiddlewareForHuma 限制用户权限中间件 for Huma
-func LimitUserPermissionMiddlewareForHuma(serviceName string, requiredPermission model.Permission) func(ctx huma.Context, next func(huma.Context)) {
+//	@param serviceName string 
+//	@param requiredPermission model.Permission 
+//	@return ctx huma.Context 
+//	@return next func(huma.Context) 
+//	@return func(ctx huma.Context, next func(huma.Context)) 
+//	@author centonhuang 
+//	@update 2025-11-02 04:16:51 
+func LimitUserPermissionMiddleware(serviceName string, requiredPermission model.Permission) func(ctx huma.Context, next func(huma.Context)) {
 	return func(ctx huma.Context, next func(huma.Context)) {
 		permission, ok := ctx.Context().Value(constant.CtxKeyPermission).(model.Permission)
 		if !ok {
-			ctx.SetStatus(fiber.StatusUnauthorized)
+			_, err := util.WrapHTTPResponse[any](nil, protocol.ErrNoPermission)
+			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 			return
 		}
 
 		if model.PermissionLevelMapping[permission] < model.PermissionLevelMapping[requiredPermission] {
-			logger.WithCtx(ctx.Context()).Info("[LimitUserPermissionMiddlewareForHuma] permission denied",
+			logger.WithCtx(ctx.Context()).Info("[LimitUserPermissionMiddleware] permission denied",
 				zap.String("serviceName", serviceName),
 				zap.String("requiredPermission", string(requiredPermission)),
 				zap.String("permission", string(permission)))
-			ctx.SetStatus(fiber.StatusForbidden)
+			_, err := util.WrapHTTPResponse[any](nil, protocol.ErrNoPermission)
+			huma.WriteErr(api.GetHumaAPI(), ctx, err.GetStatus(), err.Error(), err)
 			return
 		}
 

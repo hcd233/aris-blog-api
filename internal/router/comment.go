@@ -13,7 +13,7 @@ import (
 func initCommentRouter(commentGroup *huma.Group) {
 	commentHandler := handler.NewCommentHandler()
 
-	commentGroup.UseMiddleware(middleware.JwtMiddlewareForHuma())
+	commentGroup.UseMiddleware(middleware.JwtMiddleware())
 
 	listGroup := huma.NewGroup(commentGroup, "")
 
@@ -38,7 +38,7 @@ func initCommentRouter(commentGroup *huma.Group) {
 	}, commentHandler.HandleListChildrenComments)
 
 	createGroup := huma.NewGroup(commentGroup, "")
-	createGroup.UseMiddleware(middleware.RateLimiterMiddlewareForHuma("createComment", constant.CtxKeyUserID, 10*time.Second, 1))
+	createGroup.UseMiddleware(middleware.RateLimiterMiddleware("createComment", constant.CtxKeyUserID, 10*time.Second, 1))
 
 	huma.Register(createGroup, huma.Operation{
 		OperationID: "createComment",
