@@ -24,5 +24,6 @@ type HTTPResponse[BodyT any] struct {
 //	@update 2025-11-02 04:01:39
 type RedirectResponse struct {
 	Status int    `json:"status" doc:"Status code"`
-	Url    string `json:"url" doc:"URL for redirect"`
+	// Cookie string `json:"cookie" header:"Set-Cookie" doc:"Cookie for redirect"`
+	URL    string `json:"url" header:"Location" doc:"URL for redirect"`
 }
