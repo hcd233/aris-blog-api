@@ -135,6 +135,6 @@ func RedirectURL(rsp *dto.URLResponse, err error) (*protocol.RedirectResponse, h
 	}
 	return &protocol.RedirectResponse{
 		Status: http.StatusTemporaryRedirect,
-		URL:    rsp.URL,
+		Url:    rsp.URL,
 	}, nil
 }
