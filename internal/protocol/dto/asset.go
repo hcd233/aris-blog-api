@@ -1,6 +1,6 @@
 package dto
 
-import "github.com/danielgtaylor/huma/v2"
+import "mime/multipart"
 
 // Image 图片信息
 type Image struct {
@@ -94,7 +94,7 @@ type ListImagesResponse struct {
 
 // UploadImageRequest 上传图片请求
 type UploadImageRequest struct {
-	RawBody huma.FormFile `form:"image" contentType:"image/png,image/jpeg,image/jpg,image/gif,image/webp" required:"true" doc:"Image file to upload"`
+	RawBody multipart.FileHeader
 }
 
 // UploadImageResponse 上传图片响应
