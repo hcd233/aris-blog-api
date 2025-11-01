@@ -76,7 +76,7 @@ type ListImagesResponse struct {
 //	@author centonhuang
 //	@update 2025-11-02 05:34:10
 type FormFileData struct {
-	Image *huma.FormFile
+	Image huma.FormFile `form:"image" contentType:"image/png,image/jpeg,image/jpg,image/gif,image/webp" required:"true" doc:"Image file to upload" required:"true"`
 }
 
 // UploadImageRequest 上传图片请求
