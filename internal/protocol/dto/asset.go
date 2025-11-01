@@ -1,8 +1,6 @@
 package dto
 
-import "mime/multipart"
-
-
+import "github.com/danielgtaylor/huma/v2"
 
 // ViewPathParam 浏览记录路径参数
 type ViewPathParam struct {
@@ -73,9 +71,17 @@ type ListImagesResponse struct {
 	Images []*Image `json:"images" doc:"List of images"`
 }
 
+// FormFileData 表单文件数据
+//
+//	@author centonhuang
+//	@update 2025-11-02 05:34:10
+type FormFileData struct {
+	Image *huma.FormFile
+}
+
 // UploadImageRequest 上传图片请求
 type UploadImageRequest struct {
-	RawBody *multipart.FileHeader
+	RawBody *huma.MultipartFormFiles[FormFileData]
 }
 
 // GetImageRequest 获取图片请求

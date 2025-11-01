@@ -377,16 +377,19 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
-	fileName := req.RawBody.Filename
-	fileSize := req.RawBody.Size
+	file := req.RawBody.Data().Image
+	defer file.Close()
+
+	fileName := file.Filename
+	fileSize := file.Size
 
 	if !util.IsValidImageFormat(fileName) {
 		logger.Error("[AssetService] invalid image format", zap.String("fileName", fileName))
 		return nil, protocol.ErrBadRequest
 	}
 
-	if contentType := req.RawBody.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
-		logger.Error("[AssetService] invalid image content type", zap.String("contentType", contentType))
+	if !util.IsValidImageContentType(file.ContentType) {
+		logger.Error("[AssetService] invalid image content type", zap.String("contentType", file.ContentType))
 		return nil, protocol.ErrBadRequest
 	}
 
@@ -399,12 +402,6 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 	var imageFormat imaging.Format
 
 	extension := filepath.Ext(fileName)
-	file, err := req.RawBody.Open()
-	if err != nil {
-		logger.Error("[AssetService] failed to open file", zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
-	defer file.Close()
 
 	switch extension {
 	case ".webp":
