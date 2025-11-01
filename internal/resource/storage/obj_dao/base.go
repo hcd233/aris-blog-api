@@ -17,6 +17,7 @@ type ObjDAO interface {
 	CreateBucket(ctx context.Context) (err error)
 	CreateDir(ctx context.Context, userID uint) (objectInfo *ObjectInfo, err error)
 	ListObjects(ctx context.Context, userID uint) (objectInfos []ObjectInfo, err error)
+	CheckObjectExists(ctx context.Context, userID uint, objectName string) (exists bool, err error)
 	UploadObject(ctx context.Context, userID uint, objectName string, size int64, reader io.Reader) (err error)
 	DownloadObject(ctx context.Context, userID uint, objectName string, writer io.Writer) (objectInfo *ObjectInfo, err error)
 	PresignObject(ctx context.Context, userID uint, objectName string) (presignedURL *url.URL, err error)
@@ -38,12 +39,13 @@ const (
 	//	update 2025-01-05 17:36:05
 	ObjectTypeThumbnail ObjectType = "thumbnail"
 
-	createBucketTimeout   = 10 * time.Second
-	listObjectsTimeout    = 10 * time.Second
-	uploadObjectTimeout   = 30 * time.Second
-	downloadObjectTimeout = 30 * time.Second
-	deleteObjectTimeout   = 10 * time.Second
-	presignObjectTimeout  = 10 * time.Second
+	createBucketTimeout      = 10 * time.Second
+	listObjectsTimeout       = 10 * time.Second
+	uploadObjectTimeout      = 30 * time.Second
+	downloadObjectTimeout    = 30 * time.Second
+	deleteObjectTimeout      = 10 * time.Second
+	presignObjectTimeout     = 10 * time.Second
+	checkObjectExistsTimeout = 10 * time.Second
 
 	presignObjectExpire = 5 * time.Minute
 )

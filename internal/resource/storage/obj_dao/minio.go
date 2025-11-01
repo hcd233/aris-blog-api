@@ -35,7 +35,7 @@ func (dao *MinioObjDAO) composeDirName(userID uint) string {
 //	return bucketName string
 //	author centonhuang
 //	update 2025-01-19 14:13:22
-func (dao *MinioObjDAO) GetBucketName(ctx context.Context) string {
+func (dao *MinioObjDAO) GetBucketName(_ context.Context) string {
 	return dao.BucketName
 }
 
@@ -242,5 +242,30 @@ func (dao *MinioObjDAO) DeleteObject(ctx context.Context, userID uint, objectNam
 	defer cancel()
 
 	err = dao.client.RemoveObject(ctx, dao.BucketName, objectName, minio.RemoveObjectOptions{})
+	return
+}
+
+// CheckObjectExists 检查对象是否存在
+//
+//	receiver dao *BaseMinioObjDAO
+//	param userID uint
+//	param objectName string
+//	return exists bool
+//	return err error
+//	author centonhuang
+//	update 2025-11-02 05:36:10
+func (dao *MinioObjDAO) CheckObjectExists(ctx context.Context, userID uint, objectName string) (exists bool, err error) {
+	dirName := dao.composeDirName(userID)
+	objectName = path.Join(dirName, objectName)
+
+	ctx, cancel := context.WithTimeout(ctx, checkObjectExistsTimeout)
+	defer cancel()
+
+	_, err = dao.client.StatObject(ctx, dao.BucketName, objectName, minio.StatObjectOptions{})
+	if err != nil {
+		return
+	}
+
+	exists = true
 	return
 }

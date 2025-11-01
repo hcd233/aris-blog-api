@@ -34,7 +34,7 @@ func (dao *CosObjDAO) composeDirName(userID uint) string {
 //	return bucketName string
 //	author centonhuang
 //	update 2025-01-19 14:13:22
-func (dao *CosObjDAO) GetBucketName(ctx context.Context) string {
+func (dao *CosObjDAO) GetBucketName(_ context.Context) string {
 	return dao.BucketName
 }
 
@@ -193,5 +193,31 @@ func (dao *CosObjDAO) DeleteObject(ctx context.Context, userID uint, objectName 
 	defer cancel()
 
 	_, err = dao.client.Object.Delete(ctx, objectName)
+	return
+}
+
+// CheckObjectExists 检查对象是否存在
+//
+//	@receiver dao *CosObjDAO
+//	@param ctx context.Context
+//	@param userID uint
+//	@param objectName string
+//	@return exists bool
+//	@return err error
+//	@author centonhuang
+//	@update 2025-11-02 06:05:27
+func (dao *CosObjDAO) CheckObjectExists(ctx context.Context, userID uint, objectName string) (exists bool, err error) {
+	dirName := dao.composeDirName(userID)
+	objectName = path.Join(dirName, objectName)
+
+	ctx, cancel := context.WithTimeout(ctx, checkObjectExistsTimeout)
+	defer cancel()
+
+	_, err = dao.client.Object.Head(ctx, objectName, nil)
+	if err != nil {
+		return
+	}
+
+	exists = true
 	return
 }

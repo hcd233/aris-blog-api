@@ -482,6 +482,18 @@ func (s *assetService) GetImage(ctx context.Context, req *dto.GetImageRequest) (
 
 	userID := ctx.Value(constant.CtxKeyUserID).(uint)
 
+	for _, objDAO := range []objdao.ObjDAO{s.imageObjDAO, s.thumbnailObjDAO} {
+		exists, err := objDAO.CheckObjectExists(ctx, userID, req.ObjectName)
+		if err != nil {
+			logger.Error("[AssetService] failed to check object exists", zap.String("imageName", req.ObjectName), zap.Error(err))
+			return nil, protocol.ErrInternalError
+		}
+		if !exists {
+			logger.Error("[AssetService] object not found", zap.String("imageName", req.ObjectName))
+			return nil, protocol.ErrDataNotExists
+		}
+	}
+
 	var presignedURL *url.URL
 	switch req.Quality {
 	case "low":
