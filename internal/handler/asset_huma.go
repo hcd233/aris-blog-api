@@ -2,7 +2,6 @@ package handler
 
 import (
 	"context"
-	"net/http"
 
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/logger"
@@ -10,7 +9,6 @@ import (
 	dto "github.com/hcd233/aris-blog-api/internal/protocol/dto"
 	"github.com/hcd233/aris-blog-api/internal/service"
 	"github.com/hcd233/aris-blog-api/internal/util"
-	"go.uber.org/zap"
 )
 
 // AssetHandlerForHuma 资产处理器（Huma版本）
@@ -19,9 +17,7 @@ type AssetHandlerForHuma interface {
 	HandleListUserLikeComments(ctx context.Context, req *dto.ListUserLikeCommentsRequest) (*protocol.HumaHTTPResponse[*dto.ListUserLikeCommentsResponse], error)
 	HandleListUserLikeTags(ctx context.Context, req *dto.ListUserLikeTagsRequest) (*protocol.HumaHTTPResponse[*dto.ListUserLikeTagsResponse], error)
 	HandleListImages(ctx context.Context, req *dto.ListImagesRequest) (*protocol.HumaHTTPResponse[*dto.ListImagesResponse], error)
-	HandleUploadImage(ctx context.Context, input struct {
-		RawBody []byte `contentType:"multipart/form-data"`
-	}) (*protocol.HumaHTTPResponse[*dto.UploadImageResponse], error)
+	HandleUploadImage(ctx context.Context, req *dto.UploadImageRequest) (*protocol.HumaHTTPResponse[*dto.UploadImageResponse], error)
 	HandleGetImage(ctx context.Context, req *dto.GetImageRequest) (*protocol.HumaHTTPResponse[*dto.GetImageResponse], error)
 	HandleDeleteImage(ctx context.Context, req *dto.DeleteImageRequest) (*protocol.HumaHTTPResponse[*dto.EmptyResponse], error)
 	HandleListUserViewArticles(ctx context.Context, req *dto.ListUserViewArticlesRequest) (*protocol.HumaHTTPResponse[*dto.ListUserViewArticlesResponse], error)
@@ -55,9 +51,7 @@ func (h *assetHandlerForHuma) HandleListImages(ctx context.Context, req *dto.Lis
 	return util.WrapHTTPResponse(h.svc.ListImages(ctx, req))
 }
 
-func (h *assetHandlerForHuma) HandleUploadImage(ctx context.Context, input struct {
-	RawBody []byte `contentType:"multipart/form-data"`
-}) (*protocol.HumaHTTPResponse[*dto.UploadImageResponse], error) {
+func (h *assetHandlerForHuma) HandleUploadImage(ctx context.Context, req *dto.UploadImageRequest) (*protocol.HumaHTTPResponse[*dto.UploadImageResponse], error) {
 	// 文件上传需要特殊处理
 	// 由于huma的限制，我们需要从fiber.Ctx中获取文件
 	// 这里暂时返回未实现错误

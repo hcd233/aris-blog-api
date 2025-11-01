@@ -143,37 +143,33 @@ func (s *assetService) ListUserLikeArticles(ctx context.Context, req *dto.ListUs
 		}
 	}
 
-	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *protocol.Article {
-		return &protocol.Article{
+	rsp.Articles = lo.Map(*articles, func(article model.Article, _ int) *dto.Article {
+		return &dto.Article{
 			ArticleID: article.ID,
 			Title:     article.Title,
 			Slug:      article.Slug,
 			Status:    string(article.Status),
-			User: &dto.User{
-				UserID: article.User.ID,
-				Name:   article.User.Name,
-				Avatar: article.User.Avatar,
-			},
-			Category: &protocol.Category{
-				CategoryID: article.CategoryID,
-				Name:       article.Category.Name,
-			},
-			CreatedAt:   article.CreatedAt.Format(time.DateTime),
+		User: &dto.User{
+			UserID: article.User.ID,
+			Name:   article.User.Name,
+			Avatar: article.User.Avatar,
+		},
+		CreatedAt:   article.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   article.UpdatedAt.Format(time.DateTime),
 			PublishedAt: article.PublishedAt.Format(time.DateTime),
 			Likes:       article.Likes,
 			Views:       article.Views,
-			Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *protocol.Tag {
-				return &protocol.Tag{
+			Tags: lo.Map(article.Tags, func(tag model.Tag, _ int) *dto.Tag {
+				return &dto.Tag{
 					TagID: tag.ID,
 					Name:  tag.Name,
 					Slug:  tag.Slug,
 				}
 			}),
-			Comments: len(article.Comments),
-		}
+		Comments: len(article.Comments),
+	}
 	})
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
@@ -240,8 +236,8 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *dto.ListUs
 		}
 	}
 
-	rsp.Comments = lo.Map(*comments, func(comment model.Comment, _ int) *protocol.Comment {
-		return &protocol.Comment{
+	rsp.Comments = lo.Map(*comments, func(comment model.Comment, _ int) *dto.Comment {
+		return &dto.Comment{
 			CommentID: comment.ID,
 			Content:   comment.Content,
 			UserID:    comment.UserID,
@@ -250,7 +246,7 @@ func (s *assetService) ListUserLikeComments(ctx context.Context, req *dto.ListUs
 			Likes:     comment.Likes,
 		}
 	})
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
@@ -315,19 +311,18 @@ func (s *assetService) ListUserLikeTags(ctx context.Context, req *dto.ListUserLi
 		}
 	}
 
-	rsp.Tags = lo.Map(*tags, func(tag model.Tag, _ int) *protocol.Tag {
-		return &protocol.Tag{
+	rsp.Tags = lo.Map(*tags, func(tag model.Tag, _ int) *dto.Tag {
+		return &dto.Tag{
 			TagID:       tag.ID,
 			Name:        tag.Name,
 			Slug:        tag.Slug,
 			Description: tag.Description,
-			UserID:      tag.UserID,
 			CreatedAt:   tag.CreatedAt.Format(time.DateTime),
 			UpdatedAt:   tag.UpdatedAt.Format(time.DateTime),
 			Likes:       tag.Likes,
 		}
 	})
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
@@ -356,8 +351,8 @@ func (s *assetService) ListImages(ctx context.Context, req *dto.ListImagesReques
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.Images = lo.Map(objectInfos, func(objectInfo objdao.ObjectInfo, _ int) *protocol.Image {
-		return &protocol.Image{
+	rsp.Images = lo.Map(objectInfos, func(objectInfo objdao.ObjectInfo, _ int) *dto.Image {
+		return &dto.Image{
 			Name:      objectInfo.ObjectName,
 			Size:      objectInfo.Size,
 			CreatedAt: objectInfo.LastModified.Format(time.DateTime),
@@ -563,8 +558,8 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *dto.ListUs
 		return nil, protocol.ErrInternalError
 	}
 
-	rsp.UserViews = lo.Map(*userViews, func(userView model.UserView, _ int) *protocol.UserView {
-		return &protocol.UserView{
+	rsp.UserViews = lo.Map(*userViews, func(userView model.UserView, _ int) *dto.UserView {
+		return &dto.UserView{
 			ViewID:       userView.ID,
 			Progress:     userView.Progress,
 			LastViewedAt: userView.LastViewedAt.Format(time.DateTime),
@@ -572,7 +567,7 @@ func (s *assetService) ListUserViewArticles(ctx context.Context, req *dto.ListUs
 			ArticleID:    userView.ArticleID,
 		}
 	})
-	rsp.PageInfo = &protocol.PageInfo{
+	rsp.PageInfo = &dto.PageInfo{
 		Page:     pageInfo.Page,
 		PageSize: pageInfo.PageSize,
 		Total:    pageInfo.Total,
