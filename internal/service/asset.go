@@ -385,8 +385,8 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 		return nil, protocol.ErrBadRequest
 	}
 
-	if contentType := req.RawBody.Header.Get("Content-Type"); !util.IsValidImageContentType(contentType) {
-		logger.Error("[AssetService] invalid image content type", zap.String("contentType", contentType))
+	if !util.IsValidImageContentType(req.RawBody.ContentType) {
+		logger.Error("[AssetService] invalid image content type", zap.String("contentType", req.RawBody.ContentType))
 		return nil, protocol.ErrBadRequest
 	}
 
@@ -399,11 +399,7 @@ func (s *assetService) UploadImage(ctx context.Context, req *dto.UploadImageRequ
 	var imageFormat imaging.Format
 
 	extension := filepath.Ext(fileName)
-	file, err := req.RawBody.Open()
-	if err != nil {
-		logger.Error("[AssetService] failed to open file", zap.Error(err))
-		return nil, protocol.ErrInternalError
-	}
+	file := req.RawBody.File
 	defer file.Close()
 
 	switch extension {
