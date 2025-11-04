@@ -57,6 +57,8 @@ func InitDatabase() {
 	db = lo.Must(gorm.Open(dialector, &gorm.Config{
 		DryRun:         false, // 只生成SQL不运行
 		TranslateError: true,
+		// 逻辑外键：迁移时不创建物理外键
+		DisableForeignKeyConstraintWhenMigrating: true,
 		Logger: &GormLoggerAdapter{
 			LogLevel: gormlogger.Info, // Info级别
 		},
@@ -158,3 +160,4 @@ func (l *GormLoggerAdapter) Trace(ctx context.Context, begin time.Time, fc func(
 
 	logger.WithCtx(ctx).Info("[GORM] trace", fields...)
 }
+
