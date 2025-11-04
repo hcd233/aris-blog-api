@@ -496,9 +496,9 @@ func (s *assetService) GetImage(ctx context.Context, req *dto.GetImageRequest) (
 
 	var presignedURL *url.URL
 	switch req.Quality {
-	case "low":
+	case "thumb":
 		presignedURL, err = s.thumbnailObjDAO.PresignObject(ctx, userID, req.ObjectName)
-	case "high", "medium":
+	case "raw":
 		presignedURL, err = s.imageObjDAO.PresignObject(ctx, userID, req.ObjectName)
 	default:
 		presignedURL, err = s.imageObjDAO.PresignObject(ctx, userID, req.ObjectName)

@@ -14,7 +14,7 @@ type ObjectPathParam struct {
 
 // ImageQueryParam 图片查询参数
 type ImageQueryParam struct {
-	Quality string `query:"quality" doc:"Image quality (low, medium, high)" enum:"low,medium,high" default:"medium"`
+	Quality string `query:"quality" doc:"Image quality (thumb, raw)" enum:"thumb,raw" default:"thumb"`
 }
 
 // ListUserLikeArticlesRequest 列出用户喜欢的文章请求
