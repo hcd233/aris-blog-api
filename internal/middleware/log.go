@@ -34,8 +34,8 @@ func LogMiddleware() fiber.Handler {
 			zap.String("ip", c.IP()),
 			zap.String("user-agent", c.Get("User-Agent")),
 			zap.String("latency", latency.String()),
-			zap.String("req-content-type", c.Get("Content-Type")),
-			zap.String("rsp-content-type", c.GetRespHeader("Content-Type")),
+			zap.ByteString("request", c.Body()),
+			zap.ByteString("response", c.Response().Body()),
 		}
 
 		if err != nil {
