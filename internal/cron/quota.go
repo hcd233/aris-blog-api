@@ -71,6 +71,10 @@ func (c *QuotaCron) deliverQuotas() {
 			Page:     2,
 			PageSize: -1,
 		},
+		QueryParam: &dao.QueryParam{
+			Query: "",
+			QueryFields: nil,
+		},
 	}
 	users, pageInfo, err := c.userDAO.Paginate(c.db, []string{"id", "permission", "llm_quota"}, []string{}, param)
 	if err != nil {
