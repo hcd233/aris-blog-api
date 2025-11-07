@@ -49,12 +49,12 @@ var startServerCmd = &cobra.Command{
 		app := api.GetFiberApp()
 
 		app.Use(
+			middleware.RecoverMiddleware(),
 			middleware.FgprofMiddleware(),
-			middleware.TraceMiddleware(),
-			middleware.LogMiddleware(),
 			middleware.CORSMiddleware(),
 			middleware.CompressMiddleware(),
-			middleware.RecoverMiddleware(),
+			middleware.TraceMiddleware(),
+			middleware.LogMiddleware(),
 		)
 
 		router.RegisterRouter()
