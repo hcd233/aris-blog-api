@@ -28,7 +28,7 @@ func init() {
 			},
 		},
 		OpenAPIPath:   "/openapi",
-		DocsPath:      "/docs",
+		DocsPath:      "",
 		SchemasPath:   "/schemas",
 		Formats:       huma.DefaultFormats,
 		DefaultFormat: "application/json",

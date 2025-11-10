@@ -5,16 +5,45 @@ import (
 	"net/http"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/api"
 	"github.com/hcd233/aris-blog-api/internal/handler"
 )
 
-// RegisterRouter 注册路由
+// RegisterDocsRouter 注册文档路由
+//
+//	@return *fiber.App
+//	@author centonhuang
+//	@update 2025-11-10 18:29:32
+func RegisterDocsRouter() {
+	app := api.GetFiberApp()
+	app.Get("/docs", func(c *fiber.Ctx) error {
+		html := `<!doctype html>
+<html>
+  <head>
+    <title>API Reference</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script
+      id="api-reference"
+      data-url="/openapi.json"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>`
+		return c.Type("html").SendString(html)
+	})
+}
+
+// RegisterAPIRouter 注册API路由
 //
 //	param app *fiber.App
 //	author centonhuang
 //	update 2025-01-04 15:32:40
-func RegisterRouter() {
+func RegisterAPIRouter() {
 	pingService := handler.NewPingHandler()
 
 	api := api.GetHumaAPI()

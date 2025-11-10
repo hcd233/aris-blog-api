@@ -57,7 +57,8 @@ var startServerCmd = &cobra.Command{
 			middleware.LogMiddleware(),
 		)
 
-		router.RegisterRouter()
+		router.RegisterDocsRouter()
+		router.RegisterAPIRouter()
 
 		lo.Must0(app.Listen(fmt.Sprintf("%s:%s", host, port)))
 	},
