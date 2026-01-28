@@ -4,12 +4,16 @@
 package middleware
 
 import (
+	"strings"
+
 	"github.com/danielgtaylor/huma/v2"
 	"github.com/gofiber/fiber/v2"
 	"github.com/hcd233/aris-blog-api/internal/constant"
 	"github.com/hcd233/aris-blog-api/internal/jwt"
+	"github.com/hcd233/aris-blog-api/internal/logger"
 	"github.com/hcd233/aris-blog-api/internal/resource/database"
 	"github.com/hcd233/aris-blog-api/internal/resource/database/dao"
+	"go.uber.org/zap"
 )
 
 // JwtMiddleware JWT 中间件
@@ -27,17 +31,21 @@ func JwtMiddleware() func(ctx huma.Context, next func(huma.Context)) {
 		db := database.GetDBInstance(ctx.Context())
 
 		tokenString := ctx.Header("Authorization")
+		tokenString = strings.TrimSpace(strings.TrimPrefix(strings.TrimSpace(tokenString), "Bearer "))
 		if tokenString == "" {
+			logger.WithCtx(ctx.Context()).Error("[JwtMiddleware] token is empty")
 			ctx.SetStatus(fiber.StatusUnauthorized)
 			return
 		}
 		userID, err := accessTokenSvc.DecodeToken(tokenString)
 		if err != nil {
+			logger.WithCtx(ctx.Context()).Error("[JwtMiddleware] failed to decode token", zap.Error(err))
 			ctx.SetStatus(fiber.StatusUnauthorized)
 			return
 		}
 		user, err := dao.GetByID(db, userID, []string{"id", "name", "permission"}, []string{})
 		if err != nil {
+			logger.WithCtx(ctx.Context()).Error("[JwtMiddleware] failed to get user by id", zap.Error(err))
 			ctx.SetStatus(fiber.StatusInternalServerError)
 			return
 		}
